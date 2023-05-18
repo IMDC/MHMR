@@ -1,6 +1,7 @@
 /*import React from 'react';
 import type { PropsWithChildren } from 'react';*/
-import { useNavigation } from '@react-navigation/native';
+import {ParamListBase, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {
     SafeAreaView,
     ScrollView,
@@ -14,11 +15,15 @@ import {
 } from 'react-native';
 
 const Home = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text>Home Screen</Text>
+            <Button
+                title="Go to Test Page"
+                onPress={() => navigation.navigate('Test')}
+            />
             <Button
                 title="Go to Record Video Page"
                 onPress={() => navigation.navigate('Record Video')}

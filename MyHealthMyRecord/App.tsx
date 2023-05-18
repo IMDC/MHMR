@@ -7,14 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from "./screens/home";
 import RecordVideo from "./screens/recordVideo";
-
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Home Screen</Text>
-    </View>
-  );
-}
+import Test from "./screens/test"
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +17,7 @@ function App() {
       <Stack.Navigator initialRouteName="Home">
       <Stack.Screen name="Home" component={Home}/>
       <Stack.Screen name="Record Video" component={RecordVideo}/>
+      <Stack.Screen name="Test" component={Test}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
