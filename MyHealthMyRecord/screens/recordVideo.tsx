@@ -23,13 +23,13 @@ const RecordVideo = () => {
     const videoPlayer = useRef();
     const devices = useCameraDevices();
     //use front camera
-    const device = devices.front;
+    const device = devices.back;
 
     const [showCamera, setShowCamera] = useState(true);
     const [recordingInProgress, setRecordingInProgress] = useState(false);
     const [recordingPaused, setRecordingPaused] = useState(false);
 
-    //delete
+    //delete image source
     const [imageSource, setImageSource] = useState('');
     const [videoSource, setVideoSource] = useState('');
 
@@ -167,9 +167,11 @@ const RecordVideo = () => {
 
                     <Video
                         ref={ref => (videoPlayer.current = ref)}
-                        source={video}   // Can be a URL or a local file.
+                        source={{ uri: videoSource.path }}   // Can be a URL or a local file.
                         paused={false}                  // make it start    
                         style={styles.backgroundVideo}  // any style you want
+                        onBuffer={this.onBuffer}                // Callback when remote video is buffering
+                        onError={this.videoError}               // Callback when video cannot be loaded
                         repeat={true} />
 
                     <View style={styles.backButton}>
