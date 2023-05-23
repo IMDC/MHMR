@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import type { PropsWithChildren } from 'react';
-import {ParamListBase, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
+import Video from 'react-native-video';
+import video from '../assets/videos/test.mp4';
 import {
     View,
     Button,
@@ -18,15 +20,18 @@ const RecordVideo = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
     const camera = useRef(null);
+    const videoPlayer = useRef();
     const devices = useCameraDevices();
     //use front camera
-    const device = devices.back;
+    const device = devices.front;
 
     const [showCamera, setShowCamera] = useState(true);
     const [recordingInProgress, setRecordingInProgress] = useState(false);
     const [recordingPaused, setRecordingPaused] = useState(false);
 
+    //delete
     const [imageSource, setImageSource] = useState('');
+    const [videoSource, setVideoSource] = useState('');
 
     useEffect(() => {
         async function getPermission() {
@@ -35,9 +40,13 @@ const RecordVideo = () => {
             console.log(newCameraPermission, microphonePermission);
         }
         getPermission();
-    }, []);
+        if (videoSource != '') {
+            console.log('?', videoSource.path)
+        }
+    }, [videoSource]);
 
     //delete
+    /*
     const capturePhoto = async () => {
         if (camera.current !== null) {
             const photo = await camera.current.takePhoto({});
@@ -46,14 +55,20 @@ const RecordVideo = () => {
             console.log(photo.path);
         }
     };
+    */
 
     async function StartRecodingHandler() {
         if (camera.current !== null) {
             camera.current.startRecording({
                 flash: 'off',
-                onRecordingFinished: (video) => console.log(video, 'videodata'),
+                onRecordingFinished: (video) => {
+                    setVideoSource(video);
+                    console.log(video, 'videodata');
+                },
                 onRecordingError: (error) => console.error(error, 'videoerror'),
             })
+            //setVideoSource(video);
+            //console.log(videoSource);
             setRecordingInProgress(true);
         }
     }
@@ -145,6 +160,17 @@ const RecordVideo = () => {
                             }}
                         />
                     ) : null}
+
+                    {videoSource !== '' ? (
+                        <Text>{videoSource.path}</Text>
+                    ) : null}
+
+                    <Video
+                        ref={ref => (videoPlayer.current = ref)}
+                        source={video}   // Can be a URL or a local file.
+                        paused={false}                  // make it start    
+                        style={styles.backgroundVideo}  // any style you want
+                        repeat={true} />
 
                     <View style={styles.backButton}>
                         <TouchableOpacity
@@ -260,6 +286,13 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         aspectRatio: 9 / 16,
+    },
+    backgroundVideo: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
     },
 });
 
