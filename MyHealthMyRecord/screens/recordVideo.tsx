@@ -32,7 +32,7 @@ const RecordVideo = () => {
 
     //delete image source
     const [imageSource, setImageSource] = useState('');
-    const [videoSource, setVideoSource] = useState('');
+    const [videoSource, setVideoSource] = useState({path: '../assets/videos/test.mp4'});
 
     useEffect(() => {
         async function getPermission() {
