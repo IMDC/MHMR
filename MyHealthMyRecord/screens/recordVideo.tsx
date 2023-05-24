@@ -13,6 +13,7 @@ import {
     Text,
     StyleSheet,
     Image,
+    Dimensions,
 } from 'react-native';
 
 
@@ -23,7 +24,7 @@ const RecordVideo = () => {
     const videoPlayer = useRef();
     const devices = useCameraDevices();
     //use front camera
-    const device = devices.front;
+    const device = devices.back;
 
     const [showCamera, setShowCamera] = useState(true);
     const [recordingInProgress, setRecordingInProgress] = useState(false);
@@ -167,12 +168,17 @@ const RecordVideo = () => {
 
                     <Video
                         ref={ref => (videoPlayer.current = ref)}
-                        source={video}   // Can be a URL or a local file.
+                        source={{ uri: videoSource.path }}   // Can be a URL or a local file.
                         paused={false}                  // make it start    
                         style={styles.backgroundVideo}  // any style you want
-                        repeat={true} />
+                        onBuffer={this.onBuffer}                // Callback when remote video is buffering
+                        onError={this.videoError}               // Callback when video cannot be loaded
+                        repeat={true}
+                        controls={true}
+                        fullscreen={true}
+                        resizeMode="cover" />
 
-                    <View style={styles.backButton}>
+                    {/* <View style={styles.backButton}>
                         <TouchableOpacity
                             style={{
                                 backgroundColor: 'rgba(0,0,0,0.2)',
@@ -188,8 +194,8 @@ const RecordVideo = () => {
                             onPress={() => setShowCamera(true)}>
                             <Text style={{ color: 'white', fontWeight: '500' }}>Disabled</Text>
                         </TouchableOpacity>
-                    </View>
-                    <View style={styles.buttonContainer}>
+                    </View> */}
+                    <View style={styles.playbackContainer}>
                         <View style={styles.buttons}>
                             <TouchableOpacity
                                 style={{
@@ -253,6 +259,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         bottom: 0,
+        padding: 20,
+    },
+    playbackContainer: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        top: 0,
         padding: 20,
     },
     buttons: {
