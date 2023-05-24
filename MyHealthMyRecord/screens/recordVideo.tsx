@@ -30,7 +30,7 @@ const RecordVideo = () => {
     const [recordingInProgress, setRecordingInProgress] = useState(false);
     const [recordingPaused, setRecordingPaused] = useState(false);
 
-    //delete
+    //delete image source
     const [imageSource, setImageSource] = useState('');
     const [videoSource, setVideoSource] = useState('');
 
