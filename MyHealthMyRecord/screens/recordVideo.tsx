@@ -13,6 +13,7 @@ import {
     Text,
     StyleSheet,
     Image,
+    Dimensions,
 } from 'react-native';
 
 
@@ -172,9 +173,12 @@ const RecordVideo = () => {
                         style={styles.backgroundVideo}  // any style you want
                         onBuffer={this.onBuffer}                // Callback when remote video is buffering
                         onError={this.videoError}               // Callback when video cannot be loaded
-                        repeat={true} />
+                        repeat={true}
+                        controls={true}
+                        fullscreen={true}
+                        resizeMode="cover" />
 
-                    <View style={styles.backButton}>
+                    {/* <View style={styles.backButton}>
                         <TouchableOpacity
                             style={{
                                 backgroundColor: 'rgba(0,0,0,0.2)',
@@ -190,8 +194,8 @@ const RecordVideo = () => {
                             onPress={() => setShowCamera(true)}>
                             <Text style={{ color: 'white', fontWeight: '500' }}>Disabled</Text>
                         </TouchableOpacity>
-                    </View>
-                    <View style={styles.buttonContainer}>
+                    </View> */}
+                    <View style={styles.playbackContainer}>
                         <View style={styles.buttons}>
                             <TouchableOpacity
                                 style={{
@@ -255,6 +259,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         bottom: 0,
+        padding: 20,
+    },
+    playbackContainer: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        top: 0,
         padding: 20,
     },
     buttons: {
