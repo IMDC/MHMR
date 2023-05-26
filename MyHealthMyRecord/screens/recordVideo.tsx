@@ -4,7 +4,8 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import video from '../assets/videos/test.mp4';
+import { PermissionsAndroid, Platform } from "react-native";
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import {
     View,
     Button,
@@ -30,9 +31,7 @@ const RecordVideo = () => {
     const [recordingInProgress, setRecordingInProgress] = useState(false);
     const [recordingPaused, setRecordingPaused] = useState(false);
 
-    //delete image source
-    const [imageSource, setImageSource] = useState('');
-    const [videoSource, setVideoSource] = useState({path: '../assets/videos/test.mp4'});
+    const [videoSource, setVideoSource] = useState('');
 
     useEffect(() => {
         async function getPermission() {
@@ -45,18 +44,6 @@ const RecordVideo = () => {
             console.log('?', videoSource.path)
         }
     }, [videoSource]);
-
-    //delete
-    /*
-    const capturePhoto = async () => {
-        if (camera.current !== null) {
-            const photo = await camera.current.takePhoto({});
-            setImageSource(photo.path);
-            setShowCamera(false);
-            console.log(photo.path);
-        }
-    };
-    */
 
     async function StartRecodingHandler() {
         if (camera.current !== null) {
@@ -101,9 +88,31 @@ const RecordVideo = () => {
         return <Text>Camera not available</Text>;
     }
 
-    // Show Camera ? (true - recordingInProgress ?
-    // (true - stop button and recordongPaused ? (true - resume button) : (false - pause button)) : (false - record button))
-    // : (false - re-record/save button)
+    async function hasAndroidPermission() {
+        const permission = Platform.Version >= 33 ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
+      
+        const hasPermission = await PermissionsAndroid.check(permission);
+        if (hasPermission) {
+          return true;
+        }
+      
+        const status = await PermissionsAndroid.request(permission);
+        return status === 'granted';
+      }
+      
+      async function saveVideo(path) {
+        if (Platform.OS === "android" && !(await hasAndroidPermission())) {
+          return;
+        }
+      
+        // below: saves to Movies and video plays, path is "/storage/emulated/0/Movies/video.mp4"
+        CameraRoll.save(path)
+        // below: saves to Camera and video plays, path is "/storage/emulated/0/DCIM/MHMR/video.mp4"
+        //CameraRoll.save(path, {album: 'MHMR'})
+        Alert.alert('Your recording has been saved')
+        navigation.navigate('Home')
+      };
+
     return (
         <View style={styles.container}>
             {showCamera ? (
@@ -153,20 +162,8 @@ const RecordVideo = () => {
                 </>
             ) : (
                 <>
-                    {imageSource !== '' ? (
-                        <Image
-                            style={styles.image}
-                            source={{
-                                uri: `file://'${imageSource}`,
-                            }}
-                        />
-                    ) : null}
-
                     {videoSource !== '' ? (
-                        <Text>{videoSource.path}</Text>
-                    ) : null}
-
-                    <Video
+                        <Video
                         ref={ref => (videoPlayer.current = ref)}
                         source={{ uri: videoSource.path }}   // Can be a URL or a local file.
                         paused={false}                  // make it start    
@@ -177,6 +174,7 @@ const RecordVideo = () => {
                         controls={true}
                         fullscreen={true}
                         resizeMode="cover" />
+                    ) : null}
 
                     {/* <View style={styles.backButton}>
                         <TouchableOpacity
@@ -222,9 +220,9 @@ const RecordVideo = () => {
                                     borderWidth: 2,
                                     borderColor: 'white',
                                 }}
-                                onPress={() => setShowCamera(true)}>
+                                onPress={() => saveVideo(videoSource.path)}>
                                 <Text style={{ color: 'white', fontWeight: '500' }}>
-                                    Use Video
+                                    Save Video
                                 </Text>
                             </TouchableOpacity>
                         </View>
