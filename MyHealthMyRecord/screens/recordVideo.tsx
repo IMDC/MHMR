@@ -12,9 +12,11 @@ const RecordVideo = () => {
 
   const camera = useRef(null);
   const videoPlayer = useRef();
-  const devices = useCameraDevices();
+  const [deviceType, setDeviceType] = useState(null); // use default lense at startup
+  const [deviceDir, setDeviceDir] = useState('back');
+  const devices = useCameraDevices(deviceType);
   //use front camera
-  let device = devices.back;
+  const device = devices[deviceDir];
 
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
@@ -89,12 +91,6 @@ const RecordVideo = () => {
     }
   }
 
-  async function swapCamera() {
-    device === devices.back
-      ? (device = devices.front)
-      : (device = devices.back);
-  }
-
   if (device == null) {
     return <Text>Camera not available</Text>;
   }
@@ -114,14 +110,7 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-          <View style={styles.topContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                swapCamera();
-              }}>
-              <Text style={{fontSize: 35}}>Swap Camera</Text>
-            </TouchableOpacity>
-          </View>
+
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -163,6 +152,18 @@ const RecordVideo = () => {
                         resumeRecodingHandler();
                       }}
                     />
+                    {/* <Icon
+                      name="camera-reverse-outline"
+                      size={40}
+                      type="ionicon"
+                      onPress={() => {
+                        if (deviceDir == 'back') {
+                          setDeviceDir('front');
+                        } else {
+                          setDeviceDir('back');
+                        }
+                      }}
+                    /> */}
                   </>
                 ) : (
                   <>
@@ -185,6 +186,21 @@ const RecordVideo = () => {
               </>
             ) : (
               <>
+                <View style={styles.swapButton}>
+                  <Icon
+                    name="camera-reverse-outline"
+                    size={40}
+                    type="ionicon"
+                    onPress={() => {
+                      if (deviceDir == 'back') {
+                        setDeviceDir('front');
+                      } else {
+                        setDeviceDir('back');
+                      }
+                    }}
+                  />
+                </View>
+
                 <TouchableOpacity
                   style={styles.camButton}
                   onPress={() => StartRecodingHandler()}
@@ -304,6 +320,13 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'space-evenly',
   },
+  swapButton: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+
   topContainer: {
     position: 'absolute',
     justifyContent: 'center',
