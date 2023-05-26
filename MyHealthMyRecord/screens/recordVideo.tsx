@@ -4,6 +4,18 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
 import {Icon} from '@rneui/base';
+import { PermissionsAndroid, Platform } from "react-native";
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import {
+    View,
+    Button,
+    Alert,
+    TouchableOpacity,
+    Text,
+    StyleSheet,
+    Image,
+    Dimensions,
+} from 'react-native';
 
 import {View, TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
 
@@ -22,11 +34,8 @@ const RecordVideo = () => {
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
 
-  //delete image source
-  const [imageSource, setImageSource] = useState('');
-  const [videoSource, setVideoSource] = useState({
-    path: '../assets/videos/test.mp4',
-  });
+
+  const [videoSource, setVideoSource] = useState('');
 
   useEffect(() => {
     async function getPermission() {
@@ -40,31 +49,20 @@ const RecordVideo = () => {
     }
   }, [videoSource]);
 
-  //delete
-  /*
-    const capturePhoto = async () => {
+    async function StartRecodingHandler() {
         if (camera.current !== null) {
-            const photo = await camera.current.takePhoto({});
-            setImageSource(photo.path);
-            setShowCamera(false);
-            console.log(photo.path);
+            camera.current.startRecording({
+                flash: 'off',
+                onRecordingFinished: (video) => {
+                    setVideoSource(video);
+                    console.log(video, 'videodata');
+                },
+                onRecordingError: (error) => console.error(error, 'videoerror'),
+            })
+            //setVideoSource(video);
+            //console.log(videoSource);
+            setRecordingInProgress(true);
         }
-    };
-    */
-
-  async function StartRecodingHandler() {
-    if (camera.current !== null) {
-      camera.current.startRecording({
-        flash: 'off',
-        onRecordingFinished: video => {
-          setVideoSource(video);
-          console.log(video, 'videodata');
-        },
-        onRecordingError: error => console.error(error, 'videoerror'),
-      });
-      //setVideoSource(video);
-      //console.log(videoSource);
-      setRecordingInProgress(true);
     }
   }
 
@@ -91,9 +89,47 @@ const RecordVideo = () => {
     }
   }
 
-  if (device == null) {
-    return <Text>Camera not available</Text>;
-  }
+    if (device == null) {
+        return <Text>Camera not available</Text>;
+    }
+
+    async function hasAndroidPermission() {
+        const permission = Platform.Version >= 33 ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
+      
+        const hasPermission = await PermissionsAndroid.check(permission);
+        if (hasPermission) {
+          return true;
+        }
+      
+        const status = await PermissionsAndroid.request(permission);
+        return status === 'granted';
+      }
+      
+      async function saveVideo(path) {
+        if (Platform.OS === "android" && !(await hasAndroidPermission())) {
+          return;
+        }
+      
+        // below: saves to Movies and video plays, path is "/storage/emulated/0/Movies/video.mp4"
+        CameraRoll.save(path)
+        // below: saves to Camera and video plays, path is "/storage/emulated/0/DCIM/MHMR/video.mp4"
+        //CameraRoll.save(path, {album: 'MHMR'})
+        Alert.alert('Your recording has been saved')
+        navigation.navigate('Home')
+      };
+
+    return (
+        <View style={styles.container}>
+            {showCamera ? (
+                <>
+                    <Camera
+                        ref={camera}
+                        style={StyleSheet.absoluteFill}
+                        device={device}
+                        isActive={showCamera}
+                        video={true}
+                        audio={true}
+                    />
 
   // Show Camera ? (true - recordingInProgress ?
   // (true - stop button and recordongPaused ? (true - resume button) : (false - pause button)) : (false - record button))
@@ -132,6 +168,7 @@ const RecordVideo = () => {
                     stopRecodingHandler();
                   }}
                 />
+
 
                 {recordingPaused ? (
                   <>
@@ -235,6 +272,7 @@ const RecordVideo = () => {
             resizeMode="cover"
           />
 
+
           {/* <View style={styles.backButton}>
                         <TouchableOpacity
                             style={{
@@ -252,6 +290,7 @@ const RecordVideo = () => {
                             <Text style={{ color: 'white', fontWeight: '500' }}>Disabled</Text>
                         </TouchableOpacity>
                     </View> */}
+
           <View style={styles.topContainer}>
             <View style={styles.buttons}>
               <TouchableOpacity
