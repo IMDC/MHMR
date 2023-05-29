@@ -23,6 +23,7 @@ const Test = () => {
   const [videos, setVideos] = useState<any | null>(null);
 
   async function getRecordings() {
+    //delete later, instead use getPhotos right after saving the video so cameraroll uri, vision camera duration etc can be saved to db together
     CameraRoll.getPhotos({
       first: 5,
       assetType: 'Videos',
@@ -52,25 +53,26 @@ const Test = () => {
       />
       <ScrollView>
         {videos !== null ? (
+          //don't use i as the key, after setting up storage, use video id or uri or something else as the key
           videos.map((video, i) => {
             console.log("video details", video.node);
             return (
-              <>
-                <Video
-                  ref={ref => (videoPlayer.current = ref)}
-                  source={{ uri: video.node.image.uri }} // Can be a URL or a local file.
-                  paused={false} // make it start
-                  style={styles.backgroundVideo} // any style you want
-                  onBuffer={this.onBuffer} // Callback when remote video is buffering
-                  onError={this.videoError} // Callback when video cannot be loaded
-                  repeat={true}
-                  controls={true}
-                  fullscreen={true}
-                  resizeMode="cover"
-                />
+              <View key={i}>
                 <Text>Key {i}</Text>
                 <Text>{video.node.image.uri}</Text>
-              </>
+                <Button
+                  title="View"
+                  onPress={() => navigation.navigate('Home')}
+                />
+                <Button
+                  title="Annotate"
+                  onPress={() => navigation.navigate('Home')}
+                />
+                <Button
+                  title="Delete"
+                  onPress={() => navigation.navigate('Home')}
+                />
+              </View>
             );
           })
         ) : null}
@@ -82,11 +84,11 @@ const Test = () => {
 
 const styles = StyleSheet.create({
   backgroundVideo: {
-      position: 'absolute',
-      top: 0,
-      left: 500,
-      bottom: 0,
-      right: 0,
+    position: 'absolute',
+    top: 0,
+    left: 500,
+    bottom: 0,
+    right: 0,
   },
 });
 
