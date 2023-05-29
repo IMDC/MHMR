@@ -99,9 +99,9 @@ const RecordVideo = () => {
         }
 
         // below: saves to Movies and video plays, path is "/storage/emulated/0/Movies/video.mp4"
-        CameraRoll.save(path)
+        //CameraRoll.save(path)
         // below: saves to Camera and video plays, path is "/storage/emulated/0/DCIM/MHMR/video.mp4"
-        //CameraRoll.save(path, {album: 'MHMR'})
+        CameraRoll.save(path, {album: 'MHMR'})
         Alert.alert('Your recording has been saved')
         navigation.navigate('Home')
     };
