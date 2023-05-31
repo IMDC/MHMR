@@ -11,11 +11,11 @@ import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
 const RecordVideo = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-    const camera = useRef(null);
-    const videoPlayer = useRef();
-    const [deviceType, setDeviceType] = useState(null); // use default lense at startup
+    const camera: any = useRef(null);
+    const videoPlayer: any = useRef();
+    const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
     const [deviceDir, setDeviceDir] = useState('back');
-    const devices = useCameraDevices(deviceType);
+    const devices: any = useCameraDevices(deviceType);
     //use front camera
     const device = devices[deviceDir];
 
@@ -23,7 +23,7 @@ const RecordVideo = () => {
     const [recordingInProgress, setRecordingInProgress] = useState(false);
     const [recordingPaused, setRecordingPaused] = useState(false);
 
-    const [videoSource, setVideoSource] = useState('');
+    const [videoSource, setVideoSource] = useState<any | string>('');
 
     useEffect(() => {
         async function getPermission() {
@@ -41,11 +41,11 @@ const RecordVideo = () => {
         if (camera.current !== null) {
             camera.current.startRecording({
                 flash: 'off',
-                onRecordingFinished: (video) => {
+                onRecordingFinished: (video: any) => {
                     setVideoSource(video);
                     console.log(video, 'videodata');
                 },
-                onRecordingError: (error) => console.error(error, 'videoerror'),
+                onRecordingError: (error: any) => console.error(error, 'videoerror'),
             })
             //setVideoSource(video);
             //console.log(videoSource);
@@ -82,7 +82,8 @@ const RecordVideo = () => {
     }
 
     async function hasAndroidPermission() {
-        const permission = Platform.Version >= 33 ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
+        const version = +Platform.Version;
+        const permission = version >= 33 ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
 
         const hasPermission = await PermissionsAndroid.check(permission);
         if (hasPermission) {
@@ -93,7 +94,7 @@ const RecordVideo = () => {
         return status === 'granted';
     }
 
-    async function saveVideo(path) {
+    async function saveVideo(path: any) {
         if (Platform.OS === "android" && !(await hasAndroidPermission())) {
             return;
         }
@@ -230,8 +231,6 @@ const RecordVideo = () => {
                             source={{ uri: videoSource.path }} // Can be a URL or a local file.
                             paused={false} // make it start
                             style={styles.backgroundVideo} // any style you want
-                            onBuffer={this.onBuffer} // Callback when remote video is buffering
-                            onError={this.videoError} // Callback when video cannot be loaded
                             repeat={true}
                             controls={true}
                             fullscreen={true}
