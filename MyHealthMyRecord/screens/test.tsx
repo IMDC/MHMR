@@ -69,11 +69,9 @@ const Test = () => {
             videos.map((video: { node: { image: { uri: any; }; }; }, i: any) => {
               console.log('video details', video.node);
               return (
-                <>
-                  <View style={styles.container}>
+                  <View style={styles.container} key={i}>
                     <View style={styles.thumbnail}>
                       <ImageBackground
-                        key="{i}"
                         style={{
                           height: 240,
                           // flex: 1,
@@ -96,7 +94,6 @@ const Test = () => {
                       />
                     </View>
                   </View>
-                </>
               );
             })
           : null}
