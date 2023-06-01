@@ -3,12 +3,10 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
-
 import {PermissionsAndroid, Platform} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {Icon, Button} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {Stopwatch} from 'react-native-stopwatch-timer';
 
 const RecordVideo = () => {
   const options = {
@@ -26,18 +24,14 @@ const RecordVideo = () => {
     },
   };
 
-  //stopwatch variables
-  const [stopwatchStart, setStopwatchStart] = useState(false);
-  const [resetStopwatch, setResetStopwatch] = useState(false);
-
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
 
-    const camera = useRef(null);
-    const videoPlayer = useRef();
-    const [deviceType, setDeviceType] = useState(null); // use default lense at startup
+    const camera: any = useRef(null);
+    const videoPlayer: any = useRef();
+    const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
     const [deviceDir, setDeviceDir] = useState('back');
-    const devices = useCameraDevices(deviceType);
+    const devices: any = useCameraDevices(deviceType);
     //use front camera
     const device = devices[deviceDir];
 
@@ -45,7 +39,7 @@ const RecordVideo = () => {
     const [recordingInProgress, setRecordingInProgress] = useState(false);
     const [recordingPaused, setRecordingPaused] = useState(false);
 
-  const [videoSource, setVideoSource] = useState('');
+    const [videoSource, setVideoSource] = useState<any | string>('');
 
   useEffect(() => {
     async function getPermission() {
@@ -59,21 +53,20 @@ const RecordVideo = () => {
     }
   }, [videoSource]);
 
-  async function StartRecodingHandler() {
-    if (camera.current !== null) {
-      camera.current.startRecording({
-        flash: 'off',
-        onRecordingFinished: video => {
-          setVideoSource(video);
-          console.log(video, 'videodata');
-        },
-        onRecordingError: error => console.error(error, 'videoerror'),
-      });
-      setRecordingInProgress(true);
-      // setStopwatchStart(true);
-      // setResetStopwatch(false);
-    }
 
+    async function StartRecodingHandler() {
+        if (camera.current !== null) {
+            camera.current.startRecording({
+                flash: 'off',
+                onRecordingFinished: (video: any) => {
+                    setVideoSource(video);
+                    console.log(video, 'videodata');
+                },
+                onRecordingError: (error: any) => console.error(error, 'videoerror'),
+            })
+            setRecordingInProgress(true);
+        }
+    }
 
     async function pauseRecodingHandler() {
         if (camera.current !== null) {
@@ -82,12 +75,6 @@ const RecordVideo = () => {
         setRecordingPaused(true);
     }
 
-    setRecordingPaused(true);
-    // setStopwatchStart(false);
-    // setResetStopwatch(false);
-  }
-
-
     async function resumeRecodingHandler() {
         if (camera.current !== null) {
             await camera.current.resumeRecording();
@@ -95,28 +82,23 @@ const RecordVideo = () => {
         setRecordingPaused(false);
     }
 
-    setRecordingPaused(false);
-    // setStopwatchStart(true);
-    // setResetStopwatch(false);
-  }
-
   async function stopRecodingHandler() {
     if (camera.current !== null) {
       await camera.current.stopRecording();
       setShowCamera(false);
       setRecordingInProgress(false);
       setRecordingPaused(false);
-      // setResetStopwatch(true);
-
     }
+
 
   if (device == null) {
     return <Text>Camera not available</Text>;
   }
 
   async function hasAndroidPermission() {
+    const version = +Platform.Version;
     const permission =
-      Platform.Version >= 33
+      version >= 33
         ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
         : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
 
@@ -124,12 +106,11 @@ const RecordVideo = () => {
     if (hasPermission) {
       return true;
     }
-
     const status = await PermissionsAndroid.request(permission);
     return status === 'granted';
   }
 
-  async function saveVideo(path) {
+  async function saveVideo(path: any) {
     if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
       return;
     }
@@ -140,11 +121,8 @@ const RecordVideo = () => {
     CameraRoll.save(path, {album: 'MHMR'})
     Alert.alert('Your recording has been saved');
     navigation.navigate('Home');
-  }
+  };
 
-  // Show Camera ? (true - recordingInProgress ?
-  // (true - stop button and recordongPaused ? (true - resume button) : (false - pause button)) : (false - record button))
-  // : (false - re-record/save button)
   return (
     <View style={styles.container}>
       {showCamera ? (
@@ -158,28 +136,9 @@ const RecordVideo = () => {
             audio={true}
           />
 
-          <View style={styles.topContainer}>
-            {/* <Stopwatch
-              start={stopwatchStart}
-              reset={resetStopwatch}
-              options={options}
-              msecs={false}
-              // getTime={time => {
-              //   console.log(time);
-              // }}
-            /> */}
-          </View>
-
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
-                {/* <TouchableOpacity
-
-                  onPress={() => {
-                    stopRecodingHandler();
-                  }}>
-                  <Icon name="stop" size={40} type="font-awesome" />
-                </TouchableOpacity> */}
 
                                 <Icon
                                     name="stop"
@@ -253,8 +212,6 @@ const RecordVideo = () => {
               source={{uri: videoSource.path}} // Can be a URL or a local file.
               paused={false} // make it start
               style={styles.backgroundVideo} // any style you want
-              onBuffer={this.onBuffer} // Callback when remote video is buffering
-              onError={this.videoError} // Callback when video cannot be loaded
               repeat={true}
               controls={true}
               fullscreen={true}
@@ -268,8 +225,6 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
-                  setStopwatchStart(false);
-                  setResetStopwatch(true);
                   setShowCamera(true);
                 }}>
                 Re-Record
@@ -324,8 +279,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-
-
     topContainer: {
         position: 'absolute',
         justifyContent: 'center',
@@ -345,7 +298,6 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         //ADD backgroundColor COLOR GREY
         backgroundColor: '#B2BEB5',
-
         alignSelf: 'center',
         borderWidth: 4,
         borderColor: 'white',
@@ -356,7 +308,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         //ADD backgroundColor COLOR GREY
         backgroundColor: '#B2BEB5',
-
         alignSelf: 'center',
         borderWidth: 4,
         borderColor: 'white',
