@@ -228,22 +228,10 @@ const RecordVideo = () => {
             justifyContent: 'center',
             alignItems: 'center',
         },
-        button: {
-            backgroundColor: 'gray',
-        },
-        backButton: {
-            backgroundColor: 'rgba(0,0,0,0.0)',
-            position: 'absolute',
-            justifyContent: 'center',
-            width: '100%',
-            top: 0,
-            padding: 20,
-        },
         buttonContainer: {
             backgroundColor: 'rgba(0,0,0,0.2)',
             flexDirection: 'row',
             position: 'absolute',
-
             alignItems: 'center',
             width: '100%',
             bottom: 0,
@@ -278,21 +266,6 @@ const RecordVideo = () => {
             alignSelf: 'center',
             borderWidth: 4,
             borderColor: 'white',
-        },
-        camStopButton: {
-            height: 80,
-            width: 80,
-            borderRadius: 10,
-            //ADD backgroundColor COLOR GREY
-            backgroundColor: '#B2BEB5',
-            alignSelf: 'center',
-            borderWidth: 4,
-            borderColor: 'white',
-        },
-        image: {
-            width: '100%',
-            height: '100%',
-            aspectRatio: 9 / 16,
         },
         backgroundVideo: {
             position: 'absolute',
