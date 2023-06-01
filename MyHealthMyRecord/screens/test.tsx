@@ -1,3 +1,4 @@
+
 import React, {useRef, useCallback, useEffect, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {ParamListBase, useNavigation} from '@react-navigation/native';
@@ -18,6 +19,7 @@ import {
   PhotoIdentifier,
 } from '@react-native-camera-roll/camera-roll';
 import {View, Button, Alert, TouchableOpacity, Text} from 'react-native';
+
 
 const Test = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -41,6 +43,7 @@ const Test = () => {
         'playableDuration',
         'orientation',
       ],
+
     })
       .then(r => {
         console.log('test', r.edges);
@@ -51,12 +54,14 @@ const Test = () => {
       });
   }
 
+
   return (
     <View>
       <Button
         title="Go to Home Page"
         onPress={() => navigation.navigate('Home')}
       />
+
       <Button title="Press this Button" onPress={() => getRecordings()} />
       <ScrollView>
         {videos !== null
@@ -122,6 +127,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
+
     bottom: 0,
     right: 0,
   },

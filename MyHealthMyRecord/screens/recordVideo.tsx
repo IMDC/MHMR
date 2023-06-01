@@ -3,6 +3,7 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
+
 import {PermissionsAndroid, Platform} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {Icon, Button} from '@rneui/themed';
@@ -31,17 +32,18 @@ const RecordVideo = () => {
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  const camera = useRef(null);
-  const videoPlayer = useRef();
-  const [deviceType, setDeviceType] = useState(null); // use default lense at startup
-  const [deviceDir, setDeviceDir] = useState('back');
-  const devices = useCameraDevices(deviceType);
-  //use front camera
-  const device = devices[deviceDir];
 
-  const [showCamera, setShowCamera] = useState(true);
-  const [recordingInProgress, setRecordingInProgress] = useState(false);
-  const [recordingPaused, setRecordingPaused] = useState(false);
+    const camera = useRef(null);
+    const videoPlayer = useRef();
+    const [deviceType, setDeviceType] = useState(null); // use default lense at startup
+    const [deviceDir, setDeviceDir] = useState('back');
+    const devices = useCameraDevices(deviceType);
+    //use front camera
+    const device = devices[deviceDir];
+
+    const [showCamera, setShowCamera] = useState(true);
+    const [recordingInProgress, setRecordingInProgress] = useState(false);
+    const [recordingPaused, setRecordingPaused] = useState(false);
 
   const [videoSource, setVideoSource] = useState('');
 
@@ -71,21 +73,28 @@ const RecordVideo = () => {
       // setStopwatchStart(true);
       // setResetStopwatch(false);
     }
-  }
 
-  async function pauseRecodingHandler() {
-    if (camera.current !== null) {
-      await camera.current.pauseRecording();
+
+    async function pauseRecodingHandler() {
+        if (camera.current !== null) {
+            await camera.current.pauseRecording();
+        }
+        setRecordingPaused(true);
     }
+
     setRecordingPaused(true);
     // setStopwatchStart(false);
     // setResetStopwatch(false);
   }
 
-  async function resumeRecodingHandler() {
-    if (camera.current !== null) {
-      await camera.current.resumeRecording();
+
+    async function resumeRecodingHandler() {
+        if (camera.current !== null) {
+            await camera.current.resumeRecording();
+        }
+        setRecordingPaused(false);
     }
+
     setRecordingPaused(false);
     // setStopwatchStart(true);
     // setResetStopwatch(false);
@@ -98,8 +107,8 @@ const RecordVideo = () => {
       setRecordingInProgress(false);
       setRecordingPaused(false);
       // setResetStopwatch(true);
+
     }
-  }
 
   if (device == null) {
     return <Text>Camera not available</Text>;
@@ -165,61 +174,39 @@ const RecordVideo = () => {
             {recordingInProgress ? (
               <>
                 {/* <TouchableOpacity
+
                   onPress={() => {
                     stopRecodingHandler();
                   }}>
                   <Icon name="stop" size={40} type="font-awesome" />
                 </TouchableOpacity> */}
 
-                <Icon
-                  name="stop"
-                  size={40}
-                  type="font-awesome"
-                  onPress={() => {
-                    stopRecodingHandler();
-                  }}
-                />
+                                <Icon
+                                    name="stop"
+                                    size={40}
+                                    type="font-awesome"
+                                    onPress={() => {
+                                        stopRecodingHandler();
+                                    }}
+                                />
+
 
                 {recordingPaused ? (
                   <>
-                    {/* <TouchableOpacity
-                      onPress={() => {
-                        resumeRecodingHandler();
-                        <Icon
-                          name="play"
-                          size={40}
-                          type="font-awesome"
-                        />
-                      }}></TouchableOpacity> */}
-                    <Icon
-                      name="play"
-                      size={40}
-                      type="font-awesome"
-                      onPress={() => {
-                        resumeRecodingHandler();
-                      }}
-                    />
-                    {/* <Icon
-                      name="camera-reverse-outline"
-                      size={40}
-                      type="ionicon"
-                      onPress={() => {
-                        if (deviceDir == 'back') {
-                          setDeviceDir('front');
-                        } else {
-                          setDeviceDir('back');
-                        }
-                      }}
-                    /> */}
-                  </>
-                ) : (
-                  <>
-                    {/* <TouchableOpacity
-                      onPress={() => {
-                        pauseRecodingHandler();
-                      }}>
-                      <Icon name="pause" size={40} type="font-awesome" />
-                    </TouchableOpacity> */}
+
+                                        <Icon
+                                            name="play"
+                                            size={40}
+                                            type="font-awesome"
+                                            onPress={() => {
+                                                resumeRecodingHandler();
+                                            }}
+                                        />
+                                       
+                                    </>
+                                ) : (
+                                    <>
+
                     <Icon
                       name="pause"
                       size={40}
@@ -275,41 +262,8 @@ const RecordVideo = () => {
             />
           ) : null}
 
-          {/* <View style={styles.backButton}>
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: 'rgba(0,0,0,0.2)',
-                                padding: 10,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 10,
-                                borderWidth: 2,
-                                borderColor: '#fff',
-                                width: 100,
-                            }}
-                            disabled
-                            onPress={() => setShowCamera(true)}>
-                            <Text style={{ color: 'white', fontWeight: '500' }}>Disabled</Text>
-                        </TouchableOpacity>
-                    </View> */}
-
           <View style={styles.topContainer}>
             <View style={styles.buttons}>
-              {/* <TouchableOpacity
-                style={{
-                  backgroundColor: '#fff',
-                  padding: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: '#77c3ec',
-                }}
-                onPress={() => setShowCamera(true)}>
-                <Text style={{color: '#77c3ec', fontWeight: '500'}}>
-                  Re-Record
-                </Text>
-              </TouchableOpacity> */}
               <Button
                 radius={'sm'}
                 type="solid"
@@ -321,21 +275,6 @@ const RecordVideo = () => {
                 Re-Record
                 <Icon name="repeat" color="white" />
               </Button>
-              {/* <TouchableOpacity
-                style={{
-                  backgroundColor: '#77c3ec',
-                  padding: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: 'white',
-                }}
-                onPress={() => saveVideo(videoSource.path)}>
-                <Text style={{color: 'white', fontWeight: '500'}}>
-                  Save Video
-                </Text>
-              </TouchableOpacity> */}
               <Button
                 radius={'sm'}
                 type="solid"
@@ -386,53 +325,54 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 
-  topContainer: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    top: 0,
-    padding: 20,
-  },
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  camButton: {
-    height: 80,
-    width: 80,
-    borderRadius: 40,
-    //ADD backgroundColor COLOR GREY
-    backgroundColor: '#B2BEB5',
 
-    alignSelf: 'center',
-    borderWidth: 4,
-    borderColor: 'white',
-  },
-  camStopButton: {
-    height: 80,
-    width: 80,
-    borderRadius: 10,
-    //ADD backgroundColor COLOR GREY
-    backgroundColor: '#B2BEB5',
+    topContainer: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        top: 0,
+        padding: 20,
+    },
+    buttons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    camButton: {
+        height: 80,
+        width: 80,
+        borderRadius: 40,
+        //ADD backgroundColor COLOR GREY
+        backgroundColor: '#B2BEB5',
 
-    alignSelf: 'center',
-    borderWidth: 4,
-    borderColor: 'white',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    aspectRatio: 9 / 16,
-  },
-  backgroundVideo: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
-  },
+        alignSelf: 'center',
+        borderWidth: 4,
+        borderColor: 'white',
+    },
+    camStopButton: {
+        height: 80,
+        width: 80,
+        borderRadius: 10,
+        //ADD backgroundColor COLOR GREY
+        backgroundColor: '#B2BEB5',
+
+        alignSelf: 'center',
+        borderWidth: 4,
+        borderColor: 'white',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        aspectRatio: 9 / 16,
+    },
+    backgroundVideo: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+    },
 });
 
 export default RecordVideo;
