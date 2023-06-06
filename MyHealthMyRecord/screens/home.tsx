@@ -21,8 +21,8 @@ const Home = () => {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text>Home Screen</Text>
             <Button
-                title="Go to Test Page"
-                onPress={() => navigation.navigate('Test')}
+                title="View Recordings"
+                onPress={() => navigation.navigate('View Recordings')}
             />
             <Button
                 title="Go to Record Video Page"
