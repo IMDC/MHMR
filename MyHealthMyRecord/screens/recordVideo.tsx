@@ -162,6 +162,7 @@ const RecordVideo = () => {
                                     name="stop"
                                     size={40}
                                     type="font-awesome"
+                                    color="white"
                                     onPress={() => {
                                         stopRecodingHandler();
                                     }}
@@ -172,6 +173,7 @@ const RecordVideo = () => {
                                         name="play"
                                         size={40}
                                         type="font-awesome"
+                                        color="white"
                                         onPress={() => {
                                             resumeRecodingHandler();
                                         }}
@@ -181,6 +183,7 @@ const RecordVideo = () => {
                                         name="pause"
                                         size={40}
                                         type="font-awesome"
+                                        color="white"
                                         onPress={() => {
                                             pauseRecodingHandler();
                                         }}
@@ -194,6 +197,7 @@ const RecordVideo = () => {
                                         name="camera-reverse-outline"
                                         size={40}
                                         type="ionicon"
+                                        color="white"
                                         onPress={() => {
                                             if (deviceDir == 'back') {
                                                 setDeviceDir('front');
