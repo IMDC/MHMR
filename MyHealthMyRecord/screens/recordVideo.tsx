@@ -26,6 +26,12 @@ const RecordVideo = () => {
 
     const [videoSource, setVideoSource] = useState<any | string>('');
 
+    const MHMRfolderPath = RNFS.DocumentDirectoryPath + "/MHMR";
+
+    const makeDirectory = async (folderPath: string) => {
+        await RNFS.mkdir(folderPath); //create a new folder on folderPath
+    };
+
     useEffect(() => {
         async function getPermission() {
             const newCameraPermission = await Camera.requestCameraPermission();
@@ -37,6 +43,7 @@ const RecordVideo = () => {
         if (videoSource != '') {
             console.log('?', videoSource.path);
         }
+        makeDirectory(MHMRfolderPath);
     }, [videoSource]);
 
     async function StartRecodingHandler() {
@@ -122,7 +129,7 @@ const RecordVideo = () => {
         // ex. VisionCamera-20230606_1208147672158123173592211.mp4
 
         // RNFS.DocumentDirectoryPath is /data/user/0/com.myhealthmyrecord/files
-        RNFS.moveFile(filePath, `${RNFS.DocumentDirectoryPath}/${fileName}`)
+        RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
             .then(() => {
                 console.log('File moved.');
                 // save video details to db here ?

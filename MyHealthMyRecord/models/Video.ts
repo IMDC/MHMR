@@ -3,13 +3,13 @@ import Realm, { BSON } from "realm";
 export class Video extends Realm.Object<Video> {
     _id!: BSON.ObjectId;
     title!: string;
-    userId!: number;
-    uri!: string;
+    filename!: string;
+    //userId!: number;
     datetimeRecorded!: Date;
     duration!: number;
-    isAnnotated!: boolean;
+    //isAnnotated!: boolean;
     //annotations as list?
-    annotations!: Array<string>;
+    //annotations!: Array<string>;
     //type (emoji, text, etc), text, sentiment, keyword, location, timestamp
 
     static schema = {
@@ -18,11 +18,11 @@ export class Video extends Realm.Object<Video> {
         properties: {
             _id: {type: 'objectId', default: () => new BSON.ObjectId()},
             title: 'string',
-            userId: 'int',
-            uri: 'string',
+            filename: 'string',
+            //userId: 'int',
             datetimeRecorded: 'date',
             duration: 'double',
-            isAnnotated: {type:'bool', default: false},
+            //isAnnotated: {type:'bool', default: false},
         },
     };
 }
