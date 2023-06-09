@@ -15,27 +15,33 @@ import {
   Alert,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
-import test from '../assets/images/MHMRLogo.png';
+import test from '../assets/images/MHMRLogo_NOBG.png';
 
 const Home = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <>
-      <View>
-        <Image style={{height: 240, width: 240}}
-        source={test} />
-        
+      <View
+        style={{
+          paddingTop: 50,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Image style={{height: 240, width: 240}} source={test} />
+
         <Text
           style={{
             fontSize: 60,
             textAlign: 'center',
+            color: 'black',
           }}>
           MyHealthMyRecord
         </Text>
       </View>
       <View
         style={{
-          flex: 1,
+          paddingTop: 250,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-evenly',
@@ -46,7 +52,7 @@ const Home = () => {
             name="videocam-outline"
             size={60}
             type="ionicon"
-            color="grey"
+            color="#1C3EAA"
             onPress={() => navigation.navigate('Record Video')}
           />
           <Text
@@ -54,6 +60,7 @@ const Home = () => {
               paddingTop: 15,
               fontSize: 22,
               textAlign: 'center',
+              color: 'black',
             }}>
             Record a Video
           </Text>
@@ -64,7 +71,7 @@ const Home = () => {
             name="image-outline"
             size={60}
             type="ionicon"
-            color="grey"
+            color="#1C3EAA"
             onPress={() => navigation.navigate('View Recordings')}
           />
           <Text
@@ -72,6 +79,7 @@ const Home = () => {
               paddingTop: 15,
               fontSize: 22,
               textAlign: 'center',
+              color: 'black',
             }}>
             View Recordings
           </Text>

@@ -3,7 +3,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
 import {ScrollView, StyleSheet} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
-import {View, Button, TouchableOpacity, Text} from 'react-native';
+import {View, TouchableOpacity, Text} from 'react-native';
 import React, {
   useRef,
   useCallback,
@@ -11,12 +11,16 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import type { PropsWithChildren } from 'react';
+import type {PropsWithChildren} from 'react';
 import Video from 'react-native-video';
-import Realm from "realm";
-import { VideoData, useQuery, useRealm } from '../models/VideoData';
+import Realm from 'realm';
+import {VideoData, useQuery, useRealm} from '../models/VideoData';
+import RNFS from 'react-native-fs';
+import {Button} from '@rneui/themed';
 
 const ViewRecordings = () => {
+  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [videos, setVideos] = useState<any | null>(null);
@@ -30,15 +34,16 @@ const ViewRecordings = () => {
     });
   };
 
-
   const realm = useRealm();
-  const videoData: any = useQuery("VideoData");
+  const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded');
   console.log(videoData);
 
-  videoData.map(video => (
-    console.log("test", video._id, video.annotations)
-  ))
+  // setVideos(videoData);
+
+  videoData.map((video: {_id: any; annotations: any}) =>
+    console.log('test', video._id, video.annotations),
+  );
 
   const deleteAllVideoDataObjects = () => {
     realm.write(() => {
@@ -46,90 +51,98 @@ const ViewRecordings = () => {
     });
   };
 
-  async function getRecordings() {
-    //delete later, instead use getPhotos right after saving the video so cameraroll uri, vision camera duration etc can be saved to db together
-    CameraRoll.getPhotos({
-      first: 20,
-      assetType: 'Videos',
-      groupTypes: 'Album',
-      groupName: 'MHMR',
-      include: [
-        'filename',
-        'fileSize',
-        'fileExtension',
-        'imageSize',
-        'playableDuration',
-        'orientation',
-      ],
-    })
-      .then(r => {
-        console.log('test', r.edges);
-        setVideos(r.edges);
-      })
-      .catch(err => {
-        //Error Loading Images
-      });
-  }
-
   return (
     <View>
-      <Button title="View Recordings" onPress={() => getRecordings()} />
-      <Button title="Delete all videos" onPress={() => deleteAllVideoDataObjects()} />
+      <Button
+        buttonStyle={styles.btnStyle}
+        title="View Recordings"
+        onPress={() => setVideos(videoData)}
+      />
+      <Button
+        buttonStyle={styles.btnStyle}
+        title="Delete all Videos"
+        onPress={() => deleteAllVideoDataObjects()}
+      />
       <ScrollView style={{marginTop: 5, marginBottom: 40}} ref={scrollRef}>
         {/* <View style={styles.container}> */}
         {videos !== null
           ? //don't use i as the key, after setting up storage, use video id or uri or something else as the key
             videos.map(
-              (
-                video: {
-                  node: {
-                    timestamp: ReactNode;
-                    image: {
-                      filename: ReactNode;
-                      location: ReactNode;
-                      playableDuration: ReactNode;
-                      uri: any;
-                    };
-                  };
-                },
-                i: any,
-              ) => {
-                console.log('video details', video.node);
+              (video: {
+                _id: React.Key | null | undefined;
+                filename: string;
+                title:
+                  | string
+                  | number
+                  | boolean
+                  | React.ReactElement<
+                      any,
+                      string | React.JSXElementConstructor<any>
+                    >
+                  | React.ReactFragment
+                  | React.ReactPortal
+                  | null
+                  | undefined;
+                location:
+                  | string
+                  | number
+                  | boolean
+                  | React.ReactElement<
+                      any,
+                      string | React.JSXElementConstructor<any>
+                    >
+                  | React.ReactFragment
+                  | React.ReactPortal
+                  | null
+                  | undefined;
+                datetimeRecorded:
+                  | string
+                  | number
+                  | boolean
+                  | React.ReactElement<
+                      any,
+                      string | React.JSXElementConstructor<any>
+                    >
+                  | React.ReactFragment
+                  | React.ReactPortal
+                  | null
+                  | undefined;
+              }) => {
+                //console.log('video details', video.node);
                 return (
-                  <View style={styles.container} key={i}>
+                  <View style={styles.container} key={video._id}>
                     <View style={styles.thumbnail}>
                       <VideoPlayer
                         style={{}}
                         source={{
-                          uri: video.node.image.uri,
+                          uri: MHMRfolderPath + '/' + video.filename,
                         }}
                         paused={true}
                         disableBack={true}
                         toggleResizeModeOnFullscreen={true}
+                        showOnStart={true}
+                        disableSeekButtons={true}
                       />
                     </View>
 
                     <View style={styles.rightContainer}>
-                      <Text style={{fontSize: 16}}>
-                        Name: {video.node.image.filename}
+                      <Text style={{fontSize: 24, color: 'black'}}>
+                        Name: {video.title}
                         {'\n'}
-                        Location: {video.node.image.location}
+                        Location: {video.location}
                         {'\n'}
-                        Date: {video.node.timestamp}
+                        Date: {video.datetimeRecorded?.toLocaleString()}
                       </Text>
                       <View style={styles.buttonContainer}>
                         <Button
-                          title="View"
-                          onPress={() => navigation.navigate('Home')}
-                        />
-                        <View style={styles.space} />
-                        <Button
+                          buttonStyle={styles.btnStyle}
                           title="Edit"
                           onPress={() => navigation.navigate('Home')}
                         />
                         <View style={styles.space} />
                         <Button
-                          title="Delete"
+                          buttonStyle={styles.btnStyle}
+                          title="Delete Video"
                           onPress={() => navigation.navigate('Home')}
                         />
                       </View>
@@ -139,9 +152,10 @@ const ViewRecordings = () => {
               },
             )
           : null}
-        {/* </View> */}
         <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16}}>Scroll to Top</Text>
+          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
+            Scroll to Top
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -149,6 +163,10 @@ const ViewRecordings = () => {
 };
 
 const styles = StyleSheet.create({
+  btnStyle: {
+    backgroundColor: '#1C3EAA',
+  },
+
   backgroundVideo: {
     position: 'absolute',
     top: 0,
@@ -172,7 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding: 10,
-    paddingVertical: 30,
+    paddingVertical: 15,
   },
   buttonContainer: {
     flexDirection: 'row',
