@@ -3,31 +3,31 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import { PermissionsAndroid, Platform } from 'react-native';
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import {PermissionsAndroid, Platform} from 'react-native';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import RNFS from 'react-native-fs';
-import { Icon, Button } from '@rneui/themed';
-import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import {Icon, Button} from '@rneui/themed';
+import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
 import { useQuery, useRealm } from "../models/VideoData";
 import Realm from 'realm';
 import { createRealmContext } from '@realm/react';
 
 const RecordVideo = () => {
-    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-    const camera: any = useRef(null);
-    const videoPlayer: any = useRef();
-    const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
-    const [deviceDir, setDeviceDir] = useState('back');
-    const devices: any = useCameraDevices(deviceType);
-    //use front camera
-    const device = devices[deviceDir];
+  const camera: any = useRef(null);
+  const videoPlayer: any = useRef();
+  const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
+  const [deviceDir, setDeviceDir] = useState('back');
+  const devices: any = useCameraDevices(deviceType);
+  //use front camera
+  const device = devices[deviceDir];
 
-    const [showCamera, setShowCamera] = useState(true);
-    const [recordingInProgress, setRecordingInProgress] = useState(false);
-    const [recordingPaused, setRecordingPaused] = useState(false);
+  const [showCamera, setShowCamera] = useState(true);
+  const [recordingInProgress, setRecordingInProgress] = useState(false);
+  const [recordingPaused, setRecordingPaused] = useState(false);
 
-    const [videoSource, setVideoSource] = useState<any | string>('');
+  const [videoSource, setVideoSource] = useState<any | string>('');
 
     const MHMRfolderPath = RNFS.DocumentDirectoryPath + "/MHMR";
 
@@ -91,6 +91,7 @@ const RecordVideo = () => {
             setRecordingPaused(false);
         }
     }
+  }
 
     if (device == null) {
         return <Text>Camera not available</Text>;
