@@ -8,6 +8,9 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import RNFS from 'react-native-fs';
 import { Icon, Button } from '@rneui/themed';
 import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { useQuery, useRealm } from "../models/VideoData";
+import Realm from 'realm';
+import { createRealmContext } from '@realm/react';
 
 const RecordVideo = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -31,6 +34,12 @@ const RecordVideo = () => {
     const makeDirectory = async (folderPath: string) => {
         await RNFS.mkdir(folderPath); //create a new folder on folderPath
     };
+
+    const realm = useRealm();
+    const result = useQuery("VideoData");
+    //console.log("result:", result);
+    //const videodatas = useMemo(() => result.sorted("datetimeRecorded"), [result]);
+    //console.log("videodatas:", videodatas);
 
     useEffect(() => {
         async function getPermission() {
@@ -133,6 +142,7 @@ const RecordVideo = () => {
             .then(() => {
                 console.log('File moved.');
                 // save video details to db here ?
+                createVideoData(fileName, videoSource.duration);
                 Alert.alert('Your recording has been saved');
                 navigation.navigate('Home');
             })
@@ -140,6 +150,26 @@ const RecordVideo = () => {
                 console.log(err.message)
             });
     }
+
+    /*
+    const realmConfig: Realm.Configuration = {
+        schema: [VideoData],
+    };
+
+    // Create a realm context
+    const { RealmProvider, useRealm, useObject, useQuery } =
+        createRealmContext(realmConfig);
+    */
+
+    const createVideoData = (filename: string, duration: number) => {
+        const videoData = realm.write(() => {
+            realm.create('VideoData', {
+                filename: filename,
+                duration: duration,
+            });
+        });
+        //{"_id": [ObjectId], "datetimeRecorded": 2023-06-07T15:59:50.033Z, "duration": 13.3496, "filename": "VisionCamera-20230607_1159335303461460494504692.mp4", "isAnnotated": false, "title": "6/7/2023, 11:59:49 AM"}]
+    };
 
     return (
         <View style={styles.container}>

@@ -5,9 +5,9 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import type {PropsWithChildren} from 'react';
-import {ParamListBase, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type { PropsWithChildren } from 'react';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Video from 'react-native-video';
 import {
   FlatList,
@@ -24,7 +24,10 @@ import {
   CameraRoll,
   PhotoIdentifier,
 } from '@react-native-camera-roll/camera-roll';
-import {View, Button, Alert, TouchableOpacity, Text} from 'react-native';
+import { View, Button, Alert, TouchableOpacity, Text } from 'react-native';
+import Realm from "realm";
+import { VideoData, useQuery, useRealm } from '../models/VideoData';
+
 // import { Button } from '@rneui/themed';
 
 const ViewRecordings = () => {
@@ -34,7 +37,7 @@ const ViewRecordings = () => {
 
   const [videos, setVideos] = useState<any | null>(null);
 
-  const scrollRef = useRef();
+  const scrollRef: any = useRef();
 
   const onPressTouch = () => {
     scrollRef.current?.scrollTo({
@@ -42,6 +45,22 @@ const ViewRecordings = () => {
       animated: true,
     });
   };
+
+  const realm = useRealm();
+  const videoData: any = useQuery("VideoData");
+  const videosByDate = videoData.sorted('datetimeRecorded');
+  console.log(videoData);
+
+  videoData.map(video => (
+    console.log("test", video._id, video.annotations)
+  ))
+
+  const deleteAllVideoDataObjects = () => {
+    realm.write(() => {
+      realm.delete(videoData);
+    });
+  };
+
 
   async function getRecordings() {
     //delete later, instead use getPhotos right after saving the video so cameraroll uri, vision camera duration etc can be saved to db together
@@ -76,112 +95,114 @@ const ViewRecordings = () => {
       />
 
       <Button title="Press this Button" onPress={() => getRecordings()} />
-      <ScrollView style= {{marginTop: 10, marginBottom: 80}} ref={scrollRef}>
+      <Button title="Delete all videos" onPress={() => deleteAllVideoDataObjects()} />
+
+      <ScrollView style={{ marginTop: 10, marginBottom: 80 }} ref={scrollRef}>
         {/* <View style={styles.container}> */}
         {videos !== null
           ? //don't use i as the key, after setting up storage, use video id or uri or something else as the key
-            videos.map(
-              (
-                video: {
-                  node: {
-                    timestamp: ReactNode;
-                    image: {
-                      filename: ReactNode;
-                      location: ReactNode;
-                      playableDuration: ReactNode;
-                      uri: any;
-                    };
+          videos.map(
+            (
+              video: {
+                node: {
+                  timestamp: ReactNode;
+                  image: {
+                    filename: ReactNode;
+                    location: ReactNode;
+                    playableDuration: ReactNode;
+                    uri: any;
                   };
-                },
-                i: any,
-              ) => {
-                console.log('video details', video.node);
-                return (
-                  // <View>
-                  //   <View style={styles.cardLeft} key={i}>
-                  //     <Image
-                  //       style={{
-                  //         height: 300,
-                  //         width: 300,
-                  //       }}
-                  //       source={{uri: video.node.image.uri}}
-                  //     />
-                  //     <Text>test1</Text>
-                  //   </View>
-                  //   <Text>test2</Text>
-                  // </View>
+                };
+              },
+              i: any,
+            ) => {
+              console.log('video details', video.node);
+              return (
+                // <View>
+                //   <View style={styles.cardLeft} key={i}>
+                //     <Image
+                //       style={{
+                //         height: 300,
+                //         width: 300,
+                //       }}
+                //       source={{uri: video.node.image.uri}}
+                //     />
+                //     <Text>test1</Text>
+                //   </View>
+                //   <Text>test2</Text>
+                // </View>
 
-                  // <View style={styles.thumbnail}>
-                  //   <ImageBackground
-                  //     style={{
-                  //       height: 240,
-                  //       // flex: 1,
-                  //     }}
-                  //     source={{uri: video.node.image.uri}}
-                  //   />
-                  // </View>
-                  // <View style={styles.buttonContainer}>
-                  //   <Button
-                  //     title="View"
-                  //     onPress={() => navigation.navigate('Home')}
-                  //   />
-                  //   <Button
-                  //     title="Annotate"
-                  //     onPress={() => navigation.navigate('Home')}
-                  //   />
-                  //   <Button
-                  //     title="Delete"
-                  //     onPress={() => navigation.navigate('Home')}
-                  //   />
-                  // </View>
+                // <View style={styles.thumbnail}>
+                //   <ImageBackground
+                //     style={{
+                //       height: 240,
+                //       // flex: 1,
+                //     }}
+                //     source={{uri: video.node.image.uri}}
+                //   />
+                // </View>
+                // <View style={styles.buttonContainer}>
+                //   <Button
+                //     title="View"
+                //     onPress={() => navigation.navigate('Home')}
+                //   />
+                //   <Button
+                //     title="Annotate"
+                //     onPress={() => navigation.navigate('Home')}
+                //   />
+                //   <Button
+                //     title="Delete"
+                //     onPress={() => navigation.navigate('Home')}
+                //   />
+                // </View>
 
-                  <View style={styles.container} key={i}>
-                    <View style={styles.thumbnail}>
-                      <ImageBackground
-                        style={{
-                          height: 240,
-                          // flex: 1,
-                        }}
-                        source={{uri: video.node.image.uri}}>
-                        {/* <Text style={{alignContent:'flex-end', justifyContent: 'flex-end', color: 'white', fontSize: 20}}>
+                <View style={styles.container} key={i}>
+                  <View style={styles.thumbnail}>
+                    <ImageBackground
+                      style={{
+                        height: 240,
+                        // flex: 1,
+                      }}
+                      source={{ uri: video.node.image.uri }}>
+                      {/* <Text style={{alignContent:'flex-end', justifyContent: 'flex-end', color: 'white', fontSize: 20}}>
                           {video.node.image.playableDuration}
                         </Text> */}
-                      </ImageBackground>
-                    </View>
+                    </ImageBackground>
+                  </View>
 
-                    <View style={styles.rightContainer}>
-                      <Text style={{fontSize: 16}}>
-                        Name: {video.node.image.filename}
-                        {'\n'}
-                        Location: {video.node.image.location}
-                        {'\n'}
-                        Date: {video.node.timestamp}
-                      </Text>
-                      <View style={styles.buttonContainer}>
-                        <Button
-                          title="View"
-                          onPress={() => navigation.navigate('Home')}
-                        />
-                        <View style={styles.space} />
-                        <Button
-                          title="Annotate"
-                          onPress={() => navigation.navigate('Home')}
-                        />
-                        <View style={styles.space} />
-                        <Button
-                          title="Delete"
-                          onPress={() => navigation.navigate('Home')}
-                        />
-                      </View>
+                  <View style={styles.rightContainer}>
+                    <Text style={{ fontSize: 16 }}>
+                      Name: {video.node.image.filename}
+                      {'\n'}
+                      Location: {video.node.image.location}
+                      {'\n'}
+                      Date: {video.node.timestamp}
+                    </Text>
+                    <View style={styles.buttonContainer}>
+                      <Button
+                        title="View"
+                        onPress={() => navigation.navigate('Home')}
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        title="Annotate"
+                        onPress={() => navigation.navigate('Home')}
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        title="Delete"
+                        onPress={() => navigation.navigate('Home')}
+                      />
                     </View>
                   </View>
-                );
-              },
-            )
+                </View>
+              );
+            },
+          )
           : null}
         {/* </View> */}
-        <TouchableOpacity style={{alignItems: 'center'}}onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16}}>Scroll to Top</Text>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPressTouch}>
+          <Text style={{ padding: 5, fontSize: 16 }}>Scroll to Top</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
