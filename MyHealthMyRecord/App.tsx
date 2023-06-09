@@ -7,7 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from "./screens/home";
 import RecordVideo from "./screens/recordVideo";
-import Test from "./screens/test"
+import ViewRecordings from "./screens/videos"
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +17,7 @@ function App() {
       <Stack.Navigator initialRouteName="Home">
       <Stack.Screen name="Home" component={Home}/>
       <Stack.Screen name="Record Video" component={RecordVideo}/>
-      <Stack.Screen name="Test" component={Test}/>
+      <Stack.Screen name="View Recordings" component={ViewRecordings}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

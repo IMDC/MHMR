@@ -3,49 +3,34 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
-
 import {PermissionsAndroid, Platform} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import RNFS from 'react-native-fs';
 import {Icon, Button} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {Stopwatch} from 'react-native-stopwatch-timer';
 
 const RecordVideo = () => {
-  const options = {
-    container: {
-      backgroundColor: 'rgba(0,0,0,0.2)',
-      padding: 5,
-      borderRadius: 5,
-      width: 200,
-      alignItems: 'center',
-    },
-    text: {
-      fontSize: 25,
-      color: '#fff',
-      marginLeft: 7,
-    },
-  };
-
-  //stopwatch variables
-  const [stopwatchStart, setStopwatchStart] = useState(false);
-  const [resetStopwatch, setResetStopwatch] = useState(false);
-
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
+  const camera: any = useRef(null);
+  const videoPlayer: any = useRef();
+  const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
+  const [deviceDir, setDeviceDir] = useState('back');
+  const devices: any = useCameraDevices(deviceType);
+  //use front camera
+  const device = devices[deviceDir];
 
-    const camera = useRef(null);
-    const videoPlayer = useRef();
-    const [deviceType, setDeviceType] = useState(null); // use default lense at startup
-    const [deviceDir, setDeviceDir] = useState('back');
-    const devices = useCameraDevices(deviceType);
-    //use front camera
-    const device = devices[deviceDir];
+  const [showCamera, setShowCamera] = useState(true);
+  const [recordingInProgress, setRecordingInProgress] = useState(false);
+  const [recordingPaused, setRecordingPaused] = useState(false);
 
-    const [showCamera, setShowCamera] = useState(true);
-    const [recordingInProgress, setRecordingInProgress] = useState(false);
-    const [recordingPaused, setRecordingPaused] = useState(false);
+  const [videoSource, setVideoSource] = useState<any | string>('');
 
-  const [videoSource, setVideoSource] = useState('');
+  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+
+  const makeDirectory = async (folderPath: string) => {
+    await RNFS.mkdir(folderPath); //create a new folder on folderPath
+  };
 
   useEffect(() => {
     async function getPermission() {
@@ -54,50 +39,39 @@ const RecordVideo = () => {
       console.log(newCameraPermission, microphonePermission);
     }
     getPermission();
+    //testing state for videoSource to make sure it's being updated right after video is recorded, test later and if it updates fine without this if condition we can delete it
     if (videoSource != '') {
       console.log('?', videoSource.path);
     }
+    makeDirectory(MHMRfolderPath);
   }, [videoSource]);
 
   async function StartRecodingHandler() {
     if (camera.current !== null) {
       camera.current.startRecording({
         flash: 'off',
-        onRecordingFinished: video => {
+        onRecordingFinished: (video: any) => {
           setVideoSource(video);
           console.log(video, 'videodata');
         },
-        onRecordingError: error => console.error(error, 'videoerror'),
+        onRecordingError: (error: any) => console.error(error, 'videoerror'),
       });
       setRecordingInProgress(true);
-      // setStopwatchStart(true);
-      // setResetStopwatch(false);
     }
-
-
-    async function pauseRecodingHandler() {
-        if (camera.current !== null) {
-            await camera.current.pauseRecording();
-        }
-        setRecordingPaused(true);
-    }
-
-    setRecordingPaused(true);
-    // setStopwatchStart(false);
-    // setResetStopwatch(false);
   }
 
-
-    async function resumeRecodingHandler() {
-        if (camera.current !== null) {
-            await camera.current.resumeRecording();
-        }
-        setRecordingPaused(false);
+  async function pauseRecodingHandler() {
+    if (camera.current !== null) {
+      await camera.current.pauseRecording();
     }
+    setRecordingPaused(true);
+  }
 
+  async function resumeRecodingHandler() {
+    if (camera.current !== null) {
+      await camera.current.resumeRecording();
+    }
     setRecordingPaused(false);
-    // setStopwatchStart(true);
-    // setResetStopwatch(false);
   }
 
   async function stopRecodingHandler() {
@@ -106,17 +80,17 @@ const RecordVideo = () => {
       setShowCamera(false);
       setRecordingInProgress(false);
       setRecordingPaused(false);
-      // setResetStopwatch(true);
-
     }
+  }
 
   if (device == null) {
     return <Text>Camera not available</Text>;
   }
 
   async function hasAndroidPermission() {
+    const version = +Platform.Version;
     const permission =
-      Platform.Version >= 33
+      version >= 33
         ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
         : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
 
@@ -124,12 +98,12 @@ const RecordVideo = () => {
     if (hasPermission) {
       return true;
     }
-
     const status = await PermissionsAndroid.request(permission);
     return status === 'granted';
   }
 
-  async function saveVideo(path) {
+  //delete
+  async function saveVideoCameraRoll(path: any) {
     if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
       return;
     }
@@ -137,14 +111,36 @@ const RecordVideo = () => {
     // below: saves to Movies and video plays, path is "/storage/emulated/0/Movies/video.mp4"
     // CameraRoll.save(path);
     // below: saves to Camera and video plays, path is "/storage/emulated/0/DCIM/MHMR/video.mp4"
-    CameraRoll.save(path, {album: 'MHMR'})
+    CameraRoll.save(path, {album: 'MHMR'});
     Alert.alert('Your recording has been saved');
     navigation.navigate('Home');
   }
 
-  // Show Camera ? (true - recordingInProgress ?
-  // (true - stop button and recordongPaused ? (true - resume button) : (false - pause button)) : (false - record button))
-  // : (false - re-record/save button)
+  async function saveVideo(path: any) {
+    const filePath = path.replace('file://', '');
+    const pathSegments = filePath.split('/');
+    const fileName = pathSegments[pathSegments.length - 1];
+    // delete console logs later
+    console.log(filePath);
+    // ex. /data/user/0/com.myhealthmyrecord/cache/VisionCamera-20230606_1208147672158123173592211.mp4
+    console.log(pathSegments);
+    // ex. ["", "data", "user", "0", "com.myhealthmyrecord", "cache", "VisionCamera-20230606_1208147672158123173592211.mp4"]
+    console.log(fileName);
+    // ex. VisionCamera-20230606_1208147672158123173592211.mp4
+
+    // RNFS.DocumentDirectoryPath is /data/user/0/com.myhealthmyrecord/files
+    RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
+      .then(() => {
+        console.log('File moved.');
+        // save video details to db here ?
+        Alert.alert('Your recording has been saved');
+        navigation.navigate('Home');
+      })
+      .catch(err => {
+        console.log(err.message);
+      });
+  }
+
   return (
     <View style={styles.container}>
       {showCamera ? (
@@ -158,64 +154,39 @@ const RecordVideo = () => {
             audio={true}
           />
 
-          <View style={styles.topContainer}>
-            {/* <Stopwatch
-              start={stopwatchStart}
-              reset={resetStopwatch}
-              options={options}
-              msecs={false}
-              // getTime={time => {
-              //   console.log(time);
-              // }}
-            /> */}
-          </View>
-
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
-                {/* <TouchableOpacity
-
+                <Icon
+                  name="stop"
+                  size={40}
+                  type="font-awesome"
+                  color="white"
                   onPress={() => {
                     stopRecodingHandler();
-                  }}>
-                  <Icon name="stop" size={40} type="font-awesome" />
-                </TouchableOpacity> */}
-
-                                <Icon
-                                    name="stop"
-                                    size={40}
-                                    type="font-awesome"
-                                    onPress={() => {
-                                        stopRecodingHandler();
-                                    }}
-                                />
-
+                  }}
+                />
 
                 {recordingPaused ? (
-                  <>
-
-                                        <Icon
-                                            name="play"
-                                            size={40}
-                                            type="font-awesome"
-                                            onPress={() => {
-                                                resumeRecodingHandler();
-                                            }}
-                                        />
-                                       
-                                    </>
-                                ) : (
-                                    <>
-
-                    <Icon
-                      name="pause"
-                      size={40}
-                      type="font-awesome"
-                      onPress={() => {
-                        pauseRecodingHandler();
-                      }}
-                    />
-                  </>
+                  <Icon
+                    name="play"
+                    size={40}
+                    type="font-awesome"
+                    color="white"
+                    onPress={() => {
+                      resumeRecodingHandler();
+                    }}
+                  />
+                ) : (
+                  <Icon
+                    name="pause"
+                    size={40}
+                    type="font-awesome"
+                    color="white"
+                    onPress={() => {
+                      pauseRecodingHandler();
+                    }}
+                  />
                 )}
               </>
             ) : (
@@ -225,6 +196,7 @@ const RecordVideo = () => {
                     name="camera-reverse-outline"
                     size={40}
                     type="ionicon"
+                    color="white"
                     onPress={() => {
                       if (deviceDir == 'back') {
                         setDeviceDir('front');
@@ -234,7 +206,6 @@ const RecordVideo = () => {
                     }}
                   />
                 </View>
-
                 <TouchableOpacity
                   style={styles.camButton}
                   onPress={() => {
@@ -250,11 +221,9 @@ const RecordVideo = () => {
           {videoSource !== '' ? (
             <Video
               ref={ref => (videoPlayer.current = ref)}
-              source={{uri: videoSource.path}} // Can be a URL or a local file.
+              source={{uri: videoSource.path}} // path in cache where vision camera stores video
               paused={false} // make it start
-              style={styles.backgroundVideo} // any style you want
-              onBuffer={this.onBuffer} // Callback when remote video is buffering
-              onError={this.videoError} // Callback when video cannot be loaded
+              style={styles.backgroundVideo}
               repeat={true}
               controls={true}
               fullscreen={true}
@@ -268,8 +237,6 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
-                  setStopwatchStart(false);
-                  setResetStopwatch(true);
                   setShowCamera(true);
                 }}>
                 Re-Record
@@ -278,7 +245,10 @@ const RecordVideo = () => {
               <Button
                 radius={'sm'}
                 type="solid"
-                onPress={() => saveVideo(videoSource.path)}>
+                onPress={() =>
+                  // saveVideo(videoSource.path)
+                  saveVideoCameraRoll(videoSource.path)
+                }>
                 Save Video
                 <Icon name="save" color="white" />
               </Button>
@@ -296,22 +266,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  button: {
-    backgroundColor: 'gray',
-  },
-  backButton: {
-    backgroundColor: 'rgba(0,0,0,0.0)',
-    position: 'absolute',
-    justifyContent: 'center',
-    width: '100%',
-    top: 0,
-    padding: 20,
-  },
   buttonContainer: {
     backgroundColor: 'rgba(0,0,0,0.2)',
     flexDirection: 'row',
     position: 'absolute',
-    
     alignItems: 'center',
     width: '100%',
     bottom: 0,
@@ -324,55 +282,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-
-
-    topContainer: {
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        top: 0,
-        padding: 20,
-    },
-    buttons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-    },
-    camButton: {
-        height: 80,
-        width: 80,
-        borderRadius: 40,
-        //ADD backgroundColor COLOR GREY
-        backgroundColor: '#B2BEB5',
-
-        alignSelf: 'center',
-        borderWidth: 4,
-        borderColor: 'white',
-    },
-    camStopButton: {
-        height: 80,
-        width: 80,
-        borderRadius: 10,
-        //ADD backgroundColor COLOR GREY
-        backgroundColor: '#B2BEB5',
-
-        alignSelf: 'center',
-        borderWidth: 4,
-        borderColor: 'white',
-    },
-    image: {
-        width: '100%',
-        height: '100%',
-        aspectRatio: 9 / 16,
-    },
-    backgroundVideo: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-    },
+  topContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    top: 0,
+    padding: 20,
+  },
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  camButton: {
+    height: 80,
+    width: 80,
+    borderRadius: 40,
+    //ADD backgroundColor COLOR GREY
+    backgroundColor: '#B2BEB5',
+    alignSelf: 'center',
+    borderWidth: 4,
+    borderColor: 'white',
+  },
+  backgroundVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+  },
 });
 
 export default RecordVideo;
