@@ -15,13 +15,15 @@ import {
   Alert,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
+import test from '../assets/images/MHMRLogo.png';
 
 const Home = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <>
       <View>
-        <Image source={{uri: '../assets/images/MHMRLogo.png'}} />
+        <Image style={{height: 240, width: 240}}
+        source={test} />
         
         <Text
           style={{
