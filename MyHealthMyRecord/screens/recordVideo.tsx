@@ -164,11 +164,11 @@ const RecordVideo = () => {
     const createVideoData = (filename: string, duration: number) => {
         const videoData = realm.write(() => {
             realm.create('VideoData', {
+                _id: new Realm.BSON.ObjectID(),
                 filename: filename,
                 duration: duration,
             });
         });
-        //{"_id": [ObjectId], "datetimeRecorded": 2023-06-07T15:59:50.033Z, "duration": 13.3496, "filename": "VisionCamera-20230607_1159335303461460494504692.mp4", "isAnnotated": false, "title": "6/7/2023, 11:59:49 AM"}]
     };
 
     return (
