@@ -1,10 +1,20 @@
-import React, {useRef, useState, ReactNode} from 'react';
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
 import {ScrollView, StyleSheet} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {View, Button, TouchableOpacity, Text} from 'react-native';
+import React, {
+  useRef,
+  useCallback,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
+import type { PropsWithChildren } from 'react';
+import Video from 'react-native-video';
+import Realm from "realm";
+import { VideoData, useQuery, useRealm } from '../models/VideoData';
 
 const ViewRecordings = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -17,6 +27,22 @@ const ViewRecordings = () => {
     scrollRef.current?.scrollTo({
       y: 0,
       animated: true,
+    });
+  };
+
+
+  const realm = useRealm();
+  const videoData: any = useQuery("VideoData");
+  const videosByDate = videoData.sorted('datetimeRecorded');
+  console.log(videoData);
+
+  videoData.map(video => (
+    console.log("test", video._id, video.annotations)
+  ))
+
+  const deleteAllVideoDataObjects = () => {
+    realm.write(() => {
+      realm.delete(videoData);
     });
   };
 
@@ -48,6 +74,7 @@ const ViewRecordings = () => {
   return (
     <View>
       <Button title="View Recordings" onPress={() => getRecordings()} />
+      <Button title="Delete all videos" onPress={() => deleteAllVideoDataObjects()} />
       <ScrollView style={{marginTop: 5, marginBottom: 40}} ref={scrollRef}>
         {/* <View style={styles.container}> */}
         {videos !== null
