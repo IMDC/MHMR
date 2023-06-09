@@ -111,20 +111,6 @@ const RecordVideo = () => {
     return status === 'granted';
   }
 
-  //delete
-  async function saveVideoCameraRoll(path: any) {
-    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
-      return;
-    }
-
-    // below: saves to Movies and video plays, path is "/storage/emulated/0/Movies/video.mp4"
-    // CameraRoll.save(path);
-    // below: saves to Camera and video plays, path is "/storage/emulated/0/DCIM/MHMR/video.mp4"
-    CameraRoll.save(path, {album: 'MHMR'});
-    Alert.alert('Your recording has been saved');
-    navigation.navigate('Home');
-  }
-
   async function saveVideo(path: any) {
     const filePath = path.replace('file://', '');
     const pathSegments = filePath.split('/');
@@ -165,6 +151,8 @@ const RecordVideo = () => {
     const videoData = realm.write(() => {
       realm.create('VideoData', {
         _id: new Realm.BSON.ObjectID(),
+        datetimeRecorded: new Date(),
+        title: new Date().toLocaleString(),
         filename: filename,
         duration: duration,
       });
