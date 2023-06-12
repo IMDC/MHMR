@@ -166,7 +166,6 @@ dependencies {
         implementation jscFlavor
     }
 
-    implementation project(':@react-native-camera-roll_camera-roll')
     implementation project(':react-native-fs')
 }
 

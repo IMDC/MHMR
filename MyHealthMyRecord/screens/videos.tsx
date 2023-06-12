@@ -1,9 +1,8 @@
-import {ParamListBase, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
-import {ScrollView, StyleSheet} from 'react-native';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
-import {View, TouchableOpacity, Text} from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import React, {
   useRef,
   useCallback,
@@ -11,19 +10,18 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import type {PropsWithChildren} from 'react';
+import type { PropsWithChildren } from 'react';
 import Video from 'react-native-video';
 import Realm from 'realm';
-import {VideoData, useQuery, useRealm} from '../models/VideoData';
+import { VideoData, useQuery, useRealm } from '../models/VideoData';
 import RNFS from 'react-native-fs';
-import {Button} from '@rneui/themed';
+import { Button } from '@rneui/themed';
 
 const ViewRecordings = () => {
-  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
-
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [videos, setVideos] = useState<any | null>(null);
+  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
   const scrollRef: any = useRef();
 
@@ -36,124 +34,126 @@ const ViewRecordings = () => {
 
   const realm = useRealm();
   const videoData: any = useQuery('VideoData');
-  const videosByDate = videoData.sorted('datetimeRecorded');
-  console.log(videoData);
+  const videosByDate = videoData.sorted('datetimeRecorded', true);
+  console.log(videosByDate);
 
-  // setVideos(videoData);
-
-  videoData.map((video: {_id: any; annotations: any}) =>
-    console.log('test', video._id, video.annotations),
+  // delete later
+  videoData.map((video: { _id: any; annotations: any }) =>
+    console.log('test', video._id.toString(), video.annotations),
   );
 
-  const deleteAllVideoDataObjects = () => {
+  const deleteAllVideoDataObjects = async () => {
+    //delete videos from storage
+    const MHMRfiles = RNFS.readDir(MHMRfolderPath);
+    (await MHMRfiles).map((f) => {
+      console.log(f.name, f.size, f.path, f.isFile(), f.isDirectory(), f.ctime, f.mtime);
+      if (f.isFile()) {
+        var path = MHMRfolderPath + '/' + f.name;
+        return RNFS.unlink(path)
+          .then(() => {
+            console.log('FILE DELETED FROM STORAGE');
+          })
+          // `unlink` will throw an error, if the item to unlink does not exist
+          .catch((err) => {
+            console.log(err.message);
+          });
+      }
+    })
+
+    //delete from db
     realm.write(() => {
       realm.delete(videoData);
+      console.log('FILES DELETED FROM DB');
     });
   };
+
+  const deleteVideo = (deleteableVideo: VideoData, filename: string) => {
+    var path = MHMRfolderPath + '/' + filename;
+    //delete from storage
+    return RNFS.unlink(path)
+      .then(() => {
+        console.log('FILE DELETED FROM STORAGE');
+        //delete from db
+        realm.write(() => {
+          realm.delete(deleteableVideo);
+          console.log('FILE DELETED FROM DB');
+        });
+      })
+      // `unlink` will throw an error, if the item to unlink does not exist
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
+
+  //check file space
+  /*
+  const FSInfoResult = RNFS.getFSInfo();
+  console.log("space: ", (await FSInfoResult).totalSpace, (await FSInfoResult).freeSpace);
+  */
 
   return (
     <View>
       <Button
         buttonStyle={styles.btnStyle}
         title="View Recordings"
-        onPress={() => setVideos(videoData)}
+        onPress={() => setVideos(videosByDate)}
       />
       <Button
         buttonStyle={styles.btnStyle}
         title="Delete all Videos"
         onPress={() => deleteAllVideoDataObjects()}
       />
-      <ScrollView style={{marginTop: 5, marginBottom: 40}} ref={scrollRef}>
+      <ScrollView style={{ marginTop: 5, marginBottom: 40 }} ref={scrollRef}>
         {/* <View style={styles.container}> */}
         {videos !== null
-          ? //don't use i as the key, after setting up storage, use video id or uri or something else as the key
-            videos.map(
-              (video: {
-                _id: React.Key | null | undefined;
-                filename: string;
-                title:
-                  | string
-                  | number
-                  | boolean
-                  | React.ReactElement<
-                      any,
-                      string | React.JSXElementConstructor<any>
-                    >
-                  | React.ReactFragment
-                  | React.ReactPortal
-                  | null
-                  | undefined;
-                location:
-                  | string
-                  | number
-                  | boolean
-                  | React.ReactElement<
-                      any,
-                      string | React.JSXElementConstructor<any>
-                    >
-                  | React.ReactFragment
-                  | React.ReactPortal
-                  | null
-                  | undefined;
-                datetimeRecorded:
-                  | string
-                  | number
-                  | boolean
-                  | React.ReactElement<
-                      any,
-                      string | React.JSXElementConstructor<any>
-                    >
-                  | React.ReactFragment
-                  | React.ReactPortal
-                  | null
-                  | undefined;
-              }) => {
-                //console.log('video details', video.node);
-                return (
-                  <View style={styles.container} key={video._id}>
-                    <View style={styles.thumbnail}>
-                      <VideoPlayer
-                        style={{}}
-                        source={{
-                          uri: MHMRfolderPath + '/' + video.filename,
-                        }}
-                        paused={true}
-                        disableBack={true}
-                        toggleResizeModeOnFullscreen={true}
-                        showOnStart={true}
-                        disableSeekButtons={true}
+          ?
+          videos.map(
+            (video: VideoData) => {
+              return (
+                <View style={styles.container} key={(video._id).toString()}>
+                  <View style={styles.thumbnail}>
+                    <VideoPlayer
+                      style={{}}
+                      source={{
+                        uri: MHMRfolderPath + '/' + video.filename,
+                      }}
+                      paused={true}
+                      disableBack={true}
+                      toggleResizeModeOnFullscreen={true}
+                      showOnStart={true}
+                      disableSeekButtons={true}
+                    />
+                  </View>
+
+                  <View style={styles.rightContainer}>
+                    <Text style={{ fontSize: 24, color: 'black' }}>
+                      Name: {video.title}
+                      {'\n'}
+                      Location: {video.location}
+                      {'\n'}
+                      Date: {video.datetimeRecorded?.toLocaleString()}
+                    </Text>
+                    <View style={styles.buttonContainer}>
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Edit"
+                        onPress={() => navigation.navigate('Home')}
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Delete Video"
+                        onPress={() => deleteVideo(video, video.filename)}
                       />
                     </View>
-
-                    <View style={styles.rightContainer}>
-                      <Text style={{fontSize: 24, color: 'black'}}>
-                        Name: {video.title}
-                        {'\n'}
-                        Location: {video.location}
-                        {'\n'}
-                        Date: {video.datetimeRecorded?.toLocaleString()}
-                      </Text>
-                      <View style={styles.buttonContainer}>
-                        <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Edit"
-                          onPress={() => navigation.navigate('Home')}
-                        />
-                        <View style={styles.space} />
-                        <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Delete Video"
-                          onPress={() => navigation.navigate('Home')}
-                        />
-                      </View>
-                    </View>
                   </View>
-                );
-              },
-            )
+                </View>
+              );
+            },
+          )
           : null}
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPressTouch}>
+          <Text style={{ padding: 5, fontSize: 16, color: 'black' }}>
             Scroll to Top
           </Text>
         </TouchableOpacity>
