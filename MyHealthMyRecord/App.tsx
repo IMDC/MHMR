@@ -9,7 +9,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from "./screens/home";
 import RecordVideo from "./screens/recordVideo";
-import ViewRecordings from "./screens/videos"
+import ViewRecordings from "./screens/videoDirectory"
 
 const Stack = createNativeStackNavigator();
 
