@@ -137,7 +137,7 @@ const ViewRecordings = () => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Edit"
-                        onPress={() => navigation.navigate('Home')}
+                        onPress={() => navigation.navigate('Annotation Menu')}
                       />
                       <View style={styles.space} />
                       <Button
