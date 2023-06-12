@@ -13,11 +13,9 @@ import KeywordTagging from './screens/keywordTagging';
 import LocationTagging from './screens/locationTagging';
 import EmotionTagging from './screens/emotionTagging';
 import TextComments from './screens/textComments';
-
 import { Icon } from '@rneui/themed';
 
 const Stack = createNativeStackNavigator();
-
 
 function App() {
   return (

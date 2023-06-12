@@ -4,7 +4,6 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
 import {PermissionsAndroid, Platform} from 'react-native';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import RNFS from 'react-native-fs';
 import {Icon, Button} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
@@ -115,6 +114,7 @@ const RecordVideo = () => {
     const filePath = path.replace('file://', '');
     const pathSegments = filePath.split('/');
     const fileName = pathSegments[pathSegments.length - 1];
+
     // delete console logs later
     console.log(filePath);
     // ex. /data/user/0/com.myhealthmyrecord/cache/VisionCamera-20230606_1208147672158123173592211.mp4
@@ -124,31 +124,26 @@ const RecordVideo = () => {
     // ex. VisionCamera-20230606_1208147672158123173592211.mp4
 
     // RNFS.DocumentDirectoryPath is /data/user/0/com.myhealthmyrecord/files
-    RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
-      .then(() => {
-        console.log('File moved.');
-        // save video details to db here ?
-        createVideoData(fileName, videoSource.duration);
-        Alert.alert('Your recording has been saved');
-        navigation.navigate('Home');
-      })
-      .catch(err => {
-        console.log(err.message);
-      });
+    try {
+      createVideoData(fileName, videoSource.duration);
+      RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
+        .then(() => {
+          console.log('File moved.');
+          // save video details to db here ?
+          Alert.alert('Your recording has been saved');
+          navigation.navigate('Home');
+        })
+        .catch(err => {
+          console.log(err.message);
+        });
+    } catch (err: any) {
+      Alert.alert('There was an issue saving your recording. Please try again.');
+      console.log(err.message);
+    }
   }
 
-  /*
-    const realmConfig: Realm.Configuration = {
-        schema: [VideoData],
-    };
-    
-    // Create a realm context
-    const { RealmProvider, useRealm, useObject, useQuery } =
-        createRealmContext(realmConfig);
-    */
-
   const createVideoData = (filename: string, duration: number) => {
-    const videoData = realm.write(() => {
+    realm.write(() => {
       realm.create('VideoData', {
         _id: new Realm.BSON.ObjectID(),
         datetimeRecorded: new Date(),
