@@ -16,15 +16,6 @@ import {
 import {Card, CheckBox, Icon, Image} from '@rneui/themed';
 
 const LocationTagging = () => {
-  // const locations = [
-  //   'Home',
-  //   'Work',
-  //   'School',
-  //   'Park',
-  //   'Indoors',
-  //   'Outdoors',
-  //   'Other',
-  // ];
 
   const locations = [
     {id: 0, title: 'Home', checked: false},

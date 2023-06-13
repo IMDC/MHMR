@@ -1,35 +1,29 @@
 /*import React from 'react';
 import type { PropsWithChildren } from 'react';*/
-import {ParamListBase, useNavigation} from '@react-navigation/native';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useState} from 'react';
 import {SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
+import { VideoData } from '../models/VideoData';
 
 const AnnotationMenu = () => {
+  const route = useRoute();
+  const title = route.params?.title;
+  const location = route.params?.location;
+  const id = route.params?.id;
+  const filename = route.params?.filename;
+
   const [text, onChangeText] = React.useState('Enter Video Title');
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <SafeAreaView style={styles.container}>
-      <Input inputStyle={{fontSize: 35}} placeholder="Enter Video Title" />
+      <Input inputStyle={{fontSize: 35}} placeholder={title} />
       <Text style={{fontSize: 24}}>
         Select how you would like to start annotating your video:
       </Text>
       <View style={{paddingTop: 45}}>
-        <View style={styles.selectionContainer}>
-          <Icon
-            reverse
-            name="add-outline"
-            size={40}
-            type="ionicon"
-            color="#1C3EAA"
-            onPress={() => {
-              navigation.navigate('Emotion Tagging');
-            }}
-          />
-          <Text style={styles.textStyle}>Add Emotion Tagging</Text>
-        </View>
         <View style={styles.selectionContainer}>
           <Icon
             reverse
@@ -60,7 +54,28 @@ const AnnotationMenu = () => {
             size={40}
             type="ionicon"
             color="#1C3EAA"
-            onPress={() => navigation.navigate('Text Comments')}
+            onPress={() => {
+              navigation.navigate('Emotion Tagging', {
+                id, title,
+                location,
+                filename
+              });
+            }}
+          />
+          <Text style={styles.textStyle}>Add Emotion Tagging</Text>
+        </View>
+        <View style={styles.selectionContainer}>
+          <Icon
+            reverse
+            name="add-outline"
+            size={40}
+            type="ionicon"
+            color="#1C3EAA"
+            onPress={() => navigation.navigate('Text Comments', {
+                id, title,
+                location,
+                filename
+            })}
           />
           <Text style={styles.textStyle}>Add Text Comments</Text>
         </View>
