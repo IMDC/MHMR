@@ -158,14 +158,24 @@ const ViewRecordings = () => {
                     <Text style={{fontSize: 24, color: 'black'}}>
                       Name: {video.title}
                       {'\n'}
-                      Location: {video.location}
-                      {'\n'}
+                      {/* Location: {video.location}
+                      {'\n'} */}
                       Date: {video.datetimeRecorded?.toLocaleString()}
                     </Text>
                     <View style={styles.buttonContainer}>
                       <Button
                         buttonStyle={styles.btnStyle}
-                        title="Edit"
+                        title="View Video"
+                        onPress={() =>
+                          navigation.navigate('Fullscreen Video', {
+                            filename: video.filename,
+                          })
+                        }
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Markup Video"
                         onPress={() =>
                           navigation.navigate('Annotation Menu', {
                             id: video._id.toString(),
@@ -201,7 +211,7 @@ const ViewRecordings = () => {
                       />
                     </Dialog.Actions>
                   </Dialog>
-                  {/* <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
+                  <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
                     <Dialog.Title title="Are you sure you want to delete this video?" />
                     <Text style={{fontSize: 20}}>
                       This item will be deleted immediately. You can't undo this
@@ -217,7 +227,7 @@ const ViewRecordings = () => {
                         onPress={() => toggleDialog1()}
                       />
                     </Dialog.Actions>
-                  </Dialog> */}
+                  </Dialog>
                 </View>
               );
             })
