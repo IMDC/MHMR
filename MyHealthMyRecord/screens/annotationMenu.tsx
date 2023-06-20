@@ -81,10 +81,21 @@ const AnnotationMenu = () => {
             name="add-outline"
             size={40}
             type="ionicon"
-            color="#1C3EAA"
-            onPress={() => navigation.navigate('Keyword Tagging')}
+            color="#C7CBD1"
+            onPress={() => navigation.navigate('Painscale')}
           />
-          <Text style={styles.textStyle}>Add Keyword Tagging</Text>
+          <Text style={styles.textStyle}>Adjust Painscale</Text>
+        </View>
+        <View style={styles.selectionContainer}>
+          <Icon
+            reverse
+            name="checkmark-outline"
+            size={40}
+            type="ionicon"
+            color="#1C3EAA"
+            onPress={() => navigation.navigate('Keywords')}
+          />
+          <Text style={styles.textStyle}>Add Keywords</Text>
         </View>
 
         <View style={styles.selectionContainer}>
@@ -93,8 +104,8 @@ const AnnotationMenu = () => {
             name="add-outline"
             size={40}
             type="ionicon"
-            color="#1C3EAA"
-            onPress={() => navigation.navigate('Location Tagging')}
+            color="#C7CBD1"
+            onPress={() => navigation.navigate('Location')}
           />
           <Text style={styles.textStyle}>Add Location</Text>
         </View>
@@ -104,16 +115,17 @@ const AnnotationMenu = () => {
             name="add-outline"
             size={40}
             type="ionicon"
-            color="#1C3EAA"
+            color="#C7CBD1"
             onPress={() => {
               navigation.navigate('Emotion Tagging', {
-                id, title,
+                id,
+                title,
                 location,
-                filename
+                filename,
               });
             }}
           />
-          <Text style={styles.textStyle}>Add Emotion Tagging</Text>
+          <Text style={styles.textStyle}>Add Emotion Stickers</Text>
         </View>
         <View style={styles.selectionContainer}>
           <Icon
@@ -121,23 +133,33 @@ const AnnotationMenu = () => {
             name="add-outline"
             size={40}
             type="ionicon"
-            color="#1C3EAA"
-            onPress={() => navigation.navigate('Text Comments', {
-              id, title,
-              location,
-              filename
-            })}
+            color="#C7CBD1"
+            onPress={() =>
+              navigation.navigate('Text Comments', {
+                id,
+                title,
+                location,
+                filename,
+              })
+            }
           />
           <Text style={styles.textStyle}>Add Text Comments</Text>
         </View>
       </View>
 
       <Button
-        containerStyle={{ paddingTop: 275 }}
-        buttonStyle={{ width: 220, height: 75, alignSelf: 'center' }}
+        containerStyle={{paddingTop: 100}}
+        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         color="#1C3EAA"
-        title="Review Annotations"
-        onPress={() => navigation.navigate('Review Annotations')}
+        title="Review Markups"
+        onPress={() =>
+          navigation.navigate('Review Annotations', {
+            id,
+            title,
+            location,
+            filename,
+          })
+        }
       />
     </SafeAreaView>
   );
