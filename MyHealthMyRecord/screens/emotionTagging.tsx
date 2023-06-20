@@ -20,7 +20,7 @@ import RNFS from 'react-native-fs';
 import {useRoute} from '@react-navigation/native';
 
 class Draggable extends React.Component<any, any> {
-  _val: { x: number; y: number; };
+  _val: {x: number; y: number};
   panResponder: any;
   constructor(props: any) {
     super(props);
@@ -34,7 +34,9 @@ class Draggable extends React.Component<any, any> {
     };
 
     this._val = {x: 0, y: 0};
-    this.state.pan.addListener((value: { x: number; y: number; }) => (this._val = value));
+    this.state.pan.addListener(
+      (value: {x: number; y: number}) => (this._val = value),
+    );
 
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (e, gesture) => true,
@@ -51,11 +53,24 @@ class Draggable extends React.Component<any, any> {
       ),
       onPanResponderRelease: (e, gesture) => {
         if (this.isDropArea(gesture)) {
-          Animated.timing(this.state.opacity, {
-            toValue: 0,
-            duration: 1000,
-            useNativeDriver: false,
-          }).start(() =>
+          Animated.sequence([
+            Animated.timing(this.state.opacity, {
+              toValue: 0,
+              duration: 1000,
+              useNativeDriver: false,
+            }),
+
+            Animated.timing(this.state.pan, {
+              toValue: {x: 0, y: 0},
+              duration: 100,
+              useNativeDriver: false,
+            }),
+            Animated.timing(this.state.opacity, {
+              toValue: 1,
+              duration: 500,
+              useNativeDriver: false,
+            }),
+          ]).start(() =>
             this.setState({
               showDraggable: true,
             }),
