@@ -16,14 +16,12 @@ import {
 import {Icon, Button, Image} from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
+import { useObject, useRealm } from '../models/VideoData';
 
 const ReviewAnnotations = () => {
   async function saveChanges() {
     navigation.navigate('View Recordings', {
       id,
-      title,
-      location,
-      filename,
     });
 
     Alert.alert('Your changes have been saved!');
@@ -33,11 +31,12 @@ const ReviewAnnotations = () => {
   const windowHeight = Dimensions.get('window').height;
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  const route = useRoute();
-  const title = route.params?.title;
-  const location = route.params?.location;
+  const route: any = useRoute();
   const id = route.params?.id;
-  const filename = route.params?.filename;
+  
+  const realm = useRealm();
+  const video: any = useObject("VideoData", id);
+  
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <ScrollView>
@@ -49,7 +48,7 @@ const ReviewAnnotations = () => {
           paddingTop: 15,
         }}>
         <VideoPlayer
-          source={{uri: MHMRfolderPath + '/' + filename}}
+          source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
@@ -59,7 +58,7 @@ const ReviewAnnotations = () => {
       </View>
 
       <View style={styles.container}>
-        <Text style={styles.titleStyle}>{title}</Text>
+        <Text style={styles.titleStyle}>{video.title}</Text>
         <View>
           {/* <Text style={styles.headerStyle}>Keywords and Locations</Text> */}
           <View style={styles.row}>

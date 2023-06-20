@@ -52,8 +52,8 @@ const ViewRecordings = () => {
   //console.log(videosByDate);
 
   // delete later
-  videoData.map((video: {_id: any; annotations: any}) =>
-    console.log('test', video._id.toString(), video.annotations),
+  videoData.map((video: any) =>
+    console.log('test', video._id.toString(), video.title, video.textComments),
   );
 
   const deleteAllVideoDataObjects = async () => {
@@ -179,9 +179,6 @@ const ViewRecordings = () => {
                         onPress={() =>
                           navigation.navigate('Annotation Menu', {
                             id: video._id,
-                            title: video.title,
-                            location: video.location,
-                            filename: video.filename,
                           })
                         }
                       />
