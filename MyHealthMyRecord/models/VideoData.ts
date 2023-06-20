@@ -8,10 +8,11 @@ export class VideoData extends Realm.Object<VideoData> {
     filename!: string;
     datetimeRecorded!: Date;
     duration!: number;
-    location!: string;
-    isAnnotated!: boolean;
-    //annotations as list?
-    annotations!: Realm.List<string>;
+    textComments!: Realm.List<string>;
+    locations!: Realm.List<string>;
+    emotionStickers!: Realm.List<string>;
+    keywords!: Realm.List<string>;
+    painScale!: Realm.List<string>;
     //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
     static schema = {
@@ -24,9 +25,11 @@ export class VideoData extends Realm.Object<VideoData> {
             filename: 'string',
             datetimeRecorded: {type: 'date', default: new Date()},
             duration: 'double',
-            location: {type:'string', default: ""},
-            isAnnotated: {type:'bool', default: false},
-            annotations: {type: 'string[]', default: []},
+            textComments: {type: 'string[]', default: []},
+            locations: {type: 'string[]', default: []},
+            emotionStickers: {type: 'string[]', default: []},
+            keywords: {type: 'string[]', default: []},
+            painScale: {type: 'string[]', default: []},
         },
     };
 }
