@@ -49,7 +49,7 @@ const ViewRecordings = () => {
   const realm = useRealm();
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-  console.log(videosByDate);
+  //console.log(videosByDate);
 
   // delete later
   videoData.map((video: {_id: any; annotations: any}) =>
@@ -178,7 +178,7 @@ const ViewRecordings = () => {
                         title="Markup Video"
                         onPress={() =>
                           navigation.navigate('Annotation Menu', {
-                            id: video._id.toString(),
+                            id: video._id,
                             title: video.title,
                             location: video.location,
                             filename: video.filename,

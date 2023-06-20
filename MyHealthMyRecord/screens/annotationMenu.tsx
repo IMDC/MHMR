@@ -1,29 +1,80 @@
 /*import React from 'react';
 import type { PropsWithChildren } from 'react';*/
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native';
-import {Button, Icon, Input} from '@rneui/themed';
-import {VideoData} from '../models/VideoData';
+import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useRef, useState } from 'react';
+import { NativeSyntheticEvent, SafeAreaView, StyleSheet, Text, TextInput, TextInputFocusEventData, View } from 'react-native';
+import { Button, Icon, Input } from '@rneui/themed';
+import { VideoData, useObject, useRealm } from '../models/VideoData';
 
 const AnnotationMenu = () => {
-  const route = useRoute();
+  const route: any = useRoute();
   const title = route.params?.title;
   const location = route.params?.location;
   const id = route.params?.id;
   const filename = route.params?.filename;
 
-  const [text, onChangeText] = React.useState('Enter Video Title');
+  const titleInput: any = useRef(null);
+
+  const [text, setText] = React.useState(title);
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+  const realm = useRealm();
+  const video: any = useObject("VideoData", id);
+  //console.log(video, id);
+
+  const updateVideoTitle = () => {
+    console.log("new:", text);
+    if (video) {
+      realm.write(() => {
+        video.title! = text;
+      });
+    }
+  }
+
+  const focusTitle = () => {
+    console.log("focus");
+    //titleInput.current.setNativeProps({cursorColor: '#FFFFFF'});
+    /* if (titleInput != null) {
+    titleInput.current.setNativeProps({rightIcon: 
+      <Icon
+      ref={titleInputIcon}
+        name="checkmark-outline"
+        size={40}
+        type="ionicon"
+        color="#1C3EAA"
+        onPress={() => updateVideoTitle()}
+        //containerStyle={{ display: 'block' }}
+      />});
+    } */
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <Input inputStyle={{fontSize: 35}} placeholder={title} />
-      <Text style={{fontSize: 24}}>
+      <Input
+        ref={titleInput}
+        inputStyle={{ fontSize: 35 }}
+        //value={text}
+        defaultValue={title}
+        onChangeText={value => setText(value)}
+        onFocus={() => focusTitle()}
+        onSubmitEditing={() => updateVideoTitle()}
+        /* rightIcon={
+          <Icon
+            //ref={titleInputIcon}
+            name="checkmark-outline"
+            size={40}
+            type="ionicon"
+            color="#1C3EAA"
+            onPress={() => updateVideoTitle()}
+            //containerStyle={{ display: 'none' }}
+          />} */
+      />
+      <Text style={{ fontSize: 24 }}>
         Select how you would like to start annotating your video:
       </Text>
-      <View style={{paddingTop: 45}}>
+      <View style={{ paddingTop: 45 }}>
         <View style={styles.selectionContainer}>
           <Icon
             reverse
@@ -115,7 +166,7 @@ const AnnotationMenu = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {padding: 75},
+  container: { padding: 75 },
   textStyle: {
     alignSelf: 'center',
     fontSize: 24,
