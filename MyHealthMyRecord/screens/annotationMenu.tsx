@@ -1,11 +1,19 @@
 /*import React from 'react';
 import type { PropsWithChildren } from 'react';*/
-import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useRef, useState } from 'react';
-import { NativeSyntheticEvent, SafeAreaView, StyleSheet, Text, TextInput, TextInputFocusEventData, View } from 'react-native';
-import { Button, Icon, Input } from '@rneui/themed';
-import { VideoData, useObject, useRealm } from '../models/VideoData';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  NativeSyntheticEvent,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputFocusEventData,
+  View,
+} from 'react-native';
+import {Button, Icon, Input} from '@rneui/themed';
+import {VideoData, useObject, useRealm} from '../models/VideoData';
 
 const AnnotationMenu = () => {
   const route: any = useRoute();
@@ -21,6 +29,7 @@ const AnnotationMenu = () => {
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
+
   const updateVideoTitle = () => {
     console.log("new:", title);
     if (video) {
@@ -28,84 +37,149 @@ const AnnotationMenu = () => {
         video.title! = title;
       });
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Input
         ref={titleInput}
-        inputStyle={{ fontSize: 35 }}
+        inputStyle={{fontSize: 35}}
         //value={text}
         defaultValue={title}
         onChangeText={value => setTitle(value)}
         onSubmitEditing={() => updateVideoTitle()}
       />
-      <Text style={{ fontSize: 24 }}>
+      <Text style={{fontSize: 24}}>
         Select how you would like to start annotating your video:
       </Text>
-      <View style={{ paddingTop: 45 }}>
+      <View style={{paddingTop: 45}}>
         <View style={styles.selectionContainer}>
-          <Icon
-            reverse
-            name="add-outline"
-            size={40}
-            type="ionicon"
-            color="#C7CBD1"
-            onPress={() => navigation.navigate('Painscale')}
-          />
+          {video.painScale.length == 0 ? (
+            <Icon
+              reverse
+              name="add-outline"
+              size={40}
+              type="ionicon"
+              color="#C7CBD1"
+              onPress={() => navigation.navigate('Painscale')}
+            />
+          ) : (
+            <Icon
+              reverse
+              name="checkmark-outline"
+              size={40}
+              type="ionicon"
+              color="#1C3EAA"
+              onPress={() => navigation.navigate('Painscale')}
+            />
+          )}
           <Text style={styles.textStyle}>Adjust Painscale</Text>
         </View>
         <View style={styles.selectionContainer}>
-          <Icon
-            reverse
-            name="checkmark-outline"
-            size={40}
-            type="ionicon"
-            color="#1C3EAA"
-            onPress={() => navigation.navigate('Keywords')}
-          />
+          {video.keywords.length == 0 ? (
+            <Icon
+              reverse
+              name="add-outline"
+              size={40}
+              type="ionicon"
+              color="#C7CBD1"
+              onPress={() => navigation.navigate('Keywords')}
+            />
+          ) : (
+            <Icon
+              reverse
+              name="checkmark-outline"
+              size={40}
+              type="ionicon"
+              color="#1C3EAA"
+              onPress={() => navigation.navigate('Keywords')}
+            />
+          )}
+
           <Text style={styles.textStyle}>Add Keywords</Text>
         </View>
-
         <View style={styles.selectionContainer}>
-          <Icon
-            reverse
-            name="add-outline"
-            size={40}
-            type="ionicon"
-            color="#C7CBD1"
-            onPress={() => navigation.navigate('Location')}
-          />
+          {video.location == null ? (
+            <Icon
+              reverse
+              name="add-outline"
+              size={40}
+              type="ionicon"
+              color="#C7CBD1"
+              onPress={() => navigation.navigate('Location')}
+            />
+          ) : (
+            <Icon
+              reverse
+              name="checkmark-outline"
+              size={40}
+              type="ionicon"
+              color="#1C3EAA"
+              onPress={() => navigation.navigate('Location')}
+            />
+          )}
+
           <Text style={styles.textStyle}>Add Location</Text>
         </View>
         <View style={styles.selectionContainer}>
-          <Icon
-            reverse
-            name="add-outline"
-            size={40}
-            type="ionicon"
-            color="#C7CBD1"
-            onPress={() => {
-              navigation.navigate('Emotion Tagging', {
-                id,
-              });
-            }}
-          />
+          {video.emotionStickers.length == 0 ? (
+            <Icon
+              reverse
+              name="add-outline"
+              size={40}
+              type="ionicon"
+              color="#C7CBD1"
+              onPress={() => {
+                navigation.navigate('Emotion Tagging', {
+                  id,
+                });
+              }}
+            />
+          ) : (
+            <Icon
+              reverse
+              name="checkmark-outline"
+              size={40}
+              type="ionicon"
+              color="#1C3EAA"
+              onPress={() => {
+                navigation.navigate('Emotion Tagging', {
+                  id,
+                });
+              }}
+            />
+          )}
+
           <Text style={styles.textStyle}>Add Emotion Stickers</Text>
         </View>
         <View style={styles.selectionContainer}>
-          <Icon
-            reverse
-            name="add-outline"
-            size={40}
-            type="ionicon"
-            color="#C7CBD1"
-            onPress={() =>
-              navigation.navigate('Text Comments', {
-                id,
-              })
-            }
-          />
+          {video.textComments.length == 0 ? (
+            <Icon
+              reverse
+              name="add-outline"
+              size={40}
+              type="ionicon"
+              color="#C7CBD1"
+              onPress={() =>
+                navigation.navigate('Text Comments', {
+                  id,
+                })
+              }
+            />
+          ) : (
+            <Icon
+              reverse
+              name="checkmark-outline"
+              size={40}
+              type="ionicon"
+              color="#1C3EAA"
+              onPress={() =>
+                navigation.navigate('Text Comments', {
+                  id,
+                })
+              }
+            />
+          )}
           <Text style={styles.textStyle}>Add Text Comments</Text>
         </View>
       </View>
@@ -126,7 +200,7 @@ const AnnotationMenu = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 75 },
+  container: {padding: 75},
   textStyle: {
     alignSelf: 'center',
     fontSize: 24,
