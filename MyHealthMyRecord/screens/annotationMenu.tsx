@@ -2,8 +2,8 @@
 import type { PropsWithChildren } from 'react';*/
 import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { NativeSyntheticEvent, SafeAreaView, StyleSheet, Text, TextInput, TextInputFocusEventData, View } from 'react-native';
 import { Button, Icon, Input } from '@rneui/themed';
 import { VideoData, useObject, useRealm } from '../models/VideoData';
 
@@ -13,6 +13,8 @@ const AnnotationMenu = () => {
   const location = route.params?.location;
   const id = route.params?.id;
   const filename = route.params?.filename;
+
+  const titleInput: any = useRef(null);
 
   const [text, setText] = React.useState(title);
 
@@ -31,21 +33,43 @@ const AnnotationMenu = () => {
     }
   }
 
+  const focusTitle = () => {
+    console.log("focus");
+    //titleInput.current.setNativeProps({cursorColor: '#FFFFFF'});
+    /* if (titleInput != null) {
+    titleInput.current.setNativeProps({rightIcon: 
+      <Icon
+      ref={titleInputIcon}
+        name="checkmark-outline"
+        size={40}
+        type="ionicon"
+        color="#1C3EAA"
+        onPress={() => updateVideoTitle()}
+        //containerStyle={{ display: 'block' }}
+      />});
+    } */
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Input
+        ref={titleInput}
         inputStyle={{ fontSize: 35 }}
-        placeholder={title}
+        //value={text}
+        defaultValue={title}
         onChangeText={value => setText(value)}
-        rightIcon={
+        onFocus={() => focusTitle()}
+        onSubmitEditing={() => updateVideoTitle()}
+        /* rightIcon={
           <Icon
+            //ref={titleInputIcon}
             name="checkmark-outline"
             size={40}
             type="ionicon"
             color="#1C3EAA"
             onPress={() => updateVideoTitle()}
-          />
-        }
+            //containerStyle={{ display: 'none' }}
+          />} */
       />
       <Text style={{ fontSize: 24 }}>
         Select how you would like to start annotating your video:
