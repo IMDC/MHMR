@@ -9,45 +9,25 @@ import { VideoData, useObject, useRealm } from '../models/VideoData';
 
 const AnnotationMenu = () => {
   const route: any = useRoute();
-  const title = route.params?.title;
-  const location = route.params?.location;
   const id = route.params?.id;
-  const filename = route.params?.filename;
-
-  const titleInput: any = useRef(null);
-
-  const [text, setText] = React.useState(title);
-
-  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const realm = useRealm();
   const video: any = useObject("VideoData", id);
   //console.log(video, id);
 
+  const titleInput: any = useRef(null);
+
+  const [title, setTitle] = React.useState(video.title);
+
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
   const updateVideoTitle = () => {
-    console.log("new:", text);
+    console.log("new:", title);
     if (video) {
       realm.write(() => {
-        video.title! = text;
+        video.title! = title;
       });
     }
-  }
-
-  const focusTitle = () => {
-    console.log("focus");
-    //titleInput.current.setNativeProps({cursorColor: '#FFFFFF'});
-    /* if (titleInput != null) {
-    titleInput.current.setNativeProps({rightIcon: 
-      <Icon
-      ref={titleInputIcon}
-        name="checkmark-outline"
-        size={40}
-        type="ionicon"
-        color="#1C3EAA"
-        onPress={() => updateVideoTitle()}
-        //containerStyle={{ display: 'block' }}
-      />});
-    } */
   }
 
   return (
@@ -57,19 +37,8 @@ const AnnotationMenu = () => {
         inputStyle={{ fontSize: 35 }}
         //value={text}
         defaultValue={title}
-        onChangeText={value => setText(value)}
-        onFocus={() => focusTitle()}
+        onChangeText={value => setTitle(value)}
         onSubmitEditing={() => updateVideoTitle()}
-        /* rightIcon={
-          <Icon
-            //ref={titleInputIcon}
-            name="checkmark-outline"
-            size={40}
-            type="ionicon"
-            color="#1C3EAA"
-            onPress={() => updateVideoTitle()}
-            //containerStyle={{ display: 'none' }}
-          />} */
       />
       <Text style={{ fontSize: 24 }}>
         Select how you would like to start annotating your video:
@@ -119,9 +88,6 @@ const AnnotationMenu = () => {
             onPress={() => {
               navigation.navigate('Emotion Tagging', {
                 id,
-                title,
-                location,
-                filename,
               });
             }}
           />
@@ -137,9 +103,6 @@ const AnnotationMenu = () => {
             onPress={() =>
               navigation.navigate('Text Comments', {
                 id,
-                title,
-                location,
-                filename,
               })
             }
           />
@@ -155,9 +118,6 @@ const AnnotationMenu = () => {
         onPress={() =>
           navigation.navigate('Review Annotations', {
             id,
-            title,
-            location,
-            filename,
           })
         }
       />
