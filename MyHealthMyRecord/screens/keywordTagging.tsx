@@ -1,33 +1,65 @@
-import {ParamListBase, useNavigation, NavigationContainer} from '@react-navigation/native';
-import {NativeStackNavigationProp, createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useState} from 'react';
 import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  FlatList,
-} from 'react-native';
+  ParamListBase,
+  useNavigation,
+  NavigationContainer,
+  useRoute,
+} from '@react-navigation/native';
+import {
+  NativeStackNavigationProp,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
+import React, {useState} from 'react';
+import {SafeAreaView, StyleSheet, Text, FlatList} from 'react-native';
 import {Icon, Image, Card, Button, CheckBox} from '@rneui/themed';
+import {useRealm, useObject} from '../models/VideoData';
 
 const KeywordTagging = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  const keyword = [
-    {id: 0, title: 'None', checked: false},
-    {id: 1, title: 'Chronic', checked: false},
-    {id: 2, title: 'Weak', checked: false},
-    {id: 3, title: 'Depression', checked: false},
-    {id: 4, title: 'Pain', checked: false},
-    {id: 5, title: 'Fever', checked: false},
-    {id: 6, title: 'Wellness', checked: false},
-  ];
+  const route: any = useRoute();
+  const id = route.params?.id;
 
-  const [category, setCategory] = useState(keyword);
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
+
+  let parsedKeywords: string[] = [];
+
+  const [keyword, setKeyword] = useState(video.keywords);
+
+  keyword.map((key: string) => parsedKeywords.push(JSON.parse(key)));
+
+  console.log(parsedKeywords);
+
+  // const updateKeywords = () => {
+  //   console.log('new:', keyword);
+  //   if (video) {
+  //     realm.write(() => {
+  //       video.keywords! = JSON.stringify(keyword);
+  //     });
+  //   }
+  // };
+
+  const [category, setCategory] = useState(parsedKeywords);
 
   function checkBoxFunc(index: any) {
     console.log(index);
-    const textTag = [...category];
+    const textTag: any = [...category];
     textTag[index].checked = !textTag[index].checked;
     setCategory(textTag);
+  }
+
+  function saveKeywords() {
+    const keywords: any = [];
+    category.map((item: any) => {
+      keywords.push(JSON.stringify(item));
+    });
+    console.log('test:', keywords);
+    if (video) {
+      realm.write(() => {
+        video.keywords! = keywords;
+      });
+    }
+    navigation.goBack();
   }
 
   return (
@@ -36,7 +68,7 @@ const KeywordTagging = () => {
       <FlatList
         style={{padding: 40}}
         data={category}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item: any, index) => index.toString()}
         renderItem={({item, index}) => (
           <Card containerStyle={{padding: 10, margin: 10}}>
             <CheckBox
@@ -50,6 +82,11 @@ const KeywordTagging = () => {
             />
           </Card>
         )}
+      />
+      <Button
+        onPress={saveKeywords}
+        title="Save"
+        color="#841584"
       />
     </SafeAreaView>
   );
@@ -65,5 +102,3 @@ const styles = StyleSheet.create({
 });
 
 export default KeywordTagging;
-
-

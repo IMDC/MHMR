@@ -9,20 +9,21 @@ import {
   Dimensions,
   Keyboard,
 } from 'react-native';
-import {Icon,Input} from '@rneui/themed';
+import {Icon, Input} from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
+import {useObject, useRealm} from '../models/VideoData';
 
 const TextComments = () => {
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  const route = useRoute();
-  const title = route.params?.title;
-  const location = route.params?.location;
+  const route: any = useRoute();
   const id = route.params?.id;
-  const filename = route.params?.filename;
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
+
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const input = React.useRef(null);
@@ -41,7 +42,7 @@ const TextComments = () => {
           paddingTop: 15,
         }}>
         <VideoPlayer
-          source={{uri: MHMRfolderPath + '/' + filename}}
+          source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}

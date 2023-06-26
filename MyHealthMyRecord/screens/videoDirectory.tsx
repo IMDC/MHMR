@@ -30,8 +30,6 @@ const ViewRecordings = () => {
     setVisible1(!visible1);
   };
 
-
-
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [videos, setVideos] = useState<any | null>(null);
@@ -130,9 +128,12 @@ const ViewRecordings = () => {
           // style={{alignItems: 'flex-end'}}
           style={{alignItems: 'center'}}
           onPress={toggleDialog}>
-          <Text style={{fontSize: 16, 
-            // paddingRight: 20, 
-            color: 'black'}}>
+          <Text
+            style={{
+              fontSize: 16,
+              // paddingRight: 20,
+              color: 'black',
+            }}>
             Delete All Videos
           </Text>
         </TouchableOpacity>
@@ -168,7 +169,7 @@ const ViewRecordings = () => {
                         title="View Video"
                         onPress={() =>
                           navigation.navigate('Fullscreen Video', {
-                            filename: video.filename,
+                            id: video._id,
                           })
                         }
                       />
