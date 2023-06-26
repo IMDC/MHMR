@@ -137,10 +137,38 @@ const RecordVideo = () => {
           console.log(err.message);
         });
     } catch (err: any) {
-      Alert.alert('There was an issue saving your recording. Please try again.');
+      Alert.alert(
+        'There was an issue saving your recording. Please try again.',
+      );
       console.log(err.message);
     }
   }
+const keywordRef = [
+  {id: 0, title: 'None', checked: false},
+  {id: 1, title: 'Chronic', checked: false},
+  {id: 2, title: 'Weak', checked: false},
+  {id: 3, title: 'Depression', checked: false},
+  {id: 4, title: 'Pain', checked: false},
+  {id: 5, title: 'Fever', checked: false},
+  {id: 6, title: 'Wellness', checked: false},
+];
+
+const locationRef = [
+  {id: 0, title: 'Home', checked: false},
+  {id: 1, title: 'Work', checked: false},
+  {id: 2, title: 'School', checked: false},
+  {id: 3, title: 'Park', checked: false},
+  {id: 4, title: 'Indoors', checked: false},
+  {id: 5, title: 'Outdoors', checked: false},
+  {id: 6, title: 'Other', checked: false},
+];
+
+
+let keywordInit: string[] = [];
+let locationInit: string[] = [];
+
+keywordRef.map(key => keywordInit.push(JSON.stringify(key)));
+locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
 
   const createVideoData = (filename: string, duration: number) => {
     realm.write(() => {
@@ -150,6 +178,8 @@ const RecordVideo = () => {
         title: new Date().toLocaleString(),
         filename: filename,
         duration: duration,
+        keywords: keywordInit,
+        locations: locationInit,
       });
     });
   };

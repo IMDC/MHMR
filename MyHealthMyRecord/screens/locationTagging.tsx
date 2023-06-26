@@ -1,6 +1,6 @@
-import {ParamListBase, useNavigation} from '@react-navigation/native';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -14,28 +14,45 @@ import {
   FlatList,
 } from 'react-native';
 import {Card, CheckBox, Icon, Image} from '@rneui/themed';
+import {useRealm, useObject} from '../models/VideoData';
 
 const LocationTagging = () => {
+const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  const locations = [
-    {id: 0, title: 'Home', checked: false},
-    {id: 1, title: 'Work', checked: false},
-    {id: 2, title: 'School', checked: false},
-    {id: 3, title: 'Park', checked: false},
-    {id: 4, title: 'Indoors', checked: false},
-    {id: 5, title: 'Outdoors', checked: false},
-    {id: 6, title: 'Other', checked: false},
-  ];
+  const route: any = useRoute();
+  const id = route.params?.id;
 
-  const [category, setCategory] = useState(locations);
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
+
+  let parsedLocations: string[] = [];
+
+  const [location, setLocation] = useState(video.locations);
+
+  location.map((loc: string) => parsedLocations.push(JSON.parse(loc)));
+
+  const [category, setCategory] = useState(parsedLocations);
 
   function sliderFunc(index: any) {
     console.log(index);
-    const locationTag = [...category];
+    const locationTag: any = [...category];
     locationTag[index].checked = !locationTag[index].checked;
     setCategory(locationTag);
   }
 
+  function saveLocations() {
+    const locations: any = [];
+    category.map((item: any) => {
+      locations.push(JSON.stringify(item));
+    });
+    console.log('test:', locations);
+    if (video) {
+      realm.write(() => {
+        video.locations! = locations;
+      });
+    }
+    navigation.goBack();
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -45,7 +62,7 @@ const LocationTagging = () => {
       <FlatList
         style={{padding: 40}}
         data={category}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item: any, index) => index.toString()}
         renderItem={({item, index}) => (
           <Card containerStyle={{padding: 10, margin: 10}}>
             <CheckBox
@@ -60,6 +77,7 @@ const LocationTagging = () => {
           </Card>
         )}
       />
+      <Button onPress={saveLocations} title="Save" color="#841584" />
     </SafeAreaView>
   );
 };

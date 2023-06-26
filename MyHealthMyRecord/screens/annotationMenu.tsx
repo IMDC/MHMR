@@ -20,7 +20,7 @@ const AnnotationMenu = () => {
   const id = route.params?.id;
 
   const realm = useRealm();
-  const video: any = useObject("VideoData", id);
+  const video: any = useObject('VideoData', id);
   //console.log(video, id);
 
   const titleInput: any = useRef(null);
@@ -29,9 +29,8 @@ const AnnotationMenu = () => {
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-
   const updateVideoTitle = () => {
-    console.log("new:", title);
+    console.log('new:', title);
     if (video) {
       realm.write(() => {
         video.title! = title;
@@ -83,7 +82,7 @@ const AnnotationMenu = () => {
               size={40}
               type="ionicon"
               color="#C7CBD1"
-              onPress={() => navigation.navigate('Keywords')}
+              onPress={() => navigation.navigate('Keywords', {id})}
             />
           ) : (
             <Icon
@@ -92,21 +91,21 @@ const AnnotationMenu = () => {
               size={40}
               type="ionicon"
               color="#1C3EAA"
-              onPress={() => navigation.navigate('Keywords')}
+              onPress={() => navigation.navigate('Keywords', {id})}
             />
           )}
 
           <Text style={styles.textStyle}>Add Keywords</Text>
         </View>
         <View style={styles.selectionContainer}>
-          {video.location == null ? (
+          {video.locations.length == 0 ? (
             <Icon
               reverse
               name="add-outline"
               size={40}
               type="ionicon"
               color="#C7CBD1"
-              onPress={() => navigation.navigate('Location')}
+              onPress={() => navigation.navigate('Location', {id})}
             />
           ) : (
             <Icon
@@ -115,7 +114,7 @@ const AnnotationMenu = () => {
               size={40}
               type="ionicon"
               color="#1C3EAA"
-              onPress={() => navigation.navigate('Location')}
+              onPress={() => navigation.navigate('Location', {id})}
             />
           )}
 

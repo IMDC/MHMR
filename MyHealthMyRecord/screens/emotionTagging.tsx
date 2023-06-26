@@ -18,6 +18,7 @@ import worried from '../assets/images/emojis/worried.png';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {useRoute} from '@react-navigation/native';
+import { useRealm, useObject } from '../models/VideoData';
 
 class Draggable extends React.Component<any, any> {
   _val: {x: number; y: number};
@@ -137,9 +138,10 @@ class Draggable extends React.Component<any, any> {
 }
 
 const EmotionTagging = () => {
-  const route = useRoute();
-  const filename = route.params?.filename;
+  const route: any = useRoute();
   const id = route.params?.id;
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   return (
     <View style={styles.mainContainer}>
@@ -157,7 +159,7 @@ const EmotionTagging = () => {
           //     '/MHMR' +
           //     '/VisionCamera-20230612_1513433479334963829511152.mp4',
           // }}
-          source={{uri: MHMRfolderPath + '/' + filename}}
+          source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
