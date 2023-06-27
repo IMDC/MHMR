@@ -25,7 +25,7 @@ export class VideoData extends Realm.Object<VideoData> {
             filename: 'string',
             datetimeRecorded: {type: 'date', default: new Date()},
             duration: 'double',
-            textComments: {type: 'string[]', default: []},
+            textComments: {type: 'mixed[]', default: []},
             locations: {type: 'mixed[]', default: []},
             emotionStickers: {type: 'string[]', default: []},
             keywords: {type: 'mixed[]', default: []},

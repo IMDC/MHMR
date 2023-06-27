@@ -178,6 +178,7 @@ locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
         title: new Date().toLocaleString(),
         filename: filename,
         duration: duration,
+        textComments: [],
         keywords: keywordInit,
         locations: locationInit,
       });

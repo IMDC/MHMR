@@ -34,6 +34,8 @@ const AnnotationMenu = () => {
   const [keywordButtonType, setKeywordButtonType] = React.useState("add-outline");
   const [locationButtonColour, setLocationButtonColour] = React.useState("#C7CBD1");
   const [locationButtonType, setLocationButtonType] = React.useState("add-outline");
+  const [commentButtonColour, setCommentButtonColour] = React.useState("#C7CBD1");
+  const [commentButtonType, setCommentButtonType] = React.useState("add-outline");
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -64,6 +66,13 @@ const AnnotationMenu = () => {
     return isAnnotated;
   }
 
+  const checkIfCommentsAnnotated = () => {
+    let isAnnotated = false;
+    const comments = video.textComments;
+    if (comments.length != 0) isAnnotated = true;
+    return isAnnotated;
+  }
+
   useEffect(() => {
     if (isFocused) {
       if (checkIfKeywordsAnnotated()) {
@@ -80,8 +89,15 @@ const AnnotationMenu = () => {
         setLocationButtonColour("#C7CBD1");
         setLocationButtonType("add-outline");
       }
+      if (checkIfCommentsAnnotated()) {
+        setCommentButtonColour("#1C3EAA");
+        setCommentButtonType("checkmark-outline");
+      } else {
+        setCommentButtonColour("#C7CBD1");
+        setCommentButtonType("add-outline");
+      }
     }
-  }, [keywordButtonColour, keywordButtonType, locationButtonColour, locationButtonType, isFocused]);
+  }, [keywordButtonColour, keywordButtonType, locationButtonColour, locationButtonType, commentButtonColour, commentButtonType, isFocused]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -173,33 +189,18 @@ const AnnotationMenu = () => {
           <Text style={styles.textStyle}>Add Emotion Stickers</Text>
         </View>
         <View style={styles.selectionContainer}>
-          {video.textComments.length == 0 ? (
             <Icon
               reverse
-              name="add-outline"
+              name={commentButtonType}
               size={40}
               type="ionicon"
-              color="#C7CBD1"
+              color={commentButtonColour}
               onPress={() =>
                 navigation.navigate('Text Comments', {
                   id,
                 })
               }
             />
-          ) : (
-            <Icon
-              reverse
-              name="checkmark-outline"
-              size={40}
-              type="ionicon"
-              color="#1C3EAA"
-              onPress={() =>
-                navigation.navigate('Text Comments', {
-                  id,
-                })
-              }
-            />
-          )}
           <Text style={styles.textStyle}>Add Text Comments</Text>
         </View>
       </View>
