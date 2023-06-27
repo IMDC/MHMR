@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, useRef} from 'react';
 import {
   StyleSheet,
   View,
@@ -18,7 +18,12 @@ import worried from '../assets/images/emojis/worried.png';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {useRoute} from '@react-navigation/native';
-import { useRealm, useObject } from '../models/VideoData';
+import {useRealm, useObject} from '../models/VideoData';
+import Video from 'react-native-video';
+
+const EmotionTagging = () => {
+  
+const videoRef = useRef<Video>(null);
 
 class Draggable extends React.Component<any, any> {
   _val: {x: number; y: number};
@@ -42,6 +47,8 @@ class Draggable extends React.Component<any, any> {
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (e, gesture) => true,
       onPanResponderGrant: (e, gesture) => {
+        //pause video here
+        videoRef.current.setNativeProps({paused: true})
         this.state.pan.setOffset({
           x: this._val.x,
           y: this._val.y,
@@ -53,14 +60,16 @@ class Draggable extends React.Component<any, any> {
         {useNativeDriver: false},
       ),
       onPanResponderRelease: (e, gesture) => {
+        //play video here
+        videoRef.current.setNativeProps({paused: false});
+
         if (this.isDropArea(gesture)) {
           Animated.sequence([
             Animated.timing(this.state.opacity, {
               toValue: 0,
-              duration: 1000,
+              duration: 500,
               useNativeDriver: false,
             }),
-
             Animated.timing(this.state.pan, {
               toValue: {x: 0, y: 0},
               duration: 100,
@@ -76,6 +85,12 @@ class Draggable extends React.Component<any, any> {
               showDraggable: true,
             }),
           );
+        } else {
+          Animated.spring(this.state.pan, {
+            toValue: {x: 0, y: 0},
+            friction: 10,
+            useNativeDriver: false,
+          }).start();
         }
       },
     });
@@ -116,28 +131,8 @@ class Draggable extends React.Component<any, any> {
       );
     }
   }
-
-  //   render() {
-  //     const panStyle = {
-  //       transform: this.state.pan.getTranslateTransform(),
-  //     };
-  //     if (this.state.showDraggable) {
-  //       return (
-  //         <View style={{width: '20%', alignItems: 'center'}}>
-  //           <View style={{position: 'absolute'}}>
-  //             <Animated.View
-  //               {...this.panResponder.panHandlers}
-  //               style={[panStyle, styles.circle, {opacity: this.state.opacity}]}>
-  //               <Image style={{height: 120, width: 120}} source={this.props.source}/>
-  //             </Animated.View>
-  //           </View>
-  //         </View>
-  //       );
-  //     }
-  //   }
 }
 
-const EmotionTagging = () => {
   const route: any = useRoute();
   const id = route.params?.id;
   const realm = useRealm();
@@ -153,12 +148,7 @@ const EmotionTagging = () => {
           paddingTop: 15,
         }}>
         <VideoPlayer
-          // source={{
-          //   uri:
-          //     RNFS.DocumentDirectoryPath +
-          //     '/MHMR' +
-          //     '/VisionCamera-20230612_1513433479334963829511152.mp4',
-          // }}
+          videoRef={videoRef}
           source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
