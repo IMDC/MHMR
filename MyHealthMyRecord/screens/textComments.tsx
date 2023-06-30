@@ -15,6 +15,7 @@ import { Icon, Input } from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import { VideoData, useObject, useRealm } from '../models/VideoData';
+const logo = require('../assets/images/MHMRLogo_NOBG.png');
 
 const TextComments = () => {
   const windowWidth = Dimensions.get('window').width;
@@ -78,6 +79,7 @@ const TextComments = () => {
     if (input.current != null) input.current.clear();
     Keyboard.dismiss();
   }
+  
   return (
     <SafeAreaView>
       <View
@@ -98,6 +100,8 @@ const TextComments = () => {
           onProgress={data => {
             setCurrentTime(data.currentTime);
           }}
+          //poster={logo}
+          //posterResizeMode="cover"
           //onPause={calculateTime()}
         />
       </View>

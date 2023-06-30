@@ -15,7 +15,8 @@ import {
   Alert,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
-import test from '../assets/images/MHMRLogo_NOBG.png';
+//import test from '../assets/images/MHMRLogo_NOBG.png';
+const logo = require('../assets/images/MHMRLogo_NOBG.png');
 
 const Home = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -28,7 +29,7 @@ const Home = () => {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Image style={{height: 240, width: 240}} source={test} />
+        <Image style={{height: 240, width: 240}} source={logo} />
 
         <Text
           style={{
