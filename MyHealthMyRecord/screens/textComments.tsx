@@ -21,6 +21,10 @@ const TextComments = () => {
   const windowHeight = Dimensions.get('window').height;
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
+  const videoPlayerRef: any = useRef(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [test, setTest] = useState(0);
+
   const route: any = useRoute();
   const id = route.params?.id;
 
@@ -53,10 +57,20 @@ const TextComments = () => {
         video.textComments! = newTextComments;
       });
     }
+
+    //setTest(videoPlayerRef.calculateTime());
+    //console.log("test", test);
+
     /* reset */
     setNewComment('');
     input.current.clear();
     Keyboard.dismiss();
+    videoPlayerRef.current.setNativeProps({paused: false});
+  }
+
+  const seekToTimestamp = (timestamp: any) => {
+    videoPlayerRef.current.setNativeProps({seek: timestamp});
+    console.log("press", timestamp);
   }
 
   // delete ?
@@ -74,12 +88,17 @@ const TextComments = () => {
           paddingTop: 15,
         }}>
         <VideoPlayer
+          videoRef={videoPlayerRef}
           source={{ uri: MHMRfolderPath + '/' + video.filename }}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
           showOnStart={true}
           disableSeekButtons={true}
+          onProgress={data => {
+            setCurrentTime(data.currentTime);
+          }}
+          //onPause={calculateTime()}
         />
       </View>
       <View>
@@ -91,7 +110,11 @@ const TextComments = () => {
           placeholder="Enter comment here"
           style={{ padding: 15 }}
           rightIcon={<Icon name="send" onPress={addComment} />}
-          onChangeText={value => setNewComment(value)}
+          onChangeText={value => {
+            setNewComment(value);
+            videoPlayerRef.current.setNativeProps({paused: true});
+            setTimestamp(currentTime);
+          }}
         />
         <Text style={styles.headerStyle}>Comments</Text>
         <ScrollView>
@@ -99,13 +122,19 @@ const TextComments = () => {
           {parsedComments.length != 0
             ? parsedComments.map((c: any) => {
               return (
-                <TouchableOpacity>
-                  <Text style={styles.textStyle} key={c.id}>{c.timestamp} - {c.text}</Text>
+                <TouchableOpacity key={c.id} onPress={() => seekToTimestamp(c.timestamp)}>
+                  <Text style={styles.textStyle}>{c.timestamp} - {c.text}</Text>
                 </TouchableOpacity>
               );
             })
             : null}
         </ScrollView>
+      </View>
+      <View>
+        <Text>Current Time: {currentTime}</Text>
+      </View>
+      <View>
+        <Text>Test: {test}</Text>
       </View>
     </SafeAreaView>
   );
