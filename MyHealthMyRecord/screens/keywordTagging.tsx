@@ -84,9 +84,10 @@ const KeywordTagging = () => {
         )}
       />
       <Button
+        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         onPress={saveKeywords}
         title="Save"
-        color="#841584"
+        color="#1C3EAA"
       />
     </SafeAreaView>
   );

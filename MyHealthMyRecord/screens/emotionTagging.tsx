@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, useRef, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -18,126 +18,149 @@ import worried from '../assets/images/emojis/worried.png';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {useRoute} from '@react-navigation/native';
-import { useRealm, useObject } from '../models/VideoData';
+import {useRealm, useObject} from '../models/VideoData';
+import Video from 'react-native-video';
 
-class Draggable extends React.Component<any, any> {
-  _val: {x: number; y: number};
-  panResponder: any;
-  constructor(props: any) {
-    super(props);
+const EmotionTagging = () => {
+  const [time, setTime] = useState(0);
 
-    this.state = {
-      showDraggable: true,
-      dropAreaValues: null,
-      pan: new Animated.ValueXY(),
-      opacity: new Animated.Value(1),
-      source: props.source,
+  const emotions: any[] = [];
+
+  function addEmotion(emotion: string) {
+    let emotionSchema: any = {
+      id: new Realm.BSON.ObjectId(),
+      sentiment: emotion,
+      timestamp: time,
     };
+    emotions.push(emotionSchema);
+    console.log(emotions);
+    console.log(time);
+  }
 
-    this._val = {x: 0, y: 0};
-    this.state.pan.addListener(
-      (value: {x: number; y: number}) => (this._val = value),
-    );
+  const videoRef = useRef<Video>(null);
 
-    this.panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (e, gesture) => true,
-      onPanResponderGrant: (e, gesture) => {
-        this.state.pan.setOffset({
-          x: this._val.x,
-          y: this._val.y,
-        });
-        this.state.pan.setValue({x: 0, y: 0});
-      },
-      onPanResponderMove: Animated.event(
-        [null, {dx: this.state.pan.x, dy: this.state.pan.y}],
-        {useNativeDriver: false},
-      ),
-      onPanResponderRelease: (e, gesture) => {
-        if (this.isDropArea(gesture)) {
-          Animated.sequence([
-            Animated.timing(this.state.opacity, {
-              toValue: 0,
-              duration: 1000,
-              useNativeDriver: false,
-            }),
+  class Draggable extends React.Component<any, any> {
+    _val: {x: number; y: number};
+    panResponder: any;
+    constructor(props: any) {
+      super(props);
 
-            Animated.timing(this.state.pan, {
+      this.state = {
+        showDraggable: true,
+        dropAreaValues: null,
+        pan: new Animated.ValueXY(),
+        opacity: new Animated.Value(1),
+        source: props.source,
+        id: props.id,
+      };
+
+      this._val = {x: 0, y: 0};
+      this.state.pan.addListener(
+        (value: {x: number; y: number}) => (this._val = value),
+      );
+
+      this.panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: (e, gesture) => true,
+        onPanResponderGrant: (e, gesture) => {
+          //pause video here
+          videoRef.current.setNativeProps({paused: true});
+          this.state.pan.setOffset({
+            x: this._val.x,
+            y: this._val.y,
+          });
+          this.state.pan.setValue({x: 0, y: 0});
+        },
+        onPanResponderMove: Animated.event(
+          [null, {dx: this.state.pan.x, dy: this.state.pan.y}],
+          {useNativeDriver: false},
+        ),
+        onPanResponderRelease: (e, gesture) => {
+          //play video here
+          videoRef.current.setNativeProps({paused: false});
+
+          //log emoji id
+          const emojiID = this.state.id;
+          console.log(emojiID);
+          addEmotion(this.state.id);
+
+          if (this.isDropArea(gesture)) {
+            Animated.sequence([
+              Animated.timing(this.state.opacity, {
+                toValue: 0,
+                duration: 500,
+                useNativeDriver: false,
+              }),
+              Animated.timing(this.state.pan, {
+                toValue: {x: 0, y: 0},
+                duration: 100,
+                useNativeDriver: false,
+              }),
+              Animated.timing(this.state.opacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: false,
+              }),
+            ]).start(() =>
+              this.setState({
+                showDraggable: true,
+              }),
+            );
+          } else {
+            Animated.spring(this.state.pan, {
               toValue: {x: 0, y: 0},
-              duration: 100,
+              friction: 10,
               useNativeDriver: false,
-            }),
-            Animated.timing(this.state.opacity, {
-              toValue: 1,
-              duration: 500,
-              useNativeDriver: false,
-            }),
-          ]).start(() =>
-            this.setState({
-              showDraggable: true,
-            }),
-          );
-        }
-      },
-    });
-  }
+            }).start();
+          }
+        },
+      });
+    }
 
-  windowWidth = Dimensions.get('window').width;
-  windowHeight = Dimensions.get('window').height;
-  //   MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+    windowWidth = Dimensions.get('window').width;
+    windowHeight = Dimensions.get('window').height;
+    //   MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  isDropArea(gesture: PanResponderGestureState) {
-    return gesture.moveY < this.windowHeight / 1.5;
-  }
+    isDropArea(gesture: PanResponderGestureState) {
+      return gesture.moveY < this.windowHeight / 1.5;
+    }
 
-  render() {
-    return (
-      <View style={{width: '20%', alignItems: 'center'}}>
-        {this.renderDraggable()}
-      </View>
-    );
-  }
-
-  renderDraggable() {
-    const panStyle = {
-      transform: this.state.pan.getTranslateTransform(),
-    };
-    if (this.state.showDraggable) {
+    render() {
       return (
-        <View style={{position: 'absolute', paddingRight: 60}}>
-          <Animated.View
-            {...this.panResponder.panHandlers}
-            style={[panStyle, styles.circle, {opacity: this.state.opacity}]}>
-            <Image
-              style={{height: 120, width: 120}}
-              source={this.props.source}
-            />
-          </Animated.View>
+        <View style={{width: '20%', alignItems: 'center'}}>
+          {this.renderDraggable()}
         </View>
       );
     }
+
+    renderDraggable() {
+      const panStyle = {
+        transform: this.state.pan.getTranslateTransform(),
+      };
+      if (this.state.showDraggable) {
+        return (
+          console.log('Re-rendering test'),
+          (
+            <View style={{position: 'absolute', paddingRight: 60}}>
+              <Animated.View
+                {...this.panResponder.panHandlers}
+                style={[
+                  panStyle,
+                  styles.circle,
+                  {opacity: this.state.opacity},
+                ]}>
+                <Image
+                  style={{height: 120, width: 120}}
+                  source={this.props.source}
+                />
+              </Animated.View>
+            </View>
+          )
+        );
+      }
+    }
+
   }
 
-  //   render() {
-  //     const panStyle = {
-  //       transform: this.state.pan.getTranslateTransform(),
-  //     };
-  //     if (this.state.showDraggable) {
-  //       return (
-  //         <View style={{width: '20%', alignItems: 'center'}}>
-  //           <View style={{position: 'absolute'}}>
-  //             <Animated.View
-  //               {...this.panResponder.panHandlers}
-  //               style={[panStyle, styles.circle, {opacity: this.state.opacity}]}>
-  //               <Image style={{height: 120, width: 120}} source={this.props.source}/>
-  //             </Animated.View>
-  //           </View>
-  //         </View>
-  //       );
-  //     }
-  //   }
-}
-
-const EmotionTagging = () => {
   const route: any = useRoute();
   const id = route.params?.id;
   const realm = useRealm();
@@ -153,28 +176,39 @@ const EmotionTagging = () => {
           paddingTop: 15,
         }}>
         <VideoPlayer
-          // source={{
-          //   uri:
-          //     RNFS.DocumentDirectoryPath +
-          //     '/MHMR' +
-          //     '/VisionCamera-20230612_1513433479334963829511152.mp4',
-          // }}
+          videoRef={videoRef}
           source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
           showOnStart={true}
           disableSeekButtons={true}
+          // onPlaybackStateChanged={({isPlaying}) => {
+          //   if (isPlaying) {
+          //     console.log('playing');
+          //   } else {
+          //     console.log('paused');
+          //     (              data: { time: React.SetStateAction<number>; }) => {
+          //       setTime(data.time);
+          //     }
+          //   }
+          // }}
+
+          // onProgress={
+          //   data => {
+          //   setTime(data.currentTime);
+          // }}
         />
       </View>
       <View style={styles.ballContainer} />
       <View style={styles.row}>
-        <Draggable source={smile} />
-        <Draggable source={neutral} />
-        <Draggable source={worried} />
-        <Draggable source={sad} />
-        <Draggable source={angry} />
+        <Draggable id="smile" source={smile} />
+        <Draggable id="neutral" source={neutral} />
+        <Draggable id="worried" source={worried} />
+        <Draggable id="sad" source={sad} />
+        <Draggable id="angry" source={angry} />
       </View>
+      {/* <Text>{time}</Text> */}
     </View>
   );
 };

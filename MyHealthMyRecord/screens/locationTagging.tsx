@@ -9,11 +9,10 @@ import {
   Text,
   useColorScheme,
   View,
-  Button,
   Alert,
   FlatList,
 } from 'react-native';
-import {Card, CheckBox, Icon, Image} from '@rneui/themed';
+import {Card, CheckBox, Button, Icon, Image} from '@rneui/themed';
 import {useRealm, useObject} from '../models/VideoData';
 
 const LocationTagging = () => {
@@ -77,7 +76,12 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
           </Card>
         )}
       />
-      <Button onPress={saveLocations} title="Save" color="#841584" />
+      <Button
+        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
+        onPress={saveLocations}
+        title="Save"
+        color="#1C3EAA"
+      />
     </SafeAreaView>
   );
 };
