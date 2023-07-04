@@ -7,133 +7,308 @@ import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
-import React, {useState} from 'react';
-import {FlatList, SafeAreaView, StyleSheet, Text, View} from 'react-native';
-import {ButtonGroup, Icon, Slider} from '@rneui/themed';
+import React, {useState, useMemo} from 'react';
+import {FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {ButtonGroup, Icon, Slider, Button } from '@rneui/themed';
+import {Card, TextInput, RadioButton} from 'react-native-paper';
 
-const Painscale = () => {
-  const painWords = [
-    {id: 1, title: 'Throbbing', value: 0},
-    {id: 2, title: 'Shooting', value: 0},
-    {id: 3, title: 'Stabbing', value: 0},
-    {id: 4, title: 'Sharp', value: 0},
-    {id: 5, title: 'Cramping', value: 0},
-    {id: 6, title: 'Gnawing', value: 0},
-    {id: 7, title: 'Hot-burning', value: 0},
-    {id: 8, title: 'Aching', value: 0},
-    {id: 9, title: 'Heavy', value: 0},
-    {id: 10, title: 'Tender', value: 0},
-    {id: 11, title: 'Splitting', value: 0},
-    {id: 12, title: 'Tired-Exhausting', value: 0},
-    {id: 13, title: 'Sickening', value: 0},
-    {id: 14, title: 'Fearful', value: 0},
-    {id: 15, title: 'Cruel-Punishing', value: 0},
-  ];
-  const [value, setValue] = useState(0);
+const painscaleWords = [
+  {
+    id: 1,
+    name: 'Throbbing',
+    severity_level: [
+      {
+        id: 16,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Shooting',
+    status: 'active',
+    severity_level: [
+      {
+        id: 17,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Stabbing',
+    severity_level: [
+      {
+        id: 18,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 4,
+    name: 'Sharp',
+    severity_level: [
+      {
+        id: 19,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 5,
+    name: 'Cramping',
+    severity_level: [
+      {
+        id: 20,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: 'Gnawing',
+    severity_level: [
+      {
+        id: 21,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 7,
+    name: 'Burning',
+    severity_level: [
+      {
+        id: 22,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 8,
+    name: 'Aching',
+    severity_level: [
+      {
+        id: 23,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 9,
+    name: 'Heavy',
+    severity_level: [
+      {
+        id: 24,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 10,
+    name: 'Tender',
+    severity_level: [
+      {
+        id: 25,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 11,
+    name: 'Splitting',
+    severity_level: [
+      {
+        id: 26,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 12,
+    name: 'Tiring/Exhausting',
+    severity_level: [
+      {
+        id: 27,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 13,
+    name: 'Sickening',
+    severity_level: [
+      {
+        id: 28,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 14,
+    name: 'Fearful',
+    severity_level: [
+      {
+        id: 29,
+        status: 'active',
+      },
+    ],
+  },
+  {
+    id: 15,
+    name: 'Cruel/Punishing',
+    severity_level: [
+      {
+        id: 30,
+        status: 'active',
+      },
+    ],
+  },
 
-  const interpolate = (start: number, end: number) => {
-    let k = (value - 0) / 3; // 0 =>min  && 10 => MAX
-    return Math.ceil((1 - k) * start + k * end) % 256;
+];
+
+export default function Painscale() {
+  const getState = () => {
+    let objData = {};
+    painscaleWords.map(data => {
+        objData[data.id] = null;
+      });
+    return objData;
   };
 
-  const color = () => {
-    let r = interpolate(255, 0);
-    let g = interpolate(0, 255);
-    let b = interpolate(0, 0);
-    return `rgb(${g},${r},${b})`;
+  const [cat, setCat] = useState(getState());
+
+  const onPress = (index: string | number, value: number) => {
+    const existing = {...cat};
+    existing[index] = value;
+    setCat(existing);
   };
 
-  const changeValue = (value: any) => {
-    console.log(value);
-    setValue(value);
+  const onRadiochange = (index: string | number, value: any) => {
+    const existing = {...cat};
+    existing[index] = value;
+    setCat(existing);
   };
 
-const [selectedIndex, setSelectedIndex] = useState(0);
-const [selectedIndexes, setSelectedIndexes] = useState([0, 2, 3]);
+  const renderItem = ({item}) => {
+    let items = [];
+    if (item.id) {
+      items = item.severity_level.map((severity_level: { id: any; }) => {
+        const index = severity_level.id;
+        return (
+          <>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: 280,
+              }}>
+              <RadioButton.Group>
+                <View style={{flexDirection: 'row',  alignContent: 'space-around'}}>
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text>None</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="none"
+                      // key={index}
+                      status={cat[index] === 0 ? 'checked' : 'unchecked'}
+                      onPress={() => {
+                        onPress(index, 0);
+                      }}
+                    />
+                  </View>
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text>Mild</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="mild"
+                      // key={index}
+                      status={cat[index] === 1 ? 'checked' : 'unchecked'}
+                      onPress={() => {
+                        onPress(index, 1);
+                      }}
+                    />
+                  </View>
+
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text>Moderate</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="moderate"
+                      key={index}
+                      status={cat[index] === 2 ? 'checked' : 'unchecked'}
+                      onPress={() => {
+                        onPress(index, 2);
+                      }}
+                    />
+                  </View>
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text>Severe</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="severe"
+                      key={index}
+                      status={cat[index] === 3 ? 'checked' : 'unchecked'}
+                      onPress={() => {
+                        onPress(index, 3);
+                      }}
+                    />
+                  </View>
+                </View>
+              </RadioButton.Group>
+            </View>
+          </>
+        );
+      });
+    }
+    return (
+      <ScrollView>
+        <Text style={styles.textStyle}>{item.name}</Text>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            marginHorizontal: 20,
+          }}>
+          <Text style={{alignSelf: 'center'}}>{items}</Text>
+        </View>
+      </ScrollView>
+    );
+  };
 
   return (
-    <>
-      <SafeAreaView>
-        <FlatList
-          style={{padding: 40}}
-          data={painWords}
-          keyExtractor={(item: any, index: {toString: () => any}) =>
-            index.toString()
-          }
-          renderItem={({item, index}) => (
-            <View
-              style={{flexDirection: 'row', justifyContent: 'space-around'}}>
-              <Text style={styles.textContainer}>{item.title}</Text>
-              <View style={styles.sliderContainer}>
-                
-                {/* <Slider
-                  value={item.value}
-                  onValueChange={setValue}
-                  maximumValue={3}
-                  minimumValue={0}
-                  step={1}
-                  allowTouchTrack
-                  trackStyle={{height: 5, backgroundColor: 'transparent'}}
-                  thumbStyle={{
-                    height: 20,
-                    width: 20,
-                    backgroundColor: 'transparent',
-                  }}
-                  thumbProps={{
-                    children: (
-                      <Icon
-                        name="heartbeat"
-                        type="font-awesome"
-                        size={20}
-                        reverse
-                        containerStyle={{bottom: 20, right: 20}}
-                        // color={color()}
-                      />
-                    ),
-                  }}
-                /> */}
-                {/* <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <Text style={{fontSize: 22}}>None</Text>
-                  <Text style={{fontSize: 22}}>Mild</Text>
-                  <Text style={{fontSize: 22}}>Moderate</Text>
-                  <Text style={{fontSize: 22}}>Severe</Text>
-                </View> */}
-              </View>
-            </View>
-          )}
-        />
-      </SafeAreaView>
-    </>
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        style={styles.container}
+        // data={data}
+        data={painscaleWords}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+      />
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  textContainer: {
-    textAlign: 'right',
-    // alignSelf: 'center',
-    fontSize: 28,
+  container: {
+    paddingTop: 10,
+    alignContent: 'center',
+    flex: 2,
+    backgroundColor: 'white',
+  },
 
-    fontWeight: 'bold',
+  textStyle: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    color: 'black',
+    fontWeight: '600',
+    fontSize: 20,
   },
-  sliderContainer: {width: '60%', height: '100%', alignSelf: 'flex-end'},
-  //   container: {margin: 75},
-  contentView: {
-    padding: 20,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'stretch',
-  },
-  subHeader: {
-    backgroundColor: '#2089dc',
-    color: 'white',
-    textAlign: 'center',
-    paddingVertical: 5,
-    marginBottom: 10,
+  singleRadioButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
   },
 });
-
-export default Painscale;
