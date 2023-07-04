@@ -51,7 +51,7 @@ const ViewRecordings = () => {
 
   // delete later
   videoData.map((video: any) =>
-    console.log('test', video._id.toString(), video.title, video.textComments),
+    console.log('test', video._id.toString(), video.title),
   );
 
   const deleteAllVideoDataObjects = async () => {
