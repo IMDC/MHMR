@@ -16,6 +16,7 @@ import Realm from 'realm';
 import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {Button, Dialog} from '@rneui/themed';
+import {Chip} from 'react-native-paper';
 
 const ViewRecordings = () => {
   const [visible, setVisible] = useState(false);
@@ -53,6 +54,7 @@ const ViewRecordings = () => {
   videoData.map((video: any) =>
     console.log('test', video._id.toString(), video.title),
   );
+
 
   const deleteAllVideoDataObjects = async () => {
     //delete videos from storage
@@ -149,22 +151,71 @@ const ViewRecordings = () => {
                       }}
                       paused={true}
                       disableBack={true}
-                      toggleResizeModeOnFullscreen={true}
+                      // toggleResizeModeOnFullscreen={true}
                       showOnStart={true}
                       disableSeekButtons={true}
+                      isFullscreen={false}
+                      onEnterFullscreen={() =>
+                        navigation.navigate('Fullscreen Video', {
+                          id: video._id,
+                        })
+                      }
+                      // onExitFullscreen={() =>
+                      //   navigation.navigate('Fullscreen Video', {
+                      //     id: video._id,
+                      //   })
+                      // }
                     />
                   </View>
 
                   <View style={styles.rightContainer}>
-                    <Text style={{fontSize: 24, color: 'black'}}>
-                      Name: {video.title}
-                      {'\n'}
-                      {/* Location: {video.location}
-                      {'\n'} */}
-                      Date: {video.datetimeRecorded?.toLocaleString()}
-                    </Text>
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 24,
+                          color: 'black',
+                          fontWeight: 'bold',
+                        }}>
+                        {video.title}
+                      </Text>
+                      <Text style={{fontSize: 20}}>
+                        {video.datetimeRecorded?.toLocaleString()}
+                      </Text>
+
+                      {/* map temparray and display the keywords here */}
+                      <View style={{flexDirection: 'row'}}>
+                        {video.keywords.map((key: string) => {
+                          if (JSON.parse(key).checked) {
+                            return (
+                              <Chip
+                                key={JSON.parse(key).title}
+                                style={{margin: 2}}
+                                textStyle={{fontSize: 16}}
+                                mode="outlined"
+                                compact={true}>
+                                {JSON.parse(key).title}
+                              </Chip>
+                            );
+                          }
+                        })}
+                        {video.locations.map((key: string) => {
+                          if (JSON.parse(key).checked) {
+                            return (
+                              <Chip
+                                key={JSON.parse(key).title}
+                                textStyle={{fontSize: 16}}
+                                style={{margin: 2}}
+                                mode="outlined"
+                                compact={true}>
+                                {JSON.parse(key).title}
+                              </Chip>
+                            );
+                          }
+                        })}
+                      </View>
+                    </View>
                     <View style={styles.buttonContainer}>
-                      <Button
+                      {/* <Button
                         buttonStyle={styles.btnStyle}
                         title="View Video"
                         onPress={() =>
@@ -173,7 +224,7 @@ const ViewRecordings = () => {
                           })
                         }
                       />
-                      <View style={styles.space} />
+                      <View style={styles.space} /> */}
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Markup Video"
@@ -268,7 +319,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding: 10,
-    paddingVertical: 15,
   },
   buttonContainer: {
     flexDirection: 'row',
