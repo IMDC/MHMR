@@ -1,6 +1,6 @@
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -17,6 +17,7 @@ import {Icon, Button, Image} from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import { useObject, useRealm } from '../models/VideoData';
+import { Chip } from 'react-native-paper';
 
 const ReviewAnnotations = () => {
   async function saveChanges() {
@@ -26,6 +27,8 @@ const ReviewAnnotations = () => {
 
     Alert.alert('Your changes have been saved!');
   }
+
+  const videoPlayerRef: any = useRef(null);
 
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
@@ -38,6 +41,11 @@ const ReviewAnnotations = () => {
   const video: any = useObject("VideoData", id);
   
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const seekToTimestamp = (timestamp: any) => {
+    videoPlayerRef.current.setNativeProps({seek: timestamp});
+    console.log('press', timestamp);
+  };
+  
   return (
     <ScrollView>
       <View
@@ -48,12 +56,18 @@ const ReviewAnnotations = () => {
           paddingTop: 15,
         }}>
         <VideoPlayer
+          videoRef={videoPlayerRef}
           source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
           showOnStart={true}
           disableSeekButtons={true}
+          onEnterFullscreen={() =>
+            navigation.navigate('Fullscreen Video', {
+              id: video._id,
+            })
+          }
         />
       </View>
 
@@ -62,20 +76,53 @@ const ReviewAnnotations = () => {
         <View>
           {/* <Text style={styles.headerStyle}>Keywords and Locations</Text> */}
           <View style={styles.row}>
-            <Text style={styles.tagStyle}>Home</Text>
-            <Text style={styles.tagStyle}>Indoors</Text>
+            {video.keywords.map((key: string) => {
+              if (JSON.parse(key).checked) {
+                return (
+                  <Chip
+                    key={JSON.parse(key).title}
+                    style={{margin: 2}}
+                    textStyle={{fontSize: 18}}
+                    mode="outlined"
+                    compact={true}>
+                    {JSON.parse(key).title}
+                  </Chip>
+                );
+              }
+            })}
+            {video.locations.map((key: string) => {
+              if (JSON.parse(key).checked) {
+                return (
+                  <Chip
+                    key={JSON.parse(key).title}
+                    style={{margin: 2}}
+                    textStyle={{fontSize: 18}}
+                    mode="outlined"
+                    compact={true}>
+                    {JSON.parse(key).title}
+                  </Chip>
+                );
+              }
+            })}
           </View>
         </View>
         <View>
           <Text style={styles.headerStyle}>Comments</Text>
-          <TouchableOpacity>
-            <Text style={styles.textStyle}>
-              00:02 - Feeling pain at leg here
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.textStyle}>00:10 - Pain stops</Text>
-          </TouchableOpacity>
+
+          {video.textComments.map((key: string) => {
+            return (
+              <TouchableOpacity
+                style={{flexDirection: 'row'}}
+                onPress={() => seekToTimestamp(JSON.parse(key).timestamp)}>
+                <Text style={styles.textStyle}>
+                  {JSON.parse(key).timestamp + ' - ' + JSON.parse(key).text}
+                </Text>
+                {/* <Text style={styles.textStyle}>
+                      {JSON.parse(key).text}
+                    </Text> */}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 

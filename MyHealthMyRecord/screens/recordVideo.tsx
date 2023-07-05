@@ -144,23 +144,23 @@ const RecordVideo = () => {
     }
   }
 const keywordRef = [
-  {id: 0, title: 'None', checked: false},
-  {id: 1, title: 'Chronic', checked: false},
-  {id: 2, title: 'Weak', checked: false},
-  {id: 3, title: 'Depression', checked: false},
-  {id: 4, title: 'Pain', checked: false},
-  {id: 5, title: 'Fever', checked: false},
-  {id: 6, title: 'Wellness', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'None', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false},
 ];
 
 const locationRef = [
-  {id: 0, title: 'Home', checked: false},
-  {id: 1, title: 'Work', checked: false},
-  {id: 2, title: 'School', checked: false},
-  {id: 3, title: 'Park', checked: false},
-  {id: 4, title: 'Indoors', checked: false},
-  {id: 5, title: 'Outdoors', checked: false},
-  {id: 6, title: 'Other', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Home', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Work', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'School', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Park', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false},
+  {id: new Realm.BSON.ObjectID(), title: 'Other', checked: false},
 ];
 
 
