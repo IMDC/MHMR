@@ -83,6 +83,9 @@ const KeywordTagging = () => {
           </Card>
         )}
       />
+      <Card containerStyle={{padding: 10, margin: 10}}>
+<Text> Add Keyword</Text>
+      </Card>
       <Button
         buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         onPress={saveKeywords}

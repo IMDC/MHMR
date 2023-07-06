@@ -111,16 +111,18 @@ const ReviewAnnotations = () => {
 
           {video.textComments.map((key: string) => {
             return (
-              <TouchableOpacity
-                style={{flexDirection: 'row'}}
-                onPress={() => seekToTimestamp(JSON.parse(key).timestamp)}>
-                <Text style={styles.textStyle}>
-                  {JSON.parse(key).timestamp + ' - ' + JSON.parse(key).text}
-                </Text>
-                {/* <Text style={styles.textStyle}>
+              <ScrollView>
+                <TouchableOpacity
+                  style={{flexDirection: 'row'}}
+                  onPress={() => seekToTimestamp(JSON.parse(key).timestamp)}>
+                  <Text style={styles.textStyle}>
+                    {JSON.parse(key).timestamp + ' - ' + JSON.parse(key).text}
+                  </Text>
+                  {/* <Text style={styles.textStyle}>
                       {JSON.parse(key).text}
                     </Text> */}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </ScrollView>
             );
           })}
         </View>
