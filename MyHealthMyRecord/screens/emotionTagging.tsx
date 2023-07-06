@@ -1,4 +1,4 @@
-import React, {Component, useRef, useState} from 'react';
+import React, { Component, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,37 +10,61 @@ import {
   FlatList,
   PanResponderGestureState,
 } from 'react-native';
-import angry from '../assets/images/emojis/angry.png';
-import neutral from '../assets/images/emojis/neutral.png';
-import sad from '../assets/images/emojis/sad.png';
-import smile from '../assets/images/emojis/smile.png';
-import worried from '../assets/images/emojis/worried.png';
+const angry = require('../assets/images/emojis/angry.png');
+const neutral = require('../assets/images/emojis/neutral.png');
+const sad = require('../assets/images/emojis/sad.png');
+const smile = require('../assets/images/emojis/smile.png');
+const worried = require('../assets/images/emojis/worried.png');
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import {useRoute} from '@react-navigation/native';
-import {useRealm, useObject} from '../models/VideoData';
+import { useRoute } from '@react-navigation/native';
+import { useRealm, useObject } from '../models/VideoData';
 import Video from 'react-native-video';
 
 const EmotionTagging = () => {
-  const [time, setTime] = useState(0);
+  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  const emotions: any[] = [];
+  const route: any = useRoute();
+  const id = route.params?.id;
+
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
+  
+  const [emotionStickers, setEmotionStickers] = useState(video.emotionStickers);
+  let parsedStickers: string[] = [];
+  emotionStickers.map((sticker: string) => parsedStickers.push(JSON.parse(sticker)));
+
+  const videoRef: any = useRef<Video>(null);
+
+  const time = useState(0);
+
+  //const emotions: any[] = [];
 
   function addEmotion(emotion: string) {
     let emotionSchema: any = {
       id: new Realm.BSON.ObjectId(),
       sentiment: emotion,
-      timestamp: time,
+      timestamp: time[0],
     };
-    emotions.push(emotionSchema);
-    console.log(emotions);
-    console.log(time);
+
+    parsedStickers.push(emotionSchema);
+    console.log("parsed", parsedStickers);
+
+    const newStickers: any[] = [];
+    parsedStickers.map((sticker: string) => newStickers.push(JSON.stringify(sticker)));
+    
+    setEmotionStickers(newStickers);
+    if (video) {
+      realm.write(() => {
+        video.emotionStickers! = newStickers;
+      });
+    }
+    //console.log(time);
+
   }
 
-  const videoRef = useRef<Video>(null);
-
   class Draggable extends React.Component<any, any> {
-    _val: {x: number; y: number};
+    _val: { x: number; y: number };
     panResponder: any;
     constructor(props: any) {
       super(props);
@@ -54,29 +78,36 @@ const EmotionTagging = () => {
         id: props.id,
       };
 
-      this._val = {x: 0, y: 0};
+      this._val = { x: 0, y: 0 };
       this.state.pan.addListener(
-        (value: {x: number; y: number}) => (this._val = value),
+        (value: { x: number; y: number }) => (this._val = value),
       );
 
       this.panResponder = PanResponder.create({
         onStartShouldSetPanResponder: (e, gesture) => true,
         onPanResponderGrant: (e, gesture) => {
           //pause video here
-          videoRef.current.setNativeProps({paused: true});
+          videoRef.current.setNativeProps({ paused: true });
+          // delete below
+          /* if (videoRef != null) {
+            let t: number = videoRef.current.currentTime;
+            let v = videoRef.current;
+            //setTime(t);
+            console.log("time at pause:", time, t);
+          }    */
           this.state.pan.setOffset({
             x: this._val.x,
             y: this._val.y,
           });
-          this.state.pan.setValue({x: 0, y: 0});
+          this.state.pan.setValue({ x: 0, y: 0 });
         },
         onPanResponderMove: Animated.event(
-          [null, {dx: this.state.pan.x, dy: this.state.pan.y}],
-          {useNativeDriver: false},
+          [null, { dx: this.state.pan.x, dy: this.state.pan.y }],
+          { useNativeDriver: false },
         ),
         onPanResponderRelease: (e, gesture) => {
           //play video here
-          videoRef.current.setNativeProps({paused: false});
+          videoRef.current.setNativeProps({ paused: false });
 
           //log emoji id
           const emojiID = this.state.id;
@@ -91,7 +122,7 @@ const EmotionTagging = () => {
                 useNativeDriver: false,
               }),
               Animated.timing(this.state.pan, {
-                toValue: {x: 0, y: 0},
+                toValue: { x: 0, y: 0 },
                 duration: 100,
                 useNativeDriver: false,
               }),
@@ -107,7 +138,7 @@ const EmotionTagging = () => {
             );
           } else {
             Animated.spring(this.state.pan, {
-              toValue: {x: 0, y: 0},
+              toValue: { x: 0, y: 0 },
               friction: 10,
               useNativeDriver: false,
             }).start();
@@ -126,7 +157,7 @@ const EmotionTagging = () => {
 
     render() {
       return (
-        <View style={{width: '20%', alignItems: 'center'}}>
+        <View style={{ width: '20%', alignItems: 'center' }}>
           {this.renderDraggable()}
         </View>
       );
@@ -138,18 +169,18 @@ const EmotionTagging = () => {
       };
       if (this.state.showDraggable) {
         return (
-          console.log('Re-rendering test'),
+          console.log('Re-rendering test===='),
           (
-            <View style={{position: 'absolute', paddingRight: 60}}>
+            <View style={{ position: 'absolute', paddingRight: 60 }}>
               <Animated.View
                 {...this.panResponder.panHandlers}
                 style={[
                   panStyle,
                   styles.circle,
-                  {opacity: this.state.opacity},
+                  { opacity: this.state.opacity },
                 ]}>
                 <Image
-                  style={{height: 120, width: 120}}
+                  style={{ height: 120, width: 120 }}
                   source={this.props.source}
                 />
               </Animated.View>
@@ -161,13 +192,12 @@ const EmotionTagging = () => {
 
   }
 
-  const route: any = useRoute();
-  const id = route.params?.id;
-  const realm = useRealm();
-  const video: any = useObject('VideoData', id);
-  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   return (
     <View style={styles.mainContainer}>
+      {/* can delete current time view later */}
+      <View>
+        <Text>Current Time: {time[0]}</Text>
+      </View>
       <View
         style={{
           width: Dimensions.get('window').width,
@@ -177,27 +207,13 @@ const EmotionTagging = () => {
         }}>
         <VideoPlayer
           videoRef={videoRef}
-          source={{uri: MHMRfolderPath + '/' + video.filename}}
+          source={{ uri: MHMRfolderPath + '/' + video.filename }}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
           showOnStart={true}
           disableSeekButtons={true}
-          // onPlaybackStateChanged={({isPlaying}) => {
-          //   if (isPlaying) {
-          //     console.log('playing');
-          //   } else {
-          //     console.log('paused');
-          //     (              data: { time: React.SetStateAction<number>; }) => {
-          //       setTime(data.time);
-          //     }
-          //   }
-          // }}
-
-          // onProgress={
-          //   data => {
-          //   setTime(data.currentTime);
-          // }}
+          onProgress={(data) => time[0] = data.currentTime}
         />
       </View>
       <View style={styles.ballContainer} />
@@ -208,7 +224,6 @@ const EmotionTagging = () => {
         <Draggable id="sad" source={sad} />
         <Draggable id="angry" source={angry} />
       </View>
-      {/* <Text>{time}</Text> */}
     </View>
   );
 };
