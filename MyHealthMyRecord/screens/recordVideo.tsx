@@ -179,6 +179,7 @@ locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
         filename: filename,
         duration: duration,
         textComments: [],
+        emotionStickers: [],
         keywords: keywordInit,
         locations: locationInit,
       });
