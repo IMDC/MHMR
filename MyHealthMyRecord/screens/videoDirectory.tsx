@@ -15,7 +15,7 @@ import Video from 'react-native-video';
 import Realm from 'realm';
 import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
-import {Button, Dialog} from '@rneui/themed';
+import {Button, Dialog, Icon} from '@rneui/themed';
 import {Chip} from 'react-native-paper';
 
 const ViewRecordings = () => {
@@ -177,6 +177,15 @@ const ViewRecordings = () => {
                           fontWeight: 'bold',
                         }}>
                         {video.title}
+                        {video.textComments.length !== 0 ? (
+                          <Icon
+                            name="comment"
+                            type="material"
+                            color="black"
+                            size={20}
+                            style={{alignSelf: 'flex-start', paddingLeft: 5}}
+                          />
+                        ) : null}
                       </Text>
                       <Text style={{fontSize: 20}}>
                         {video.datetimeRecorded?.toLocaleString()}
@@ -214,6 +223,8 @@ const ViewRecordings = () => {
                         })}
                       </View>
                     </View>
+                    {/* if textcomment length is does not equal 0, add an icon */}
+
                     <View style={styles.buttonContainer}>
                       {/* <Button
                         buttonStyle={styles.btnStyle}
