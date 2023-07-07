@@ -62,9 +62,11 @@ const TextComments = () => {
   const [commentEdit, setCommentEdit] = React.useState('');
 
   const [textComments, setTextComments] = useState(video.textComments);
-  let parsedComments: string[] = [];
+  let parsedComments: any[] = [];
+  //console.log("re-render 1-----", parsedComments);
   textComments.map((text: string) => parsedComments.push(JSON.parse(text)));
-  //const [displayComments, setDisplayComments] = useState(parsedComments);
+  //console.log("re-render 2-----", parsedComments);
+  const [displayComments, setDisplayComments] = useState(parsedComments);
 
   const [newComment, setNewComment] = React.useState('');
   const [newTimestamp, setTimestamp] = React.useState(1);
@@ -77,6 +79,7 @@ const TextComments = () => {
     };
     /* add new comment to parsed array and stringify parsed array*/
     parsedComments.push(commentSchema);
+    setDisplayComments(parsedComments);
     // console.log("==parsed==", parsedComments);
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
@@ -102,14 +105,13 @@ const TextComments = () => {
   };
 
   const editComment = (commentID: any) => {
-
-
     /* find index of comment matching input id and remove from array */
     const commentIndex = parsedComments.findIndex(
       (element: any) => element.id == commentID,
     );
 
     parsedComments[commentIndex].text = commentEdit;
+    setDisplayComments(parsedComments);
     /* update comments array in db */
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
@@ -128,8 +130,9 @@ const TextComments = () => {
       (element: any) => element.id == commentID,
     );
     parsedComments.splice(commentIndex, 1);
-    //console.log(commentIndex, parsedComments);
-
+    setDisplayComments(parsedComments);
+    console.log("-----------parsed", commentIndex, parsedComments);
+    //console.log("-----------display", displayComments);
     /* update comments array in db */
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
@@ -142,16 +145,11 @@ const TextComments = () => {
     }
   };
 
+  /* given a timestamp, jump to that time in the video */
   const seekToTimestamp = (timestamp: any) => {
     videoPlayerRef.current.setNativeProps({seek: timestamp});
     console.log('press', timestamp);
   };
-
-  // delete ?
-  function handleClick() {
-    if (input.current != null) input.current.clear();
-    Keyboard.dismiss();
-  }
 
   return (
     <>
@@ -226,13 +224,17 @@ const TextComments = () => {
                             //value={text}
                             defaultValue={commentSelectedText}
                             onChangeText={value => setCommentEdit(value)}
+                            onSubmitEditing={() => {
+                              editComment(commentSelectedID);
+                              toggleDialog();
+                            }}
                           />
 
                           <Dialog.Actions>
                             <Dialog.Button
                               title="CONFIRM"
                               onPress={() => {
-                                editComment(c.id);
+                                editComment(commentSelectedID);
                                 toggleDialog();
                               }}
                             />
