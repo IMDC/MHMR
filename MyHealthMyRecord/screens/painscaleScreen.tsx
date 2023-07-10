@@ -205,9 +205,10 @@ export default function Painscale() {
                 width: 280,
               }}>
               <RadioButton.Group>
-                <View style={{flexDirection: 'row',  alignContent: 'space-around'}}>
+                <View
+                  style={{flexDirection: 'row', alignContent: 'space-around'}}>
                   <View style={styles.singleRadioButtonContainer}>
-                    <Text>None</Text>
+                    <Text style={{fontSize: 24}}>None</Text>
                     <RadioButton
                       color="#5d86d7"
                       value="none"
@@ -219,7 +220,7 @@ export default function Painscale() {
                     />
                   </View>
                   <View style={styles.singleRadioButtonContainer}>
-                    <Text>Mild</Text>
+                    <Text style={{fontSize: 24}}>Mild</Text>
                     <RadioButton
                       color="#5d86d7"
                       value="mild"
@@ -232,7 +233,7 @@ export default function Painscale() {
                   </View>
 
                   <View style={styles.singleRadioButtonContainer}>
-                    <Text>Moderate</Text>
+                    <Text style={{fontSize: 24}}>Moderate</Text>
                     <RadioButton
                       color="#5d86d7"
                       value="moderate"
@@ -244,7 +245,7 @@ export default function Painscale() {
                     />
                   </View>
                   <View style={styles.singleRadioButtonContainer}>
-                    <Text>Severe</Text>
+                    <Text style={{fontSize: 24}}>Severe</Text>
                     <RadioButton
                       color="#5d86d7"
                       value="severe"
@@ -263,7 +264,7 @@ export default function Painscale() {
       });
     }
     return (
-      <ScrollView>
+      <ScrollView style={styles.container}>
         <Text style={styles.textStyle}>{item.name}</Text>
 
         <View
@@ -294,8 +295,7 @@ export default function Painscale() {
 const styles = StyleSheet.create({
   container: {
     paddingTop: 10,
-    alignContent: 'center',
-    flex: 2,
+    flex: 1,
     backgroundColor: 'white',
   },
 

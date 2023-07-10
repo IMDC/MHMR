@@ -1,7 +1,7 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
-import {ScrollView, StyleSheet, Touchable} from 'react-native';
+import {Dimensions, ScrollView, StyleSheet, Touchable} from 'react-native';
 import {View, TouchableOpacity, Text} from 'react-native';
 import React, {
   useRef,
@@ -19,6 +19,15 @@ import {Button, Dialog, Icon} from '@rneui/themed';
 import {Chip} from 'react-native-paper';
 
 const ViewRecordings = () => {
+
+const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
+  const paddingToBottom = 20;
+  return (
+    layoutMeasurement.height + contentOffset.y >=
+    contentSize.height - paddingToBottom
+  );
+};
+
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
@@ -38,7 +47,7 @@ const ViewRecordings = () => {
 
   const scrollRef: any = useRef();
 
-  const onPressTouch = () => {
+  let onPressTouch = () => {
     scrollRef.current?.scrollTo({
       y: 0,
       animated: true,
@@ -111,21 +120,33 @@ const ViewRecordings = () => {
     );
   };
 
+useEffect(() => {
+  setVideos(videosByDate);
+}, []);
+
   //check file space
   /*
   const FSInfoResult = RNFS.getFSInfo();
   console.log("space: ", (await FSInfoResult).totalSpace, (await FSInfoResult).freeSpace);
   */
 
+  onPressTouch = () => {
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
+  }
+
   return (
     <View>
-      <Button
+      {/* <Button
         buttonStyle={styles.btnStyle}
         title="View Recordings"
         onPress={() => setVideos(videosByDate)}
-      />
+      /> */}
 
-      <ScrollView style={{marginTop: 5, marginBottom: 40}} ref={scrollRef}>
+      <ScrollView style={{marginTop: 5,}} ref={scrollRef}>
+ 
         <TouchableOpacity
           // style={{alignItems: 'flex-end'}}
           style={{alignItems: 'center'}}
@@ -292,11 +313,14 @@ const ViewRecordings = () => {
               );
             })
           : null}
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
-            Scroll to Top
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={{alignItems: 'center'}}
+            onPress={onPressTouch}>
+            <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
+              Scroll to Top
+            </Text>
+          </TouchableOpacity>
+
       </ScrollView>
     </View>
   );
