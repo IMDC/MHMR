@@ -59,10 +59,10 @@ const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   //console.log(videosByDate);
 
-  // delete later
-  videoData.map((video: any) =>
+  // delete after figuring out why this page re-renders when annotating on other pages
+  /* videoData.map((video: any) =>
     console.log('test', video._id.toString(), video.title),
-  );
+  ); */
 
 
   const deleteAllVideoDataObjects = async () => {

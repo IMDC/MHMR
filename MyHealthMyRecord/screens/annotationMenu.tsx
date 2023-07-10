@@ -35,18 +35,14 @@ const AnnotationMenu = () => {
 
   const [title, setTitle] = React.useState(video.title);
 
-  const [keywordButtonColour, setKeywordButtonColour] =
-    React.useState('#C7CBD1');
-  const [keywordButtonType, setKeywordButtonType] =
-    React.useState('add-outline');
-  const [locationButtonColour, setLocationButtonColour] =
-    React.useState('#C7CBD1');
-  const [locationButtonType, setLocationButtonType] =
-    React.useState('add-outline');
-  const [commentButtonColour, setCommentButtonColour] =
-    React.useState('#C7CBD1');
-  const [commentButtonType, setCommentButtonType] =
-    React.useState('add-outline');
+  const [keywordButtonColour, setKeywordButtonColour] = React.useState("#C7CBD1");
+  const [keywordButtonType, setKeywordButtonType] = React.useState("add-outline");
+  const [locationButtonColour, setLocationButtonColour] = React.useState("#C7CBD1");
+  const [locationButtonType, setLocationButtonType] = React.useState("add-outline");
+  const [commentButtonColour, setCommentButtonColour] = React.useState("#C7CBD1");
+  const [commentButtonType, setCommentButtonType] = React.useState("add-outline");
+  const [emotionButtonColour, setEmotionButtonColour] = React.useState("#C7CBD1");
+  const [emotionButtonType, setEmotionButtonType] = React.useState("add-outline");
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -84,6 +80,13 @@ const AnnotationMenu = () => {
     return isAnnotated;
   };
 
+  const checkIfEmotionsAnnotated = () => {
+    let isAnnotated = false;
+    const emotions = video.emotionStickers;
+    if (emotions.length != 0) isAnnotated = true;
+    return isAnnotated;
+  }
+
   useEffect(() => {
     if (isFocused) {
       if (checkIfKeywordsAnnotated()) {
@@ -106,6 +109,13 @@ const AnnotationMenu = () => {
       } else {
         setCommentButtonColour('#C7CBD1');
         setCommentButtonType('add-outline');
+      }
+      if (checkIfEmotionsAnnotated()) {
+        setEmotionButtonColour("#1C3EAA");
+        setEmotionButtonType("checkmark-outline");
+      } else {
+        setEmotionButtonColour("#C7CBD1");
+        setEmotionButtonType("add-outline");
       }
     }
   }, [
@@ -177,34 +187,18 @@ const AnnotationMenu = () => {
           <Text style={styles.textStyle}>Add Location</Text>
         </View>
         <View style={styles.selectionContainer}>
-          {video.emotionStickers.length == 0 ? (
             <Icon
               reverse
-              name="add-outline"
+              name={emotionButtonType}
               size={40}
               type="ionicon"
-              color="#C7CBD1"
+              color={emotionButtonColour}
               onPress={() => {
                 navigation.navigate('Emotion Tagging', {
                   id,
                 });
               }}
             />
-          ) : (
-            <Icon
-              reverse
-              name="checkmark-outline"
-              size={40}
-              type="ionicon"
-              color="#1C3EAA"
-              onPress={() => {
-                navigation.navigate('Emotion Tagging', {
-                  id,
-                });
-              }}
-            />
-          )}
-
           <Text style={styles.textStyle}>Add Emotion Stickers</Text>
         </View>
         <View style={styles.selectionContainer}>

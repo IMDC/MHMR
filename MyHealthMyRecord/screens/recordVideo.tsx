@@ -175,7 +175,7 @@ locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
       realm.create('VideoData', {
         _id: new Realm.BSON.ObjectID(),
         datetimeRecorded: new Date(),
-        title: new Date().toLocaleString(),
+        title: new Date().toString(),
         filename: filename,
         duration: duration,
         textComments: [],
