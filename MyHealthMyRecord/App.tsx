@@ -25,6 +25,7 @@ import FullscreenVideo from './screens/fullscreenVideo';
 import Painscale from './screens/painscaleScreen';
 import Help from './screens/help';
 import Dashboard from './screens/dashboard';
+import * as Styles from './assets/util/styles';
 import { Icon } from '@rneui/themed';
 
 const Stack = createNativeStackNavigator();
@@ -32,7 +33,7 @@ const Tab: any = createBottomTabNavigator();
 
 function StackNav() {
   return (
-  <Stack.Navigator initialRouteName="Home" screenOptions={{ headerStyle: { backgroundColor: '#dedee0' } }}>
+  <Stack.Navigator initialRouteName="Home" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Record Video" component={RecordVideo} />
         <Stack.Screen
@@ -57,20 +58,20 @@ function App() {
   return (
     <RealmProvider>
       <NavigationContainer>
-        <Tab.Navigator screenOptions={{ tabBarShowLabel: false, tabBarStyle: { height: 70 , backgroundColor: '#dedee0' }}}>
+        <Tab.Navigator screenOptions={{ tabBarShowLabel: false, tabBarStyle: { height: Styles.bottomNavBarHeight , backgroundColor: Styles.NavBarGrey }}}>
         <Tab.Screen
           name="Dashboard"
           component={Dashboard}
           options={{
             tabBarLabel: 'Dashboard',
-            headerStyle: { backgroundColor: '#dedee0' },
+            headerStyle: { backgroundColor: Styles.NavBarGrey },
             tabBarIcon: () => (
               <Icon
                     name="analytics-outline"
-                    size={35}
+                    size={Styles.bottomNavIconSize}
                     type="ionicon"
-                    color="#1C3EAA"
-                    style={{ width: 35 }}
+                    color={Styles.MHMRBlue}
+                    style={{ width: Styles.bottomNavIconSize }}
                   />
             ),
           }}
@@ -81,14 +82,14 @@ function App() {
           tabBarShowLabel={false}
           options={{
             headerShown: false,
-            tabBarLabel: 'Home',
+            tabBarLabel: 'MyHealthMyRecord',
             tabBarIcon: () => (
               <Icon
                     name="home-outline"
-                    size={35}
+                    size={Styles.bottomNavIconSize}
                     type="ionicon"
-                    color="#1C3EAA"
-                    style={{ width: 35 }}
+                    color={Styles.MHMRBlue}
+                    style={{ width: Styles.bottomNavIconSize }}
                   />
             ),
           }}
@@ -98,14 +99,14 @@ function App() {
           component={Help}
           options={{
             tabBarLabel: 'Help',
-            headerStyle: { backgroundColor: '#dedee0' },
+            headerStyle: { backgroundColor: Styles.NavBarGrey },
             tabBarIcon: () => (
               <Icon
                     name="information-circle-outline"
-                    size={35}
+                    size={Styles.bottomNavIconSize}
                     type="ionicon"
-                    color="#1C3EAA"
-                    style={{ width: 35 }}
+                    color={Styles.MHMRBlue}
+                    style={{ width: Styles.bottomNavIconSize }}
                   />
             ),
           }}
