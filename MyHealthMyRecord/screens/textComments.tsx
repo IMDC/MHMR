@@ -179,7 +179,7 @@ const TextComments = () => {
         ref={input}
         containerStyle={{paddingHorizontal: 25, paddingTop: 15}}
         multiline={true}
-        placeholder="Enter comment here"
+        placeholder="Enter comment here..."
         style={{padding: 15}}
         rightIcon={<Icon name="send" onPress={addComment} />}
         onChangeText={value => {
@@ -232,7 +232,7 @@ const TextComments = () => {
                             <Dialog.Button
                               title="CONFIRM"
                               onPress={() => {
-                                editComment(c.id);
+                                editComment(commentSelectedID);
                                 toggleDialog();
                               }}
                             />
@@ -304,6 +304,7 @@ const TextComments = () => {
                                   setCommentSelectedID(c.id);
                         
                                   toggleDialog();
+                                  // console.log('comment selected', c.text);
                                   console.log('comment selected', c.id);
                                 }}>
                                 <Text style={{color: '#1C3EAA', fontSize: 16}}>
@@ -384,7 +385,8 @@ const styles = StyleSheet.create({
   },
   commentContainer: {
     flex: 1,
-    marginTop: 8,
+    paddingVertical: 4,
+    paddingTop: 10,
     // flexWrap: 'wrap',
     //backgroundColor: '#dadbe0',
     // justifyContent: 'flex-end',
