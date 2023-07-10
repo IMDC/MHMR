@@ -8,13 +8,45 @@ import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
-import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, Text, FlatList} from 'react-native';
-import {Icon, Image, Card, Button, CheckBox} from '@rneui/themed';
+import React, {useEffect, useState} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  FlatList,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  LogBox,
+} from 'react-native';
+import {
+  Icon,
+  Image,
+  Card,
+  Button,
+  CheckBox,
+  Dialog,
+  Input,
+} from '@rneui/themed';
 import {useRealm, useObject} from '../models/VideoData';
 
 const KeywordTagging = () => {
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+  }, []);
+
+  // const validateKeyword = (keyword: string) => {
+  //   var re = /^(?!\s*$).+;/;
+  //   return re.test(keyword);
+  // };
+
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+  const [visible, setVisible] = useState(false);
+
+  const toggleDialog = () => {
+    setVisible(!visible);
+  };
 
   const route: any = useRoute();
   const id = route.params?.id;
@@ -22,30 +54,57 @@ const KeywordTagging = () => {
   const realm = useRealm();
   const video: any = useObject('VideoData', id);
 
+  const [newKeyword, setNewKeyword] = useState('');
+
+  const [keywords, setKeywords] = useState(video.keywords);
   let parsedKeywords: string[] = [];
+  keywords.map((key: string) => parsedKeywords.push(JSON.parse(key)));
 
-  const [keyword, setKeyword] = useState(video.keywords);
-
-  keyword.map((key: string) => parsedKeywords.push(JSON.parse(key)));
-
-  console.log(parsedKeywords);
-
-  // const updateKeywords = () => {
-  //   console.log('new:', keyword);
-  //   if (video) {
-  //     realm.write(() => {
-  //       video.keywords! = JSON.stringify(keyword);
-  //     });
-  //   }
-  // };
+  console.log('show parsedKeywords:', parsedKeywords);
 
   const [category, setCategory] = useState(parsedKeywords);
 
-  function checkBoxFunc(index: any) {
-    console.log(index);
+  const addKeyword = () => {
+    const keywordSchema: any = {
+      id: new Realm.BSON.ObjectId(),
+      title: newKeyword,
+      checked: false,
+    };
+    parsedKeywords.push(keywordSchema);
+    const newKeyword_s: any[] = [];
+    parsedKeywords.map((key: string) => newKeyword_s.push(JSON.stringify(key)));
+
+    setCategory(parsedKeywords);
+    setKeywords(newKeyword_s);
+    console.log('newkeyword_s', newKeyword_s);
+
+    if (video) {
+      realm.write(() => {
+        video.keywords! = newKeyword_s;
+      });
+    }
+  };
+
+  // function checkBoxFunc(id: any) {
+  //   console.log(id);
+  //   const textTag: any = [...category];
+  //   console.log('texttag:', textTag);
+  //   textTag[id].checked = !textTag[id].checked;
+  //   setCategory(textTag);
+  // }
+
+  function checkBoxFunc(id: any) {
     const textTag: any = [...category];
-    textTag[index].checked = !textTag[index].checked;
-    setCategory(textTag);
+    textTag.map((item: any) => {
+      if (item.id === id) {
+        item.checked = !item.checked;
+        setCategory(textTag);
+        console.log('texttag:', textTag);
+      }
+
+      console.log('item:', item);
+      console.log('id:', id);
+    });
   }
 
   function saveKeywords() {
@@ -63,36 +122,65 @@ const KeywordTagging = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView style={styles.container}>
+      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+        <Dialog.Title title="Add a new keyword:" />
+        <Input
+          inputStyle={{fontSize: 35}}
+          placeholder="Enter keyword here..."
+          onChangeText={value => setNewKeyword(value)}
+        />
+        <Dialog.Actions>
+          <Dialog.Button
+            title="CONFIRM"
+            onPress={() => {
+              addKeyword();
+              toggleDialog();
+              console.log(newKeyword);
+            }}
+          />
+          <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
+        </Dialog.Actions>
+      </Dialog>
       <Text style={{fontSize: 24}}>Select tags that apply to your video:</Text>
       <FlatList
-        style={{padding: 40}}
+        style={{paddingHorizontal: 40}}
         data={category}
         keyExtractor={(item: any, index) => index.toString()}
-        renderItem={({item, index}) => (
+        renderItem={({item}) => (
           <Card containerStyle={{padding: 10, margin: 10}}>
             <CheckBox
               center={false}
               title={item.title}
-              // titleProps={{color: 'black', fontWeight: 'bold'}}
+              titleProps={{style: {paddingLeft: 4, fontSize: 20}}}
               checked={item?.checked}
-              // value={item?.checked}
-              onPress={() => checkBoxFunc(index)}
+              onPress={() => {
+                checkBoxFunc(item.id);
+                console.log('itemtest:', item);
+              }}
               size={30}
             />
           </Card>
         )}
       />
-      <Card containerStyle={{padding: 10, margin: 10}}>
-<Text> Add Keyword</Text>
-      </Card>
+      <TouchableOpacity
+        style={{paddingHorizontal: 40}}
+        onPress={() => toggleDialog()}>
+        <Card containerStyle={{marginHorizontal: 10, margin: 10}}>
+          <View style={{flexDirection: 'row'}}>
+            <Icon style={{marginLeft: 8}} name="add-outline" type="ionicon" />
+            <Text style={{fontSize: 20, height: 30}}> Add Keyword</Text>
+          </View>
+        </Card>
+      </TouchableOpacity>
+
       <Button
-        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
+        buttonStyle={{margin: 40, width: 220, height: 75, alignSelf: 'center'}}
         onPress={saveKeywords}
         title="Save"
         color="#1C3EAA"
       />
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
@@ -106,3 +194,6 @@ const styles = StyleSheet.create({
 });
 
 export default KeywordTagging;
+function alert(arg0: string) {
+  throw new Error('Function not implemented.');
+}
