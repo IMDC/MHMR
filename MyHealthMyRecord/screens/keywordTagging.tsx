@@ -92,6 +92,19 @@ const KeywordTagging = () => {
   //   textTag[id].checked = !textTag[id].checked;
   //   setCategory(textTag);
   // }
+  function saveKeywords() {
+    const keywords: any = [];
+    category.map((item: any) => {
+      keywords.push(JSON.stringify(item));
+    });
+    console.log('test:', keywords);
+    if (video) {
+      realm.write(() => {
+        video.keywords! = keywords;
+      });
+    }
+    // navigation.goBack();
+  }
 
   function checkBoxFunc(id: any) {
     const textTag: any = [...category];
@@ -105,20 +118,7 @@ const KeywordTagging = () => {
       console.log('item:', item);
       console.log('id:', id);
     });
-  }
-
-  function saveKeywords() {
-    const keywords: any = [];
-    category.map((item: any) => {
-      keywords.push(JSON.stringify(item));
-    });
-    console.log('test:', keywords);
-    if (video) {
-      realm.write(() => {
-        video.keywords! = keywords;
-      });
-    }
-    navigation.goBack();
+    saveKeywords();
   }
 
   return (
@@ -174,12 +174,13 @@ const KeywordTagging = () => {
         </Card>
       </TouchableOpacity>
 
-      <Button
+      {/* <Button
         buttonStyle={{margin: 40, width: 220, height: 75, alignSelf: 'center'}}
         onPress={saveKeywords}
         title="Save"
         color="#1C3EAA"
-      />
+      /> */}
+      <View style={{margin:40, height: 75}}/>
     </ScrollView>
   );
 };

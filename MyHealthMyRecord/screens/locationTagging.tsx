@@ -37,6 +37,7 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const locationTag: any = [...category];
     locationTag[index].checked = !locationTag[index].checked;
     setCategory(locationTag);
+    saveLocations();
   }
 
   function saveLocations() {
@@ -50,7 +51,7 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
         video.locations! = locations;
       });
     }
-    navigation.goBack();
+    // navigation.goBack();
   }
 
   return (
@@ -76,12 +77,13 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
           </Card>
         )}
       />
-      <Button
+      {/* <Button
         buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         onPress={saveLocations}
         title="Save"
         color="#1C3EAA"
-      />
+      /> */}
+      <View style={{margin:40, height: 75}}/>
     </SafeAreaView>
   );
 };

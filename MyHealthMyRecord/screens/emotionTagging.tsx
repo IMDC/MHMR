@@ -9,6 +9,7 @@ import {
   Dimensions,
   FlatList,
   PanResponderGestureState,
+  TouchableOpacity,
 } from 'react-native';
 const angry = require('../assets/images/emojis/angry.png');
 const neutral = require('../assets/images/emojis/neutral.png');
@@ -20,6 +21,8 @@ import RNFS from 'react-native-fs';
 import { useRoute } from '@react-navigation/native';
 import { useRealm, useObject } from '../models/VideoData';
 import Video from 'react-native-video';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native';
 
 const EmotionTagging = () => {
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
@@ -29,7 +32,7 @@ const EmotionTagging = () => {
 
   const realm = useRealm();
   const video: any = useObject('VideoData', id);
-  
+
   const [emotionStickers, setEmotionStickers] = useState(video.emotionStickers);
   let parsedStickers: string[] = [];
   emotionStickers.map((sticker: string) => parsedStickers.push(JSON.parse(sticker)));
@@ -52,7 +55,7 @@ const EmotionTagging = () => {
 
     const newStickers: any[] = [];
     parsedStickers.map((sticker: string) => newStickers.push(JSON.stringify(sticker)));
-    
+
     setEmotionStickers(newStickers);
     if (video) {
       realm.write(() => {
@@ -192,16 +195,21 @@ const EmotionTagging = () => {
 
   }
 
+  /* given a timestamp, jump to that time in the video */
+  const seekToTimestamp = (timestamp: any) => {
+    videoRef.current.setNativeProps({ seek: timestamp });
+    console.log('press', timestamp);
+  };
+
   return (
     <View style={styles.mainContainer}>
       {/* can delete current time view later */}
       <View>
-        <Text>Current Time: {time[0]}</Text>
       </View>
       <View
         style={{
           width: Dimensions.get('window').width,
-          height: Dimensions.get('window').height / 1.5,
+          height: Dimensions.get('window').height / 2.5,
           paddingHorizontal: 15,
           paddingTop: 15,
         }}>
@@ -217,13 +225,39 @@ const EmotionTagging = () => {
         />
       </View>
       <View style={styles.ballContainer} />
-      <View style={styles.row}>
+      <View style={[styles.row, { paddingBottom: 140 }]}>
         <Draggable id="smile" source={smile} />
         <Draggable id="neutral" source={neutral} />
         <Draggable id="worried" source={worried} />
         <Draggable id="sad" source={sad} />
         <Draggable id="angry" source={angry} />
       </View>
+        <ScrollView style={styles.container}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={styles.headerStyle}>Stickers</Text>
+          </View>
+          <SafeAreaView>
+            <ScrollView style={styles.container}>
+              {parsedStickers.length != 0
+                ? parsedStickers.map((s: any) => {
+                  return (
+                    <View key={s.id} style={[styles.commentContainer, styles.row]}>
+                      <TouchableOpacity
+                        onPress={() => seekToTimestamp(s.timestamp)}
+                        style={styles.comment}>
+                        <View style={styles.leftContainer}>
+                          <Text style={styles.textStyle}>
+                            {s.timestamp} - {s.sentiment}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })
+                : null}
+            </ScrollView>
+          </SafeAreaView>
+        </ScrollView>
     </View>
   );
 };
@@ -243,6 +277,42 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+  },
+  container: { padding: 25 },
+  commentContainer: {
+    flex: 1,
+    paddingVertical: 4,
+    paddingTop: 10,
+    // flexWrap: 'wrap',
+    //backgroundColor: '#dadbe0',
+    // justifyContent: 'flex-end',
+    borderBottomColor: 'grey',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  leftContainer: {
+    width: '94%',
+    flexWrap: 'wrap',
+  },
+  headerStyle: {
+    fontWeight: 'bold',
+    fontSize: 28,
+    paddingLeft: 25,
+  },
+  textStyle: {
+    fontSize: 22,
+    paddingHorizontal: 15,
+    // backgroundColor: 'pink',
+    // flex: 1,
+    // flexWrap: 'wrap',
+    flexShrink: 1,
+    flexWrap: 'wrap',
+  },
+  comment: {
+    // height: 60,
+    // position: 'absolute',
+    // left: 0,
+    //flex: 1,
+    //flexWrap: 'wrap',
   },
 });
 

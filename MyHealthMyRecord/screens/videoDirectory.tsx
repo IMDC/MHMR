@@ -20,14 +20,6 @@ import {Chip} from 'react-native-paper';
 
 const ViewRecordings = () => {
 
-const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
-  const paddingToBottom = 20;
-  return (
-    layoutMeasurement.height + contentOffset.y >=
-    contentSize.height - paddingToBottom
-  );
-};
-
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
