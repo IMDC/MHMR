@@ -16,6 +16,7 @@ import {
   TextInput,
   TextInputFocusEventData,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
 import {VideoData, useObject, useRealm} from '../models/VideoData';
@@ -35,14 +36,22 @@ const AnnotationMenu = () => {
 
   const [title, setTitle] = React.useState(video.title);
 
-  const [keywordButtonColour, setKeywordButtonColour] = React.useState("#C7CBD1");
-  const [keywordButtonType, setKeywordButtonType] = React.useState("add-outline");
-  const [locationButtonColour, setLocationButtonColour] = React.useState("#C7CBD1");
-  const [locationButtonType, setLocationButtonType] = React.useState("add-outline");
-  const [commentButtonColour, setCommentButtonColour] = React.useState("#C7CBD1");
-  const [commentButtonType, setCommentButtonType] = React.useState("add-outline");
-  const [emotionButtonColour, setEmotionButtonColour] = React.useState("#C7CBD1");
-  const [emotionButtonType, setEmotionButtonType] = React.useState("add-outline");
+  const [keywordButtonColour, setKeywordButtonColour] =
+    React.useState('#C7CBD1');
+  const [keywordButtonType, setKeywordButtonType] =
+    React.useState('add-outline');
+  const [locationButtonColour, setLocationButtonColour] =
+    React.useState('#C7CBD1');
+  const [locationButtonType, setLocationButtonType] =
+    React.useState('add-outline');
+  const [commentButtonColour, setCommentButtonColour] =
+    React.useState('#C7CBD1');
+  const [commentButtonType, setCommentButtonType] =
+    React.useState('add-outline');
+  const [emotionButtonColour, setEmotionButtonColour] =
+    React.useState('#C7CBD1');
+  const [emotionButtonType, setEmotionButtonType] =
+    React.useState('add-outline');
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -85,7 +94,7 @@ const AnnotationMenu = () => {
     const emotions = video.emotionStickers;
     if (emotions.length != 0) isAnnotated = true;
     return isAnnotated;
-  }
+  };
 
   useEffect(() => {
     if (isFocused) {
@@ -111,11 +120,11 @@ const AnnotationMenu = () => {
         setCommentButtonType('add-outline');
       }
       if (checkIfEmotionsAnnotated()) {
-        setEmotionButtonColour("#1C3EAA");
-        setEmotionButtonType("checkmark-outline");
+        setEmotionButtonColour('#1C3EAA');
+        setEmotionButtonType('checkmark-outline');
       } else {
-        setEmotionButtonColour("#C7CBD1");
-        setEmotionButtonType("add-outline");
+        setEmotionButtonColour('#C7CBD1');
+        setEmotionButtonType('add-outline');
       }
     }
   }, [
@@ -128,8 +137,11 @@ const AnnotationMenu = () => {
     isFocused,
   ]);
 
+  const windowHeight = useWindowDimensions().height;
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, {minHeight: Math.round(windowHeight), paddingBottom: 275}]}>
       <Input
         ref={titleInput}
         inputStyle={{fontSize: 35}}
@@ -187,18 +199,18 @@ const AnnotationMenu = () => {
           <Text style={styles.textStyle}>Add Location</Text>
         </View>
         <View style={styles.selectionContainer}>
-            <Icon
-              reverse
-              name={emotionButtonType}
-              size={40}
-              type="ionicon"
-              color={emotionButtonColour}
-              onPress={() => {
-                navigation.navigate('Emotion Tagging', {
-                  id,
-                });
-              }}
-            />
+          <Icon
+            reverse
+            name={emotionButtonType}
+            size={40}
+            type="ionicon"
+            color={emotionButtonColour}
+            onPress={() => {
+              navigation.navigate('Emotion Tagging', {
+                id,
+              });
+            }}
+          />
           <Text style={styles.textStyle}>Add Emotion Stickers</Text>
         </View>
         <View style={styles.selectionContainer}>
@@ -237,7 +249,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-
     padding: 75,
   },
   textStyle: {
