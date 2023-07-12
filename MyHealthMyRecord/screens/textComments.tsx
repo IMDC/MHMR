@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   },
 
   leftContainer: {
-    width: '94%',
+    width: '90%',
     flexWrap: 'wrap',
   },
 
