@@ -1,15 +1,15 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {ParamListBase, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useCameraDevices, Camera} from 'react-native-vision-camera';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import {PermissionsAndroid, Platform} from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
-import {Icon, Button} from '@rneui/themed';
-import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {useQuery, useRealm} from '../models/VideoData';
+import { Icon, Button } from '@rneui/themed';
+import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { useQuery, useRealm } from '../models/VideoData';
 import Realm from 'realm';
-import {createRealmContext} from '@realm/react';
+import { createRealmContext } from '@realm/react';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -124,8 +124,11 @@ const RecordVideo = () => {
     // ex. VisionCamera-20230606_1208147672158123173592211.mp4
 
     // RNFS.DocumentDirectoryPath is /data/user/0/com.myhealthmyrecord/files
+    const date = new Date().toString();
+    const saveDate = date.split(" GMT-");
+    console.log(date, saveDate);
     try {
-      createVideoData(fileName, videoSource.duration);
+      createVideoData(fileName, videoSource.duration, saveDate[0]);
       RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
         .then(() => {
           console.log('File moved.');
@@ -143,39 +146,39 @@ const RecordVideo = () => {
       console.log(err.message);
     }
   }
-const keywordRef = [
-  {id: new Realm.BSON.ObjectID(), title: 'None', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false},
-];
+  const keywordRef = [
+    { id: new Realm.BSON.ObjectID(), title: 'None', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false },
+  ];
 
-const locationRef = [
-  {id: new Realm.BSON.ObjectID(), title: 'Home', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Work', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'School', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Park', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false},
-  {id: new Realm.BSON.ObjectID(), title: 'Other', checked: false},
-];
+  const locationRef = [
+    { id: new Realm.BSON.ObjectID(), title: 'Home', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Work', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'School', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Park', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Other', checked: false },
+  ];
 
 
-let keywordInit: string[] = [];
-let locationInit: string[] = [];
+  let keywordInit: string[] = [];
+  let locationInit: string[] = [];
 
-keywordRef.map(key => keywordInit.push(JSON.stringify(key)));
-locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
+  keywordRef.map(key => keywordInit.push(JSON.stringify(key)));
+  locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
 
-  const createVideoData = (filename: string, duration: number) => {
+  const createVideoData = (filename: string, duration: number, saveDate: string) => {
     realm.write(() => {
       realm.create('VideoData', {
         _id: new Realm.BSON.ObjectID(),
         datetimeRecorded: new Date(),
-        title: new Date().toString(),
+        title: saveDate,
         filename: filename,
         duration: duration,
         textComments: [],
@@ -266,7 +269,7 @@ locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
           {videoSource !== '' ? (
             <Video
               ref={ref => (videoPlayer.current = ref)}
-              source={{uri: videoSource.path}} // path in cache where vision camera stores video
+              source={{ uri: videoSource.path }} // path in cache where vision camera stores video
               paused={false} // make it start
               style={styles.backgroundVideo}
               repeat={true}
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-  btnStyle: {backgroundColor: '#1C3EAA'},
+  btnStyle: { backgroundColor: '#1C3EAA' },
 });
 
 export default RecordVideo;
