@@ -1,7 +1,7 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
-import {Dimensions, ScrollView, StyleSheet, Touchable} from 'react-native';
+import {Dimensions, Image, ImageBackground, ScrollView, StyleSheet, Touchable} from 'react-native';
 import {View, TouchableOpacity, Text} from 'react-native';
 import React, {
   useRef,
@@ -17,16 +17,10 @@ import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {Button, Dialog, Icon} from '@rneui/themed';
 import {Chip} from 'react-native-paper';
+const worried = require('../assets/images/emojis/worried.png');
 
 const ViewRecordings = () => {
 
-const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
-  const paddingToBottom = 20;
-  return (
-    layoutMeasurement.height + contentOffset.y >=
-    contentSize.height - paddingToBottom
-  );
-};
 
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
@@ -124,6 +118,8 @@ useEffect(() => {
   setVideos(videosByDate);
 }, []);
 
+
+
   //check file space
   /*
   const FSInfoResult = RNFS.getFSInfo();
@@ -162,6 +158,7 @@ useEffect(() => {
         </TouchableOpacity>
         {videos !== null
           ? videos.map((video: VideoData) => {
+            // const videoURI = require(MHMRfolderPath + '/' + video.filename);
               return (
                 <View style={styles.container} key={video._id.toString()}>
                   <View style={styles.thumbnail}>
@@ -187,6 +184,9 @@ useEffect(() => {
                       //   })
                       // }
                     />
+                    {/* <Image
+                      source={{uri: MHMRfolderPath + '/' + video.filename}}
+                    /> */}
                   </View>
 
                   <View style={styles.rightContainer}>

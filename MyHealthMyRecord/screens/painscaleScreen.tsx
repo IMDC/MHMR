@@ -7,9 +7,16 @@ import {
   NativeStackNavigationProp,
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
-import React, {useState, useMemo} from 'react';
-import {FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {ButtonGroup, Icon, Slider, Button } from '@rneui/themed';
+import React, {useState, useMemo, useEffect} from 'react';
+import {
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import {ButtonGroup, Icon, Slider, Button} from '@rneui/themed';
 import {Card, TextInput, RadioButton} from 'react-native-paper';
 
 const painscaleWords = [
@@ -164,15 +171,14 @@ const painscaleWords = [
       },
     ],
   },
-
 ];
 
 export default function Painscale() {
   const getState = () => {
     let objData = {};
     painscaleWords.map(data => {
-        objData[data.id] = null;
-      });
+      objData[data.id] = null;
+    });
     return objData;
   };
 
@@ -182,18 +188,26 @@ export default function Painscale() {
     const existing = {...cat};
     existing[index] = value;
     setCat(existing);
-  };
 
-  const onRadiochange = (index: string | number, value: any) => {
-    const existing = {...cat};
-    existing[index] = value;
-    setCat(existing);
   };
+  const [sliderValue, setSliderValue] = useState(0);
+
+    const interpolate = (start: number, end: number) => {
+      let k = (sliderValue - 0) / 10; // 0 =>min  && 10 => MAX
+      return Math.ceil((1 - k) * start + k * end) % 256;
+    };
+
+    const color = () => {
+      let r = interpolate(255, 0);
+      let g = interpolate(0, 255);
+      let b = interpolate(0, 0);
+      return `rgb(${g},${r},${b})`;
+    };
 
   const renderItem = ({item}) => {
     let items = [];
     if (item.id) {
-      items = item.severity_level.map((severity_level: { id: any; }) => {
+      items = item.severity_level.map((severity_level: {id: any}) => {
         const index = severity_level.id;
         return (
           <>
@@ -206,7 +220,9 @@ export default function Painscale() {
               }}>
               <RadioButton.Group>
                 <View
-                  style={{flexDirection: 'row', alignContent: 'space-around'}}>
+                  style={{
+                    flexDirection: 'row',
+                  }}>
                   <View style={styles.singleRadioButtonContainer}>
                     <Text style={{fontSize: 24}}>None</Text>
                     <RadioButton
@@ -259,28 +275,35 @@ export default function Painscale() {
                 </View>
               </RadioButton.Group>
             </View>
+            
           </>
         );
       });
     }
     return (
       <ScrollView style={styles.container}>
-        <Text style={styles.textStyle}>{item.name}</Text>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{width: '40%'}}>
+            <Text style={styles.textStyle}>{item.name}</Text>
+          </View>
 
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            marginHorizontal: 20,
-          }}>
-          <Text style={{alignSelf: 'center'}}>{items}</Text>
+          <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
+            <Text>{items}</Text>
+          </View>
         </View>
+
+
       </ScrollView>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView style={[styles.container]}>
+      <View style={{alignSelf: 'center'}}>
+        <Text style={{fontSize: 36, color: 'black'}}>
+          McGill Pain Questionnaire
+        </Text>
+      </View>
       <FlatList
         style={styles.container}
         // data={data}
@@ -288,23 +311,53 @@ export default function Painscale() {
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
       />
-    </SafeAreaView>
+      <View style={{alignSelf: 'center', paddingTop: 30}}>
+        <Text style={{fontSize: 36, color: 'black'}}>
+          Numeric Pain Rating Scale
+        </Text>
+      </View>
+      <View style={{marginHorizontal: 40, paddingBottom: 50}}>
+        <Text style={{paddingTop: 20}}>Value: {sliderValue}</Text>
+        <Slider
+          value={sliderValue}
+          onValueChange={setSliderValue}
+          maximumValue={10}
+          minimumValue={0}
+          step={1}
+          allowTouchTrack
+          trackStyle={{height: 5, backgroundColor: 'transparent'}}
+          thumbStyle={{height: 20, width: 20, backgroundColor: 'transparent'}}
+          thumbProps={{
+            children: (
+              <Icon
+                name="heartbeat"
+                type="font-awesome"
+                size={20}
+                reverse
+                containerStyle={{bottom: 20, right: 20}}
+                color={color()}
+              />
+            ),
+          }}
+        />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     paddingTop: 10,
-    flex: 1,
-    backgroundColor: 'white',
   },
 
   textStyle: {
     marginHorizontal: 20,
-    marginTop: 10,
+    paddingTop: 20,
     color: 'black',
     fontWeight: '600',
-    fontSize: 20,
+    fontSize: 22,
+    paddingLeft: 50,
+    alignSelf: 'flex-start',
   },
   singleRadioButtonContainer: {
     flexDirection: 'row',
