@@ -200,10 +200,11 @@ useEffect(() => {
                         {video.title}
                         {video.textComments.length !== 0 ? (
                           <Icon
-                            name="comment"
+                            name="chatbox-ellipses"
                             type="material"
                             color="black"
-                            size={20}
+                            type="ionicon"
+                            size={22}
                             style={{alignSelf: 'flex-start', paddingLeft: 5}}
                           />
                         ) : null}
