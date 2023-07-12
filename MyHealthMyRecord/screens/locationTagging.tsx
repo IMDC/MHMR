@@ -71,6 +71,7 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
               // titleProps={{color: 'black', fontWeight: 'bold'}}
               checked={item?.checked}
               // value={item?.checked}
+              titleProps={{style: {paddingLeft: 4, fontSize: 20}}}
               onPress={() => sliderFunc(index)}
               size={30}
             />

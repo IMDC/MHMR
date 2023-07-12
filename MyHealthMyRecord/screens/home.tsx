@@ -25,6 +25,7 @@ const Home = () => {
       <View
         style={{
           paddingTop: 50,
+          padding: 100,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
@@ -33,7 +34,7 @@ const Home = () => {
 
         <Text
           style={{
-            fontSize: 60,
+            fontSize: 44,
             textAlign: 'center',
             color: 'black',
           }}>
