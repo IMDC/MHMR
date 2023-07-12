@@ -20,8 +20,6 @@ import {Chip} from 'react-native-paper';
 const worried = require('../assets/images/emojis/worried.png');
 
 const ViewRecordings = () => {
-
-
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);

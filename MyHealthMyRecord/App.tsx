@@ -58,7 +58,7 @@ function App() {
   return (
     <RealmProvider>
       <NavigationContainer>
-        <Tab.Navigator screenOptions={{ tabBarShowLabel: false, tabBarStyle: { height: Styles.bottomNavBarHeight , backgroundColor: Styles.NavBarGrey }}}>
+        <Tab.Navigator initialRouteName="MyHealthMyRecord" screenOptions={{ tabBarShowLabel: false, tabBarStyle: { height: Styles.bottomNavBarHeight , backgroundColor: Styles.NavBarGrey }}}>
         <Tab.Screen
           name="Dashboard"
           component={Dashboard}
