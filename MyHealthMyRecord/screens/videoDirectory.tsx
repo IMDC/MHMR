@@ -199,7 +199,6 @@ useEffect(() => {
                         {video.textComments.length !== 0 ? (
                           <Icon
                             name="chatbox-ellipses"
-                            type="material"
                             color="black"
                             type="ionicon"
                             size={22}

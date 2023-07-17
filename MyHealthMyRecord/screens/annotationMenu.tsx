@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
 import {VideoData, useObject, useRealm} from '../models/VideoData';
+import * as Styles from '../assets/util/styles';
 
 const AnnotationMenu = () => {
   //is the current screen focused, used for state changes between navigation
@@ -37,19 +38,19 @@ const AnnotationMenu = () => {
   const [title, setTitle] = React.useState(video.title);
 
   const [keywordButtonColour, setKeywordButtonColour] =
-    React.useState('#C7CBD1');
+    React.useState(Styles.buttonGrey);
   const [keywordButtonType, setKeywordButtonType] =
     React.useState('add-outline');
   const [locationButtonColour, setLocationButtonColour] =
-    React.useState('#C7CBD1');
+    React.useState(Styles.buttonGrey);
   const [locationButtonType, setLocationButtonType] =
     React.useState('add-outline');
   const [commentButtonColour, setCommentButtonColour] =
-    React.useState('#C7CBD1');
+    React.useState(Styles.buttonGrey);
   const [commentButtonType, setCommentButtonType] =
     React.useState('add-outline');
   const [emotionButtonColour, setEmotionButtonColour] =
-    React.useState('#C7CBD1');
+    React.useState(Styles.buttonGrey);
   const [emotionButtonType, setEmotionButtonType] =
     React.useState('add-outline');
 
@@ -99,31 +100,31 @@ const AnnotationMenu = () => {
   useEffect(() => {
     if (isFocused) {
       if (checkIfKeywordsAnnotated()) {
-        setKeywordButtonColour('#1C3EAA');
+        setKeywordButtonColour(Styles.MHMRBlue);
         setKeywordButtonType('checkmark-outline');
       } else {
-        setKeywordButtonColour('#C7CBD1');
+        setKeywordButtonColour(Styles.buttonGrey);
         setKeywordButtonType('add-outline');
       }
       if (checkIfLocationsAnnotated()) {
-        setLocationButtonColour('#1C3EAA');
+        setLocationButtonColour(Styles.MHMRBlue);
         setLocationButtonType('checkmark-outline');
       } else {
-        setLocationButtonColour('#C7CBD1');
+        setLocationButtonColour(Styles.buttonGrey);
         setLocationButtonType('add-outline');
       }
       if (checkIfCommentsAnnotated()) {
-        setCommentButtonColour('#1C3EAA');
+        setCommentButtonColour(Styles.MHMRBlue);
         setCommentButtonType('checkmark-outline');
       } else {
-        setCommentButtonColour('#C7CBD1');
+        setCommentButtonColour(Styles.buttonGrey);
         setCommentButtonType('add-outline');
       }
       if (checkIfEmotionsAnnotated()) {
-        setEmotionButtonColour('#1C3EAA');
+        setEmotionButtonColour(Styles.MHMRBlue);
         setEmotionButtonType('checkmark-outline');
       } else {
-        setEmotionButtonColour('#C7CBD1');
+        setEmotionButtonColour(Styles.buttonGrey);
         setEmotionButtonType('add-outline');
       }
     }
