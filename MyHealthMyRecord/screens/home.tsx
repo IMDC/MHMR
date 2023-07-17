@@ -24,8 +24,8 @@ const Home = () => {
     <>
       <View
         style={{
-          paddingTop: 50,
-          padding: 100,
+          // paddingTop: 50,
+          // padding: 100,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
@@ -35,8 +35,9 @@ const Home = () => {
         <Text
           style={{
             fontSize: 44,
-            textAlign: 'center',
+            alignSelf: 'center',
             color: 'black',
+            fontFamily: 'Poppins-Light',
           }}>
           MyHealthMyRecord
         </Text>

@@ -1,7 +1,14 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
-import {Dimensions, Image, ImageBackground, ScrollView, StyleSheet, Touchable} from 'react-native';
+import {
+  Dimensions,
+  Image,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Touchable,
+} from 'react-native';
 import {View, TouchableOpacity, Text} from 'react-native';
 import React, {
   useRef,
@@ -23,6 +30,11 @@ const ViewRecordings = () => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
+
+  const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
+  const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
+    '',
+  );
 
   const toggleDialog = () => {
     setVisible(!visible);
@@ -55,7 +67,6 @@ const ViewRecordings = () => {
   /* videoData.map((video: any) =>
     console.log('test', video._id.toString(), video.title),
   ); */
-
 
   const deleteAllVideoDataObjects = async () => {
     //delete videos from storage
@@ -112,11 +123,9 @@ const ViewRecordings = () => {
     );
   };
 
-useEffect(() => {
-  setVideos(videosByDate);
-}, []);
-
-
+  useEffect(() => {
+    setVideos(videosByDate);
+  }, []);
 
   //check file space
   /*
@@ -129,7 +138,7 @@ useEffect(() => {
       y: 0,
       animated: true,
     });
-  }
+  };
 
   return (
     <View>
@@ -139,8 +148,7 @@ useEffect(() => {
         onPress={() => setVideos(videosByDate)}
       /> */}
 
-      <ScrollView style={{marginTop: 5,}} ref={scrollRef}>
- 
+      <ScrollView style={{marginTop: 5}} ref={scrollRef}>
         <TouchableOpacity
           // style={{alignItems: 'flex-end'}}
           style={{alignItems: 'center'}}
@@ -156,11 +164,32 @@ useEffect(() => {
         </TouchableOpacity>
         {videos !== null
           ? videos.map((video: VideoData) => {
-            // const videoURI = require(MHMRfolderPath + '/' + video.filename);
+              // const videoURI = require(MHMRfolderPath + '/' + video.filename);
               return (
                 <View style={styles.container} key={video._id.toString()}>
                   <View style={styles.thumbnail}>
-                    <VideoPlayer
+                    <ImageBackground
+                      style={{height: '100%', width: '100%'}}
+                      source={{
+                        uri: 'file://' + MHMRfolderPath + '/' + video.filename,
+                      }}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('Fullscreen Video', {
+                            id: video._id,
+                          })
+                        }>
+                        <Icon
+                          style={{height: 240, justifyContent: 'center'}}
+                          name="play-sharp"
+                          type="ionicon"
+                          color="black"
+                          size={40}
+                        />
+                      </TouchableOpacity>
+                    </ImageBackground>
+
+                    {/* <VideoPlayer
                       style={{}}
                       source={{
                         uri: MHMRfolderPath + '/' + video.filename,
@@ -176,14 +205,6 @@ useEffect(() => {
                           id: video._id,
                         })
                       }
-                      // onExitFullscreen={() =>
-                      //   navigation.navigate('Fullscreen Video', {
-                      //     id: video._id,
-                      //   })
-                      // }
-                    />
-                    {/* <Image
-                      source={{uri: MHMRfolderPath + '/' + video.filename}}
                     /> */}
                   </View>
 
@@ -199,8 +220,8 @@ useEffect(() => {
                         {video.textComments.length !== 0 ? (
                           <Icon
                             name="chatbox-ellipses"
-                            color="black"
                             type="ionicon"
+                            color="black"
                             size={22}
                             style={{alignSelf: 'flex-start', paddingLeft: 5}}
                           />
@@ -257,7 +278,17 @@ useEffect(() => {
                       <View style={styles.space} /> */}
                       <Button
                         buttonStyle={styles.btnStyle}
-                        title="Markup Video"
+                        title="Review"
+                        onPress={() =>
+                          navigation.navigate('Review Annotations', {
+                            id: video._id,
+                          })
+                        }
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Add/Edit Markups"
                         onPress={() =>
                           navigation.navigate('Annotation Menu', {
                             id: video._id,
@@ -268,8 +299,12 @@ useEffect(() => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Delete Video"
-                        onPress={() => deleteVideo(video, video.filename)}
-                        // onPress={() => toggleDialog1()}
+                        // onPress={() => deleteVideo(video, video.filename)}
+                        onPress={() => {
+                          setVideoSelectedData(video);
+                          setvideoSelectedFilename(video.filename);
+                          toggleDialog1();
+                        }}
                       />
                     </View>
                   </View>
@@ -299,7 +334,10 @@ useEffect(() => {
                     <Dialog.Actions>
                       <Dialog.Button
                         title="Delete"
-                        onPress={() => deleteVideo(video, video.filename)}
+                        onPress={() => {
+                          deleteVideo(videoSelectedData, videoSelectedFilename);
+                          toggleDialog1();
+                        }}
                       />
                       <Dialog.Button
                         title="Cancel"
@@ -311,14 +349,11 @@ useEffect(() => {
               );
             })
           : null}
-          <TouchableOpacity
-            style={{alignItems: 'center'}}
-            onPress={onPressTouch}>
-            <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
-              Scroll to Top
-            </Text>
-          </TouchableOpacity>
-
+        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
+          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
+            Scroll to Top
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
