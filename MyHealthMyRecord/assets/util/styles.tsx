@@ -3,6 +3,7 @@ import * as React from 'react';
 /*---------- COLOURS ----------*/
 
 export const MHMRBlue = '#1C3EAA';
+export const buttonGrey = '#C7CBD1';
 export const NavBarGrey = '#DEDEE0';
 
 /*---------- SIZES ----------*/

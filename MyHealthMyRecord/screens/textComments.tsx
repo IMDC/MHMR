@@ -19,6 +19,8 @@ const logo = require('../assets/images/MHMRLogo_NOBG.png');
 import {Portal, PaperProvider} from 'react-native-paper';
 
 const TextComments = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
   const [isDeleteBtnVisible, setDeleteBtnVisible] = useState(false);
   const [isEditBtnVisible, setEditBtnVisible] = useState(true);
 
@@ -44,13 +46,10 @@ const TextComments = () => {
   const windowHeight = Dimensions.get('window').height;
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
   const videoPlayerRef: any = useRef(null);
   const input: any = React.useRef(null);
 
   const [currentTime, setCurrentTime] = useState(0);
-  const [test, setTest] = useState(0);
 
   const route: any = useRoute();
   const id = route.params?.id;
@@ -58,18 +57,17 @@ const TextComments = () => {
   const realm = useRealm();
   const video: any = useObject('VideoData', id);
 
-  const commentEditInput: any = useRef(null);
-  const [commentEdit, setCommentEdit] = React.useState('');
-
-  const [textComments, setTextComments] = useState(video.textComments);
+  const [storedComments, setStoredComments] = useState(video.textComments);
   let parsedComments: any[] = [];
-  //console.log("re-render 1-----", parsedComments);
-  textComments.map((text: string) => parsedComments.push(JSON.parse(text)));
-  //console.log("re-render 2-----", parsedComments);
-  const [displayComments, setDisplayComments] = useState(parsedComments);
+  storedComments.map((text: string) => parsedComments.push(JSON.parse(text)));
 
+  /* add comment with new text input and timestamp */
   const [newComment, setNewComment] = React.useState('');
   const [newTimestamp, setTimestamp] = React.useState(1);
+
+  /* edit comment with new text input */
+  const commentEditInput: any = useRef(null);
+  const [commentEdit, setCommentEdit] = React.useState('');
 
   const addComment = () => {
     let commentSchema: any = {
@@ -79,23 +77,18 @@ const TextComments = () => {
     };
     /* add new comment to parsed array and stringify parsed array*/
     parsedComments.push(commentSchema);
-    setDisplayComments(parsedComments);
-    // console.log("==parsed==", parsedComments);
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
       newTextComments.push(JSON.stringify(text)),
     );
-    // console.log("==temp==", newTextComments);
-    setTextComments(newTextComments);
+
     /* write new comments array to db */
+    setStoredComments(newTextComments);
     if (video) {
       realm.write(() => {
         video.textComments! = newTextComments;
       });
     }
-
-    //setTest(videoPlayerRef.calculateTime());
-    //console.log("test", test);
 
     /* reset */
     setNewComment('');
@@ -105,18 +98,18 @@ const TextComments = () => {
   };
 
   const editComment = (commentID: any) => {
-    /* find index of comment matching input id and remove from array */
+    /* find index of comment matching input id and update in array */
     const commentIndex = parsedComments.findIndex(
       (element: any) => element.id == commentID,
     );
-
     parsedComments[commentIndex].text = commentEdit;
-    setDisplayComments(parsedComments);
+
     /* update comments array in db */
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
       newTextComments.push(JSON.stringify(text)),
     );
+    setStoredComments(newTextComments);
     if (video) {
       realm.write(() => {
         video.textComments! = newTextComments;
@@ -130,14 +123,14 @@ const TextComments = () => {
       (element: any) => element.id == commentID,
     );
     parsedComments.splice(commentIndex, 1);
-    setDisplayComments(parsedComments);
-    console.log("-----------parsed", commentIndex, parsedComments);
-    //console.log("-----------display", displayComments);
+    //console.log("-----------parsed", parsedComments.length, commentIndex, parsedComments);
+
     /* update comments array in db */
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
       newTextComments.push(JSON.stringify(text)),
     );
+    setStoredComments(newTextComments);
     if (video) {
       realm.write(() => {
         video.textComments! = newTextComments;
