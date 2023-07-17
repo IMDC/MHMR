@@ -1,6 +1,6 @@
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import React, {useRef, useState} from 'react';
+import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -11,12 +11,12 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import {Button, Icon, Input, Dialog} from '@rneui/themed';
+import { Button, Icon, Input, Dialog } from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import {VideoData, useObject, useRealm} from '../models/VideoData';
+import { VideoData, useObject, useRealm } from '../models/VideoData';
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
-import {Portal, PaperProvider} from 'react-native-paper';
+import { Portal, PaperProvider } from 'react-native-paper';
 
 const TextComments = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -75,8 +75,20 @@ const TextComments = () => {
       text: newComment,
       timestamp: newTimestamp,
     };
+
+    /* find index to add at so timestamps are in order */
+    const commentIndex = parsedComments.findIndex(
+      (element: any) => element.timestamp > commentSchema.timestamp,
+    );
+
     /* add new comment to parsed array and stringify parsed array*/
-    parsedComments.push(commentSchema);
+    if (commentIndex == -1) {
+      /* if greater timestamp not found, add new comment to end of array */
+      parsedComments.push(commentSchema);
+    } else {
+      /* if greater timestamp found, add new comment at the index found */
+      parsedComments.splice(commentIndex, 0, commentSchema);
+    }
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
       newTextComments.push(JSON.stringify(text)),
@@ -94,7 +106,7 @@ const TextComments = () => {
     setNewComment('');
     input.current.clear();
     Keyboard.dismiss();
-    videoPlayerRef.current.setNativeProps({paused: false});
+    videoPlayerRef.current.setNativeProps({ paused: false });
   };
 
   const editComment = (commentID: any) => {
@@ -138,9 +150,18 @@ const TextComments = () => {
     }
   };
 
+  function secondsToHms(d: number) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+
+    return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+  }
+
   /* given a timestamp, jump to that time in the video */
   const seekToTimestamp = (timestamp: any) => {
-    videoPlayerRef.current.setNativeProps({seek: timestamp});
+    videoPlayerRef.current.setNativeProps({ seek: timestamp });
     console.log('press', timestamp);
   };
 
@@ -155,7 +176,7 @@ const TextComments = () => {
         }}>
         <VideoPlayer
           videoRef={videoPlayerRef}
-          source={{uri: MHMRfolderPath + '/' + video.filename}}
+          source={{ uri: MHMRfolderPath + '/' + video.filename }}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
@@ -168,33 +189,33 @@ const TextComments = () => {
       </View>
       <Input
         ref={input}
-        containerStyle={{paddingHorizontal: 25, paddingTop: 15}}
+        containerStyle={{ paddingHorizontal: 25, paddingTop: 15 }}
         multiline={true}
         placeholder="Enter comment here..."
-        style={{padding: 15}}
+        style={{ padding: 15 }}
         rightIcon={<Icon name="send" onPress={addComment} />}
         onChangeText={value => {
           setNewComment(value);
-          videoPlayerRef.current.setNativeProps({paused: true});
+          videoPlayerRef.current.setNativeProps({ paused: true });
           setTimestamp(currentTime);
         }}
       />
       <ScrollView>
         <View>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={styles.headerStyle}>Comments</Text>
             {isDeleteBtnVisible && (
               <TouchableOpacity
-                style={{justifyContent: 'flex-end'}}
+                style={{ justifyContent: 'flex-end' }}
                 onPress={() => toggleEditBtnVisible()}>
-                <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
+                <Text style={{ fontSize: 16, marginRight: 25 }}>Done</Text>
               </TouchableOpacity>
             )}
             {isEditBtnVisible && (
               <TouchableOpacity
-                style={{justifyContent: 'flex-end'}}
+                style={{ justifyContent: 'flex-end' }}
                 onPress={() => toggleDeleteBtnVisibile()}>
-                <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
+                <Text style={{ fontSize: 16, marginRight: 25 }}>Edit</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -203,51 +224,51 @@ const TextComments = () => {
             <ScrollView style={styles.container}>
               {parsedComments.length != 0
                 ? parsedComments.map((c: any) => {
-                    return (
-                      <View
-                        key={c.id}
-                        style={[styles.commentContainer, styles.row]}>
-                        <Dialog
-                          isVisible={visible}
-                          onBackdropPress={toggleDialog}>
-                          <Dialog.Title title="Edit text" />
-                          <Input
-                            ref={commentEditInput}
-                            inputStyle={{fontSize: 35}}
-                            //value={text}
-                            defaultValue={commentSelectedText}
-                            onChangeText={value => setCommentEdit(value)}
-                            onSubmitEditing={() => {
+                  return (
+                    <View
+                      key={c.id}
+                      style={[styles.commentContainer, styles.row]}>
+                      <Dialog
+                        isVisible={visible}
+                        onBackdropPress={toggleDialog}>
+                        <Dialog.Title title="Edit text" />
+                        <Input
+                          ref={commentEditInput}
+                          inputStyle={{ fontSize: 35 }}
+                          //value={text}
+                          defaultValue={commentSelectedText}
+                          onChangeText={value => setCommentEdit(value)}
+                          onSubmitEditing={() => {
+                            editComment(commentSelectedID);
+                            toggleDialog();
+                          }}
+                        />
+
+                        <Dialog.Actions>
+                          <Dialog.Button
+                            title="CONFIRM"
+                            onPress={() => {
                               editComment(commentSelectedID);
                               toggleDialog();
                             }}
                           />
-
-                          <Dialog.Actions>
-                            <Dialog.Button
-                              title="CONFIRM"
-                              onPress={() => {
-                                editComment(commentSelectedID);
-                                toggleDialog();
-                              }}
-                            />
-                            <Dialog.Button
-                              title="CANCEL"
-                              onPress={toggleDialog}
-                            />
-                          </Dialog.Actions>
-                        </Dialog>
-                        <View style={styles.leftContainer}>
-                          <TouchableOpacity
-                            onPress={() => seekToTimestamp(c.timestamp)}
-                            style={styles.comment}>
-                            <Text style={styles.textStyle}>
-                              {c.timestamp} - {c.text}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                        <View style={styles.rightContainer}>
-                          {/* <Button
+                          <Dialog.Button
+                            title="CANCEL"
+                            onPress={toggleDialog}
+                          />
+                        </Dialog.Actions>
+                      </Dialog>
+                      <View style={styles.leftContainer}>
+                        <TouchableOpacity
+                          onPress={() => seekToTimestamp(c.timestamp)}
+                          style={styles.comment}>
+                          <Text style={styles.textStyle}>
+                            {secondsToHms(c.timestamp)} - {c.text}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.rightContainer}>
+                        {/* <Button
                             title="Edit"
                             icon={{
                               name: 'pencil-outline',
@@ -289,35 +310,35 @@ const TextComments = () => {
                               marginVertical: 5,
                             }}
                             onPress={() => deleteComment(c.id)}/> */}
-                          {/* display this when user clicks edit */}
-                          {isDeleteBtnVisible && (
-                            <View>
-                              <TouchableOpacity
-                                style={{alignSelf: 'flex-end'}}
-                                onPress={() => {
-                                  setCommentSelectedText(c.text);
-                                  setCommentSelectedID(c.id);
-                        
-                                  toggleDialog();
-                                  // console.log('comment selected', c.text);
-                                  console.log('comment selected', c.id);
-                                }}>
-                                <Text style={{color: '#1C3EAA', fontSize: 16}}>
-                                  Edit
-                                </Text>
-                              </TouchableOpacity>
+                        {/* display this when user clicks edit */}
+                        {isDeleteBtnVisible && (
+                          <View>
+                            <TouchableOpacity
+                              style={{ alignSelf: 'flex-end' }}
+                              onPress={() => {
+                                setCommentSelectedText(c.text);
+                                setCommentSelectedID(c.id);
 
-                              <TouchableOpacity
-                                style={{alignSelf: 'flex-end'}}
-                                onPress={() => deleteComment(c.id)}>
-                                <Text style={{color: '#cf7f11', fontSize: 16}}>
-                                  Delete
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                          )}
-                        </View>
-                        {/* <Dialog
+                                toggleDialog();
+                                // console.log('comment selected', c.text);
+                                console.log('comment selected', c.id);
+                              }}>
+                              <Text style={{ color: '#1C3EAA', fontSize: 16 }}>
+                                Edit
+                              </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={{ alignSelf: 'flex-end' }}
+                              onPress={() => deleteComment(c.id)}>
+                              <Text style={{ color: '#cf7f11', fontSize: 16 }}>
+                                Delete
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+                      {/* <Dialog
                           isVisible={visible}
                           onBackdropPress={toggleDialog}>
                           <Dialog.Title title="Edit text" />
@@ -343,9 +364,9 @@ const TextComments = () => {
                             />
                           </Dialog.Actions>
                         </Dialog> */}
-                      </View>
-                    );
-                  })
+                    </View>
+                  );
+                })
                 : null}
             </ScrollView>
           </SafeAreaView>
@@ -362,8 +383,8 @@ const TextComments = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {padding: 25},
-  playerStyle: {height: '70%', padding: 4},
+  container: { padding: 25 },
+  playerStyle: { height: '70%', padding: 4 },
   headerStyle: {
     fontWeight: 'bold',
     fontSize: 28,
