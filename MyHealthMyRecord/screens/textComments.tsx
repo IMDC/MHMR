@@ -1,6 +1,6 @@
 import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -49,7 +49,7 @@ const TextComments = () => {
   const videoPlayerRef: any = useRef(null);
   const input: any = React.useRef(null);
 
-  const [currentTime, setCurrentTime] = useState(0);
+  const currentTime = useState(0);
 
   const route: any = useRoute();
   const id = route.params?.id;
@@ -68,6 +68,9 @@ const TextComments = () => {
   /* edit comment with new text input */
   const commentEditInput: any = useRef(null);
   const [commentEdit, setCommentEdit] = React.useState('');
+
+  /*  */
+  const [overlayComment, setOverlayComment] = React.useState('');
 
   const addComment = () => {
     let commentSchema: any = {
@@ -150,6 +153,50 @@ const TextComments = () => {
     }
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      //console.log('This will run every second!');
+      for (let i = 0; i < parsedComments.length; i++) {
+        //console.log(parsedComments[i].text, parsedComments[i].timestamp, currentTime[0]);
+        if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0]+2)) {
+          setOverlayComment(parsedComments[i].text + " " + parsedComments[i].timestamp);
+          break;
+        } else {
+          setOverlayComment('');
+        }
+        //console.log(parsedComments[i].text, parsedComments[i].timestamp);
+      }
+    }, 250);
+    return () => clearInterval(interval);
+  }, [overlayComment]);
+
+  const updateOverlay = () => {
+    if (currentTime[0] < 1) {
+      setOverlayComment('start');
+    } else {
+      setOverlayComment(currentTime[0] + '');
+      /* for (let i = 0; i < parsedComments.length; i++) {
+        while (parsedComments[i].timestamp < currentTime[0]) {
+          setOverlayComment(parsedComments[i].text);
+          console.log(parsedComments[i].text);
+        }
+      } */
+    }
+
+    /* for (let i = 0; i < parsedComments.length; i++) {
+      while (parsedComments[i].timestamp < time) {
+        setOverlayComment(parsedComments[i].text);
+        console.log(parsedComments[i].text);
+      }
+    } */
+  }
+
+  const playOverlayAnimation = () => {
+    const animationLength: number = video.duration;
+    console.log(animationLength);
+
+  }
+
   function secondsToHms(d: number) {
     d = Number(d);
     var h = Math.floor(d / 3600);
@@ -168,12 +215,12 @@ const TextComments = () => {
   return (
     <>
       <View
-        style={{
+        style={[styles.testContainer, {
           width: windowWidth,
           height: windowHeight / 2.5,
           paddingHorizontal: 15,
           paddingTop: 15,
-        }}>
+        }]}>
         <VideoPlayer
           videoRef={videoPlayerRef}
           source={{ uri: MHMRfolderPath + '/' + video.filename }}
@@ -183,9 +230,13 @@ const TextComments = () => {
           showOnStart={true}
           disableSeekButtons={true}
           onProgress={data => {
-            setCurrentTime(data.currentTime);
+            currentTime[0] = data.currentTime;
+            //updateOverlay();
           }}
         />
+        {/* <View style={[styles.overlay, { height:  windowHeight / 2.5, width: windowWidth}]}> */}
+        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5}]}>--{overlayComment}</Text>
+        {/* </View> */}
       </View>
       <Input
         ref={input}
@@ -197,7 +248,7 @@ const TextComments = () => {
         onChangeText={value => {
           setNewComment(value);
           videoPlayerRef.current.setNativeProps({ paused: true });
-          setTimestamp(currentTime);
+          setTimestamp(currentTime[0]);
         }}
       />
       <ScrollView>
@@ -414,7 +465,6 @@ const styles = StyleSheet.create({
     width: '90%',
     flexWrap: 'wrap',
   },
-
   rightContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -423,7 +473,6 @@ const styles = StyleSheet.create({
     // backgroundColor: 'pink',
     alignItems: 'flex-end',
   },
-
   row: {
     flexDirection: 'row',
     //flexWrap: 'wrap',
@@ -442,6 +491,30 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     borderWidth: 0,
     borderRadius: 30,
+  },
+  testContainer: {
+    //flex: 1,
+    //justifyContent: 'center',
+    //alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  overlay: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    //opacity: 0.5,
+    //backgroundColor: 'red',
+  },
+  overlayText: {
+    flex: 1,
+    position: 'absolute',
+    marginTop: 20,
+    marginLeft: 20,
+    //marginRight: 500,
+    paddingTop: 20,
+    backgroundColor: 'white',
+    opacity: 0.85,
   },
 });
 
