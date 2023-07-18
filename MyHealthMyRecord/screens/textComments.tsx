@@ -50,6 +50,7 @@ const TextComments = () => {
   const input: any = React.useRef(null);
 
   const currentTime = useState(0);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   const route: any = useRoute();
   const id = route.params?.id;
@@ -73,6 +74,9 @@ const TextComments = () => {
   const [overlayComment, setOverlayComment] = React.useState('');
 
   const addComment = () => {
+    console.log(newTimestamp, currentTime[0]);
+    if (newComment == '') return;
+
     let commentSchema: any = {
       id: new Realm.BSON.ObjectID(),
       text: newComment,
@@ -110,6 +114,7 @@ const TextComments = () => {
     input.current.clear();
     Keyboard.dismiss();
     videoPlayerRef.current.setNativeProps({ paused: false });
+    setVideoPlaying(true);
   };
 
   const editComment = (commentID: any) => {
@@ -153,49 +158,21 @@ const TextComments = () => {
     }
   };
 
+  /* update comment overlay */
   useEffect(() => {
     const interval = setInterval(() => {
-      //console.log('This will run every second!');
+      let empty = true;
       for (let i = 0; i < parsedComments.length; i++) {
-        //console.log(parsedComments[i].text, parsedComments[i].timestamp, currentTime[0]);
-        if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0]+2)) {
+        if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0] + 2)) {
           setOverlayComment(parsedComments[i].text + " " + parsedComments[i].timestamp);
+          empty = false;
           break;
-        } else {
-          setOverlayComment('');
         }
-        //console.log(parsedComments[i].text, parsedComments[i].timestamp);
       }
+      if (empty) setOverlayComment('');
     }, 250);
     return () => clearInterval(interval);
   }, [overlayComment]);
-
-  const updateOverlay = () => {
-    if (currentTime[0] < 1) {
-      setOverlayComment('start');
-    } else {
-      setOverlayComment(currentTime[0] + '');
-      /* for (let i = 0; i < parsedComments.length; i++) {
-        while (parsedComments[i].timestamp < currentTime[0]) {
-          setOverlayComment(parsedComments[i].text);
-          console.log(parsedComments[i].text);
-        }
-      } */
-    }
-
-    /* for (let i = 0; i < parsedComments.length; i++) {
-      while (parsedComments[i].timestamp < time) {
-        setOverlayComment(parsedComments[i].text);
-        console.log(parsedComments[i].text);
-      }
-    } */
-  }
-
-  const playOverlayAnimation = () => {
-    const animationLength: number = video.duration;
-    console.log(animationLength);
-
-  }
 
   function secondsToHms(d: number) {
     d = Number(d);
@@ -230,13 +207,14 @@ const TextComments = () => {
           showOnStart={true}
           disableSeekButtons={true}
           onProgress={data => {
-            currentTime[0] = data.currentTime;
+            if (videoPlaying) currentTime[0] = data.currentTime;
             //updateOverlay();
           }}
+          onSeek={data => {
+            if (videoPlaying) currentTime[0] = data.currentTime;
+          }}
         />
-        {/* <View style={[styles.overlay, { height:  windowHeight / 2.5, width: windowWidth}]}> */}
-        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5}]}>--{overlayComment}</Text>
-        {/* </View> */}
+        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment}</Text>
       </View>
       <Input
         ref={input}
@@ -248,8 +226,11 @@ const TextComments = () => {
         onChangeText={value => {
           setNewComment(value);
           videoPlayerRef.current.setNativeProps({ paused: true });
+          setVideoPlaying(false);
+          console.log("pause at change", currentTime[0]);
           setTimestamp(currentTime[0]);
         }}
+        onSubmitEditing={addComment}
       />
       <ScrollView>
         <View>
@@ -509,12 +490,13 @@ const styles = StyleSheet.create({
   overlayText: {
     flex: 1,
     position: 'absolute',
+    textAlignVertical: 'center',
     marginTop: 20,
     marginLeft: 20,
-    //marginRight: 500,
-    paddingTop: 20,
+    padding: 5,
     backgroundColor: 'white',
     opacity: 0.85,
+    borderRadius: 10,
   },
 });
 
