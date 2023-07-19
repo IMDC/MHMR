@@ -1,6 +1,6 @@
 import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -49,7 +49,8 @@ const TextComments = () => {
   const videoPlayerRef: any = useRef(null);
   const input: any = React.useRef(null);
 
-  const [currentTime, setCurrentTime] = useState(0);
+  const currentTime = useState(0);
+  //const [videoPlaying, setVideoPlaying] = useState(false);
 
   const route: any = useRoute();
   const id = route.params?.id;
@@ -69,7 +70,13 @@ const TextComments = () => {
   const commentEditInput: any = useRef(null);
   const [commentEdit, setCommentEdit] = React.useState('');
 
+  /*  */
+  const [overlayComment, setOverlayComment] = React.useState('');
+
   const addComment = () => {
+    console.log(newTimestamp, currentTime[0]);
+    if (newComment == '') return;
+
     let commentSchema: any = {
       id: new Realm.BSON.ObjectID(),
       text: newComment,
@@ -107,6 +114,7 @@ const TextComments = () => {
     input.current.clear();
     Keyboard.dismiss();
     videoPlayerRef.current.setNativeProps({ paused: false });
+    //setVideoPlaying(true);
   };
 
   const editComment = (commentID: any) => {
@@ -150,6 +158,22 @@ const TextComments = () => {
     }
   };
 
+  /* update comment overlay */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let empty = true;
+      for (let i = 0; i < parsedComments.length; i++) {
+        if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0] + 2)) {
+          setOverlayComment(parsedComments[i].text + " " + parsedComments[i].timestamp);
+          empty = false;
+          break;
+        }
+      }
+      if (empty) setOverlayComment('');
+    }, 250);
+    return () => clearInterval(interval);
+  }, [overlayComment]);
+
   function secondsToHms(d: number) {
     d = Number(d);
     var h = Math.floor(d / 3600);
@@ -168,12 +192,12 @@ const TextComments = () => {
   return (
     <>
       <View
-        style={{
+        style={[styles.testContainer, {
           width: windowWidth,
           height: windowHeight / 2.5,
           paddingHorizontal: 15,
           paddingTop: 15,
-        }}>
+        }]}>
         <VideoPlayer
           videoRef={videoPlayerRef}
           source={{ uri: MHMRfolderPath + '/' + video.filename }}
@@ -183,9 +207,15 @@ const TextComments = () => {
           showOnStart={true}
           disableSeekButtons={true}
           onProgress={data => {
-            setCurrentTime(data.currentTime);
+            if (data.currentTime != 0) currentTime[0] = data.currentTime;
+            //console.log("on prog", currentTime[0]);
+          }}
+          onSeek={data => {
+            if (data.currentTime != 0) currentTime[0] = data.currentTime;
+            //console.log("on seek", currentTime[0]);
           }}
         />
+        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment}</Text>
       </View>
       <Input
         ref={input}
@@ -193,12 +223,18 @@ const TextComments = () => {
         multiline={true}
         placeholder="Enter comment here..."
         style={{ padding: 15 }}
-        rightIcon={<Icon name="send" onPress={addComment} />}
+        rightIcon={<Icon name="send" onPress={() => {
+          addComment();
+          setTimestamp(currentTime[0]);
+          console.log("------", currentTime[0], newTimestamp);
+        }} />}
         onChangeText={value => {
           setNewComment(value);
           videoPlayerRef.current.setNativeProps({ paused: true });
-          setTimestamp(currentTime);
+          //setVideoPlaying(false);
+          console.log("pause at change", currentTime[0]);
         }}
+        onSubmitEditing={addComment}
       />
       <ScrollView>
         <View>
@@ -414,7 +450,6 @@ const styles = StyleSheet.create({
     width: '90%',
     flexWrap: 'wrap',
   },
-
   rightContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -423,7 +458,6 @@ const styles = StyleSheet.create({
     // backgroundColor: 'pink',
     alignItems: 'flex-end',
   },
-
   row: {
     flexDirection: 'row',
     //flexWrap: 'wrap',
@@ -442,6 +476,31 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     borderWidth: 0,
     borderRadius: 30,
+  },
+  testContainer: {
+    //flex: 1,
+    //justifyContent: 'center',
+    //alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  overlay: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    //opacity: 0.5,
+    //backgroundColor: 'red',
+  },
+  overlayText: {
+    flex: 1,
+    position: 'absolute',
+    textAlignVertical: 'center',
+    marginTop: 20,
+    marginLeft: 20,
+    padding: 5,
+    backgroundColor: 'white',
+    opacity: 0.85,
+    borderRadius: 10,
   },
 });
 
