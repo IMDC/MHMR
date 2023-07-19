@@ -46,11 +46,11 @@ export default function Painscale() {
     existing[index].severity_level = severity_level;
     // setCategory(existing);
     setRefreshFlatList(!refreshFlatlist);
-    console.log('index', index);
-    console.log('value', value);
+    // console.log('index', index);
+    // console.log('value', value);
     console.log(existing[index].name, 'status set to', severity_level);
     savePainScale();
-    console.log('category', category);
+    // console.log('category', category);
   };
 
   function savePainScale() {
@@ -106,9 +106,99 @@ export default function Painscale() {
   //   );
   // };
 
-    useEffect(() => {
-      LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
-    }, []);
+  const renderItem = ({item, index}) => {
+    return (
+      <ScrollView style={styles.container}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{width: '35%'}}>
+            <Text style={styles.textStyle}>{item.name}</Text>
+          </View>
+          <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: 280,
+              }}>
+              <RadioButton.Group>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                  }}>
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text style={{fontSize: 24}}>None</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="none"
+                      // key={index}
+                      status={
+                        item.severity_level == 'none' ? 'checked' : 'unchecked'
+                      }
+                      onPress={() => {
+                        onPress(index, 0, 'none');
+                      }}
+                    />
+                  </View>
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text style={{fontSize: 24}}>Mild</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="mild"
+                      // key={index}
+                      status={
+                        item.severity_level == 'mild' ? 'checked' : 'unchecked'
+                      }
+                      onPress={() => {
+                        onPress(index, 1, 'mild');
+                      }}
+                    />
+                  </View>
+
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text style={{fontSize: 24}}>Moderate</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="moderate"
+                      key={item.id}
+                      status={
+                        item.severity_level == 'moderate'
+                          ? 'checked'
+                          : 'unchecked'
+                      }
+                      onPress={() => {
+                        onPress(index, 2, 'moderate');
+                      }}
+                    />
+                  </View>
+                  <View style={styles.singleRadioButtonContainer}>
+                    <Text style={{fontSize: 24}}>Severe</Text>
+                    <RadioButton
+                      color="#5d86d7"
+                      value="severe"
+                      key={item.id}
+                      status={
+                        item.severity_level == 'severe'
+                          ? 'checked'
+                          : 'unchecked'
+                      }
+                      onPress={() => {
+                        onPress(index, 3, 'severe');
+                      }}
+                    />
+                  </View>
+                </View>
+              </RadioButton.Group>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  };
+
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+  }, []);
 
   return (
     <ScrollView style={[styles.container]}>
@@ -123,100 +213,7 @@ export default function Painscale() {
         extraData={refreshFlatlist}
         data={category}
         keyExtractor={(item: any, index) => index.toString()}
-        renderItem={({item, index}) => (
-          <>
-            <ScrollView style={styles.container}>
-              <View style={{flexDirection: 'row'}}>
-                <View style={{width: '35%'}}>
-                  <Text style={styles.textStyle}>{item.name}</Text>
-                </View>
-                <View
-                  style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: 280,
-                    }}>
-                    <RadioButton.Group>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                        }}>
-                        <View style={styles.singleRadioButtonContainer}>
-                          <Text style={{fontSize: 24}}>None</Text>
-                          <RadioButton
-                            color="#5d86d7"
-                            value="none"
-                            // key={index}
-                            status={
-                              item.severity_level == 'none'
-                                ? 'checked'
-                                : 'unchecked'
-                            }
-                            onPress={() => {
-                              onPress(index, 0, 'none');
-                            }}
-                          />
-                        </View>
-                        <View style={styles.singleRadioButtonContainer}>
-                          <Text style={{fontSize: 24}}>Mild</Text>
-                          <RadioButton
-                            color="#5d86d7"
-                            value="mild"
-                            // key={index}
-                            status={
-                              item.severity_level == 'mild'
-                                ? 'checked'
-                                : 'unchecked'
-                            }
-                            onPress={() => {
-                              onPress(index, 1, 'mild');
-                            }}
-                          />
-                        </View>
-
-                        <View style={styles.singleRadioButtonContainer}>
-                          <Text style={{fontSize: 24}}>Moderate</Text>
-                          <RadioButton
-                            color="#5d86d7"
-                            value="moderate"
-                            key={item.id}
-                            status={
-                              item.severity_level == 'moderate'
-                                ? 'checked'
-                                : 'unchecked'
-                            }
-                            onPress={() => {
-                              onPress(index, 2, 'moderate');
-                            }}
-                          />
-                        </View>
-                        <View style={styles.singleRadioButtonContainer}>
-                          <Text style={{fontSize: 24}}>Severe</Text>
-                          <RadioButton
-                            color="#5d86d7"
-                            value="severe"
-                            key={item.id}
-                            status={
-                              item.severity_level == 'severe'
-                                ? 'checked'
-                                : 'unchecked'
-                            }
-                            onPress={() => {
-                              onPress(index, 3, 'severe');
-                            }}
-                          />
-                        </View>
-                      </View>
-                    </RadioButton.Group>
-                  </View>
-                </View>
-              </View>
-            </ScrollView>
-          </>
-        )}
+        renderItem={renderItem}
       />
       <View style={{alignSelf: 'center', paddingTop: 30}}>
         <Text style={{fontSize: 36, color: 'black'}}>
