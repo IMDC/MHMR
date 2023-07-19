@@ -37,23 +37,31 @@ const AnnotationMenu = () => {
 
   const [title, setTitle] = React.useState(video.title);
 
-  const [keywordButtonColour, setKeywordButtonColour] =
-    React.useState(Styles.buttonGrey);
+  const [keywordButtonColour, setKeywordButtonColour] = React.useState(
+    Styles.buttonGrey,
+  );
   const [keywordButtonType, setKeywordButtonType] =
     React.useState('add-outline');
-  const [locationButtonColour, setLocationButtonColour] =
-    React.useState(Styles.buttonGrey);
+  const [locationButtonColour, setLocationButtonColour] = React.useState(
+    Styles.buttonGrey,
+  );
   const [locationButtonType, setLocationButtonType] =
     React.useState('add-outline');
-  const [commentButtonColour, setCommentButtonColour] =
-    React.useState(Styles.buttonGrey);
+  const [commentButtonColour, setCommentButtonColour] = React.useState(
+    Styles.buttonGrey,
+  );
   const [commentButtonType, setCommentButtonType] =
     React.useState('add-outline');
-  const [emotionButtonColour, setEmotionButtonColour] =
-    React.useState(Styles.buttonGrey);
+  const [emotionButtonColour, setEmotionButtonColour] = React.useState(
+    Styles.buttonGrey,
+  );
   const [emotionButtonType, setEmotionButtonType] =
     React.useState('add-outline');
-
+  const [painButtonType, setPainButtonType] = 
+  React.useState('add-outline');
+  const [painButtonColour, setPainButtonColour] = React.useState(
+    Styles.buttonGrey,
+  );
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const updateVideoTitle = () => {
@@ -97,6 +105,15 @@ const AnnotationMenu = () => {
     return isAnnotated;
   };
 
+  const checkIfPainscaleAnnotated = () => {
+    let isAnnotated = false;
+    const painscale = video.painScale;
+    painscale.map((pain: string) => {
+      if (JSON.parse(pain).severity_level != 'none') isAnnotated = true;
+    });
+    return isAnnotated;
+  };
+
   useEffect(() => {
     if (isFocused) {
       if (checkIfKeywordsAnnotated()) {
@@ -127,6 +144,13 @@ const AnnotationMenu = () => {
         setEmotionButtonColour(Styles.buttonGrey);
         setEmotionButtonType('add-outline');
       }
+      if (checkIfPainscaleAnnotated()) {
+        setPainButtonColour(Styles.MHMRBlue);
+        setPainButtonType('checkmark-outline');
+      } else {
+        setPainButtonColour(Styles.buttonGrey);
+        setPainButtonType('add-outline');
+      }
     }
   }, [
     keywordButtonColour,
@@ -142,7 +166,10 @@ const AnnotationMenu = () => {
 
   return (
     <SafeAreaView
-      style={[styles.container, {minHeight: Math.round(windowHeight), paddingBottom: 275}]}>
+      style={[
+        styles.container,
+        {minHeight: Math.round(windowHeight), paddingBottom: 275},
+      ]}>
       <Input
         ref={titleInput}
         inputStyle={{fontSize: 35}}
@@ -156,25 +183,14 @@ const AnnotationMenu = () => {
       </Text>
       <View style={{paddingTop: 45}}>
         <View style={styles.selectionContainer}>
-          {video.painScale.length == 0 ? (
-            <Icon
-              reverse
-              name="add-outline"
-              size={40}
-              type="ionicon"
-              color="#C7CBD1"
-              onPress={() => navigation.navigate('Painscale')}
-            />
-          ) : (
-            <Icon
-              reverse
-              name="checkmark-outline"
-              size={40}
-              type="ionicon"
-              color="#1C3EAA"
-              onPress={() => navigation.navigate('Painscale')}
-            />
-          )}
+          <Icon
+            reverse
+            name={painButtonType}
+            size={40}
+            type="ionicon"
+            color={painButtonColour}
+            onPress={() => navigation.navigate('Painscale', {id})}
+          />
           <Text style={styles.textStyle}>Adjust Painscale</Text>
         </View>
         <View style={styles.selectionContainer}>

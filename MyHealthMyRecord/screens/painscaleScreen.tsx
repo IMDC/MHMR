@@ -2,6 +2,7 @@ import {
   ParamListBase,
   useNavigation,
   NavigationContainer,
+  useRoute,
 } from '@react-navigation/native';
 import {
   NativeStackNavigationProp,
@@ -10,6 +11,7 @@ import {
 import React, {useState, useMemo, useEffect} from 'react';
 import {
   FlatList,
+  LogBox,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -18,199 +20,100 @@ import {
 } from 'react-native';
 import {ButtonGroup, Icon, Slider, Button} from '@rneui/themed';
 import {Card, TextInput, RadioButton} from 'react-native-paper';
-
-const painscaleWords = [
-  {
-    id: 1,
-    name: 'Throbbing',
-    severity_level: [
-      {
-        id: 16,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Shooting',
-    status: 'active',
-    severity_level: [
-      {
-        id: 17,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Stabbing',
-    severity_level: [
-      {
-        id: 18,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Sharp',
-    severity_level: [
-      {
-        id: 19,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 5,
-    name: 'Cramping',
-    severity_level: [
-      {
-        id: 20,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 6,
-    name: 'Gnawing',
-    severity_level: [
-      {
-        id: 21,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 7,
-    name: 'Burning',
-    severity_level: [
-      {
-        id: 22,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 8,
-    name: 'Aching',
-    severity_level: [
-      {
-        id: 23,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 9,
-    name: 'Heavy',
-    severity_level: [
-      {
-        id: 24,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 10,
-    name: 'Tender',
-    severity_level: [
-      {
-        id: 25,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 11,
-    name: 'Splitting',
-    severity_level: [
-      {
-        id: 26,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 12,
-    name: 'Tiring/Exhausting',
-    severity_level: [
-      {
-        id: 27,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 13,
-    name: 'Sickening',
-    severity_level: [
-      {
-        id: 28,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 14,
-    name: 'Fearful',
-    severity_level: [
-      {
-        id: 29,
-        status: 'active',
-      },
-    ],
-  },
-  {
-    id: 15,
-    name: 'Cruel/Punishing',
-    severity_level: [
-      {
-        id: 30,
-        status: 'active',
-      },
-    ],
-  },
-];
+import {useObject, useRealm} from '../models/VideoData';
 
 export default function Painscale() {
-  const getState = () => {
-    let objData = {};
-    painscaleWords.map(data => {
-      objData[data.id] = null;
+  const [refreshFlatlist, setRefreshFlatList] = useState(false);
+
+  const route: any = useRoute();
+  const id = route.params?.id;
+
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
+
+  let parsedPainscaleWords: any[] = [];
+
+  const [painscaleWords, setPainscaleWords] = useState(video.painScale);
+
+  painscaleWords.map((pain: string) =>
+    parsedPainscaleWords.push(JSON.parse(pain)),
+  );
+
+  const [category, setCategory] = useState(parsedPainscaleWords);
+
+  const onPress = (index: any, value: any, severity_level: any) => {
+    const existing: any = {...category};
+    existing[index].severity_level = severity_level;
+    // setCategory(existing);
+    setRefreshFlatList(!refreshFlatlist);
+    // console.log('index', index);
+    // console.log('value', value);
+    console.log(existing[index].name, 'status set to', severity_level);
+    savePainScale();
+    // console.log('category', category);
+  };
+
+  function savePainScale() {
+    const painscales: any = [];
+    category.map((item: any) => {
+      painscales.push(JSON.stringify(item));
     });
-    return objData;
-  };
+    // console.log('test:', painscales);
+    if (video) {
+      realm.write(() => {
+        video.painScale! = painscales;
+      });
+    }
+  }
 
-  const [cat, setCat] = useState(getState());
-
-  const onPress = (index: string | number, value: number) => {
-    const existing = {...cat};
-    existing[index] = value;
-    setCat(existing);
-
-  };
   const [sliderValue, setSliderValue] = useState(0);
 
-    const interpolate = (start: number, end: number) => {
-      let k = (sliderValue - 0) / 10; // 0 =>min  && 10 => MAX
-      return Math.ceil((1 - k) * start + k * end) % 256;
-    };
+  const interpolate = (start: number, end: number) => {
+    let k = (sliderValue - 0) / 10; // 0 =>min  && 10 => MAX
+    return Math.ceil((1 - k) * start + k * end) % 256;
+  };
 
-    // const color = () => {
-    //   let r = interpolate(255, 0);
-    //   let g = interpolate(0, 255);
-    //   let b = interpolate(0, 0);
-    //   return `rgb(${g},${r},${b})`;
-    // };
+  // useEffect (() => {
+  //   console.log('video.painScale', video.painScale)}
+  //   ,[]);
 
-  const renderItem = ({item}) => {
-    let items = [];
-    if (item.id) {
-      items = item.severity_level.map((severity_level: {id: any}) => {
-        const index = severity_level.id;
-        return (
-          <>
+  // const color = () => {
+  //   let r = interpolate(255, 0);
+  //   let g = interpolate(0, 255);
+  //   let b = interpolate(0, 0);
+  //   return `rgb(${g},${r},${b})`;
+  // };
+
+  // const renderItem = ({item}) => {
+  //   const index = item.id;
+  //   const status = item.severity_level;
+  //   return (
+
+  //   );
+
+  //   return (
+  //     <ScrollView style={styles.container}>
+  //       <View style={{flexDirection: 'row'}}>
+  //         <View style={{width: '35%'}}>
+  //           <Text style={styles.textStyle}>{item.name}</Text>
+  //         </View>
+
+  //         <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
+  //           <Text>{items}</Text>
+  //         </View>
+  //       </View>
+  //     </ScrollView>
+  //   );
+  // };
+
+  const renderItem = ({item, index}) => {
+    return (
+      <ScrollView style={styles.container}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{width: '35%'}}>
+            <Text style={styles.textStyle}>{item.name}</Text>
+          </View>
+          <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
             <View
               style={{
                 flexDirection: 'row',
@@ -229,9 +132,11 @@ export default function Painscale() {
                       color="#5d86d7"
                       value="none"
                       // key={index}
-                      status={cat[index] === 0 ? 'checked' : 'unchecked'}
+                      status={
+                        item.severity_level == 'none' ? 'checked' : 'unchecked'
+                      }
                       onPress={() => {
-                        onPress(index, 0);
+                        onPress(index, 0, 'none');
                       }}
                     />
                   </View>
@@ -241,9 +146,11 @@ export default function Painscale() {
                       color="#5d86d7"
                       value="mild"
                       // key={index}
-                      status={cat[index] === 1 ? 'checked' : 'unchecked'}
+                      status={
+                        item.severity_level == 'mild' ? 'checked' : 'unchecked'
+                      }
                       onPress={() => {
-                        onPress(index, 1);
+                        onPress(index, 1, 'mild');
                       }}
                     />
                   </View>
@@ -253,10 +160,14 @@ export default function Painscale() {
                     <RadioButton
                       color="#5d86d7"
                       value="moderate"
-                      key={index}
-                      status={cat[index] === 2 ? 'checked' : 'unchecked'}
+                      key={item.id}
+                      status={
+                        item.severity_level == 'moderate'
+                          ? 'checked'
+                          : 'unchecked'
+                      }
                       onPress={() => {
-                        onPress(index, 2);
+                        onPress(index, 2, 'moderate');
                       }}
                     />
                   </View>
@@ -265,37 +176,29 @@ export default function Painscale() {
                     <RadioButton
                       color="#5d86d7"
                       value="severe"
-                      key={index}
-                      status={cat[index] === 3 ? 'checked' : 'unchecked'}
+                      key={item.id}
+                      status={
+                        item.severity_level == 'severe'
+                          ? 'checked'
+                          : 'unchecked'
+                      }
                       onPress={() => {
-                        onPress(index, 3);
+                        onPress(index, 3, 'severe');
                       }}
                     />
                   </View>
                 </View>
               </RadioButton.Group>
             </View>
-            
-          </>
-        );
-      });
-    }
-    return (
-      <ScrollView style={styles.container}>
-        <View style={{flexDirection: 'row'}}>
-          <View style={{width: '35%'}}>
-            <Text style={styles.textStyle}>{item.name}</Text>
-          </View>
-
-          <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
-            <Text>{items}</Text>
           </View>
         </View>
-
-
       </ScrollView>
     );
   };
+
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+  }, []);
 
   return (
     <ScrollView style={[styles.container]}>
@@ -307,9 +210,10 @@ export default function Painscale() {
       <FlatList
         style={styles.container}
         // data={data}
-        data={painscaleWords}
+        extraData={refreshFlatlist}
+        data={category}
+        keyExtractor={(item: any, index) => index.toString()}
         renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
       />
       <View style={{alignSelf: 'center', paddingTop: 30}}>
         <Text style={{fontSize: 36, color: 'black'}}>

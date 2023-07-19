@@ -123,9 +123,9 @@ const ViewRecordings = () => {
     );
   };
 
-  useEffect(() => {
+  useEffect(() => {{
     setVideos(videosByDate);
-  }, []);
+  } }, []);
 
   //check file space
   /*
