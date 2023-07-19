@@ -32,14 +32,15 @@ const FullscreenVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   return (
-    <SafeAreaView style={{width: windowWidth, height: windowHeight-150}}>
+    <SafeAreaView style={{width: windowWidth, height: windowHeight - 220}}>
       <VideoPlayer
         source={{uri: MHMRfolderPath + '/' + video.filename}}
-        paused={false}
+        paused={true}
         disableBack={true}
         toggleResizeModeOnFullscreen={true}
         showOnStart={true}
         isFullscreen={true}
+        repeat={false}
         // disableSeekButtons={true}
       />
     </SafeAreaView>

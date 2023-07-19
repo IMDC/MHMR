@@ -37,6 +37,7 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const locationTag: any = [...category];
     locationTag[index].checked = !locationTag[index].checked;
     setCategory(locationTag);
+    console.log('category', category)
     saveLocations();
   }
 
@@ -45,7 +46,7 @@ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     category.map((item: any) => {
       locations.push(JSON.stringify(item));
     });
-    console.log('test:', locations);
+    // console.log('test:', locations);
     if (video) {
       realm.write(() => {
         video.locations! = locations;
