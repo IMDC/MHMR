@@ -50,7 +50,7 @@ const TextComments = () => {
   const input: any = React.useRef(null);
 
   const currentTime = useState(0);
-  const [videoPlaying, setVideoPlaying] = useState(false);
+  //const [videoPlaying, setVideoPlaying] = useState(false);
 
   const route: any = useRoute();
   const id = route.params?.id;
@@ -114,7 +114,7 @@ const TextComments = () => {
     input.current.clear();
     Keyboard.dismiss();
     videoPlayerRef.current.setNativeProps({ paused: false });
-    setVideoPlaying(true);
+    //setVideoPlaying(true);
   };
 
   const editComment = (commentID: any) => {
@@ -207,11 +207,12 @@ const TextComments = () => {
           showOnStart={true}
           disableSeekButtons={true}
           onProgress={data => {
-            if (videoPlaying) currentTime[0] = data.currentTime;
-            //updateOverlay();
+            if (data.currentTime != 0) currentTime[0] = data.currentTime;
+            //console.log("on prog", currentTime[0]);
           }}
           onSeek={data => {
-            if (videoPlaying) currentTime[0] = data.currentTime;
+            if (data.currentTime != 0) currentTime[0] = data.currentTime;
+            //console.log("on seek", currentTime[0]);
           }}
         />
         <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment}</Text>
@@ -222,13 +223,16 @@ const TextComments = () => {
         multiline={true}
         placeholder="Enter comment here..."
         style={{ padding: 15 }}
-        rightIcon={<Icon name="send" onPress={addComment} />}
+        rightIcon={<Icon name="send" onPress={() => {
+          addComment();
+          setTimestamp(currentTime[0]);
+          console.log("------", currentTime[0], newTimestamp);
+        }} />}
         onChangeText={value => {
           setNewComment(value);
           videoPlayerRef.current.setNativeProps({ paused: true });
-          setVideoPlaying(false);
+          //setVideoPlaying(false);
           console.log("pause at change", currentTime[0]);
-          setTimestamp(currentTime[0]);
         }}
         onSubmitEditing={addComment}
       />
