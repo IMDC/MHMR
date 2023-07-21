@@ -9,6 +9,7 @@ import {
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useRef, useState} from 'react';
 import {
+  LogBox,
   NativeSyntheticEvent,
   SafeAreaView,
   StyleSheet,
@@ -113,6 +114,10 @@ const AnnotationMenu = () => {
     });
     return isAnnotated;
   };
+
+  useEffect(() => {
+    LogBox.ignoreLogs(['Non-serializable values were found in the navigation state.']);
+  })
 
   useEffect(() => {
     if (isFocused) {
