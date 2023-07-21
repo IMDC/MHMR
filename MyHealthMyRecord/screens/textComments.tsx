@@ -163,6 +163,7 @@ const TextComments = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       let empty = true;
+      // add condition check: if video is not paused, then update overlay
       for (let i = 0; i < parsedComments.length; i++) {
         if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0] + 2)) {
           /* set overlay comment if current time is within time of timestamp to timestamp+2s */
