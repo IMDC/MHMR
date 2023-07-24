@@ -3,6 +3,9 @@ import { Text } from 'react-native-paper';
 import RNFS from 'react-native-fs';
 //import SpeechToTextV1 from 'ibm-watson/speech-to-text/v1';
 //import IamAuthenticator from 'ibm-watson/auth';
+import RNFS from 'react-native-fs';
+//import SpeechToTextV1 from 'ibm-watson/speech-to-text/v1';
+//import IamAuthenticator from 'ibm-watson/auth';
 
 function Dashboard() {
 
