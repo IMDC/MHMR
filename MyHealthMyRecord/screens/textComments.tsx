@@ -46,41 +46,44 @@ const TextComments = () => {
   const windowHeight = Dimensions.get('window').height;
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  const videoPlayerRef: any = useRef(null);
-  const input: any = React.useRef(null);
-
-  const currentTime = useState(0);
-  //const [videoPlaying, setVideoPlaying] = useState(false);
-
   const route: any = useRoute();
   const id = route.params?.id;
-
   const realm = useRealm();
   const video: any = useObject('VideoData', id);
 
+  const videoPlayerRef: any = useRef(null);
+
+  /* get stored comments and parse them */
   const [storedComments, setStoredComments] = useState(video.textComments);
   let parsedComments: any[] = [];
   storedComments.map((text: string) => parsedComments.push(JSON.parse(text)));
 
-  /* add comment with new text input and timestamp */
-  const [newComment, setNewComment] = React.useState('');
-  const [newTimestamp, setTimestamp] = React.useState(1);
+  /* add comment ref */
+  const input: any = React.useRef(null);
 
-  /* edit comment with new text input */
+  /* current time of video */
+  const currentTime = useState(0);
+
+  /* add comment with new text input and timestamp */
+  const newComment = React.useState('');
+  const newTimestamp = React.useState(1);
+
+  /* edit comment ref */
   const commentEditInput: any = useRef(null);
   const [commentEdit, setCommentEdit] = React.useState('');
 
-  /*  */
-  const [overlayComment, setOverlayComment] = React.useState('');
+  /* comment shown in overlay */
+  const overlayComment = React.useState('');
 
   const addComment = () => {
-    console.log(newTimestamp, currentTime[0]);
-    if (newComment == '') return;
+    /* validation: no empty comments */
+    if (newComment[0] == '') return;
 
+    /* set new comment values */
     let commentSchema: any = {
       id: new Realm.BSON.ObjectID(),
-      text: newComment,
-      timestamp: newTimestamp,
+      text: newComment[0],
+      timestamp: newTimestamp[0],
     };
 
     /* find index to add at so timestamps are in order */
@@ -88,7 +91,7 @@ const TextComments = () => {
       (element: any) => element.timestamp > commentSchema.timestamp,
     );
 
-    /* add new comment to parsed array and stringify parsed array*/
+    /* add new comment to parsed array*/
     if (commentIndex == -1) {
       /* if greater timestamp not found, add new comment to end of array */
       parsedComments.push(commentSchema);
@@ -96,12 +99,12 @@ const TextComments = () => {
       /* if greater timestamp found, add new comment at the index found */
       parsedComments.splice(commentIndex, 0, commentSchema);
     }
+
+    /* write new comments array to db */
     const newTextComments: any[] = [];
     parsedComments.map((text: string) =>
       newTextComments.push(JSON.stringify(text)),
     );
-
-    /* write new comments array to db */
     setStoredComments(newTextComments);
     if (video) {
       realm.write(() => {
@@ -110,11 +113,10 @@ const TextComments = () => {
     }
 
     /* reset */
-    setNewComment('');
+    newComment[0] = '';
     input.current.clear();
     Keyboard.dismiss();
     videoPlayerRef.current.setNativeProps({ paused: false });
-    //setVideoPlaying(true);
   };
 
   const editComment = (commentID: any) => {
@@ -143,7 +145,6 @@ const TextComments = () => {
       (element: any) => element.id == commentID,
     );
     parsedComments.splice(commentIndex, 1);
-    //console.log("-----------parsed", parsedComments.length, commentIndex, parsedComments);
 
     /* update comments array in db */
     const newTextComments: any[] = [];
@@ -158,34 +159,37 @@ const TextComments = () => {
     }
   };
 
-  /* update comment overlay */
+  /* update comment overlay every 250ms*/
   useEffect(() => {
     const interval = setInterval(() => {
       let empty = true;
+      // add condition check: if video is not paused, then update overlay
       for (let i = 0; i < parsedComments.length; i++) {
         if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0] + 2)) {
-          setOverlayComment(parsedComments[i].text + " " + parsedComments[i].timestamp);
+          /* set overlay comment if current time is within time of timestamp to timestamp+2s */
+          overlayComment[1](parsedComments[i].text + " " + parsedComments[i].timestamp);
           empty = false;
           break;
         }
       }
-      if (empty) setOverlayComment('');
+      /* set overlay to empty if no comments have timestamp that falls around current time */
+      if (empty) overlayComment[1]('');
     }, 250);
     return () => clearInterval(interval);
   }, [overlayComment]);
 
+  /* format timestamp from seconds to 00:00:00*/
   function secondsToHms(d: number) {
     d = Number(d);
     var h = Math.floor(d / 3600);
     var m = Math.floor(d % 3600 / 60);
     var s = Math.floor(d % 3600 % 60);
-
     return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
   }
 
-  /* given a timestamp, jump to that time in the video */
+  /* given a timestamp, jump to that time-0.5s in the video */
   const seekToTimestamp = (timestamp: any) => {
-    videoPlayerRef.current.setNativeProps({ seek: timestamp });
+    videoPlayerRef.current.setNativeProps({ seek: timestamp - 0.5 });
     console.log('press', timestamp);
   };
 
@@ -207,15 +211,13 @@ const TextComments = () => {
           showOnStart={true}
           disableSeekButtons={true}
           onProgress={data => {
-            if (data.currentTime != 0) currentTime[0] = data.currentTime;
-            //console.log("on prog", currentTime[0]);
+            currentTime[0] = data.currentTime;
           }}
           onSeek={data => {
-            if (data.currentTime != 0) currentTime[0] = data.currentTime;
-            //console.log("on seek", currentTime[0]);
+            currentTime[0] = data.currentTime;
           }}
         />
-        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment}</Text>
+        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment[0]}</Text>
       </View>
       <Input
         ref={input}
@@ -225,16 +227,16 @@ const TextComments = () => {
         style={{ padding: 15 }}
         rightIcon={<Icon name="send" onPress={() => {
           addComment();
-          setTimestamp(currentTime[0]);
           console.log("------", currentTime[0], newTimestamp);
         }} />}
         onChangeText={value => {
-          setNewComment(value);
-          videoPlayerRef.current.setNativeProps({ paused: true });
-          //setVideoPlaying(false);
+          newComment[0] = value;
+          newTimestamp[0] = currentTime[0];
           console.log("pause at change", currentTime[0]);
         }}
-        onSubmitEditing={addComment}
+        onFocus={() => {
+          videoPlayerRef.current.setNativeProps({ paused: true });
+        }}
       />
       <ScrollView>
         <View>
