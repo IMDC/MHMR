@@ -52,6 +52,7 @@ const RecordVideo = () => {
       console.log('?', videoSource.path);
     }
     makeDirectory(MHMRfolderPath);
+    makeDirectory(MHMRfolderPath+'/audio');
   }, [videoSource]);
 
   async function StartRecodingHandler() {
