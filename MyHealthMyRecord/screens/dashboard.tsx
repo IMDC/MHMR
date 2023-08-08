@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ImageBackground,
   StyleSheet,
+  View,
 } from 'react-native';
 import { Chip, Dialog, Text } from 'react-native-paper';
 import { VideoData, useRealm, useQuery } from '../models/VideoData';
