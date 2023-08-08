@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ImageBackground,
   StyleSheet,
+  View,
 } from 'react-native';
 import { Chip, Dialog, Text } from 'react-native-paper';
 import { VideoData, useRealm, useQuery } from '../models/VideoData';
@@ -90,6 +91,36 @@ function Dashboard() {
       .catch((err: any) => {
         console.log(err.response.data);
         console.log(err.response.headers);
+        if (err.response.status == 401) {
+          console.log('need to get new auth token');
+        }
+      });
+  }
+
+  const cognosSession = async () => {
+    var bodyFormData = new FormData();
+    bodyFormData.append('expiresIn', 3600);
+    bodyFormData.append('webDomain', 'https://dde-us-south.analytics.ibm.com');
+    axios
+      .post(
+        'https://dde-us-south.analytics.ibm.com/daas/v1/session',
+        {
+          headers: {
+            "authorization": "Basic <base64 158e9446-f8b4-4b7d-a909-1b3635ddb8f1:9d61b8972454239901863057b753424994391b0e>",
+            "accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          data: bodyFormData,
+        },
+      )
+      .then((data: any) => {
+        console.log(data);
+        //console.log(data.data.results);
+      })
+      .catch((err: any) => {
+        console.log(err.response);
+        console.log(err.response.data);
+        //console.log(err.response.headers);
         if (err.response.status == 401) {
           console.log('need to get new auth token');
         }
@@ -201,6 +232,7 @@ function Dashboard() {
       <Button onPress={getAuth}>get auth</Button>
       <Button onPress={getBinaryAudio}>get binary</Button>
       <Button onPress={transcribeAudio}>transcribe audio</Button>
+      <Button onPress={cognosSession}>cognos session</Button>
       <ScrollView style={{ marginTop: 5 }} ref={scrollRef}>
         {videos !== null
           ? videos.map((video: VideoData) => {
