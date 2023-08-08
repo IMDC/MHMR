@@ -4,7 +4,6 @@ import * as React from 'react';
 import axios from "axios";
 import { useState } from 'react';
 import {
-  View,
   ScrollView,
   TouchableOpacity,
   ImageBackground,
