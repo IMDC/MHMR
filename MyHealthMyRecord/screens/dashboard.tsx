@@ -1,7 +1,6 @@
 import {useNavigation, ParamListBase} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as React from 'react';
-import { Button, Text } from 'react-native-paper';
 import RNFS from 'react-native-fs';
 //import SpeechToTextV1 from 'ibm-watson/speech-to-text/v1';
 //import IamAuthenticator from 'ibm-watson/auth';
@@ -12,7 +11,6 @@ import axios from "axios";
 import { useState } from 'react';
 import { View } from 'react-native';
 import {
-  View,
   ScrollView,
   TouchableOpacity,
   ImageBackground,
@@ -21,7 +19,6 @@ import {
 import {Chip, Dialog, Text} from 'react-native-paper';
 import {VideoData, useRealm, useQuery} from '../models/VideoData';
 import {Button, Icon} from '@rneui/themed';
-import RNFS from 'react-native-fs';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 
 function Dashboard() {
