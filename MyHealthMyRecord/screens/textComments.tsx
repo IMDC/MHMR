@@ -74,6 +74,8 @@ const TextComments = () => {
 
   /* comment shown in overlay */
   const overlayComment = React.useState('');
+  const overlayCommentHighlight = React.useState('#5C5959');
+  const commentRef: any = useRef([]);
 
   const addComment = () => {
     /* validation: no empty comments */
@@ -159,6 +161,13 @@ const TextComments = () => {
     }
   };
 
+  useEffect( () => {
+    commentRef.current = new Array(parsedComments.length);
+    /* for (let i = 0; i < parsedComments.length; i++) {
+      commentRef.current[i] = null;
+    } */
+}, []);
+
   /* update comment overlay every 250ms*/
   useEffect(() => {
     const interval = setInterval(() => {
@@ -168,9 +177,18 @@ const TextComments = () => {
         if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0] + 2)) {
           /* set overlay comment if current time is within time of timestamp to timestamp+2s */
           overlayComment[1](parsedComments[i].text + " " + parsedComments[i].timestamp);
+/*           if (commentRef.current.key == i) {
+            console.log(commentRef.current.key, i);
+          }
+           */
           empty = false;
           break;
         }
+      }
+      //console.log(commentRef.current[0]);
+      if (commentRef.current[0] != undefined) {
+        console.log('o');
+        commentRef.current[0].setNativeProps({style: {color: '#1C3EAA'}});
       }
       /* set overlay to empty if no comments have timestamp that falls around current time */
       if (empty) overlayComment[1]('');
@@ -261,7 +279,7 @@ const TextComments = () => {
           <SafeAreaView>
             <ScrollView style={styles.container}>
               {parsedComments.length != 0
-                ? parsedComments.map((c: any) => {
+                ? parsedComments.map((c: any, i) => {
                   return (
                     <View
                       key={c.id}
@@ -296,11 +314,11 @@ const TextComments = () => {
                           />
                         </Dialog.Actions>
                       </Dialog>
-                      <View style={styles.leftContainer}>
+                      <View style={[styles.commentContainer, styles.row]}>
                         <TouchableOpacity
                           onPress={() => seekToTimestamp(c.timestamp)}
                           style={styles.comment}>
-                          <Text style={styles.textStyle}>
+                          <Text ref={el => {if (el !=null) commentRef[i] = el}} key={c.id} style={[styles.textStyle, {color: overlayCommentHighlight[0]}]}>
                             {secondsToHms(c.timestamp)} - {c.text}
                           </Text>
                         </TouchableOpacity>
