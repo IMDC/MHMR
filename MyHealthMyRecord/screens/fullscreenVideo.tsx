@@ -41,6 +41,7 @@ const FullscreenVideo = () => {
         showOnStart={true}
         isFullscreen={true}
         repeat={false}
+        onExitFullscreen={() => navigation.goBack()}
         // disableSeekButtons={true}
       />
     </SafeAreaView>

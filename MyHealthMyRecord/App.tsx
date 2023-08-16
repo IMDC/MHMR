@@ -25,6 +25,7 @@ import FullscreenVideo from './screens/fullscreenVideo';
 import Painscale from './screens/painscaleScreen';
 import Help from './screens/help';
 import Dashboard from './screens/dashboard';
+import GraphScreen from './screens/graphScreen';
 import * as Styles from './assets/util/styles';
 import { Icon } from '@rneui/themed';
 
@@ -58,58 +59,84 @@ function App() {
   return (
     <RealmProvider>
       <NavigationContainer>
-        <Tab.Navigator initialRouteName="MyHealthMyRecord" screenOptions={{ tabBarShowLabel: false, tabBarStyle: { height: Styles.bottomNavBarHeight , backgroundColor: Styles.NavBarGrey }}}>
-        <Tab.Screen
-          name="Dashboard"
-          component={Dashboard}
-          options={{
-            tabBarLabel: 'Dashboard',
-            headerStyle: { backgroundColor: Styles.NavBarGrey },
-            tabBarIcon: () => (
-              <Icon
-                    name="analytics-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{ width: Styles.bottomNavIconSize }}
-                  />
-            ),
-          }}
+        <Tab.Navigator
+          initialRouteName="MyHealthMyRecord"
+          screenOptions={{
+            tabBarShowLabel: false,
+            tabBarStyle: {
+              height: Styles.bottomNavBarHeight,
+              backgroundColor: Styles.NavBarGrey,
+            },
+          }}>
+          <Tab.Screen
+            name="Graphs"
+            component={GraphScreen}
+            options={{
+              tabBarLabel: 'Dashboard',
+              headerStyle: {backgroundColor: Styles.NavBarGrey},
+              tabBarIcon: () => (
+                <Icon
+                  name="bar-chart-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={Styles.MHMRBlue}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
+          />
+
+          <Tab.Screen
+            name="Dashboard"
+            component={Dashboard}
+            options={{
+              tabBarLabel: 'Dashboard',
+              headerStyle: {backgroundColor: Styles.NavBarGrey},
+              tabBarIcon: () => (
+                <Icon
+                  name="analytics-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={Styles.MHMRBlue}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
           />
           <Tab.Screen
-          name="MyHealthMyRecord"
-          component={StackNav}
-          tabBarShowLabel={false}
-          options={{
-            headerShown: false,
-            tabBarLabel: 'MyHealthMyRecord',
-            tabBarIcon: () => (
-              <Icon
-                    name="home-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{ width: Styles.bottomNavIconSize }}
-                  />
-            ),
-          }}
+            name="MyHealthMyRecord"
+            component={StackNav}
+            tabBarShowLabel={false}
+            options={{
+              headerShown: false,
+              tabBarLabel: 'MyHealthMyRecord',
+              tabBarIcon: () => (
+                <Icon
+                  name="home-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={Styles.MHMRBlue}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
           />
           <Tab.Screen
-          name="Help"
-          component={Help}
-          options={{
-            tabBarLabel: 'Help',
-            headerStyle: { backgroundColor: Styles.NavBarGrey },
-            tabBarIcon: () => (
-              <Icon
-                    name="information-circle-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{ width: Styles.bottomNavIconSize }}
-                  />
-            ),
-          }}
+            name="Help"
+            component={Help}
+            options={{
+              tabBarLabel: 'Help',
+              headerStyle: {backgroundColor: Styles.NavBarGrey},
+              tabBarIcon: () => (
+                <Icon
+                  name="information-circle-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={Styles.MHMRBlue}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
           />
         </Tab.Navigator>
       </NavigationContainer>
