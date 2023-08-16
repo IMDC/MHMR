@@ -168,6 +168,24 @@ const ViewRecordings = () => {
               return (
                 <View style={styles.container} key={video._id.toString()}>
                   <View style={styles.thumbnail}>
+                    {/* <VideoPlayer
+                      style={{}}
+                      source={{
+                        uri: MHMRfolderPath + '/' + video.filename,
+                      }}
+                      paused={true}
+                      disableBack={true}
+                      // toggleResizeModeOnFullscreen={true}
+                      showOnStart={true}
+                      disableSeekButtons={true}
+                      isFullscreen={false}
+                      onEnterFullscreen={() =>
+                        navigation.navigate('Fullscreen Video', {
+                          id: video._id,
+                        })
+                      }
+                    /> */}
+                    
                     <ImageBackground
                       style={{height: '100%', width: '100%'}}
                       source={{

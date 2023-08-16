@@ -139,8 +139,7 @@ const LocationTagging = () => {
       />
       <TouchableOpacity
         style={{paddingHorizontal: 40}}
-        onPress={() => toggleDialog()}
-      >
+        onPress={() => toggleDialog()}>
         <Card containerStyle={{marginHorizontal: 10, margin: 10}}>
           <View style={{flexDirection: 'row'}}>
             <Icon style={{marginLeft: 8}} name="add-outline" type="ionicon" />
@@ -148,12 +147,12 @@ const LocationTagging = () => {
           </View>
         </Card>
       </TouchableOpacity>
-      {/* <Button
-        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
-        onPress={saveLocations}
+      <Button
+        buttonStyle={{width: 220, height: 75, marginTop: 50, alignSelf: 'center'}}
+        onPress={() => navigation.goBack()}
         title="Save"
         color="#1C3EAA"
-      /> */}
+      />
       <View style={{margin: 40, height: 75}} />
     </ScrollView>
   );
