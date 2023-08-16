@@ -1,4 +1,4 @@
-import React, { Component, useRef, useState } from 'react';
+import React, { Component, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -25,6 +25,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native';
 
 const EmotionTagging = () => {
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
   const route: any = useRoute();
@@ -40,6 +42,30 @@ const EmotionTagging = () => {
   const videoRef: any = useRef<Video>(null);
 
   const time = useState(0);
+
+  /* comment shown in overlay */
+  const overlayComment = React.useState('');
+
+  const [isDeleteBtnVisible, setDeleteBtnVisible] = useState(false);
+  const [isEditBtnVisible, setEditBtnVisible] = useState(true);
+
+  const [commentSelectedID, setCommentSelectedID] = useState('');
+  const [commentSelectedText, setCommentSelectedText] = useState('');
+
+  function toggleDeleteBtnVisibile() {
+    setDeleteBtnVisible(true);
+    setEditBtnVisible(false);
+  }
+
+  function toggleEditBtnVisible() {
+    setDeleteBtnVisible(false);
+    setEditBtnVisible(true);
+  }
+
+  const [visible, setVisible] = React.useState(false);
+  const toggleDialog = () => {
+    setVisible(!visible);
+  };
 
   //const emotions: any[] = [];
 
@@ -195,11 +221,79 @@ const EmotionTagging = () => {
 
   }
 
+  const editComment = (commentID: any) => {
+    /* find index of comment matching input id and update in array */
+    /* const commentIndex = parsedComments.findIndex(
+      (element: any) => element.id == commentID,
+    );
+    parsedComments[commentIndex].text = commentEdit; */
+
+    /* update comments array in db */
+    /* const newTextComments: any[] = [];
+    parsedComments.map((text: string) =>
+      newTextComments.push(JSON.stringify(text)),
+    );
+    setStoredComments(newTextComments);
+    if (video) {
+      realm.write(() => {
+        video.textComments! = newTextComments;
+      });
+    } */
+  };
+
+  const deleteComment = (commentID: any) => {
+    /* find index of comment matching input id and remove from array */
+    /* const commentIndex = parsedComments.findIndex(
+      (element: any) => element.id == commentID,
+    );
+    parsedComments.splice(commentIndex, 1); */
+
+    /* update comments array in db */
+    /* const newTextComments: any[] = [];
+    parsedComments.map((text: string) =>
+      newTextComments.push(JSON.stringify(text)),
+    );
+    setStoredComments(newTextComments);
+    if (video) {
+      realm.write(() => {
+        video.textComments! = newTextComments;
+      });
+    } */
+  };
+
   /* given a timestamp, jump to that time in the video */
   const seekToTimestamp = (timestamp: any) => {
     videoRef.current.setNativeProps({ seek: timestamp });
     console.log('press', timestamp);
   };
+
+  /* update comment overlay every 250ms*/
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let empty = true;
+      // add condition check: if video is not paused, then update overlay
+      for (let i = 0; i < parsedStickers.length; i++) {
+        if ((parsedStickers[i].timestamp > time[0]) && (parsedStickers[i].timestamp < time[0] + 2)) {
+          /* set overlay comment if current time is within time of timestamp to timestamp+2s */
+          overlayComment[1](parsedStickers[i].sentiment + " " + parsedStickers[i].timestamp);
+          empty = false;
+          break;
+        }
+      }
+      /* set overlay to empty if no comments have timestamp that falls around current time */
+      if (empty) overlayComment[1]('');
+    }, 250);
+    return () => clearInterval(interval);
+  }, [overlayComment]);
+
+    /* format timestamp from seconds to 00:00:00*/
+    function secondsToHms(d: number) {
+      d = Number(d);
+      var h = Math.floor(d / 3600);
+      var m = Math.floor(d % 3600 / 60);
+      var s = Math.floor(d % 3600 % 60);
+      return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+    }
 
   return (
     <View style={styles.mainContainer}>
@@ -208,8 +302,8 @@ const EmotionTagging = () => {
       </View>
       <View
         style={{
-          width: Dimensions.get('window').width,
-          height: Dimensions.get('window').height / 2.5,
+          width: windowWidth,
+          height: windowHeight / 2.5,
           paddingHorizontal: 15,
           paddingTop: 15,
         }}>
@@ -221,9 +315,16 @@ const EmotionTagging = () => {
           toggleResizeModeOnFullscreen={true}
           showOnStart={true}
           disableSeekButtons={true}
-          onProgress={(data) => time[0] = data.currentTime}
+          onProgress={data => {
+            time[0] = data.currentTime;
+          }}
+          onSeek={data => {
+            time[0] = data.currentTime;
+          }}
         />
+        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment[0]}</Text>
       </View>
+
       <View style={styles.ballContainer} />
       <View style={[styles.row, { paddingBottom: 140 }]}>
         <Draggable id="smile" source={smile} />
@@ -232,32 +333,62 @@ const EmotionTagging = () => {
         <Draggable id="sad" source={sad} />
         <Draggable id="angry" source={angry} />
       </View>
-        <ScrollView style={styles.container}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={styles.headerStyle}>Stickers</Text>
-          </View>
-          <SafeAreaView>
-            <ScrollView style={styles.container}>
-              {parsedStickers.length != 0
-                ? parsedStickers.map((s: any) => {
-                  return (
-                    <View key={s.id} style={[styles.commentContainer, styles.row]}>
+
+      <ScrollView style={styles.container}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.headerStyle}>Stickers</Text>
+          {isDeleteBtnVisible && (
+            <TouchableOpacity
+              style={{ justifyContent: 'flex-end' }}
+              onPress={() => toggleEditBtnVisible()}>
+              <Text style={{ fontSize: 16, marginRight: 25 }}>Done</Text>
+            </TouchableOpacity>
+          )}
+          {isEditBtnVisible && (
+            <TouchableOpacity
+              style={{ justifyContent: 'flex-end' }}
+              onPress={() => toggleDeleteBtnVisibile()}>
+              <Text style={{ fontSize: 16, marginRight: 25 }}>Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <SafeAreaView>
+          <ScrollView style={styles.container}>
+            {parsedStickers.length != 0
+              ? parsedStickers.map((s: any) => {
+                return (
+                  <View key={s.id}>
+                    <View style={[styles.commentContainer, styles.row]}>
                       <TouchableOpacity
                         onPress={() => seekToTimestamp(s.timestamp)}
                         style={styles.comment}>
-                        <View style={styles.leftContainer}>
-                          <Text style={styles.textStyle}>
-                            {s.timestamp} - {s.sentiment}
-                          </Text>
-                        </View>
+                        <Text style={styles.textStyle}>
+                          {secondsToHms(s.timestamp)} - {s.sentiment}
+                        </Text>
                       </TouchableOpacity>
                     </View>
-                  );
-                })
-                : null}
-            </ScrollView>
-          </SafeAreaView>
-        </ScrollView>
+                    <View style={styles.rightContainer}>
+                      {/* display this when user clicks edit */}
+                      {isDeleteBtnVisible && (
+                        <View>
+                          <TouchableOpacity
+                            style={{ alignSelf: 'flex-end' }}
+                            onPress={() => deleteComment(s.id)}>
+                            <Text style={{ color: '#cf7f11', fontSize: 16 }}>
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                );
+              })
+              : null}
+          </ScrollView>
+        </SafeAreaView>
+      </ScrollView>
     </View>
   );
 };
@@ -279,6 +410,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   container: { padding: 25 },
+  playerStyle: { height: '70%', padding: 4 },
   commentContainer: {
     flex: 1,
     paddingVertical: 4,
@@ -288,10 +420,6 @@ const styles = StyleSheet.create({
     // justifyContent: 'flex-end',
     borderBottomColor: 'grey',
     borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  leftContainer: {
-    width: '94%',
-    flexWrap: 'wrap',
   },
   headerStyle: {
     fontWeight: 'bold',
@@ -307,12 +435,57 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     flexWrap: 'wrap',
   },
+  leftContainer: {
+    width: '90%',
+    flexWrap: 'wrap',
+  },
+  rightContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    // backgroundColor: '#dadbe0',
+    // backgroundColor: 'pink',
+    alignItems: 'flex-end',
+  },
   comment: {
     // height: 60,
     // position: 'absolute',
     // left: 0,
     //flex: 1,
     //flexWrap: 'wrap',
+  },
+  buttonStyle: {
+    //width: 120,
+    //height: 50,
+    //textAlign: 'right',
+    borderColor: 'transparent',
+    borderWidth: 0,
+    borderRadius: 30,
+  },
+  testContainer: {
+    //flex: 1,
+    //justifyContent: 'center',
+    //alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  overlay: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    //opacity: 0.5,
+    //backgroundColor: 'red',
+  },
+  overlayText: {
+    flex: 1,
+    position: 'absolute',
+    textAlignVertical: 'center',
+    marginTop: 20,
+    marginLeft: 20,
+    padding: 5,
+    backgroundColor: 'white',
+    opacity: 0.85,
+    borderRadius: 10,
   },
 });
 
