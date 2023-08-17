@@ -245,6 +245,18 @@ export default function Painscale() {
           }}
         />
       </View>
+      <Button
+        buttonStyle={{
+          width: 220,
+          height: 75,
+          marginTop: 50,
+          alignSelf: 'center',
+        }}
+        onPress={() => navigation.goBack()}
+        title="Save"
+        color="#1C3EAA"
+      />
+      <View style={{margin: 40, height: 75}} />
     </ScrollView>
   );
 }
