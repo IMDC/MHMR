@@ -1,15 +1,15 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {ParamListBase, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useCameraDevices, Camera} from 'react-native-vision-camera';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import {PermissionsAndroid, Platform} from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
-import {Icon, Button} from '@rneui/themed';
-import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {useQuery, useRealm} from '../models/VideoData';
+import { Icon, Button } from '@rneui/themed';
+import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { useQuery, useRealm } from '../models/VideoData';
 import Realm from 'realm';
-import {createRealmContext} from '@realm/react';
+import { createRealmContext } from '@realm/react';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -25,6 +25,10 @@ const RecordVideo = () => {
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
+
+  const timeOfRecording = useState(0);
+  const displayTime = useState('');
+  const maxLength = useState(5);
 
   const [videoSource, setVideoSource] = useState<any | string>('');
 
@@ -52,10 +56,10 @@ const RecordVideo = () => {
       console.log('?', videoSource.path);
     }
     makeDirectory(MHMRfolderPath);
-    makeDirectory(MHMRfolderPath+'/audio');
+    makeDirectory(MHMRfolderPath + '/audio');
   }, [videoSource]);
 
-  async function StartRecodingHandler() {
+  const StartRecodingHandler = async () => {
     if (camera.current !== null) {
       camera.current.startRecording({
         flash: 'off',
@@ -66,6 +70,8 @@ const RecordVideo = () => {
         onRecordingError: (error: any) => console.error(error, 'videoerror'),
       });
       setRecordingInProgress(true);
+      timeOfRecording[0] = 0;
+      startTimer();
     }
   }
 
@@ -83,14 +89,47 @@ const RecordVideo = () => {
     setRecordingPaused(false);
   }
 
-  async function stopRecodingHandler() {
+  const stopRecodingHandler = async () => {
     if (camera.current !== null) {
+      stopTimer();
       await camera.current.stopRecording();
       setShowCamera(false);
       setRecordingInProgress(false);
       setRecordingPaused(false);
     }
   }
+
+  let timer: any = null;
+
+  const startTimer = () => {
+    if (recordingInProgress) {
+      timer = setInterval(() => {
+        const time = timeOfRecording[0] + 1;
+        timeOfRecording[0] = time;
+        console.log('timeeee: ', timeOfRecording[0]);
+        displayTime[1]('' + timeOfRecording[0]);
+        if (maxLength[0] > 0 && time >= maxLength[0]) {
+          stopRecodingHandler();
+          console.log('----');
+        }
+      }, 1000);
+    } else {
+      console.log('aaaaaaaaaaa');
+    }
+  }
+
+  const stopTimer = () => {
+    if (timer) clearInterval(timer);
+    console.log('stop');
+  }
+
+  /*   useEffect(() => {
+      const interval = setInterval(() => {
+        displayTime[0] = '' + timeOfRecording[0];
+        console.log(displayTime[0], timeOfRecording[0],'....');
+      }, 500);
+      return () => clearInterval(interval);
+    }, [displayTime]); */
 
   if (device == null) {
     return <Text>Camera not available</Text>;
@@ -148,44 +187,44 @@ const RecordVideo = () => {
     }
   }
   const keywordRef = [
-    {id: new Realm.BSON.ObjectID(), title: 'None', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false},
+    { id: new Realm.BSON.ObjectID(), title: 'None', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false },
   ];
 
   const locationRef = [
-    {id: new Realm.BSON.ObjectID(), title: 'Home', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Work', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'School', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Park', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Other', checked: false},
+    { id: new Realm.BSON.ObjectID(), title: 'Home', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Work', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'School', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Park', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Other', checked: false },
   ];
 
   const painscaleRef = [
-    {id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Stabbing', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Sharp', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Cramping', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Gnawing', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Burning', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Aching', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Heavy', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Tender', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Splitting', severity_level: 'none'},
+    { id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Stabbing', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Sharp', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Cramping', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Gnawing', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Burning', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Aching', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Heavy', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Tender', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Splitting', severity_level: 'none' },
     {
       id: new Realm.BSON.ObjectID(),
       name: 'Tiring/Exhausting',
       severity_level: 'none',
     },
-    {id: new Realm.BSON.ObjectID(), name: 'Sickening', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Fearful', severity_level: 'none'},
+    { id: new Realm.BSON.ObjectID(), name: 'Sickening', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Fearful', severity_level: 'none' },
     {
       id: new Realm.BSON.ObjectID(),
       name: 'Cruel/Punishing',
@@ -226,6 +265,7 @@ const RecordVideo = () => {
     <View style={styles.container}>
       {showCamera ? (
         <>
+
           <Camera
             ref={camera}
             style={StyleSheet.absoluteFill}
@@ -234,7 +274,7 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-
+          <Text style={{ color: 'red' }}>Time: {displayTime[0]}</Text>
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -302,7 +342,7 @@ const RecordVideo = () => {
           {videoSource !== '' ? (
             <Video
               ref={ref => (videoPlayer.current = ref)}
-              source={{uri: videoSource.path}} // path in cache where vision camera stores video
+              source={{ uri: videoSource.path }} // path in cache where vision camera stores video
               paused={false} // make it start
               style={styles.backgroundVideo}
               repeat={true}
@@ -395,7 +435,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-  btnStyle: {backgroundColor: '#1C3EAA'},
+  btnStyle: { backgroundColor: '#1C3EAA' },
 });
 
 export default RecordVideo;
