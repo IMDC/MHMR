@@ -34,6 +34,7 @@ const RecordVideo = () => {
   const displayTime = useState(0);
   // max length of recording allowed in seconds
   const maxLength = useState(10);
+  const timeWarningMessage = useState('');
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
 
@@ -110,6 +111,7 @@ const RecordVideo = () => {
     setRecordingPaused(false);
     setEnableTimer(false);
     displayTime[1](0);
+    timeWarningMessage[1]('');
   }
 
   /* timer */
@@ -124,7 +126,7 @@ const RecordVideo = () => {
         console.log('timeeee: ', timeOfRecording[0]);
         displayTime[1](timeOfRecording[0]);
 
-        if (timeOfRecording[0] == maxLength[0] - 5) console.log('five more sec');
+        if (timeOfRecording[0] >= maxLength[0] - 5) timeWarningMessage[1]( (maxLength[0]-timeOfRecording[0]) + ' more sec');
 
         if (maxLength[0] > 0 && time >= maxLength[0]) {
           stopRecodingHandler();
@@ -295,6 +297,9 @@ const RecordVideo = () => {
             audio={true}
           />
           <Text style={styles.timer}>Time: {secondsToHms(displayTime[0])}</Text>
+          {(timeWarningMessage[0] != '') ? (
+            <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
+          ): null}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -307,7 +312,7 @@ const RecordVideo = () => {
                     stopRecodingHandler();
                   }}
                 />
-
+{/* 
                 {recordingPaused ? (
                   <Icon
                     name="play"
@@ -328,7 +333,7 @@ const RecordVideo = () => {
                       pauseRecodingHandler();
                     }}
                   />
-                )}
+                )} */}
               </>
             ) : (
               <>
@@ -466,6 +471,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     top: 5,
     padding: 15,
+  },
+  timeWarning: {
+    color: 'orange',
+    backgroundColor: 'black',
+    opacity: 0.50,
+    borderRadius: 50,
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: 60,
+    padding: 10,
+    
   }
 });
 
