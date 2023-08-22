@@ -26,9 +26,16 @@ const RecordVideo = () => {
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
 
+  // ref for timer interval
+  const timerRef: any = useRef(null);
+  // for timer interval
   const timeOfRecording = useState(0);
-  const displayTime = useState('');
-  const maxLength = useState(5);
+  // taken from timeOfRecording, used for display
+  const displayTime = useState(0);
+  // max length of recording allowed in seconds
+  const maxLength = useState(10);
+  // for starting and stopping timer
+  const [enableTimer, setEnableTimer] = useState(false);
 
   const [videoSource, setVideoSource] = useState<any | string>('');
 
@@ -71,7 +78,7 @@ const RecordVideo = () => {
       });
       setRecordingInProgress(true);
       timeOfRecording[0] = 0;
-      startTimer();
+      setEnableTimer(true);
     }
   }
 
@@ -91,45 +98,58 @@ const RecordVideo = () => {
 
   const stopRecodingHandler = async () => {
     if (camera.current !== null) {
-      stopTimer();
       await camera.current.stopRecording();
-      setShowCamera(false);
-      setRecordingInProgress(false);
-      setRecordingPaused(false);
+      resetRecording();
+      console.log(enableTimer, '----zzzz');
     }
   }
 
-  let timer: any = null;
+  const resetRecording = () => {
+    setShowCamera(false);
+    setRecordingInProgress(false);
+    setRecordingPaused(false);
+    setEnableTimer(false);
+    displayTime[1](0);
+  }
 
-  const startTimer = () => {
-    if (recordingInProgress) {
-      timer = setInterval(() => {
+  /* timer */
+  useEffect(() => {
+    console.log(enableTimer, timerRef.current, '----enable timer 1');
+    if (enableTimer) {
+      timerRef.current = setInterval(() => {
         const time = timeOfRecording[0] + 1;
+        console.log(enableTimer, timerRef.current, time, '----enable timer 2');
+
         timeOfRecording[0] = time;
         console.log('timeeee: ', timeOfRecording[0]);
-        displayTime[1]('' + timeOfRecording[0]);
+        displayTime[1](timeOfRecording[0]);
+
+        if (timeOfRecording[0] == maxLength[0] - 5) console.log('five more sec');
+
         if (maxLength[0] > 0 && time >= maxLength[0]) {
           stopRecodingHandler();
-          console.log('----');
+          clearInterval(timerRef.current);
+          console.log(enableTimer, timerRef.current, '----enable timer 3');
         }
+
       }, 1000);
     } else {
-      console.log('aaaaaaaaaaa');
+      stopRecodingHandler();
+      clearInterval(timerRef.current);
+      console.log(enableTimer, timerRef.current, '----enable timer 4');
     }
-  }
+    console.log('.........................................ss', enableTimer);
+  }, [enableTimer]);
 
-  const stopTimer = () => {
-    if (timer) clearInterval(timer);
-    console.log('stop');
-  }
 
-  /*   useEffect(() => {
-      const interval = setInterval(() => {
-        displayTime[0] = '' + timeOfRecording[0];
-        console.log(displayTime[0], timeOfRecording[0],'....');
-      }, 500);
-      return () => clearInterval(interval);
-    }, [displayTime]); */
+  /* format timestamp from seconds to 00:00:00*/
+  function secondsToHms(d: number) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+    return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+  }
 
   if (device == null) {
     return <Text>Camera not available</Text>;
@@ -274,7 +294,7 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-          <Text style={{ color: 'red' }}>Time: {displayTime[0]}</Text>
+          <Text style={styles.timer}>Time: {secondsToHms(displayTime[0])}</Text>
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -436,6 +456,17 @@ const styles = StyleSheet.create({
     right: 0,
   },
   btnStyle: { backgroundColor: '#1C3EAA' },
+  timer : {
+    color: 'red',
+    backgroundColor: 'white',
+    opacity: 0.50,
+    borderRadius: 50,
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: 5,
+    padding: 15,
+  }
 });
 
 export default RecordVideo;
