@@ -296,7 +296,7 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-          <Text style={styles.timer}>Time: {secondsToHms(displayTime[0])}</Text>
+          <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
           {(timeWarningMessage[0] != '') ? (
             <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
           ): null}
@@ -463,24 +463,26 @@ const styles = StyleSheet.create({
   btnStyle: { backgroundColor: '#1C3EAA' },
   timer : {
     color: 'red',
+    fontSize: 25,
     backgroundColor: 'white',
     opacity: 0.50,
     borderRadius: 50,
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    top: 5,
+    top: 10,
     padding: 15,
   },
   timeWarning: {
     color: 'orange',
+    fontSize: 15,
     backgroundColor: 'black',
     opacity: 0.50,
     borderRadius: 50,
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    top: 60,
+    bottom: 100,
     padding: 10,
     
   }
