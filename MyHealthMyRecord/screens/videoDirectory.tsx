@@ -97,7 +97,7 @@ const ViewRecordings = () => {
     {label: 'Other', value: '7'},
   ];
 
-  const [sortValue, setSortValue] = useState(1);
+  const [sortValue, setSortValue] = useState(null);
   const [oldestNewestValue, setOldestNewestValue] = useState(null);
   const [keywordValue, setKeywordValue] = useState(null);
   const [locationValue, setLocationValue] = useState(null);
@@ -226,14 +226,13 @@ const ViewRecordings = () => {
             selectedTextStyle={{fontSize: 20}}
             labelField="label"
             valueField="value"
-            placeholder="Date"
             value={sortValue}
             onChange={item => {
               setSortValue(item.value);
               console.log(item.value);
             }}
           />
-          {sortValue == '1' && (
+          {sortValue == 1 && (
             <Dropdown
               data={oldestNewestData}
               maxHeight={300}
@@ -255,8 +254,8 @@ const ViewRecordings = () => {
               // console.log(item.value);
               // }}
             />
-     
-          {sortValue == '2' && (
+          )}
+          {sortValue == 2 && (
             <Dropdown
               data={nameData}
               maxHeight={1000}
@@ -278,8 +277,8 @@ const ViewRecordings = () => {
               // console.log(item.value);
               // }}
             />
-          }}
-          {sortValue == '3' && (
+          )}
+          {sortValue == 3 && (
             <Dropdown
               data={keywordData}
               maxHeight={1000}
@@ -302,7 +301,7 @@ const ViewRecordings = () => {
               // }}
             />
           )}
-          {sortValue == '4' && (
+          {sortValue == 4 && (
             <Dropdown
               data={locationData}
               maxHeight={1000}
