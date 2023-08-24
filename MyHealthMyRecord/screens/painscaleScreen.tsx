@@ -44,13 +44,9 @@ export default function Painscale() {
   const onPress = (index: any, value: any, severity_level: any) => {
     const existing: any = {...category};
     existing[index].severity_level = severity_level;
-    // setCategory(existing);
     setRefreshFlatList(!refreshFlatlist);
-    // console.log('index', index);
-    // console.log('value', value);
     console.log(existing[index].name, 'status set to', severity_level);
     savePainScale();
-    // console.log('category', category);
   };
 
   function savePainScale() {
@@ -58,7 +54,6 @@ export default function Painscale() {
     category.map((item: any) => {
       painscales.push(JSON.stringify(item));
     });
-    // console.log('test:', painscales);
     if (video) {
       realm.write(() => {
         video.painScale! = painscales;
@@ -68,42 +63,9 @@ export default function Painscale() {
 
   const [sliderValue, setSliderValue] = useState(0);
 
-  const interpolate = (start: number, end: number) => {
-    let k = (sliderValue - 0) / 10; // 0 =>min  && 10 => MAX
-    return Math.ceil((1 - k) * start + k * end) % 256;
-  };
-
-  // useEffect (() => {
-  //   console.log('video.painScale', video.painScale)}
-  //   ,[]);
-
-  // const color = () => {
-  //   let r = interpolate(255, 0);
-  //   let g = interpolate(0, 255);
-  //   let b = interpolate(0, 0);
-  //   return `rgb(${g},${r},${b})`;
-  // };
-
-  // const renderItem = ({item}) => {
-  //   const index = item.id;
-  //   const status = item.severity_level;
-  //   return (
-
-  //   );
-
-  //   return (
-  //     <ScrollView style={styles.container}>
-  //       <View style={{flexDirection: 'row'}}>
-  //         <View style={{width: '35%'}}>
-  //           <Text style={styles.textStyle}>{item.name}</Text>
-  //         </View>
-
-  //         <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
-  //           <Text>{items}</Text>
-  //         </View>
-  //       </View>
-  //     </ScrollView>
-  //   );
+  // const interpolate = (start: number, end: number) => {
+  //   let k = (sliderValue - 0) / 10; // 0 =>min  && 10 => MAX
+  //   return Math.ceil((1 - k) * start + k * end) % 256;
   // };
 
   const renderItem = ({item, index}) => {
