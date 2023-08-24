@@ -140,7 +140,7 @@ const barData = [
             onPress={onPressWordCloud}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}>
             Word Cloud
@@ -149,7 +149,7 @@ const barData = [
             onPress={onPressLineGraph}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}>
             Line Graph
@@ -158,7 +158,7 @@ const barData = [
             onPress={onPressBarGraph}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}>
             Bar Graph
@@ -167,7 +167,7 @@ const barData = [
             onPress={onPressTextSummary}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}>
             Text Summary
@@ -176,7 +176,7 @@ const barData = [
             onPress={onPressTextGraph}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}>
             Text Graph

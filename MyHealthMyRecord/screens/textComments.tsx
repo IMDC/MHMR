@@ -74,7 +74,6 @@ const TextComments = () => {
 
   /* comment shown in overlay */
   const overlayComment = React.useState('');
-  const overlayCommentHighlight = React.useState('#5C5959');
   const commentRef: any = useRef([]);
 
   const addComment = () => {
@@ -161,12 +160,10 @@ const TextComments = () => {
     }
   };
 
-  useEffect( () => {
+  /* initialize array of refs for the comment list */
+  useEffect(() => {
     commentRef.current = new Array(parsedComments.length);
-    /* for (let i = 0; i < parsedComments.length; i++) {
-      commentRef.current[i] = null;
-    } */
-}, []);
+  }, []);
 
   /* update comment overlay every 250ms*/
   useEffect(() => {
@@ -174,21 +171,17 @@ const TextComments = () => {
       let empty = true;
       // add condition check: if video is not paused, then update overlay
       for (let i = 0; i < parsedComments.length; i++) {
+        commentRef[i].setNativeProps({ style: { backgroundColor: 'transparent' } });
         if ((parsedComments[i].timestamp > currentTime[0]) && (parsedComments[i].timestamp < currentTime[0] + 2)) {
           /* set overlay comment if current time is within time of timestamp to timestamp+2s */
           overlayComment[1](parsedComments[i].text + " " + parsedComments[i].timestamp);
-/*           if (commentRef.current.key == i) {
-            console.log(commentRef.current.key, i);
+          //highlight comment in comment list
+          if (commentRef[i] != null) {
+            commentRef[i].setNativeProps({ style: { backgroundColor: '#b7c3eb' } });
           }
-           */
           empty = false;
           break;
         }
-      }
-      //console.log(commentRef.current[0]);
-      if (commentRef.current[0] != undefined) {
-        console.log('o');
-        commentRef.current[0].setNativeProps({style: {color: '#1C3EAA'}});
       }
       /* set overlay to empty if no comments have timestamp that falls around current time */
       if (empty) overlayComment[1]('');
@@ -214,12 +207,12 @@ const TextComments = () => {
   return (
     <>
       <View
-        style={[styles.testContainer, {
+        style={{
           width: windowWidth,
           height: windowHeight / 2.5,
           paddingHorizontal: 15,
           paddingTop: 15,
-        }]}>
+        }}>
         <VideoPlayer
           videoRef={videoPlayerRef}
           source={{ uri: MHMRfolderPath + '/' + video.filename }}
@@ -257,215 +250,123 @@ const TextComments = () => {
         }}
       />
       <ScrollView>
-        <View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={styles.headerStyle}>Comments</Text>
-            {isDeleteBtnVisible && (
-              <TouchableOpacity
-                style={{ justifyContent: 'flex-end' }}
-                onPress={() => toggleEditBtnVisible()}>
-                <Text style={{ fontSize: 16, marginRight: 25 }}>Done</Text>
-              </TouchableOpacity>
-            )}
-            {isEditBtnVisible && (
-              <TouchableOpacity
-                style={{ justifyContent: 'flex-end' }}
-                onPress={() => toggleDeleteBtnVisibile()}>
-                <Text style={{ fontSize: 16, marginRight: 25 }}>Edit</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.headerStyle}>Comments</Text>
+          {isDeleteBtnVisible && (
+            <TouchableOpacity
+              style={{ justifyContent: 'flex-end' }}
+              onPress={() => toggleEditBtnVisible()}>
+              <Text style={{ fontSize: 16, marginRight: 25 }}>Done</Text>
+            </TouchableOpacity>
+          )}
+          {isEditBtnVisible && (
+            <TouchableOpacity
+              style={{ justifyContent: 'flex-end' }}
+              onPress={() => toggleDeleteBtnVisibile()}>
+              <Text style={{ fontSize: 16, marginRight: 25 }}>Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-          <SafeAreaView>
-            <ScrollView style={styles.container}>
-              {parsedComments.length != 0
-                ? parsedComments.map((c: any, i) => {
-                  return (
-                    <View
-                      key={c.id}
-                      style={[styles.commentContainer, styles.row]}>
-                      <Dialog
-                        isVisible={visible}
-                        onBackdropPress={toggleDialog}>
-                        <Dialog.Title title="Edit text" />
-                        <Input
-                          ref={commentEditInput}
-                          inputStyle={{ fontSize: 35 }}
-                          //value={text}
-                          defaultValue={commentSelectedText}
-                          onChangeText={value => setCommentEdit(value)}
-                          onSubmitEditing={() => {
+        <SafeAreaView>
+          <ScrollView style={styles.container}>
+            {parsedComments.length != 0
+              ? parsedComments.map((c: any, i) => {
+                return (
+                  <View
+                    ref={el => {
+                      if (el != null) {
+                        commentRef[i] = el;
+                      }
+                    }}
+                    key={c.id}
+                    style={[styles.commentContainer, styles.row]}
+                  >
+                    <Dialog
+                      isVisible={visible}
+                      onBackdropPress={toggleDialog}>
+                      <Dialog.Title title="Edit text" />
+                      <Input
+                        ref={commentEditInput}
+                        inputStyle={{ fontSize: 35 }}
+                        //value={text}
+                        defaultValue={commentSelectedText}
+                        onChangeText={value => setCommentEdit(value)}
+                        onSubmitEditing={() => {
+                          editComment(commentSelectedID);
+                          toggleDialog();
+                        }}
+                      />
+
+                      <Dialog.Actions>
+                        <Dialog.Button
+                          title="CONFIRM"
+                          onPress={() => {
                             editComment(commentSelectedID);
                             toggleDialog();
                           }}
                         />
-
-                        <Dialog.Actions>
-                          <Dialog.Button
-                            title="CONFIRM"
-                            onPress={() => {
-                              editComment(commentSelectedID);
-                              toggleDialog();
-                            }}
-                          />
-                          <Dialog.Button
-                            title="CANCEL"
-                            onPress={toggleDialog}
-                          />
-                        </Dialog.Actions>
-                      </Dialog>
-                      <View style={[styles.commentContainer, styles.row]}>
-                        <TouchableOpacity
-                          onPress={() => seekToTimestamp(c.timestamp)}
-                          style={styles.comment}>
-                          <Text ref={el => {if (el !=null) commentRef[i] = el}} key={c.id} style={[styles.textStyle, {color: overlayCommentHighlight[0]}]}>
-                            {secondsToHms(c.timestamp)} - {c.text}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.rightContainer}>
-                        {/* <Button
-                            title="Edit"
-                            icon={{
-                              name: 'pencil-outline',
-                              size: 30,
-                              type: 'ionicon',
-                              color: '#FFFFFF',
-                            }}
-                            iconRight
-                            iconContainerStyle={{marginLeft: 15}}
-                            titleStyle={{fontWeight: '500'}}
-                            // buttonStyle={[
-                            //   styles.buttonStyle,
-                            //   {backgroundColor: '#1C3EAA'},
-                            // ]}
-                            containerStyle={{
-                              width: 150,
-                              marginHorizontal: 10,
-                              marginVertical: 5,
-                            }}
-                            onPress={() => editComment(c.id)}/>
-                          <Button
-                            title="Delete"
-                            icon={{
-                              name: 'trash-outline',
-                              size: 30,
-                              type: 'ionicon',
-                              color: '#FFFFFF',
-                            }}
-                            iconRight
-                            iconContainerStyle={{marginLeft: 15}}
-                            titleStyle={{fontWeight: '500'}}
-                            // buttonStyle={[
-                            //   styles.buttonStyle,
-                            //   {backgroundColor: '#cf7f11'},
-                            // ]}
-                            containerStyle={{
-                              width: 150,
-                              marginHorizontal: 10,
-                              marginVertical: 5,
-                            }}
-                            onPress={() => deleteComment(c.id)}/> */}
-                        {/* display this when user clicks edit */}
-                        {isDeleteBtnVisible && (
-                          <View>
-                            <TouchableOpacity
-                              style={{ alignSelf: 'flex-end' }}
-                              onPress={() => {
-                                setCommentSelectedText(c.text);
-                                setCommentSelectedID(c.id);
-
-                                toggleDialog();
-                                // console.log('comment selected', c.text);
-                                console.log('comment selected', c.id);
-                              }}>
-                              <Text style={{ color: '#1C3EAA', fontSize: 16 }}>
-                                Edit
-                              </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                              style={{ alignSelf: 'flex-end' }}
-                              onPress={() => deleteComment(c.id)}>
-                              <Text style={{ color: '#cf7f11', fontSize: 16 }}>
-                                Delete
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
-                      </View>
-                      {/* <Dialog
-                          isVisible={visible}
-                          onBackdropPress={toggleDialog}>
-                          <Dialog.Title title="Edit text" />
-                          <Input
-                            ref={commentEditInput}
-                            inputStyle={{fontSize: 35}}
-                            //value={text}
-                            defaultValue={c.text}
-                            onChangeText={value => setCommentEdit(value)}
-                            onSubmitEditing={() => updateComment()}
-                          />
-
-                          <Dialog.Actions>
-                            <Dialog.Button
-                              title="CONFIRM"
-                              onPress={() => {
-                                toggleDialog();
-                              }}
-                            />
-                            <Dialog.Button
-                              title="CANCEL"
-                              onPress={toggleDialog}
-                            />
-                          </Dialog.Actions>
-                        </Dialog> */}
+                        <Dialog.Button
+                          title="CANCEL"
+                          onPress={toggleDialog}
+                        />
+                      </Dialog.Actions>
+                    </Dialog>
+                    <View
+                      style={styles.row}>
+                      <TouchableOpacity
+                        onPress={() => seekToTimestamp(c.timestamp)}
+                        >
+                        <Text key={c.id} style={styles.textStyle}>
+                          {secondsToHms(c.timestamp)} - {c.text}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
-                  );
-                })
-                : null}
-            </ScrollView>
-          </SafeAreaView>
-        </View>
-        {/* <View>
-          <Text>Current Time: {currentTime}</Text>
-        </View>
-        <View>
-          <Text>Test: {test}</Text>
-        </View> */}
+                    <View style={styles.rightContainer}>
+                      {/* display this when user clicks edit */}
+                      {isDeleteBtnVisible && (
+                        <View>
+                          <TouchableOpacity
+                            style={{ alignSelf: 'flex-end' }}
+                            onPress={() => {
+                              setCommentSelectedText(c.text);
+                              setCommentSelectedID(c.id);
+
+                              toggleDialog();
+                              // console.log('comment selected', c.text);
+                              console.log('comment selected', c.id);
+                            }}>
+                            <Text style={{ color: '#1C3EAA', fontSize: 16 }}>
+                              Edit
+                            </Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={{ alignSelf: 'flex-end' }}
+                            onPress={() => deleteComment(c.id)}>
+                            <Text style={{ color: '#cf7f11', fontSize: 16 }}>
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                );
+              })
+              : null}
+          </ScrollView>
+        </SafeAreaView>
       </ScrollView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 25 },
-  playerStyle: { height: '70%', padding: 4 },
-  headerStyle: {
-    fontWeight: 'bold',
-    fontSize: 28,
-    paddingLeft: 25,
+  container: {
+    padding: 25
   },
-  textStyle: {
-    fontSize: 22,
-    paddingHorizontal: 15,
-    // backgroundColor: 'pink',
-    // flex: 1,
-    // flexWrap: 'wrap',
-    flexShrink: 1,
-    flexWrap: 'wrap',
-  },
-  commentContainer: {
-    flex: 1,
-    paddingVertical: 4,
-    paddingTop: 10,
-    // flexWrap: 'wrap',
-    //backgroundColor: '#dadbe0',
-    // justifyContent: 'flex-end',
-    borderBottomColor: 'grey',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-
+  // left container style not in use currently
   leftContainer: {
     width: '90%',
     flexWrap: 'wrap',
@@ -474,42 +375,46 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     flexDirection: 'row',
-    // backgroundColor: '#dadbe0',
-    // backgroundColor: 'pink',
     alignItems: 'flex-end',
   },
   row: {
     flexDirection: 'row',
-    //flexWrap: 'wrap',
   },
-  comment: {
-    // height: 60,
-    // position: 'absolute',
-    // left: 0,
-    //flex: 1,
-    //flexWrap: 'wrap',
+  // player style not in use currently
+  playerStyle: {
+    height: '70%',
+    padding: 4
   },
+  headerStyle: {
+    fontWeight: 'bold',
+    fontSize: 28,
+    paddingLeft: 25,
+  },
+  // button style not in use currently
   buttonStyle: {
-    //width: 120,
-    //height: 50,
-    //textAlign: 'right',
     borderColor: 'transparent',
     borderWidth: 0,
     borderRadius: 30,
   },
-  testContainer: {
-    //flex: 1,
-    //justifyContent: 'center',
-    //alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+  textStyle: {
+    fontSize: 22,
+    paddingHorizontal: 15,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
+  commentContainer: {
+    flex: 1,
+    paddingVertical: 4,
+    paddingTop: 10,
+    borderBottomColor: 'grey',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  // overlay style not in use currently
   overlay: {
     flex: 1,
     position: 'absolute',
     left: 0,
     top: 0,
-    //opacity: 0.5,
-    //backgroundColor: 'red',
   },
   overlayText: {
     flex: 1,

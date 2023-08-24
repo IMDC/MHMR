@@ -1,15 +1,15 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {ParamListBase, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useCameraDevices, Camera} from 'react-native-vision-camera';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import {PermissionsAndroid, Platform} from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
-import {Icon, Button} from '@rneui/themed';
-import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {useQuery, useRealm} from '../models/VideoData';
+import { Icon, Button } from '@rneui/themed';
+import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { useQuery, useRealm } from '../models/VideoData';
 import Realm from 'realm';
-import {createRealmContext} from '@realm/react';
+import { createRealmContext } from '@realm/react';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -25,6 +25,18 @@ const RecordVideo = () => {
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
+
+  // ref for timer interval
+  const timerRef: any = useRef(null);
+  // for timer interval
+  const timeOfRecording = useState(0);
+  // taken from timeOfRecording, used for display
+  const displayTime = useState(0);
+  // max length of recording allowed in seconds
+  const maxLength = useState(10);
+  const timeWarningMessage = useState('');
+  // for starting and stopping timer
+  const [enableTimer, setEnableTimer] = useState(false);
 
   const [videoSource, setVideoSource] = useState<any | string>('');
 
@@ -52,10 +64,10 @@ const RecordVideo = () => {
       console.log('?', videoSource.path);
     }
     makeDirectory(MHMRfolderPath);
-    makeDirectory(MHMRfolderPath+'/audio');
+    makeDirectory(MHMRfolderPath + '/audio');
   }, [videoSource]);
 
-  async function StartRecodingHandler() {
+  const StartRecodingHandler = async () => {
     if (camera.current !== null) {
       camera.current.startRecording({
         flash: 'off',
@@ -66,6 +78,8 @@ const RecordVideo = () => {
         onRecordingError: (error: any) => console.error(error, 'videoerror'),
       });
       setRecordingInProgress(true);
+      timeOfRecording[0] = 0;
+      setEnableTimer(true);
     }
   }
 
@@ -83,13 +97,60 @@ const RecordVideo = () => {
     setRecordingPaused(false);
   }
 
-  async function stopRecodingHandler() {
+  const stopRecodingHandler = async () => {
     if (camera.current !== null) {
       await camera.current.stopRecording();
-      setShowCamera(false);
-      setRecordingInProgress(false);
-      setRecordingPaused(false);
+      resetRecording();
+      console.log(enableTimer, '----zzzz');
     }
+  }
+
+  const resetRecording = () => {
+    setShowCamera(false);
+    setRecordingInProgress(false);
+    setRecordingPaused(false);
+    setEnableTimer(false);
+    displayTime[1](0);
+    timeWarningMessage[1]('');
+  }
+
+  /* timer */
+  useEffect(() => {
+    console.log(enableTimer, timerRef.current, '----enable timer 1');
+    if (enableTimer) {
+      timerRef.current = setInterval(() => {
+        const time = timeOfRecording[0] + 1;
+        console.log(enableTimer, timerRef.current, time, '----enable timer 2');
+
+        timeOfRecording[0] = time;
+        console.log('timeeee: ', timeOfRecording[0]);
+        displayTime[1](timeOfRecording[0]);
+
+        if (timeOfRecording[0] >= maxLength[0] - 5) timeWarningMessage[1]( (maxLength[0]-timeOfRecording[0]) + ' more sec');
+
+        if (maxLength[0] > 0 && time >= maxLength[0]) {
+          stopRecodingHandler();
+          clearInterval(timerRef.current);
+          console.log(enableTimer, timerRef.current, '----enable timer 3');
+        }
+
+      }, 1000);
+    } else {
+      stopRecodingHandler();
+      clearInterval(timerRef.current);
+      console.log(enableTimer, timerRef.current, '----enable timer 4');
+    }
+    console.log('.........................................ss', enableTimer);
+  }, [enableTimer]);
+
+
+  /* format timestamp from seconds to 00:00:00*/
+  function secondsToHms(d: number) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+    return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
   }
 
   if (device == null) {
@@ -148,44 +209,44 @@ const RecordVideo = () => {
     }
   }
   const keywordRef = [
-    {id: new Realm.BSON.ObjectID(), title: 'None', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false},
+    { id: new Realm.BSON.ObjectID(), title: 'None', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false },
   ];
 
   const locationRef = [
-    {id: new Realm.BSON.ObjectID(), title: 'Home', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Work', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'School', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Park', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false},
-    {id: new Realm.BSON.ObjectID(), title: 'Other', checked: false},
+    { id: new Realm.BSON.ObjectID(), title: 'Home', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Work', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'School', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Park', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false },
+    { id: new Realm.BSON.ObjectID(), title: 'Other', checked: false },
   ];
 
   const painscaleRef = [
-    {id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Stabbing', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Sharp', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Cramping', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Gnawing', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Burning', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Aching', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Heavy', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Tender', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Splitting', severity_level: 'none'},
+    { id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Stabbing', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Sharp', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Cramping', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Gnawing', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Burning', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Aching', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Heavy', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Tender', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Splitting', severity_level: 'none' },
     {
       id: new Realm.BSON.ObjectID(),
       name: 'Tiring/Exhausting',
       severity_level: 'none',
     },
-    {id: new Realm.BSON.ObjectID(), name: 'Sickening', severity_level: 'none'},
-    {id: new Realm.BSON.ObjectID(), name: 'Fearful', severity_level: 'none'},
+    { id: new Realm.BSON.ObjectID(), name: 'Sickening', severity_level: 'none' },
+    { id: new Realm.BSON.ObjectID(), name: 'Fearful', severity_level: 'none' },
     {
       id: new Realm.BSON.ObjectID(),
       name: 'Cruel/Punishing',
@@ -226,6 +287,7 @@ const RecordVideo = () => {
     <View style={styles.container}>
       {showCamera ? (
         <>
+
           <Camera
             ref={camera}
             style={StyleSheet.absoluteFill}
@@ -234,7 +296,10 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-
+          <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
+          {(timeWarningMessage[0] != '') ? (
+            <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
+          ): null}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -247,7 +312,7 @@ const RecordVideo = () => {
                     stopRecodingHandler();
                   }}
                 />
-
+{/* 
                 {recordingPaused ? (
                   <Icon
                     name="play"
@@ -268,7 +333,7 @@ const RecordVideo = () => {
                       pauseRecodingHandler();
                     }}
                   />
-                )}
+                )} */}
               </>
             ) : (
               <>
@@ -302,7 +367,7 @@ const RecordVideo = () => {
           {videoSource !== '' ? (
             <Video
               ref={ref => (videoPlayer.current = ref)}
-              source={{uri: videoSource.path}} // path in cache where vision camera stores video
+              source={{ uri: videoSource.path }} // path in cache where vision camera stores video
               paused={false} // make it start
               style={styles.backgroundVideo}
               repeat={true}
@@ -395,7 +460,32 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-  btnStyle: {backgroundColor: '#1C3EAA'},
+  btnStyle: { backgroundColor: '#1C3EAA' },
+  timer : {
+    color: 'red',
+    fontSize: 25,
+    backgroundColor: 'white',
+    opacity: 0.50,
+    borderRadius: 50,
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: 10,
+    padding: 15,
+  },
+  timeWarning: {
+    color: 'orange',
+    fontSize: 15,
+    backgroundColor: 'black',
+    opacity: 0.50,
+    borderRadius: 50,
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    bottom: 100,
+    padding: 10,
+    
+  }
 });
 
 export default RecordVideo;
