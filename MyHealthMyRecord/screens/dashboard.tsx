@@ -100,7 +100,7 @@ function Dashboard() {
   const cognosSession = async () => {
     var bodyFormData = new FormData();
     bodyFormData.append('expiresIn', 3600);
-    bodyFormData.append('webDomain', 'https://dde-us-south.analytics.ibm.com');
+    bodyFormData.append('webDomain', 'http://127.0.0.1:5500/connectWatson.html');
     axios
       .post(
         'https://dde-us-south.analytics.ibm.com/daas/v1/session',

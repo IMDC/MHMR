@@ -1,4 +1,4 @@
-import React, { Component, useRef, useState } from 'react';
+import React, { Component, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -25,46 +25,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native';
 
 const EmotionTagging = () => {
-  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
-
-  const route: any = useRoute();
-  const id = route.params?.id;
-
-  const realm = useRealm();
-  const video: any = useObject('VideoData', id);
-
-  const [emotionStickers, setEmotionStickers] = useState(video.emotionStickers);
-  let parsedStickers: string[] = [];
-  emotionStickers.map((sticker: string) => parsedStickers.push(JSON.parse(sticker)));
-
-  const videoRef: any = useRef<Video>(null);
-
-  const time = useState(0);
-
-  //const emotions: any[] = [];
-
-  function addEmotion(emotion: string) {
-    let emotionSchema: any = {
-      id: new Realm.BSON.ObjectId(),
-      sentiment: emotion,
-      timestamp: time[0],
-    };
-
-    parsedStickers.push(emotionSchema);
-    console.log("parsed", parsedStickers);
-
-    const newStickers: any[] = [];
-    parsedStickers.map((sticker: string) => newStickers.push(JSON.stringify(sticker)));
-
-    setEmotionStickers(newStickers);
-    if (video) {
-      realm.write(() => {
-        video.emotionStickers! = newStickers;
-      });
-    }
-    //console.log(time);
-
-  }
 
   class Draggable extends React.Component<any, any> {
     _val: { x: number; y: number };
@@ -90,13 +50,13 @@ const EmotionTagging = () => {
         onStartShouldSetPanResponder: (e, gesture) => true,
         onPanResponderGrant: (e, gesture) => {
           //pause video here
-          videoRef.current.setNativeProps({ paused: true });
+          videoPlayerRef.current.setNativeProps({ paused: true });
           // delete below
-          /* if (videoRef != null) {
-            let t: number = videoRef.current.currentTime;
-            let v = videoRef.current;
+          /* if (videoPlayerRef != null) {
+            let t: number = videoPlayerRef.current.currentTime;
+            let v = videoPlayerRef.current;
             //setTime(t);
-            console.log("time at pause:", time, t);
+            console.log("time at pause:", currentTime, t);
           }    */
           this.state.pan.setOffset({
             x: this._val.x,
@@ -110,12 +70,12 @@ const EmotionTagging = () => {
         ),
         onPanResponderRelease: (e, gesture) => {
           //play video here
-          videoRef.current.setNativeProps({ paused: false });
+          videoPlayerRef.current.setNativeProps({ paused: false });
 
           //log emoji id
           const emojiID = this.state.id;
           console.log(emojiID);
-          addEmotion(this.state.id);
+          addSticker(this.state.id);
 
           if (this.isDropArea(gesture)) {
             Animated.sequence([
@@ -195,35 +155,196 @@ const EmotionTagging = () => {
 
   }
 
+  const [isDeleteBtnVisible, setDeleteBtnVisible] = useState(false);
+  const [isEditBtnVisible, setEditBtnVisible] = useState(true);
+
+  const [stickerSelectedID, setStickerSelectedID] = useState('');
+  const [stickerSelectedText, setStickerSelectedText] = useState('');
+
+  function toggleDeleteBtnVisibile() {
+    setDeleteBtnVisible(true);
+    setEditBtnVisible(false);
+  }
+
+  function toggleEditBtnVisible() {
+    setDeleteBtnVisible(false);
+    setEditBtnVisible(true);
+  }
+
+  const [visible, setVisible] = React.useState(false);
+  const toggleDialog = () => {
+    setVisible(!visible);
+  };
+
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
+  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+
+  const route: any = useRoute();
+  const id = route.params?.id;
+
+  const realm = useRealm();
+  const video: any = useObject('VideoData', id);
+
+  const videoPlayerRef: any = useRef<Video>(null);
+
+  const [storedStickers, setStoredStickers] = useState(video.emotionStickers);
+  let parsedStickers: string[] = [];
+  storedStickers.map((sticker: string) => parsedStickers.push(JSON.parse(sticker)));
+
+  /* current time of video */
+  const currentTime = useState(0);
+
+  /* comment shown in overlay */
+  const overlaySticker = React.useState('');
+  const stickerRef: any = useRef([]);
+
+  //const emotions: any[] = [];
+
+  function addSticker(emotion: string) {
+    /* set new sticker values */
+    let emotionSchema: any = {
+      id: new Realm.BSON.ObjectId(),
+      sentiment: emotion,
+      timestamp: currentTime[0],
+    };
+
+    /* find index to add at so timestamps are in order */
+    const commentIndex = parsedStickers.findIndex(
+      (element: any) => element.timestamp > emotionSchema.timestamp,
+    );
+
+    /* add new sticker to parsed array*/
+    if (commentIndex == -1) {
+      /* if greater timestamp not found, add new sticker to end of array */
+      parsedStickers.push(emotionSchema);
+    } else {
+      /* if greater timestamp found, add new sticker at the index found */
+      parsedStickers.splice(commentIndex, 0, emotionSchema);
+    }
+
+    /* write new stickers array to db */
+    const newStickers: any[] = [];
+    parsedStickers.map((sticker: string) => newStickers.push(JSON.stringify(sticker)));
+    setStoredStickers(newStickers);
+    if (video) {
+      realm.write(() => {
+        video.emotionStickers! = newStickers;
+      });
+    }
+  }
+
+  const editSticker = (stickerID: any) => {
+    /* find index of comment matching input id and update in array */
+    /* const commentIndex = parsedComments.findIndex(
+      (element: any) => element.id == commentID,
+    );
+    parsedComments[commentIndex].text = commentEdit; */
+
+    /* update comments array in db */
+    /* const newTextComments: any[] = [];
+    parsedComments.map((text: string) =>
+      newTextComments.push(JSON.stringify(text)),
+    );
+    setStoredComments(newTextComments);
+    if (video) {
+      realm.write(() => {
+        video.textComments! = newTextComments;
+      });
+    } */
+  };
+
+  const deleteSticker = (stickerID: any) => {
+    /* find index of sticker matching input id and remove from array */
+    const stickerIndex = parsedStickers.findIndex(
+      (element: any) => element.id == stickerID,
+    );
+    parsedStickers.splice(stickerIndex, 1);
+
+    /* update stickers array in db */
+    const newEmotionStickers: any[] = [];
+    parsedStickers.map((sticker: string) =>
+      newEmotionStickers.push(JSON.stringify(sticker)),
+    );
+    setStoredStickers(newEmotionStickers);
+    if (video) {
+      realm.write(() => {
+        video.emotionStickers! = newEmotionStickers;
+      });
+    }
+  };
+
+  /* initialize array of refs for the sticker list */
+  useEffect(() => {
+    stickerRef.current = new Array(parsedStickers.length);
+  }, []);
+
+  /* update sticker overlay every 250ms*/
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let empty = true;
+      // add condition check: if video is not paused, then update overlay
+      for (let i = 0; i < parsedStickers.length; i++) {
+        stickerRef[i].setNativeProps({ style: { backgroundColor: 'transparent' } });
+        if ((parsedStickers[i].timestamp > currentTime[0]) && (parsedStickers[i].timestamp < currentTime[0] + 2)) {
+          /* set overlay sticker if current time is within time of timestamp to timestamp+2s */
+          overlaySticker[1](parsedStickers[i].sentiment + " " + parsedStickers[i].timestamp);
+          //highlight sticker in sticker list
+          if (stickerRef[i] != null) {
+            stickerRef[i].setNativeProps({ style: { backgroundColor: '#b7c3eb' } });
+          }
+          empty = false;
+          break;
+        }
+      }
+      /* set overlay to empty if no stickers have timestamp that falls around current time */
+      if (empty) overlaySticker[1]('');
+    }, 250);
+    return () => clearInterval(interval);
+  }, [overlaySticker]);
+
+  /* format timestamp from seconds to 00:00:00*/
+  function secondsToHms(d: number) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+    return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+  }
+
   /* given a timestamp, jump to that time in the video */
   const seekToTimestamp = (timestamp: any) => {
-    videoRef.current.setNativeProps({ seek: timestamp });
+    videoPlayerRef.current.setNativeProps({ seek: timestamp });
     console.log('press', timestamp);
   };
 
   return (
     <View style={styles.mainContainer}>
-      {/* can delete current time view later */}
-      <View>
-      </View>
       <View
         style={{
-          width: Dimensions.get('window').width,
-          height: Dimensions.get('window').height / 2.5,
+          width: windowWidth,
+          height: windowHeight / 2.5,
           paddingHorizontal: 15,
           paddingTop: 15,
         }}>
         <VideoPlayer
-          videoRef={videoRef}
+          videoRef={videoPlayerRef}
           source={{ uri: MHMRfolderPath + '/' + video.filename }}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
           showOnStart={true}
           disableSeekButtons={true}
-          onProgress={(data) => time[0] = data.currentTime}
+          onProgress={data => {
+            currentTime[0] = data.currentTime;
+          }}
+          onSeek={data => {
+            currentTime[0] = data.currentTime;
+          }}
         />
+        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlaySticker[0]}</Text>
       </View>
+
       <View style={styles.ballContainer} />
       <View style={[styles.row, { paddingBottom: 140 }]}>
         <Draggable id="smile" source={smile} />
@@ -232,32 +353,117 @@ const EmotionTagging = () => {
         <Draggable id="sad" source={sad} />
         <Draggable id="angry" source={angry} />
       </View>
-        <ScrollView style={styles.container}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={styles.headerStyle}>Stickers</Text>
-          </View>
-          <SafeAreaView>
-            <ScrollView style={styles.container}>
-              {parsedStickers.length != 0
-                ? parsedStickers.map((s: any) => {
-                  return (
-                    <View key={s.id} style={[styles.commentContainer, styles.row]}>
+
+      <ScrollView>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.headerStyle}>Stickers</Text>
+          {isDeleteBtnVisible && (
+            <TouchableOpacity
+              style={{ justifyContent: 'flex-end' }}
+              onPress={() => toggleEditBtnVisible()}>
+              <Text style={{ fontSize: 16, marginRight: 25 }}>Done</Text>
+            </TouchableOpacity>
+          )}
+          {isEditBtnVisible && (
+            <TouchableOpacity
+              style={{ justifyContent: 'flex-end' }}
+              onPress={() => toggleDeleteBtnVisibile()}>
+              <Text style={{ fontSize: 16, marginRight: 25 }}>Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <SafeAreaView>
+          <ScrollView style={styles.container}>
+            {parsedStickers.length != 0
+              ? parsedStickers.map((s: any, i) => {
+                return (
+                  <View
+                    ref={el => {
+                      if (el != null) {
+                        stickerRef[i] = el;
+                      }
+                    }}
+                    key={s.id}
+                    style={[styles.commentContainer, styles.row]}
+                  >
+
+                    {/* <Dialog
+                      isVisible={visible}
+                      onBackdropPress={toggleDialog}>
+                      <Dialog.Title title="Edit text" />
+                      <Input
+                        ref={commentEditInput}
+                        inputStyle={{ fontSize: 35 }}
+                        //value={text}
+                        defaultValue={commentSelectedText}
+                        onChangeText={value => setCommentEdit(value)}
+                        onSubmitEditing={() => {
+                          editComment(commentSelectedID);
+                          toggleDialog();
+                        }}
+                      />
+
+                      <Dialog.Actions>
+                        <Dialog.Button
+                          title="CONFIRM"
+                          onPress={() => {
+                            editComment(commentSelectedID);
+                            toggleDialog();
+                          }}
+                        />
+                        <Dialog.Button
+                          title="CANCEL"
+                          onPress={toggleDialog}
+                        />
+                      </Dialog.Actions>
+                    </Dialog> */}
+
+                    <View style={styles.row}>
                       <TouchableOpacity
                         onPress={() => seekToTimestamp(s.timestamp)}
-                        style={styles.comment}>
-                        <View style={styles.leftContainer}>
-                          <Text style={styles.textStyle}>
-                            {s.timestamp} - {s.sentiment}
-                          </Text>
-                        </View>
+                      >
+                        <Text style={styles.textStyle}>
+                          {secondsToHms(s.timestamp)} - {s.sentiment}
+                        </Text>
                       </TouchableOpacity>
                     </View>
-                  );
-                })
-                : null}
-            </ScrollView>
-          </SafeAreaView>
-        </ScrollView>
+                    <View style={styles.rightContainer}>
+                      {/* display this when user clicks edit */}
+                      {isDeleteBtnVisible && (
+                        <View>
+                          {/* <TouchableOpacity
+                            style={{ alignSelf: 'flex-end' }}
+                            onPress={() => {
+                              setStickerSelectedText(s.sentiment);
+                              setStickerSelectedID(s.id);
+
+                              toggleDialog();
+                              // console.log('comment selected', c.text);
+                              console.log('sticker selected', s.id);
+                            }}>
+                            <Text style={{ color: '#1C3EAA', fontSize: 16 }}>
+                              Edit
+                            </Text>
+                          </TouchableOpacity> */}
+
+                          <TouchableOpacity
+                            style={{ alignSelf: 'flex-end' }}
+                            onPress={() => deleteSticker(s.id)}>
+                            <Text style={{ color: '#cf7f11', fontSize: 16 }}>
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                );
+              })
+              : null}
+          </ScrollView>
+        </SafeAreaView>
+      </ScrollView>
     </View>
   );
 };
@@ -267,52 +473,77 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
   },
+  container: {
+    padding: 25
+  },
   ballContainer: {
     height: 80,
+  },
+  // left container style not in use currently
+  leftContainer: {
+    width: '90%',
+    flexWrap: 'wrap',
+  },
+  rightContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  row: {
+    flexDirection: 'row',
   },
   circle: {
     width: CIRCLE_RADIUS * 2,
     height: CIRCLE_RADIUS * 2,
     borderRadius: CIRCLE_RADIUS,
   },
-  row: {
-    flexDirection: 'row',
-  },
-  container: { padding: 25 },
-  commentContainer: {
-    flex: 1,
-    paddingVertical: 4,
-    paddingTop: 10,
-    // flexWrap: 'wrap',
-    //backgroundColor: '#dadbe0',
-    // justifyContent: 'flex-end',
-    borderBottomColor: 'grey',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  leftContainer: {
-    width: '94%',
-    flexWrap: 'wrap',
+  // player style not in use currently
+  playerStyle: {
+    height: '70%',
+    padding: 4
   },
   headerStyle: {
     fontWeight: 'bold',
     fontSize: 28,
     paddingLeft: 25,
   },
+  // button style not in use currently
+  buttonStyle: {
+    borderColor: 'transparent',
+    borderWidth: 0,
+    borderRadius: 30,
+  },
   textStyle: {
     fontSize: 22,
     paddingHorizontal: 15,
-    // backgroundColor: 'pink',
-    // flex: 1,
-    // flexWrap: 'wrap',
     flexShrink: 1,
     flexWrap: 'wrap',
   },
-  comment: {
-    // height: 60,
-    // position: 'absolute',
-    // left: 0,
-    //flex: 1,
-    //flexWrap: 'wrap',
+  commentContainer: {
+    flex: 1,
+    paddingVertical: 4,
+    paddingTop: 10,
+    borderBottomColor: 'grey',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  // overlay style not in use currently
+  overlay: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
+  overlayText: {
+    flex: 1,
+    position: 'absolute',
+    textAlignVertical: 'center',
+    marginTop: 20,
+    marginLeft: 20,
+    padding: 5,
+    backgroundColor: 'white',
+    opacity: 0.85,
+    borderRadius: 10,
   },
 });
 

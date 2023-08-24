@@ -165,7 +165,7 @@ const DataAnalysis = () => {
             titleStyle={{fontSize: 20}}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}
             iconRight={true}
@@ -182,7 +182,7 @@ const DataAnalysis = () => {
             titleStyle={{fontSize: 20}}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}
             iconRight={true}
@@ -195,11 +195,23 @@ const DataAnalysis = () => {
             Line Graph
           </Button>
           <Button
+<<<<<<< HEAD:MyHealthMyRecord/screens/dataAnalysis.tsx
+=======
+            onPress={onPressBarGraph}
+            containerStyle={{
+              width: 200,
+              marginHorizontal: 30,
+              marginVertical: 10,
+            }}>
+            Bar Graph
+          </Button>
+          <Button
+>>>>>>> a4d02a84b9010fe58d62cf19b5d8f0df527ba0f3:MyHealthMyRecord/screens/graphScreen.tsx
             onPress={onPressTextSummary}
             titleStyle={{fontSize: 20}}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}
             iconRight={true}
@@ -216,7 +228,7 @@ const DataAnalysis = () => {
             titleStyle={{fontSize: 20}}
             containerStyle={{
               width: 200,
-              marginHorizontal: 50,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}
             iconRight={true}
