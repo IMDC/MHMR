@@ -25,7 +25,7 @@ import FullscreenVideo from './screens/fullscreenVideo';
 import Painscale from './screens/painscaleScreen';
 import Help from './screens/help';
 import Dashboard from './screens/dashboard';
-import GraphScreen from './screens/graphScreen';
+import DataAnalysis from './screens/dataAnalysis';
 import * as Styles from './assets/util/styles';
 import { Icon } from '@rneui/themed';
 
@@ -69,8 +69,8 @@ function App() {
             },
           }}>
           <Tab.Screen
-            name="Graphs"
-            component={GraphScreen}
+            name="Data Analysis"
+            component={DataAnalysis}
             options={{
               tabBarLabel: 'Dashboard',
               headerStyle: {backgroundColor: Styles.NavBarGrey},

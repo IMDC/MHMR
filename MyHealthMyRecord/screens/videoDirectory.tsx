@@ -24,6 +24,8 @@ import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {Button, Dialog, Icon} from '@rneui/themed';
 import {Chip} from 'react-native-paper';
+import {Dropdown} from 'react-native-element-dropdown';
+
 const worried = require('../assets/images/emojis/worried.png');
 
 const ViewRecordings = () => {
@@ -57,6 +59,51 @@ const ViewRecordings = () => {
       animated: true,
     });
   };
+  const sortData = [
+    {label: 'Date', value: '1'},
+    {label: 'Name', value: '2'},
+    {label: 'Keyword', value: '3'},
+    {label: 'Location', value: '4'},
+  ];
+
+  const oldestNewestData = [
+    {label: 'Newest to Oldest', value: '1'},
+    {label: 'Oldest to Newest', value: '2'},
+  ];
+
+  const keywordData = [
+    {label: 'None', value: '1'},
+    {label: 'Chronic', value: '2'},
+    {label: 'Weak', value: '3'},
+    {label: 'Depression', value: '4'},
+    {label: 'Pain', value: '5'},
+    {label: 'Fever', value: '6'},
+    {label: 'Wellness', value: '7'},
+    {label: 'Other', value: '8'},
+  ];
+
+ const nameData = [
+   {label: 'A-Z', value: '1'},
+   {label: 'Z-A', value: '2'},
+ ];
+
+  const locationData = [
+    {label: 'Home', value: '1'},
+    {label: 'Work', value: '2'},
+    {label: 'School', value: '3'},
+    {label: 'Park', value: '4'},
+    {label: 'Indoors', value: '5'},
+    {label: 'Outdoors', value: '6'},
+    {label: 'Other', value: '7'},
+  ];
+
+  const [sortValue, setSortValue] = useState(1);
+  const [oldestNewestValue, setOldestNewestValue] = useState(null);
+  const [keywordValue, setKeywordValue] = useState(null);
+  const [locationValue, setLocationValue] = useState(null);
+    const [nameValue, setNameValue] = useState(null);
+
+  const [showDropDown, setShowDropDown] = useState(false);
 
   const realm = useRealm();
   const videoData: any = useQuery('VideoData');
@@ -123,9 +170,11 @@ const ViewRecordings = () => {
     );
   };
 
-  useEffect(() => {{
-    setVideos(videosByDate);
-  } }, []);
+  useEffect(() => {
+    {
+      setVideos(videosByDate);
+    }
+  }, []);
 
   //check file space
   /*
@@ -162,6 +211,121 @@ const ViewRecordings = () => {
             Delete All Videos
           </Text>
         </TouchableOpacity>
+        <View style={{flexDirection: 'row'}}>
+          <Text style={{fontSize: 20}}>Sort by:</Text>
+          <Dropdown
+            // style={styles.dropdown}
+            // placeholderStyle={styles.placeholderStyle}
+            // selectedTextStyle={styles.selectedTextStyle}
+            // inputSearchStyle={styles.inputSearchStyle}
+            // iconStyle={styles.iconStyle}
+            data={sortData}
+            maxHeight={300}
+            style={{width: 200}}
+            placeholderStyle={{fontSize: 20}}
+            selectedTextStyle={{fontSize: 20}}
+            labelField="label"
+            valueField="value"
+            placeholder="Date"
+            value={sortValue}
+            onChange={item => {
+              setSortValue(item.value);
+              console.log(item.value);
+            }}
+          />
+          {sortValue == '1' && (
+            <Dropdown
+              data={oldestNewestData}
+              maxHeight={300}
+              style={{width: 200}}
+              placeholderStyle={{fontSize: 20}}
+              selectedTextStyle={{fontSize: 20}}
+              labelField="label"
+              valueField="value"
+              placeholder="Newest to Oldest"
+              value={oldestNewestValue}
+              onChange={item => {
+                item.value === '1' ? (
+                  <View>new to old</View>
+                ) : (
+                  <View>old to new</View>
+                );
+              }}
+              // setOldestNewestValue(item.value);
+              // console.log(item.value);
+              // }}
+            />
+     
+          {sortValue == '2' && (
+            <Dropdown
+              data={nameData}
+              maxHeight={1000}
+              style={{width: 200}}
+              placeholderStyle={{fontSize: 20}}
+              selectedTextStyle={{fontSize: 20}}
+              labelField="label"
+              valueField="value"
+              // placeholder="Newest to Oldest"
+              value={nameValue}
+              onChange={item => {
+                item.label === 'None' ? (
+                  <View>new to old</View>
+                ) : (
+                  <View>old to new</View>
+                );
+              }}
+              // setOldestNewestValue(item.value);
+              // console.log(item.value);
+              // }}
+            />
+          }}
+          {sortValue == '3' && (
+            <Dropdown
+              data={keywordData}
+              maxHeight={1000}
+              style={{width: 200}}
+              placeholderStyle={{fontSize: 20}}
+              selectedTextStyle={{fontSize: 20}}
+              labelField="label"
+              valueField="value"
+              // placeholder="Newest to Oldest"
+              value={keywordValue}
+              onChange={item => {
+                item.label === 'None' ? (
+                  <View>new to old</View>
+                ) : (
+                  <View>old to new</View>
+                );
+              }}
+              // setOldestNewestValue(item.value);
+              // console.log(item.value);
+              // }}
+            />
+          )}
+          {sortValue == '4' && (
+            <Dropdown
+              data={locationData}
+              maxHeight={1000}
+              style={{width: 200}}
+              placeholderStyle={{fontSize: 20}}
+              selectedTextStyle={{fontSize: 20}}
+              labelField="label"
+              valueField="value"
+              // placeholder="Newest to Oldest"
+              value={locationValue}
+              onChange={item => {
+                item.label === 'None' ? (
+                  <View>new to old</View>
+                ) : (
+                  <View>old to new</View>
+                );
+              }}
+              // setOldestNewestValue(item.value);
+              // console.log(item.value);
+              // }}
+            />
+          )}
+        </View>
         {videos !== null
           ? videos.map((video: VideoData) => {
               // const videoURI = require(MHMRfolderPath + '/' + video.filename);
@@ -185,7 +349,7 @@ const ViewRecordings = () => {
                         })
                       }
                     /> */}
-                    
+
                     <ImageBackground
                       style={{height: '100%', width: '100%'}}
                       source={{
@@ -250,16 +414,17 @@ const ViewRecordings = () => {
                       </Text>
 
                       {/* map temparray and display the keywords here */}
-                      <View style={{flexDirection: 'row'}}>
+                      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
                         {video.keywords.map((key: string) => {
                           if (JSON.parse(key).checked) {
                             return (
                               <Chip
                                 key={JSON.parse(key).title}
-                                style={{margin: 2}}
+                                style={{margin: 2, backgroundColor: '#E1BE6A'}}
                                 textStyle={{fontSize: 16}}
                                 mode="outlined"
-                                compact={true}>
+                                compact={true}
+                                icon={'tag'}>
                                 {JSON.parse(key).title}
                               </Chip>
                             );
@@ -271,9 +436,10 @@ const ViewRecordings = () => {
                               <Chip
                                 key={JSON.parse(key).title}
                                 textStyle={{fontSize: 16}}
-                                style={{margin: 2}}
+                                style={{margin: 2, backgroundColor: '#40B0A6'}}
                                 mode="outlined"
-                                compact={true}>
+                                compact={true}
+                                icon={'map-marker'}>
                                 {JSON.parse(key).title}
                               </Chip>
                             );
