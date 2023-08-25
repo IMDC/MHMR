@@ -195,15 +195,6 @@ const DataAnalysis = () => {
             Line Graph
           </Button>
           <Button
-            onPress={onPressBarGraph}
-            containerStyle={{
-              width: 200,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}>
-            Bar Graph
-          </Button>
-          <Button
             onPress={onPressTextSummary}
             titleStyle={{fontSize: 20}}
             containerStyle={{
