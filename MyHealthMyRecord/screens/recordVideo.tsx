@@ -42,6 +42,10 @@ const RecordVideo = () => {
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
+  /**
+   * Make a new directory at the given folder path
+   * @param folderPath Path for new folder
+   */
   const makeDirectory = async (folderPath: string) => {
     await RNFS.mkdir(folderPath); //create a new folder on folderPath
   };
@@ -67,6 +71,9 @@ const RecordVideo = () => {
     makeDirectory(MHMRfolderPath + '/audio');
   }, [videoSource]);
 
+  /**
+   * Start recording handler for VisionCamera, start timer
+   */
   const StartRecodingHandler = async () => {
     if (camera.current !== null) {
       camera.current.startRecording({
@@ -97,6 +104,9 @@ const RecordVideo = () => {
     setRecordingPaused(false);
   }
 
+  /**
+   * Stop recording handler for VisionCamera, reset recording options for next recording
+   */
   const stopRecodingHandler = async () => {
     if (camera.current !== null) {
       await camera.current.stopRecording();
@@ -105,6 +115,9 @@ const RecordVideo = () => {
     }
   }
 
+  /**
+   * Reset recording options
+   */
   const resetRecording = () => {
     setShowCamera(false);
     setRecordingInProgress(false);
@@ -126,8 +139,10 @@ const RecordVideo = () => {
         console.log('timeeee: ', timeOfRecording[0]);
         displayTime[1](timeOfRecording[0]);
 
-        if (timeOfRecording[0] >= maxLength[0] - 5) timeWarningMessage[1]( (maxLength[0]-timeOfRecording[0]) + ' more sec');
+        // 5 second warning
+        if (timeOfRecording[0] >= maxLength[0] - 5) timeWarningMessage[1]( (maxLength[0]-timeOfRecording[0]) + ' more seconds');
 
+        // stop recording once max time limit is reached
         if (maxLength[0] > 0 && time >= maxLength[0]) {
           stopRecodingHandler();
           clearInterval(timerRef.current);
@@ -144,7 +159,11 @@ const RecordVideo = () => {
   }, [enableTimer]);
 
 
-  /* format timestamp from seconds to 00:00:00*/
+  /**
+   * format timestamp from seconds to 00:00:00
+   * @param d - data in seconds
+   * @returns time in 00:00:00 format
+   */
   function secondsToHms(d: number) {
     d = Number(d);
     var h = Math.floor(d / 3600);
@@ -157,6 +176,10 @@ const RecordVideo = () => {
     return <Text>Camera not available</Text>;
   }
 
+  /**
+   * Check if device has permissions to read external storage and cameraroll
+   * @returns boolean - true if permission granted, false if not
+   */
   async function hasAndroidPermission() {
     const version = +Platform.Version;
     const permission =
@@ -172,6 +195,10 @@ const RecordVideo = () => {
     return status === 'granted';
   }
 
+  /**
+   * Save video to app storage, save VideoData object to database
+   * @param path path of stored VisionCamera recording
+   */
   async function saveVideo(path: any) {
     const filePath = path.replace('file://', '');
     const pathSegments = filePath.split('/');
@@ -482,7 +509,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    bottom: 100,
+    top: 100,
     padding: 10,
     
   }

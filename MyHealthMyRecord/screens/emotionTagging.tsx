@@ -288,7 +288,17 @@ const EmotionTagging = () => {
         stickerRef[i].setNativeProps({ style: { backgroundColor: 'transparent' } });
         if ((parsedStickers[i].timestamp > currentTime[0]) && (parsedStickers[i].timestamp < currentTime[0] + 2)) {
           /* set overlay sticker if current time is within time of timestamp to timestamp+2s */
-          overlaySticker[1](parsedStickers[i].sentiment + " " + parsedStickers[i].timestamp);
+          if (parsedStickers[i].sentiment == 'smile') {
+            overlaySticker[1](smile);
+          } else if (parsedStickers[i].sentiment == 'neutral') {
+            overlaySticker[1](neutral);
+          } else if (parsedStickers[i].sentiment == 'worried') {
+            overlaySticker[1](worried);
+          } else if (parsedStickers[i].sentiment == 'sad') {
+            overlaySticker[1](sad);
+          } else if (parsedStickers[i].sentiment == 'angry') {
+            overlaySticker[1](angry);
+          }
           //highlight sticker in sticker list
           if (stickerRef[i] != null) {
             stickerRef[i].setNativeProps({ style: { backgroundColor: '#b7c3eb' } });
@@ -314,7 +324,7 @@ const EmotionTagging = () => {
 
   /* given a timestamp, jump to that time in the video */
   const seekToTimestamp = (timestamp: any) => {
-    videoPlayerRef.current.setNativeProps({ seek: timestamp });
+    videoPlayerRef.current.setNativeProps({ seek: timestamp - 0.5 });
     console.log('press', timestamp);
   };
 
@@ -342,7 +352,10 @@ const EmotionTagging = () => {
             currentTime[0] = data.currentTime;
           }}
         />
-        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlaySticker[0]}</Text>
+        {overlaySticker[0] != '' ? (
+          <Image style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]} source={overlaySticker[0]}></Image>
+        ) : null }
+        {/* <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlaySticker[0]}</Text> */}
       </View>
 
       <View style={styles.ballContainer} />
