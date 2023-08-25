@@ -24,7 +24,7 @@ import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {Button, Dialog, Icon} from '@rneui/themed';
 import {Chip} from 'react-native-paper';
-import {Dropdown} from 'react-native-element-dropdown';
+import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 
 const worried = require('../assets/images/emojis/worried.png');
 
@@ -60,48 +60,48 @@ const ViewRecordings = () => {
     });
   };
   const sortData = [
-    {label: 'Date', value: '1'},
-    {label: 'Name', value: '2'},
-    {label: 'Keyword', value: '3'},
-    {label: 'Location', value: '4'},
+    {label: 'Date', value: 1},
+    {label: 'Name', value: 2},
+    {label: 'Keyword', value: 3},
+    {label: 'Location', value: 4},
   ];
 
   const oldestNewestData = [
-    {label: 'Newest to Oldest', value: '1'},
-    {label: 'Oldest to Newest', value: '2'},
+    {label: 'Newest to Oldest', value: 1},
+    {label: 'Oldest to Newest', value: 2},
   ];
 
   const keywordData = [
-    {label: 'None', value: '1'},
-    {label: 'Chronic', value: '2'},
-    {label: 'Weak', value: '3'},
-    {label: 'Depression', value: '4'},
-    {label: 'Pain', value: '5'},
-    {label: 'Fever', value: '6'},
-    {label: 'Wellness', value: '7'},
-    {label: 'Other', value: '8'},
+    {label: 'None', value: 1},
+    {label: 'Chronic', value: 2},
+    {label: 'Weak', value: 3},
+    {label: 'Depression', value: 4},
+    {label: 'Pain', value: 5},
+    {label: 'Fever', value: 6},
+    {label: 'Wellness', value: 7},
+    {label: 'Other', value: 8},
   ];
 
- const nameData = [
-   {label: 'A-Z', value: '1'},
-   {label: 'Z-A', value: '2'},
- ];
+  const nameData = [
+    {label: 'A-Z', value: 1},
+    {label: 'Z-A', value: 2},
+  ];
 
   const locationData = [
-    {label: 'Home', value: '1'},
-    {label: 'Work', value: '2'},
-    {label: 'School', value: '3'},
-    {label: 'Park', value: '4'},
-    {label: 'Indoors', value: '5'},
-    {label: 'Outdoors', value: '6'},
-    {label: 'Other', value: '7'},
+    {label: 'Home', value: 1},
+    {label: 'Work', value: 2},
+    {label: 'School', value: 3},
+    {label: 'Park', value: 4},
+    {label: 'Indoors', value: 5},
+    {label: 'Outdoors', value: 6},
+    {label: 'Other', value: 7},
   ];
 
   const [sortValue, setSortValue] = useState(null);
   const [oldestNewestValue, setOldestNewestValue] = useState(null);
-  const [keywordValue, setKeywordValue] = useState(null);
-  const [locationValue, setLocationValue] = useState(null);
-    const [nameValue, setNameValue] = useState(null);
+  const [keywordValue, setKeywordValue] = useState([]);
+  const [locationValue, setLocationValue] = useState([]);
+  const [nameValue, setNameValue] = useState(null);
 
   const [showDropDown, setShowDropDown] = useState(false);
 
@@ -114,6 +114,9 @@ const ViewRecordings = () => {
   /* videoData.map((video: any) =>
     console.log('test', video._id.toString(), video.title),
   ); */
+
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
 
   const deleteAllVideoDataObjects = async () => {
     //delete videos from storage
@@ -189,6 +192,26 @@ const ViewRecordings = () => {
     });
   };
 
+  const renderSelectedItem = (item, unSelect) => {
+    return (
+      <View>
+        <TouchableOpacity onPress={() => unSelect && unSelect(item)}>
+          <View
+            style={{
+              paddingHorizontal: 5,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Chip textStyle={{fontSize: 20}} icon={'close'} mode='outlined'>
+              {item.label}
+            </Chip>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View>
       {/* <Button
@@ -198,10 +221,7 @@ const ViewRecordings = () => {
       /> */}
 
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
-        <TouchableOpacity
-          // style={{alignItems: 'flex-end'}}
-          style={{alignItems: 'center'}}
-          onPress={toggleDialog}>
+        <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
           <Text
             style={{
               fontSize: 16,
@@ -211,19 +231,19 @@ const ViewRecordings = () => {
             Delete All Videos
           </Text>
         </TouchableOpacity>
-        <View style={{flexDirection: 'row'}}>
-          <Text style={{fontSize: 20}}>Sort by:</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+          }}>
+          {/* <Text style={{fontSize: 20}}>Sort by:</Text> */}
           <Dropdown
-            // style={styles.dropdown}
-            // placeholderStyle={styles.placeholderStyle}
-            // selectedTextStyle={styles.selectedTextStyle}
-            // inputSearchStyle={styles.inputSearchStyle}
-            // iconStyle={styles.iconStyle}
             data={sortData}
             maxHeight={300}
-            style={{width: 200}}
-            placeholderStyle={{fontSize: 20}}
-            selectedTextStyle={{fontSize: 20}}
+            style={{width: windowWidth / 2}}
+            placeholderStyle={styles.dropdownText}
+            selectedTextStyle={styles.dropdownText}
+            itemTextStyle={{textAlign: 'center'}}
             labelField="label"
             valueField="value"
             value={sortValue}
@@ -236,92 +256,80 @@ const ViewRecordings = () => {
             <Dropdown
               data={oldestNewestData}
               maxHeight={300}
-              style={{width: 200}}
-              placeholderStyle={{fontSize: 20}}
-              selectedTextStyle={{fontSize: 20}}
+              style={{width: windowWidth / 2}}
+              placeholderStyle={styles.dropdownText}
+              selectedTextStyle={styles.dropdownText}
+              itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              placeholder="Newest to Oldest"
               value={oldestNewestValue}
               onChange={item => {
-                item.value === '1' ? (
-                  <View>new to old</View>
-                ) : (
-                  <View>old to new</View>
-                );
+                setOldestNewestValue(item.value);
+                if (item.value === 1) {
+                  setVideos(videosByDate);
+                  console.log('if', item.value);
+                } else {
+                  setVideos(videosByDate.sorted('datetimeRecorded', false));
+                  console.log('else', item.value);
+                }
               }}
-              // setOldestNewestValue(item.value);
-              // console.log(item.value);
-              // }}
             />
           )}
           {sortValue == 2 && (
             <Dropdown
               data={nameData}
               maxHeight={1000}
-              style={{width: 200}}
-              placeholderStyle={{fontSize: 20}}
-              selectedTextStyle={{fontSize: 20}}
+              style={{width: windowWidth / 2}}
+              placeholderStyle={styles.dropdownText}
+              selectedTextStyle={styles.dropdownText}
+              itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              // placeholder="Newest to Oldest"
               value={nameValue}
               onChange={item => {
-                item.label === 'None' ? (
-                  <View>new to old</View>
-                ) : (
-                  <View>old to new</View>
-                );
+                setNameValue(item.value);
+                if (item.value === 1) {
+                  setVideos(videoData.sorted('title', false));
+                } else {
+                  setVideos(videoData.sorted('title', true));
+                }
               }}
-              // setOldestNewestValue(item.value);
-              // console.log(item.value);
-              // }}
             />
           )}
+          {}
           {sortValue == 3 && (
-            <Dropdown
+            <MultiSelect
               data={keywordData}
               maxHeight={1000}
-              style={{width: 200}}
-              placeholderStyle={{fontSize: 20}}
-              selectedTextStyle={{fontSize: 20}}
+              style={{width: windowWidth / 2}}
+              placeholderStyle={styles.dropdownText}
+              selectedTextStyle={styles.dropdownText}
+              itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              // placeholder="Newest to Oldest"
               value={keywordValue}
               onChange={item => {
-                item.label === 'None' ? (
-                  <View>new to old</View>
-                ) : (
-                  <View>old to new</View>
-                );
+                setKeywordValue(item);
+                console.log(item);
               }}
-              // setOldestNewestValue(item.value);
-              // console.log(item.value);
-              // }}
+              renderSelectedItem={renderSelectedItem}
             />
           )}
           {sortValue == 4 && (
-            <Dropdown
+            <MultiSelect
               data={locationData}
               maxHeight={1000}
-              style={{width: 200}}
-              placeholderStyle={{fontSize: 20}}
-              selectedTextStyle={{fontSize: 20}}
+              style={{width: windowWidth / 2}}
+              placeholderStyle={styles.dropdownText}
+              selectedTextStyle={styles.dropdownText}
+              itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              // placeholder="Newest to Oldest"
               value={locationValue}
               onChange={item => {
-                item.label === 'None' ? (
-                  <View>new to old</View>
-                ) : (
-                  <View>old to new</View>
-                );
+                setLocationValue(item);
               }}
-              // setOldestNewestValue(item.value);
-              // console.log(item.value);
-              // }}
+              renderSelectedItem={renderSelectedItem}
             />
           )}
         </View>
@@ -543,6 +551,28 @@ const ViewRecordings = () => {
 };
 
 const styles = StyleSheet.create({
+  dropdownText: {
+    fontSize: 20,
+    textAlign: 'center',
+  },
+
+  dropdown: {
+    margin: 16,
+    height: 50,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+
+    elevation: 2,
+  },
+
   btnStyle: {
     backgroundColor: '#1C3EAA',
   },
