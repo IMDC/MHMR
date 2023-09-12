@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
   overlayText: {
     flex: 1,
     position: 'absolute',
-    textAlignVertical: 'center',
+    //textAlignVertical: 'center',
     marginTop: 20,
     marginLeft: 20,
     padding: 5,
