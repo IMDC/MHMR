@@ -87,6 +87,7 @@ const DataAnalysis = () => {
   ]
 
   const month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthAbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   console.log(month[(new Date(2023, 0, 1)).getMonth()]);
 
   /* ======================================================================= */
@@ -214,7 +215,7 @@ const DataAnalysis = () => {
           </View>
         )}
         {showLineGraph && (
-          /* 
+/*           
           <View id="linegraph">
             <YAxis
               data={lineChartData}
@@ -234,7 +235,7 @@ const DataAnalysis = () => {
               <Grid />
             </LineChart>
           </View>
-           */
+            */
           <View>
             <Text style={{ padding: 20, fontSize: 20 }}>Word Count of "{wordFreqBarGraphData[wordSelected].label}" over time</Text>
             <View id="linegraph" style={{ height: 600, padding: 20, flexDirection: 'row' }}>
@@ -248,7 +249,7 @@ const DataAnalysis = () => {
               />
 
               <ScrollView horizontal={true}>
-                <View style={{ flex: 1, marginLeft: 10, width: windowWidth }}>
+                <View style={{ flex: 1, marginLeft: 10, marginRight: 10, width: windowWidth }}>
                   <LineChart
                     style={{ flex: 1 }}
                     data={freq}
@@ -259,10 +260,10 @@ const DataAnalysis = () => {
                     <Grid />
                   </LineChart>
                   <XAxis
-                    style={{ marginHorizontal: -10, height: xAxisHeight }}
+                    style={{ marginHorizontal: -40, height: xAxisHeight }}
                     data={freq}
-                    formatLabel={(value, index) => month[(freq[index].label).getMonth()]}
-                    contentInset={{ left: 10, right: 10 }}
+                    formatLabel={(value, index) => monthAbrev[(freq[index].label).getMonth()]}
+                    contentInset={{ left: 50, right: 50 }}
                     svg={axesSvg}
                   />
                 </View>
