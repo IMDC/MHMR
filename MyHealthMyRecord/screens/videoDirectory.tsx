@@ -99,7 +99,7 @@ const ViewRecordings = () => {
 
   const [sortValue, setSortValue] = useState(null);
   const [oldestNewestValue, setOldestNewestValue] = useState(null);
-  const [keywordValue, setKeywordValue] = useState([]);
+  const [keywordValue, setKeywordValue] = useState<any[]>([]);
   const [locationValue, setLocationValue] = useState([]);
   const [nameValue, setNameValue] = useState(null);
 
@@ -172,12 +172,39 @@ const ViewRecordings = () => {
         })
     );
   };
+  // const filterVideosByKeywords = (selectedItems) => {
+  //   if (
+  //     !selectedItems ||
+  //     selectedItems.length === 0 ||
+  //     selectedItems.some(item => item.value === 1)
+  //   ) {
+  //     console.log('None selected');
+  //     console.log("const", selectedItems)
+  //     // If no keywords are selected or "None" is selected, show all videos
+  //     setVideos(videosByDate);
 
+  //   } else {
+  //     // Filter videos based on selected keywords
+  //     const filteredVideos = videoData.filter(video => {
+  //       return selectedItems.every(selectedKeyword => {
+  //         return video.keywords.some(
+  //           videoKeyword =>
+  //             JSON.parse(videoKeyword).title === selectedKeyword.label,
+  //         );
+  //       });
+  //     });
+  //     setVideos(filteredVideos);
+  //   }
+  // };
   useEffect(() => {
     {
       setVideos(videosByDate);
     }
   }, []);
+
+  // useEffect(() => {
+  //   filterVideosByKeywords();
+  // }, [keywordValue]);
 
   //check file space
   /*
@@ -192,7 +219,20 @@ const ViewRecordings = () => {
     });
   };
 
-  const renderSelectedItem = (item, unSelect) => {
+  const renderSelectedItem = (
+    item: {
+      label:
+        | string
+        | number
+        | boolean
+        | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+        | React.ReactFragment
+        | React.ReactPortal
+        | null
+        | undefined;
+    },
+    unSelect: (arg0: any) => any,
+  ) => {
     return (
       <View>
         <TouchableOpacity onPress={() => unSelect && unSelect(item)}>
@@ -203,7 +243,7 @@ const ViewRecordings = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-            <Chip textStyle={{fontSize: 20}} icon={'close'} mode='outlined'>
+            <Chip textStyle={{fontSize: 20}} icon={'close'} mode="outlined">
               {item.label}
             </Chip>
           </View>
@@ -236,6 +276,7 @@ const ViewRecordings = () => {
             flexDirection: 'row',
             flexWrap: 'wrap',
           }}>
+          {/* <Text style={{fontSize: 20, justifyContent: 'flex-end',}}>Sort by:</Text> */}
           {/* <Text style={{fontSize: 20}}>Sort by:</Text> */}
           <Dropdown
             data={sortData}
@@ -252,6 +293,7 @@ const ViewRecordings = () => {
               console.log(item.value);
             }}
           />
+          {/* Sorts by date */}
           {sortValue == 1 && (
             <Dropdown
               data={oldestNewestData}
@@ -308,9 +350,52 @@ const ViewRecordings = () => {
               labelField="label"
               valueField="value"
               value={keywordValue}
-              onChange={item => {
-                setKeywordValue(item);
-                console.log(item);
+              onChange={selectedItems => {
+                console.log('selectedItems', selectedItems);
+                setKeywordValue(selectedItems);
+
+                if (selectedItems.length === 0) {
+                  setVideos(videosByDate);
+                } else if (
+                  selectedItems.length === 1 &&
+                  selectedItems[0] == 1
+                ) {
+                  console.log('None selected');
+
+                  // Filter videos that have at least one keyword annotated
+                  const filteredVideos = videoData.filter(video => {
+                    return !video.keywords.some(key => {
+                      return JSON.parse(key).checked;
+                    });
+                  });
+
+                  setVideos(filteredVideos);
+                } else {
+                  // Create an array of selected keyword values
+                  const selectedKeywordValues = selectedItems.map(item => item);
+                  console.log(
+                    'Selected Keyword Values:',
+                    selectedKeywordValues,
+                  );
+
+                  // Filter videos based on selected keyword values and labels
+                  const filteredVideos = videoData.filter(video => {
+                    // Check if any of the selected keyword values match the video's keyword values
+                    return selectedKeywordValues.some(value => {
+                      return video.keywords.some(keyword => {
+                        const parsedKeyword = JSON.parse(keyword);
+                        return (
+                          parsedKeyword.value === value &&
+                          parsedKeyword.checked === true
+                        );
+                      });
+                    });
+                  });
+
+                  console.log('Filtered Videos:', filteredVideos);
+
+                  setVideos(filteredVideos);
+                }
               }}
               renderSelectedItem={renderSelectedItem}
             />
@@ -326,8 +411,34 @@ const ViewRecordings = () => {
               labelField="label"
               valueField="value"
               value={locationValue}
-              onChange={item => {
-                setLocationValue(item);
+              onChange={selectedItems => {
+                console.log('selectedItems', selectedItems);
+                setLocationValue(selectedItems);
+
+                if (selectedItems.length === 0) {
+                  setVideos(videosByDate);
+                } else {
+                  const selectedLocationValues = selectedItems.map(
+                    item => item,
+                  );
+                  console.log(
+                    'Selected Location Values:',
+                    selectedLocationValues,
+                  );
+
+                  const filteredVideos = videoData.filter(video => {
+                    return selectedLocationValues.some(value => {
+                      return video.locations.some(location => {
+                        const parsedLocation = JSON.parse(location);
+                        return (
+                          parsedLocation.value === value &&
+                          parsedLocation.checked === true
+                        );
+                      });
+                    });
+                  });
+                  setVideos(filteredVideos);
+                }
               }}
               renderSelectedItem={renderSelectedItem}
             />
