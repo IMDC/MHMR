@@ -23,7 +23,7 @@ import Realm from 'realm';
 import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {Button, Dialog, Icon} from '@rneui/themed';
-import {Chip} from 'react-native-paper';
+import {Chip,Tooltip} from 'react-native-paper';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 
 const worried = require('../assets/images/emojis/worried.png');
@@ -64,6 +64,7 @@ const ViewRecordings = () => {
     {label: 'Name', value: 2},
     {label: 'Keyword', value: 3},
     {label: 'Location', value: 4},
+    {label: 'Emotion', value: 5},
   ];
 
   const oldestNewestData = [
@@ -97,10 +98,27 @@ const ViewRecordings = () => {
     {label: 'Other', value: 7},
   ];
 
+  const emotionData = [
+    {label: 'Smile', value: 1},
+    {label: 'Neutral', value: 2},
+    {label: 'Worried', value: 3},
+    {label: 'Sad', value: 4},
+    {label: 'Angry', value: 5},
+  ];
+
+  const sentimentImages = {
+    smile: require('../assets/images/emojis/smile.png'),
+    neutral: require('../assets/images/emojis/neutral.png'),
+    worried: require('../assets/images/emojis/worried.png'),
+    sad: require('../assets/images/emojis/sad.png'),
+    angry: require('../assets/images/emojis/angry.png'),
+  };
+
   const [sortValue, setSortValue] = useState(null);
   const [oldestNewestValue, setOldestNewestValue] = useState(null);
   const [keywordValue, setKeywordValue] = useState<any[]>([]);
   const [locationValue, setLocationValue] = useState([]);
+  const [emotionValue, setEmotionValue] = useState([]);
   const [nameValue, setNameValue] = useState(null);
 
   const [showDropDown, setShowDropDown] = useState(false);
@@ -172,45 +190,12 @@ const ViewRecordings = () => {
         })
     );
   };
-  // const filterVideosByKeywords = (selectedItems) => {
-  //   if (
-  //     !selectedItems ||
-  //     selectedItems.length === 0 ||
-  //     selectedItems.some(item => item.value === 1)
-  //   ) {
-  //     console.log('None selected');
-  //     console.log("const", selectedItems)
-  //     // If no keywords are selected or "None" is selected, show all videos
-  //     setVideos(videosByDate);
 
-  //   } else {
-  //     // Filter videos based on selected keywords
-  //     const filteredVideos = videoData.filter(video => {
-  //       return selectedItems.every(selectedKeyword => {
-  //         return video.keywords.some(
-  //           videoKeyword =>
-  //             JSON.parse(videoKeyword).title === selectedKeyword.label,
-  //         );
-  //       });
-  //     });
-  //     setVideos(filteredVideos);
-  //   }
-  // };
   useEffect(() => {
     {
       setVideos(videosByDate);
     }
   }, []);
-
-  // useEffect(() => {
-  //   filterVideosByKeywords();
-  // }, [keywordValue]);
-
-  //check file space
-  /*
-  const FSInfoResult = RNFS.getFSInfo();
-  console.log("space: ", (await FSInfoResult).totalSpace, (await FSInfoResult).freeSpace);
-  */
 
   onPressTouch = () => {
     scrollRef.current?.scrollTo({
@@ -254,12 +239,6 @@ const ViewRecordings = () => {
 
   return (
     <View>
-      {/* <Button
-        buttonStyle={styles.btnStyle}
-        title="View Recordings"
-        onPress={() => setVideos(videosByDate)}
-      /> */}
-
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
         <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
           <Text
@@ -276,8 +255,6 @@ const ViewRecordings = () => {
             flexDirection: 'row',
             flexWrap: 'wrap',
           }}>
-          {/* <Text style={{fontSize: 20, justifyContent: 'flex-end',}}>Sort by:</Text> */}
-          {/* <Text style={{fontSize: 20}}>Sort by:</Text> */}
           <Dropdown
             data={sortData}
             maxHeight={300}
@@ -443,6 +420,55 @@ const ViewRecordings = () => {
               renderSelectedItem={renderSelectedItem}
             />
           )}
+          {sortValue == 5 && (
+            <MultiSelect
+              data={emotionData}
+              maxHeight={1000}
+              style={{width: windowWidth / 2}}
+              placeholderStyle={styles.dropdownText}
+              selectedTextStyle={styles.dropdownText}
+              itemTextStyle={{textAlign: 'center'}}
+              labelField="label"
+              valueField="value"
+              value={emotionValue}
+              onChange={selectedItems => {
+                console.log('selectedItems', selectedItems);
+                setEmotionValue(selectedItems);
+
+                if (selectedItems.length === 0) {
+                  setVideos(videosByDate);
+                } else {
+                  // Map selected item values to labels
+                  const selectedEmotionLabels = selectedItems.map(value => {
+                    const selectedEmotion = emotionData.find(
+                      item => item.value === value,
+                    );
+                    return selectedEmotion ? selectedEmotion.label : '';
+                  });
+                  console.log(
+                    'Selected Emotion Labels:',
+                    selectedEmotionLabels,
+                  );
+
+                  const filteredVideos = videoData.filter(video => {
+                    return selectedEmotionLabels.some(label => {
+                      return video.emotionStickers.some(emotion => {
+                        const parsedEmotion = JSON.parse(emotion);
+                        console.log("test:", parsedEmotion.sentiment === label);
+                        return (
+                          parsedEmotion.sentiment.toLowerCase() ===
+                          label.toLowerCase()
+                        );
+                        
+                      });
+                    });
+                  });
+                  setVideos(filteredVideos);
+                }
+              }}
+              renderSelectedItem={renderSelectedItem}
+            />
+          )}
         </View>
         {videos !== null
           ? videos.map((video: VideoData) => {
@@ -564,20 +590,29 @@ const ViewRecordings = () => {
                           }
                         })}
                       </View>
+                      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                        {video.emotionStickers.map(key => {
+                          const sentiment = JSON.parse(key).sentiment;
+                          const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
+
+                          return (
+                            <View>
+                              <Tooltip title={sentiment}>
+                                {imageSource && (
+                                  <Image
+                                    style={{height: 60, width: 60}}
+                                    source={imageSource}
+                                  />
+                                )}
+                              </Tooltip>
+                            </View>
+                          );
+                        })}
+                      </View>
                     </View>
                     {/* if textcomment length is does not equal 0, add an icon */}
 
                     <View style={styles.buttonContainer}>
-                      {/* <Button
-                        buttonStyle={styles.btnStyle}
-                        title="View Video"
-                        onPress={() =>
-                          navigation.navigate('Fullscreen Video', {
-                            id: video._id,
-                          })
-                        }
-                      />
-                      <View style={styles.space} /> */}
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Review"
