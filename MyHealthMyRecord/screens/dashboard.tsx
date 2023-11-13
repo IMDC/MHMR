@@ -22,6 +22,9 @@ function Dashboard() {
 
   const [auth, setAuth] = useState('');
 
+  /**
+   * Set auth state with a Bearer type authorization token
+   */
   const getAuth = async () => {
     let headersList = {
       "Content-Type": "application/x-www-form-urlencoded"
@@ -41,7 +44,9 @@ function Dashboard() {
     console.log("new auth token set");
   }
 
-  /* binary encoding of audio file works */
+  /**
+   * Get binary version of audio file and call transcribeAudio on all files in MHMR/audio folder on device
+   */
   const getBinaryAudio = async () => {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
     const audioFiles = RNFS.readDir(audioFolderPath);
@@ -72,6 +77,10 @@ function Dashboard() {
 });
   }
 
+  /**
+   * Transcribe an audio file by sending request to IBM speech-to-text service
+   * @param body - The audio file to transcribe
+   */
   const transcribeAudio = async (body: any) => {
     axios
       .post(
@@ -176,6 +185,10 @@ function Dashboard() {
     });
   };
 
+  /**
+   * Convert a video to a .wav type audio file and save it in the MHMR/audio folder on the device
+   * @param video VideoData object
+   */
   const convertToAudio = (video: VideoData) => {
     console.log('convert to audio');
     const mp3FileName =

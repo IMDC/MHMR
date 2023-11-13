@@ -228,7 +228,9 @@ const TextComments = () => {
             currentTime[0] = data.currentTime;
           }}
         />
-        <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment[0]}</Text>
+        {overlayComment[0] != '' ? (
+          <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlayComment[0]}</Text>
+        ) : null}
       </View>
       <Input
         ref={input}
@@ -316,7 +318,7 @@ const TextComments = () => {
                       style={styles.row}>
                       <TouchableOpacity
                         onPress={() => seekToTimestamp(c.timestamp)}
-                        >
+                      >
                         <Text key={c.id} style={styles.textStyle}>
                           {secondsToHms(c.timestamp)} - {c.text}
                         </Text>
