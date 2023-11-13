@@ -14,6 +14,7 @@ export class VideoData extends Realm.Object<VideoData> {
   keywords!: Realm.List<string>;
   painScale!: Realm.List<string>;
   isConverted!: boolean;
+  transcript!: Realm.List<string>;
   //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
   static schema = {
@@ -32,6 +33,7 @@ export class VideoData extends Realm.Object<VideoData> {
       keywords: {type: 'mixed[]', default: []},
       painScale: { type: 'string[]', default: [] },
       isConverted: {type: 'bool', default: false},
+      transcript: {type: 'mixed[]', default: []},
     },
   };
 }
@@ -39,4 +41,5 @@ export class VideoData extends Realm.Object<VideoData> {
 export const {RealmProvider, useRealm, useObject, useQuery} =
   createRealmContext({
     schema: [VideoData.schema],
+    deleteRealmIfMigrationNeeded: true,
   });
