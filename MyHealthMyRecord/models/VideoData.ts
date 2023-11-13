@@ -39,4 +39,5 @@ export class VideoData extends Realm.Object<VideoData> {
 export const {RealmProvider, useRealm, useObject, useQuery} =
   createRealmContext({
     schema: [VideoData.schema],
+    deleteRealmIfMigrationNeeded: true,
   });
