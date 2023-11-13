@@ -13,6 +13,7 @@ export class VideoData extends Realm.Object<VideoData> {
   emotionStickers!: Realm.List<string>;
   keywords!: Realm.List<string>;
   painScale!: Realm.List<string>;
+  isConverted!: boolean;
   //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
   static schema = {
@@ -29,7 +30,8 @@ export class VideoData extends Realm.Object<VideoData> {
       locations: {type: 'mixed[]', default: []},
       emotionStickers: {type: 'string[]', default: []},
       keywords: {type: 'mixed[]', default: []},
-      painScale: {type: 'string[]', default: []},
+      painScale: { type: 'string[]', default: [] },
+      isConverted: {type: 'bool', default: false},
     },
   };
 }

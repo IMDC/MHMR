@@ -294,6 +294,7 @@ const RecordVideo = () => {
         keywords: keywordInit,
         locations: locationInit,
         painScale: painscaleInit,
+        isConverted: false,
       });
     });
   };
@@ -410,7 +411,7 @@ const RecordVideo = () => {
                 type="solid"
                 onPress={() => {
                   saveVideo(videoSource.path);
-                  console.log(painscaleRef);
+                  // console.log(painscaleRef);
                 }}>
                 Save Video
                 <Icon name="save" color="white" />
