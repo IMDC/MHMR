@@ -236,23 +236,38 @@ const RecordVideo = () => {
     }
   }
   const keywordRef = [
-    { id: new Realm.BSON.ObjectID(), title: 'None', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Chronic', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Weak', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Depression', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Pain', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Fever', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Wellness', checked: false },
+    {id: new Realm.BSON.ObjectID(), value: 1, title: 'None', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 2, title: 'Chronic', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 3, title: 'Weak', checked: false},
+    {
+      id: new Realm.BSON.ObjectID(),
+      value: 4,
+      title: 'Depression',
+      checked: false,
+    },
+    {id: new Realm.BSON.ObjectID(), value: 5, title: 'Pain', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 6, title: 'Fever', checked: false},
+    {
+      id: new Realm.BSON.ObjectID(),
+      value: 7,
+      title: 'Wellness',
+      checked: false,
+    },
   ];
 
   const locationRef = [
-    { id: new Realm.BSON.ObjectID(), title: 'Home', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Work', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'School', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Park', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Indoors', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Outdoors', checked: false },
-    { id: new Realm.BSON.ObjectID(), title: 'Other', checked: false },
+    {id: new Realm.BSON.ObjectID(), value: 1, title: 'Home', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 2, title: 'Work', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 3, title: 'School', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 4, title: 'Park', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 5, title: 'Indoors', checked: false},
+    {
+      id: new Realm.BSON.ObjectID(),
+      value: 6,
+      title: 'Outdoors',
+      checked: false,
+    },
+    {id: new Realm.BSON.ObjectID(), value: 7, title: 'Other', checked: false},
   ];
 
   const painscaleRef = [
@@ -306,6 +321,7 @@ const RecordVideo = () => {
         keywords: keywordInit,
         locations: locationInit,
         painScale: painscaleInit,
+        isConverted: false,
       });
     });
   };
@@ -422,7 +438,7 @@ const RecordVideo = () => {
                 type="solid"
                 onPress={() => {
                   saveVideo(videoSource.path);
-                  console.log(painscaleRef);
+                  // console.log(painscaleRef);
                 }}>
                 Save Video
                 <Icon name="save" color="white" />

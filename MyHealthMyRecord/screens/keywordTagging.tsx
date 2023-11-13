@@ -85,13 +85,7 @@ const KeywordTagging = () => {
     }
   };
 
-  // function checkBoxFunc(id: any) {
-  //   console.log(id);
-  //   const textTag: any = [...category];
-  //   console.log('texttag:', textTag);
-  //   textTag[id].checked = !textTag[id].checked;
-  //   setCategory(textTag);
-  // }
+
   function saveKeywords() {
     const keywords: any = [];
     category.map((item: any) => {
@@ -103,7 +97,6 @@ const KeywordTagging = () => {
         video.keywords! = keywords;
       });
     }
-    // navigation.goBack();
   }
 
   function checkBoxFunc(id: any) {
