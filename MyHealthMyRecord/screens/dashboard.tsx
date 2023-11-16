@@ -16,11 +16,12 @@ import { Button, Icon, CheckBox } from '@rneui/themed';
 import RNFS from 'react-native-fs';
 import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
 import { base64 } from "rfc4648";
+import Config from 'react-native-config';
 
 
 function Dashboard() {
 
-   const [checked, setChecked] = React.useState(false);
+  const [checked, setChecked] = React.useState(false);
 
   const [auth, setAuth] = useState('');
 
@@ -32,7 +33,7 @@ function Dashboard() {
       "Content-Type": "application/x-www-form-urlencoded"
     }
 
-    let bodyContent = "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey="+Config.API_KEY_SPEECH_TO_TEXT;
+    let bodyContent = "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=" + Config.API_KEY_SPEECH_TO_TEXT;
 
     let reqOptions = {
       url: "https://iam.cloud.ibm.com/identity/token",
@@ -45,38 +46,26 @@ function Dashboard() {
     setAuth(response.data.token_type + ' ' + response.data.access_token);
     console.log("new auth token set");
   }
-
+  
   /**
    * Get binary version of audio file and call transcribeAudio on all files in MHMR/audio folder on device
    */
-  const getBinaryAudio = async () => {
+  const getTranscript = async (audioFileName: any) => {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
     const audioFiles = RNFS.readDir(audioFolderPath);
 
-    const getPath = RNFS.DocumentDirectoryPath + '/MHMR/audio/audio-file.flac';
-    const savePath = RNFS.DocumentDirectoryPath + '/MHMR/audio/test.flac';
-    const testPath = RNFS.DocumentDirectoryPath + '/MHMR/audio/VisionCamera-20230801_0812341816270566387200576.wav';
-
-    const wav = RNFS.DocumentDirectoryPath + '/MHMR/audio/VisionCamera-20230801_1251014444004142223593130.wav';
-    ///data/data/com.myhealthmyrecord/files/MHMR/audio/VisionCamera-20230801_1251014444004142223593130.wav
-/*     RNFS.readFile(wav, 'base64').then(data => {
-      console.log(data.substring(0, 45), ', ', data.substring(data.length - 5));
+    /*     (await audioFiles).map(f => {
+          if (f.isFile()) {
+            //var path = audioFolderPath + '/' + f.name;
+            console.log(f.name, f.path, f.size); */
+    RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64').then(data => {
+      console.log(data.substring(0, 5), ', ', data.substring(data.length - 5));
       transcribeAudio(base64.parse(data));
       //RNFS.writeFile(savePath, data, 'base64');
-    }); */
-
-    (await audioFiles).map(f => {
-      if (f.isFile()) {
-        //var path = audioFolderPath + '/' + f.name;
-        console.log(f.name, f.path, f.size);
-        RNFS.readFile(f.path, 'base64').then(data => {
-          console.log(data.substring(0,5), ', ', data.substring(data.length - 5));
-          transcribeAudio(base64.parse(data));
-          //RNFS.writeFile(savePath, data, 'base64');
-        });
+    });
     console.log('done');
-  }
-});
+    //}
+    //});
   }
 
   /**
@@ -104,6 +93,7 @@ function Dashboard() {
         console.log(err.response.headers);
         if (err.response.status == 401) {
           console.log('need to get new auth token');
+          getAuth();
         }
       });
   }
@@ -167,7 +157,7 @@ function Dashboard() {
       '/' +
       video.filename.replace('.mp4', '') +
       '.mp3';
-      const wavFileName =
+    const wavFileName =
       // 'file://' +
       audioFolderPath +
       '/' +
@@ -203,20 +193,20 @@ function Dashboard() {
   const FSInfoResult = RNFS.getFSInfo();
   console.log("space: ", (await FSInfoResult).totalSpace, (await FSInfoResult).freeSpace);
   */
-  
+
   const [checkedVideos, setCheckedVideos] = React.useState(new Set());
-  
-   const toggleVideoChecked = videoId => {
-     const updatedCheckedVideos = new Set(checkedVideos);
 
-     if (updatedCheckedVideos.has(videoId)) {
-       updatedCheckedVideos.delete(videoId);
-     } else {
-       updatedCheckedVideos.add(videoId);
-     }
+  const toggleVideoChecked = videoId => {
+    const updatedCheckedVideos = new Set(checkedVideos);
 
-     setCheckedVideos(updatedCheckedVideos);
-   };
+    if (updatedCheckedVideos.has(videoId)) {
+      updatedCheckedVideos.delete(videoId);
+    } else {
+      updatedCheckedVideos.add(videoId);
+    }
+
+    setCheckedVideos(updatedCheckedVideos);
+  };
 
   onPressTouch = () => {
     scrollRef.current?.scrollTo({
@@ -248,46 +238,50 @@ function Dashboard() {
       <Button onPress={getBinaryAudio}>get binary</Button>
       <Button onPress={transcribeAudio}>transcribe audio</Button>
       <Button onPress={cognosSession}>cognos session</Button> */}
-      <ScrollView style={{marginTop: 5}} ref={scrollRef}>
-        
-        {videos !== null ? videos.map((video: VideoData) => {
-          const isChecked = checkedVideos.has(video._id.toString());
-          return (
-            <View>
-              {buttonPressed ? (
-                <View style={styles.container} key={video._id.toString()}>
-                  <View style={{justifyContent: 'center', alignContent: 'center',}}>
-                    <CheckBox
-                      checked={isChecked}
-                      onPress={() => {
-                        toggleVideoChecked(video._id.toString());
-                        convertToAudio(video);
-                      }}
-                    />
-                  </View>
 
-                  <View style={styles.thumbnail}>
-                    <ImageBackground
-                      style={{height: '100%', width: '100%'}}
-                      source={{
-                        uri: 'file://' + MHMRfolderPath + '/' + video.filename,
-                      }}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate('Fullscreen Video', {
-                            id: video._id,
-                          })
-                        }>
-                        <Icon
-                          style={{height: 240, justifyContent: 'center'}}
-                          name="play-sharp"
-                          type="ionicon"
-                          color="black"
-                          size={40}
-                        />
-                      </TouchableOpacity>
-                    </ImageBackground>
-                    {/* <VideoPlayer
+      <ScrollView style={{marginTop: 5}} ref={scrollRef}>
+
+      {videos !== null ? videos.map((video: VideoData) => {
+        const isChecked = checkedVideos.has(video._id.toString());
+        return (
+          <View>
+            {buttonPressed ? (
+              <View style={styles.container} key={video._id.toString()}>
+                <View style={{ justifyContent: 'center', alignContent: 'center', }}>
+                  <CheckBox
+                    checked={isChecked}
+                    onPress={() => {
+                      toggleVideoChecked(video._id.toString());
+                      convertToAudio(video);
+                      getAuth();
+                      getTranscript(video.filename.replace('.mp4', '') +
+                      '.wav');
+                    }}
+                  />
+                </View>
+
+                <View style={styles.thumbnail}>
+                  <ImageBackground
+                    style={{ height: '100%', width: '100%' }}
+                    source={{
+                      uri: 'file://' + MHMRfolderPath + '/' + video.filename,
+                    }}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('Fullscreen Video', {
+                          id: video._id,
+                        })
+                      }>
+                      <Icon
+                        style={{ height: 240, justifyContent: 'center' }}
+                        name="play-sharp"
+                        type="ionicon"
+                        color="black"
+                        size={40}
+                      />
+                    </TouchableOpacity>
+                  </ImageBackground>
+                  {/* <VideoPlayer
                       style={{}}
                       source={{
                         uri: MHMRfolderPath + '/' + video.filename,
@@ -304,97 +298,97 @@ function Dashboard() {
                         })
                       }
                     /> */}
-                  </View>
-                  <View style={styles.rightContainer}>
-                    <View>
-                      <Text
-                        style={{
-                          fontSize: 24,
-                          color: 'black',
-                          fontWeight: 'bold',
-                        }}>
-                        {video.title}
-                        {video.textComments.length !== 0 ? (
-                          <Icon
-                            name="chatbox-ellipses"
-                            type="ionicon"
-                            color="black"
-                            size={22}
-                            style={{alignSelf: 'flex-start', paddingLeft: 5}}
-                          />
-                        ) : null}
-                      </Text>
-                      <Text style={{fontSize: 20}}>
-                        {video.datetimeRecorded?.toLocaleString()}
-                      </Text>
-                      {/* map temparray and display the keywords here */}
-                      <View style={{flexDirection: 'row'}}>
-                        {video.keywords.map((key: string) => {
-                          if (JSON.parse(key).checked) {
-                            return (
-                              <Chip
-                                key={JSON.parse(key).title}
-                                style={{margin: 2}}
-                                textStyle={{fontSize: 16}}
-                                mode="outlined"
-                                compact={true}>
-                                {JSON.parse(key).title}
-                              </Chip>
-                            );
-                          }
-                        })}
-                        {video.locations.map((key: string) => {
-                          if (JSON.parse(key).checked) {
-                            return (
-                              <Chip
-                                key={JSON.parse(key).title}
-                                textStyle={{fontSize: 16}}
-                                style={{margin: 2}}
-                                mode="outlined"
-                                compact={true}>
-                                {JSON.parse(key).title}
-                              </Chip>
-                            );
-                          }
-                        })}
-                      </View>
+                </View>
+                <View style={styles.rightContainer}>
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        color: 'black',
+                        fontWeight: 'bold',
+                      }}>
+                      {video.title}
+                      {video.textComments.length !== 0 ? (
+                        <Icon
+                          name="chatbox-ellipses"
+                          type="ionicon"
+                          color="black"
+                          size={22}
+                          style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
+                        />
+                      ) : null}
+                    </Text>
+                    <Text style={{ fontSize: 20 }}>
+                      {video.datetimeRecorded?.toLocaleString()}
+                    </Text>
+                    {/* map temparray and display the keywords here */}
+                    <View style={{ flexDirection: 'row' }}>
+                      {video.keywords.map((key: string) => {
+                        if (JSON.parse(key).checked) {
+                          return (
+                            <Chip
+                              key={JSON.parse(key).title}
+                              style={{ margin: 2 }}
+                              textStyle={{ fontSize: 16 }}
+                              mode="outlined"
+                              compact={true}>
+                              {JSON.parse(key).title}
+                            </Chip>
+                          );
+                        }
+                      })}
+                      {video.locations.map((key: string) => {
+                        if (JSON.parse(key).checked) {
+                          return (
+                            <Chip
+                              key={JSON.parse(key).title}
+                              textStyle={{ fontSize: 16 }}
+                              style={{ margin: 2 }}
+                              mode="outlined"
+                              compact={true}>
+                              {JSON.parse(key).title}
+                            </Chip>
+                          );
+                        }
+                      })}
                     </View>
-                    <Text>{video.filename}</Text>
-                    <View style={styles.buttonContainer}>
-                      {/* <Button
+                  </View>
+                  <Text>{video.filename}</Text>
+                  <View style={styles.buttonContainer}>
+                    {/* <Button
                         buttonStyle={styles.btnStyle}
                         title="Convert to Audio"
                         onPress={() => convertToAudio(video)}
                       /> */}
-                      <View style={styles.space} />
-                      <View style={styles.space} />
-                    </View>
+                    <View style={styles.space} />
+                    <View style={styles.space} />
                   </View>
                 </View>
-              ) : (
-                <View style={styles.container} key={video._id.toString()}>
-                  <View style={styles.thumbnail}>
-                    <ImageBackground
-                      style={{height: '100%', width: '100%'}}
-                      source={{
-                        uri: 'file://' + MHMRfolderPath + '/' + video.filename,
-                      }}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate('Fullscreen Video', {
-                            id: video._id,
-                          })
-                        }>
-                        <Icon
-                          style={{height: 240, justifyContent: 'center'}}
-                          name="play-sharp"
-                          type="ionicon"
-                          color="black"
-                          size={40}
-                        />
-                      </TouchableOpacity>
-                    </ImageBackground>
-                    {/* <VideoPlayer
+              </View>
+            ) : (
+              <View style={styles.container} key={video._id.toString()}>
+                <View style={styles.thumbnail}>
+                  <ImageBackground
+                    style={{ height: '100%', width: '100%' }}
+                    source={{
+                      uri: 'file://' + MHMRfolderPath + '/' + video.filename,
+                    }}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('Fullscreen Video', {
+                          id: video._id,
+                        })
+                      }>
+                      <Icon
+                        style={{ height: 240, justifyContent: 'center' }}
+                        name="play-sharp"
+                        type="ionicon"
+                        color="black"
+                        size={40}
+                      />
+                    </TouchableOpacity>
+                  </ImageBackground>
+                  {/* <VideoPlayer
                       style={{}}
                       source={{
                         uri: MHMRfolderPath + '/' + video.filename,
@@ -411,77 +405,78 @@ function Dashboard() {
                         })
                       }
                     /> */}
-                  </View>
-                  <View style={styles.rightContainer}>
-                    <View>
-                      <Text
-                        style={{
-                          fontSize: 24,
-                          color: 'black',
-                          fontWeight: 'bold',
-                        }}>
-                        {video.title}
-                        {video.textComments.length !== 0 ? (
-                          <Icon
-                            name="chatbox-ellipses"
-                            type="ionicon"
-                            color="black"
-                            size={22}
-                            style={{alignSelf: 'flex-start', paddingLeft: 5}}
-                          />
-                        ) : null}
-                      </Text>
-                      <Text style={{fontSize: 20}}>
-                        {video.datetimeRecorded?.toLocaleString()}
-                      </Text>
-                      {/* map temparray and display the keywords here */}
-                      <View style={{flexDirection: 'row'}}>
-                        {video.keywords.map((key: string) => {
-                          if (JSON.parse(key).checked) {
-                            return (
-                              <Chip
-                                key={JSON.parse(key).title}
-                                style={{margin: 2}}
-                                textStyle={{fontSize: 16}}
-                                mode="outlined"
-                                compact={true}>
-                                {JSON.parse(key).title}
-                              </Chip>
-                            );
-                          }
-                        })}
-                        {video.locations.map((key: string) => {
-                          if (JSON.parse(key).checked) {
-                            return (
-                              <Chip
-                                key={JSON.parse(key).title}
-                                textStyle={{fontSize: 16}}
-                                style={{margin: 2}}
-                                mode="outlined"
-                                compact={true}>
-                                {JSON.parse(key).title}
-                              </Chip>
-                            );
-                          }
-                        })}
-                      </View>
+                </View>
+                <View style={styles.rightContainer}>
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        color: 'black',
+                        fontWeight: 'bold',
+                      }}>
+                      {video.title}
+                      {video.textComments.length !== 0 ? (
+                        <Icon
+                          name="chatbox-ellipses"
+                          type="ionicon"
+                          color="black"
+                          size={22}
+                          style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
+                        />
+                      ) : null}
+                    </Text>
+                    <Text style={{ fontSize: 20 }}>
+                      {video.datetimeRecorded?.toLocaleString()}
+                    </Text>
+                    {/* map temparray and display the keywords here */}
+                    <View style={{ flexDirection: 'row' }}>
+                      {video.keywords.map((key: string) => {
+                        if (JSON.parse(key).checked) {
+                          return (
+                            <Chip
+                              key={JSON.parse(key).title}
+                              style={{ margin: 2 }}
+                              textStyle={{ fontSize: 16 }}
+                              mode="outlined"
+                              compact={true}>
+                              {JSON.parse(key).title}
+                            </Chip>
+                          );
+                        }
+                      })}
+                      {video.locations.map((key: string) => {
+                        if (JSON.parse(key).checked) {
+                          return (
+                            <Chip
+                              key={JSON.parse(key).title}
+                              textStyle={{ fontSize: 16 }}
+                              style={{ margin: 2 }}
+                              mode="outlined"
+                              compact={true}>
+                              {JSON.parse(key).title}
+                            </Chip>
+                          );
+                        }
+                      })}
                     </View>
-                    <Text>{video.filename}</Text>
-                    <View style={styles.buttonContainer}>
-                      {/* <Button
+                  </View>
+                  <Text>{video.filename}</Text>
+                  <View style={styles.buttonContainer}>
+                    {/* <Button
                         buttonStyle={styles.btnStyle}
                         title="Convert to Audio"
                         onPress={() => convertToAudio(video)}
                       /> */}
-                      <View style={styles.space} />
-                      <View style={styles.space} />
-                    </View>
+                    <View style={styles.space} />
+                    <View style={styles.space} />
                   </View>
                 </View>
-              )}
-            </View>
-          ); }) : null}
-          {/* {
+              </View>
+            )}
+          </View>
+        );
+      }) : null}
+      {/* {
             buttonPressed
           ? videos.map((video: VideoData) => {
               // const videoURI = require(MHMRfolderPath + '/' + video.filename);
@@ -491,13 +486,13 @@ function Dashboard() {
               );
             })
           : null} */}
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
-            Scroll to Top
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+      <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPressTouch}>
+        <Text style={{ padding: 5, fontSize: 16, color: 'black' }}>
+          Scroll to Top
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
+    </View >
   );
 }
 const styles = StyleSheet.create({
