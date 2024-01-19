@@ -596,11 +596,12 @@ const DataAnalysis = () => {
   }
 
   function onPressTextSummary() {
-    setShowWordCloud(false);
+    navigation.navigate('Text Summary');
+    /* setShowWordCloud(false);
     setShowLineGraph(false);
     setShowBarGraph(false);
     setShowTextSummary(true);
-    setShowTextGraph(false);
+    setShowTextGraph(false); */
   }
 
   function onPressTextGraph() {
