@@ -70,8 +70,9 @@ const DataAnalysisBarGraph = () => {
             svg: {
                 onPressIn: () => {
                     console.log(wordFreqBarGraphData[index]);
-                    setWordSelected(index);
-                    navigation.navigate('DataAnalysisLineGraph', {wordFreqBarGraphData[wordSelected].label});
+                    wordSelected[0] = index;
+                    const wordLabel = wordFreqBarGraphData[wordSelected].label;
+                    navigation.navigate('Line Graph', {wordLabel});
                 },
                 onPressOut: () => {
                     setWordSelected(null);

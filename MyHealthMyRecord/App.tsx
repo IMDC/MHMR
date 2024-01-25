@@ -26,7 +26,7 @@ import Painscale from './screens/painscaleScreen';
 import Help from './screens/help';
 import Dashboard from './screens/dashboard';
 import DataAnalysis from './screens/dataAnalysis';
-import DataAnalysisBarGraph from './screens/dataAnalysis';
+import DataAnalysisBarGraph from './screens/dataAnalysisBarGraph';
 import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
 import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
@@ -62,7 +62,7 @@ function StackNav() {
 function DataAnalysisStack() {
   return (
     <Stack.Navigator initialRouteName="Analysis" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
-      <Stack.Screen name="Analysis" component={DataAnalysis} />
+      <Stack.Screen name="Data Analysis" component={DataAnalysis} />
       <Stack.Screen name="Bar Graph" component={DataAnalysisBarGraph} />
       <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
       <Stack.Screen name="Text Summary" component={DataAnalysisTextSummary} />
@@ -85,12 +85,12 @@ function App() {
             },
           }}>
           <Tab.Screen
-            name="Data Analysis"
+            name="Analysis"
             component={DataAnalysisStack}
             tabBarShowLabel={false}
             options={{
               headerShown: false,
-              tabBarLabel: 'Data Analysis',
+              tabBarLabel: 'Analysis',
               headerStyle: { backgroundColor: Styles.NavBarGrey },
               tabBarIcon: () => (
                 <Icon

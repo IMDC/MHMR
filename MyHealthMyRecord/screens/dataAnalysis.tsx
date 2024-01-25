@@ -572,27 +572,30 @@ const DataAnalysis = () => {
   const [showTextGraph, setShowTextGraph] = useState(false);
 
   function onPressWordCloud() {
-    setShowWordCloud(true);
+    navigation.navigate('Word Cloud');
+    /* setShowWordCloud(true);
     setShowLineGraph(false);
     setShowBarGraph(false);
     setShowTextSummary(false);
-    setShowTextGraph(false);
+    setShowTextGraph(false); */
   }
 
   function onPressLineGraph() {
-    setShowWordCloud(false);
+    navigation.navigate('Line Graph');
+    /* setShowWordCloud(false);
     setShowLineGraph(true);
     setShowBarGraph(false);
     setShowTextSummary(false);
-    setShowTextGraph(false);
+    setShowTextGraph(false); */
   }
 
   function onPressBarGraph() {
-    setShowWordCloud(false);
+    navigation.navigate('Bar Graph');
+    /* setShowWordCloud(false);
     setShowLineGraph(false);
     setShowBarGraph(true);
     setShowTextSummary(false);
-    setShowTextGraph(false);
+    setShowTextGraph(false); */
   }
 
   function onPressTextSummary() {
@@ -605,11 +608,12 @@ const DataAnalysis = () => {
   }
 
   function onPressTextGraph() {
-    setShowWordCloud(false);
+    navigation.navigate('Text Graph');
+    /* setShowWordCloud(false);
     setShowLineGraph(false);
     setShowBarGraph(false);
     setShowTextSummary(false);
-    setShowTextGraph(true);
+    setShowTextGraph(true); */
   }
 
   const route: any = useRoute();
