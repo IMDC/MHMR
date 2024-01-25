@@ -1,8 +1,8 @@
-import { useNavigation, ParamListBase } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {useNavigation, ParamListBase} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as React from 'react';
-import axios from "axios";
-import { useState } from 'react';
+import axios from 'axios';
+import {useState} from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -10,17 +10,15 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Chip, Dialog, Text, } from 'react-native-paper';
-import { VideoData, useRealm, useQuery } from '../models/VideoData';
-import { Button, Icon, CheckBox } from '@rneui/themed';
+import {Chip, Dialog, Text} from 'react-native-paper';
+import {VideoData, useRealm, useQuery, useObject} from '../models/VideoData';
+import {Button, Icon, CheckBox} from '@rneui/themed';
 import RNFS from 'react-native-fs';
-import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
-import { base64 } from "rfc4648";
+import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import {base64} from 'rfc4648';
 import Config from 'react-native-config';
 
-
 function Dashboard() {
-
   const [checked, setChecked] = React.useState(false);
 
   const [auth, setAuth] = useState('');
@@ -29,28 +27,42 @@ function Dashboard() {
    * Set auth state with a Bearer type authorization token
    */
   const getAuth = async () => {
-    let headersList = {
-      "Content-Type": "application/x-www-form-urlencoded"
+    try {
+      let headersList = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+
+      let bodyContent =
+        'grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=' +
+        Config.API_KEY_SPEECH_TO_TEXT;
+
+      let reqOptions = {
+        url: 'https://iam.cloud.ibm.com/identity/token',
+        method: 'POST',
+        headers: headersList,
+        data: bodyContent,
+      };
+
+      let response = await axios.request(reqOptions);
+      setAuth(response.data.token_type + ' ' + response.data.access_token);
+      console.log('New auth token set:', response.data.access_token);
+    } catch (error) {
+      console.error('Error getting auth token:', error.message);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('No response received. Request details:', error.request);
+      } else {
+        console.error('Error details:', error.message);
+      }
     }
+  };
 
-    let bodyContent = "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=" + Config.API_KEY_SPEECH_TO_TEXT;
-
-    let reqOptions = {
-      url: "https://iam.cloud.ibm.com/identity/token",
-      method: "POST",
-      headers: headersList,
-      data: bodyContent,
-    }
-
-    let response = await axios.request(reqOptions);
-    setAuth(response.data.token_type + ' ' + response.data.access_token);
-    console.log("new auth token set");
-  }
-  
   /**
    * Get binary version of audio file and call transcribeAudio on all files in MHMR/audio folder on device
    */
-  const getTranscript = async (audioFileName: any) => {
+  const getTranscript = async (audioFileName: any, _id: any) => {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
     const audioFiles = RNFS.readDir(audioFolderPath);
 
@@ -58,21 +70,27 @@ function Dashboard() {
           if (f.isFile()) {
             //var path = audioFolderPath + '/' + f.name;
             console.log(f.name, f.path, f.size); */
-    RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64').then(data => {
-      console.log(data.substring(0, 5), ', ', data.substring(data.length - 5));
-      transcribeAudio(base64.parse(data));
-      //RNFS.writeFile(savePath, data, 'base64');
-    });
+    RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64').then(
+      data => {
+        console.log(
+          data.substring(0, 5),
+          ', ',
+          data.substring(data.length - 5),
+        );
+        transcribeAudio(base64.parse(data), _id);
+        //RNFS.writeFile(savePath, data, 'base64');
+      },
+    );
     console.log('done');
     //}
     //});
-  }
+  };
 
   /**
    * Transcribe an audio file by sending request to IBM speech-to-text service
    * @param body - The audio file to transcribe
    */
-  const transcribeAudio = async (body: any) => {
+  const transcribeAudio = async (body: any, _id: any) => {
     axios
       .post(
         'https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize',
@@ -80,43 +98,63 @@ function Dashboard() {
         {
           headers: {
             Authorization: auth,
-            "Content-Type": "audio/wav",
+            'Content-Type': 'audio/wav',
           },
         },
       )
-      .then((data: any) => {
-        console.log(data);
-        console.log(data.data.results);
+      .then(response => {
+        const transcript =
+          response.data.results[0]?.alternatives[0]?.transcript || '';
+        const confidence =
+          response.data.results[0]?.alternatives[0]?.confidence || 0;
+        console.log('Transcript:', transcript);
+        console.log('Confidence:', confidence);
+        realm.write(() => {
+          // Assuming videoData is an array of video objects
+          const videoToUpdate = videoData.find(
+            video => video._id.toString() === _id,
+          );
+
+          if (videoToUpdate) {
+            // Update the transcript property within the specific video object
+            videoToUpdate.transcript = [transcript];
+
+            console.log('Realm write operation completed');
+          } else {
+            console.log('Could not find video to update in the array');
+          }
+        });
       })
       .catch((err: any) => {
-        console.log(err.response.data);
-        console.log(err.response.headers);
-        if (err.response.status == 401) {
-          console.log('need to get new auth token');
+        console.log('Error during transcription:', err.message || err);
+
+        if (err.response?.status === 401) {
+          console.log('Need to get a new auth token');
           getAuth();
         }
       });
-  }
+  };
 
   const cognosSession = async () => {
     var bodyFormData = new FormData();
     bodyFormData.append('expiresIn', 3600);
-    bodyFormData.append('webDomain', 'http://127.0.0.1:5500/connectWatson.html');
+    bodyFormData.append(
+      'webDomain',
+      'http://127.0.0.1:5500/connectWatson.html',
+    );
     axios
-      .post(
-        'https://dde-us-south.analytics.ibm.com/daas/v1/session',
-        {
-          headers: {
-            "authorization": "Basic <base64 158e9446-f8b4-4b7d-a909-1b3635ddb8f1:9d61b8972454239901863057b753424994391b0e>",
-            "accept": "application/json",
-            "Content-Type": "application/json"
-          },
-          data: bodyFormData,
+      .post('https://dde-us-south.analytics.ibm.com/daas/v1/session', {
+        headers: {
+          authorization:
+            'Basic <base64 158e9446-f8b4-4b7d-a909-1b3635ddb8f1:9d61b8972454239901863057b753424994391b0e>',
+          accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-      )
+        data: bodyFormData,
+      })
       .then((data: any) => {
         console.log(data);
-        //console.log(data.data.results);
+        console.log(data.data.results);
       })
       .catch((err: any) => {
         console.log(err.response);
@@ -126,8 +164,7 @@ function Dashboard() {
           console.log('need to get new auth token');
         }
       });
-  }
-
+  };
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [videos, setVideos] = React.useState<any | null>(null);
@@ -142,6 +179,7 @@ function Dashboard() {
     });
   };
   const realm = useRealm();
+
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
 
@@ -153,23 +191,20 @@ function Dashboard() {
     console.log('convert to audio');
     const mp3FileName =
       // 'file://' +
-      audioFolderPath +
-      '/' +
-      video.filename.replace('.mp4', '') +
-      '.mp3';
+      audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.mp3';
     const wavFileName =
       // 'file://' +
-      audioFolderPath +
-      '/' +
-      video.filename.replace('.mp4', '') +
-      '.wav';
+      audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
     console.log(mp3FileName);
     const mp4FileName =
-      // 'file://' + 
+      // 'file://' +
       MHMRfolderPath + '/' + video.filename;
 
     FFmpegKit.execute(
-      '-i ' + mp4FileName + ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' + wavFileName,
+      '-i ' +
+        mp4FileName +
+        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
+        wavFileName,
     ).then(async session => {
       const returnCode = await session.getReturnCode();
 
@@ -196,7 +231,7 @@ function Dashboard() {
 
   const [checkedVideos, setCheckedVideos] = React.useState(new Set());
 
-  const toggleVideoChecked = videoId => {
+  const toggleVideoChecked = (videoId: any) => {
     const updatedCheckedVideos = new Set(checkedVideos);
 
     if (updatedCheckedVideos.has(videoId)) {
@@ -234,54 +269,80 @@ function Dashboard() {
         </Button>
       )}
 
-      {/* <Button onPress={getAuth}>get auth</Button>
-      <Button onPress={getBinaryAudio}>get binary</Button>
-      <Button onPress={transcribeAudio}>transcribe audio</Button>
+      <Button onPress={getAuth}>get auth</Button>
+      {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
+      {/* <Button onPress={transcribeAudio}>transcribe audio</Button>
       <Button onPress={cognosSession}>cognos session</Button> */}
 
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
+        {videos !== null
+          ? videos.map((video: VideoData) => {
+             const isTranscriptEmpty = video => {
+               return video.transcript === undefined;
+             };
 
-      {videos !== null ? videos.map((video: VideoData) => {
-        const isChecked = checkedVideos.has(video._id.toString());
-        return (
-          <View>
-            {buttonPressed ? (
-              <View style={styles.container} key={video._id.toString()}>
-                <View style={{ justifyContent: 'center', alignContent: 'center', }}>
-                  <CheckBox
-                    checked={isChecked}
-                    onPress={() => {
-                      toggleVideoChecked(video._id.toString());
-                      convertToAudio(video);
-                      getAuth();
-                      getTranscript(video.filename.replace('.mp4', '') +
-                      '.wav');
-                    }}
-                  />
-                </View>
+              const transcriptIsEmpty = isTranscriptEmpty(video);
+              const isChecked = checkedVideos.has(video._id.toString());
+              return (
+                <View>
+                  <View style={styles.container} key={video._id.toString()}>
+                    {!buttonPressed ? (
+                      <View></View>
+                    ) : (
+                      <View
+                        style={{
+                          paddingTop: 100,
+                        }}>
+                        <CheckBox
+                          checked={isChecked}
+                          onPress={() => {
+                            if (!isChecked && !transcriptIsEmpty) {
+                              toggleVideoChecked(video._id.toString());
+                              convertToAudio(video);
+                              getAuth();
+                              getTranscript(
+                                video.filename.replace('.mp4', '') + '.wav',
+                                video._id.toString(),
+                              );
+                              console.log('checked');
+                            }
+                            else if (!isChecked && transcriptIsEmpty) {
+                              toggleVideoChecked(video._id.toString());
+                              console.log('else if checked');
+                            }
+                            else {
+                              toggleVideoChecked(video._id.toString());
+                              console.log('unchecked');
+                            }
+                          }}
+                          containerStyle={{backgroundColor: 'transparent'}}
+                        />
+                      </View>
+                    )}
 
-                <View style={styles.thumbnail}>
-                  <ImageBackground
-                    style={{ height: '100%', width: '100%' }}
-                    source={{
-                      uri: 'file://' + MHMRfolderPath + '/' + video.filename,
-                    }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate('Fullscreen Video', {
-                          id: video._id,
-                        })
-                      }>
-                      <Icon
-                        style={{ height: 240, justifyContent: 'center' }}
-                        name="play-sharp"
-                        type="ionicon"
-                        color="black"
-                        size={40}
-                      />
-                    </TouchableOpacity>
-                  </ImageBackground>
-                  {/* <VideoPlayer
+                    <View style={styles.thumbnail}>
+                      <ImageBackground
+                        style={{height: '100%', width: '100%'}}
+                        source={{
+                          uri:
+                            'file://' + MHMRfolderPath + '/' + video.filename,
+                        }}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('Fullscreen Video', {
+                              id: video._id,
+                            })
+                          }>
+                          <Icon
+                            style={{height: 240, justifyContent: 'center'}}
+                            name="play-sharp"
+                            type="ionicon"
+                            color="black"
+                            size={40}
+                          />
+                        </TouchableOpacity>
+                      </ImageBackground>
+                      {/* <VideoPlayer
                       style={{}}
                       source={{
                         uri: MHMRfolderPath + '/' + video.filename,
@@ -298,185 +359,84 @@ function Dashboard() {
                         })
                       }
                     /> */}
-                </View>
-                <View style={styles.rightContainer}>
-                  <View>
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        color: 'black',
-                        fontWeight: 'bold',
-                      }}>
-                      {video.title}
-                      {video.textComments.length !== 0 ? (
-                        <Icon
-                          name="chatbox-ellipses"
-                          type="ionicon"
-                          color="black"
-                          size={22}
-                          style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
-                        />
-                      ) : null}
-                    </Text>
-                    <Text style={{ fontSize: 20 }}>
-                      {video.datetimeRecorded?.toLocaleString()}
-                    </Text>
-                    {/* map temparray and display the keywords here */}
-                    <View style={{ flexDirection: 'row' }}>
-                      {video.keywords.map((key: string) => {
-                        if (JSON.parse(key).checked) {
-                          return (
-                            <Chip
-                              key={JSON.parse(key).title}
-                              style={{ margin: 2 }}
-                              textStyle={{ fontSize: 16 }}
-                              mode="outlined"
-                              compact={true}>
-                              {JSON.parse(key).title}
-                            </Chip>
-                          );
-                        }
-                      })}
-                      {video.locations.map((key: string) => {
-                        if (JSON.parse(key).checked) {
-                          return (
-                            <Chip
-                              key={JSON.parse(key).title}
-                              textStyle={{ fontSize: 16 }}
-                              style={{ margin: 2 }}
-                              mode="outlined"
-                              compact={true}>
-                              {JSON.parse(key).title}
-                            </Chip>
-                          );
-                        }
-                      })}
                     </View>
-                  </View>
-                  <Text>{video.filename}</Text>
-                  <View style={styles.buttonContainer}>
-                    {/* <Button
+                    <View style={styles.rightContainer}>
+                      <View>
+                        <Text
+                          style={{
+                            fontSize: 24,
+                            color: 'black',
+                            fontWeight: 'bold',
+                          }}>
+                          {video.title}
+                          {video.textComments.length !== 0 ? (
+                            <Icon
+                              name="chatbox-ellipses"
+                              type="ionicon"
+                              color="black"
+                              size={22}
+                              style={{
+                                alignSelf: 'flex-start',
+                                paddingLeft: 5,
+                              }}
+                            />
+                          ) : null}
+                        </Text>
+                        <Text style={{fontSize: 20}}>
+                          {video.datetimeRecorded?.toLocaleString()}
+                        </Text>
+                        {/* map temparray and display the keywords here */}
+                        <View style={{flexDirection: 'row'}}>
+                          {video.keywords.map((key: string) => {
+                            if (JSON.parse(key).checked) {
+                              return (
+                                <Chip
+                                  key={JSON.parse(key).title}
+                                  style={{margin: 2}}
+                                  textStyle={{fontSize: 16}}
+                                  mode="outlined"
+                                  compact={true}>
+                                  {JSON.parse(key).title}
+                                </Chip>
+                              );
+                            }
+                          })}
+                          {video.locations.map((key: string) => {
+                            if (JSON.parse(key).checked) {
+                              return (
+                                <Chip
+                                  key={JSON.parse(key).title}
+                                  textStyle={{fontSize: 16}}
+                                  style={{margin: 2}}
+                                  mode="outlined"
+                                  compact={true}>
+                                  {JSON.parse(key).title}
+                                </Chip>
+                              );
+                            }
+                          })}
+                        </View>
+                      </View>
+                      <View>
+                        <Text>Transcript: {video.transcript}</Text>
+                      </View>
+                      <Text>{video.filename}</Text>
+                      <View style={styles.buttonContainer}>
+                        {/* <Button
                         buttonStyle={styles.btnStyle}
                         title="Convert to Audio"
                         onPress={() => convertToAudio(video)}
                       /> */}
-                    <View style={styles.space} />
-                    <View style={styles.space} />
-                  </View>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.container} key={video._id.toString()}>
-                <View style={styles.thumbnail}>
-                  <ImageBackground
-                    style={{ height: '100%', width: '100%' }}
-                    source={{
-                      uri: 'file://' + MHMRfolderPath + '/' + video.filename,
-                    }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate('Fullscreen Video', {
-                          id: video._id,
-                        })
-                      }>
-                      <Icon
-                        style={{ height: 240, justifyContent: 'center' }}
-                        name="play-sharp"
-                        type="ionicon"
-                        color="black"
-                        size={40}
-                      />
-                    </TouchableOpacity>
-                  </ImageBackground>
-                  {/* <VideoPlayer
-                      style={{}}
-                      source={{
-                        uri: MHMRfolderPath + '/' + video.filename,
-                      }}
-                      paused={true}
-                      disableBack={true}
-                      // toggleResizeModeOnFullscreen={true}
-                      showOnStart={true}
-                      disableSeekButtons={true}
-                      isFullscreen={false}
-                      onEnterFullscreen={() =>
-                        navigation.navigate('Fullscreen Video', {
-                          id: video._id,
-                        })
-                      }
-                    /> */}
-                </View>
-                <View style={styles.rightContainer}>
-                  <View>
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        color: 'black',
-                        fontWeight: 'bold',
-                      }}>
-                      {video.title}
-                      {video.textComments.length !== 0 ? (
-                        <Icon
-                          name="chatbox-ellipses"
-                          type="ionicon"
-                          color="black"
-                          size={22}
-                          style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
-                        />
-                      ) : null}
-                    </Text>
-                    <Text style={{ fontSize: 20 }}>
-                      {video.datetimeRecorded?.toLocaleString()}
-                    </Text>
-                    {/* map temparray and display the keywords here */}
-                    <View style={{ flexDirection: 'row' }}>
-                      {video.keywords.map((key: string) => {
-                        if (JSON.parse(key).checked) {
-                          return (
-                            <Chip
-                              key={JSON.parse(key).title}
-                              style={{ margin: 2 }}
-                              textStyle={{ fontSize: 16 }}
-                              mode="outlined"
-                              compact={true}>
-                              {JSON.parse(key).title}
-                            </Chip>
-                          );
-                        }
-                      })}
-                      {video.locations.map((key: string) => {
-                        if (JSON.parse(key).checked) {
-                          return (
-                            <Chip
-                              key={JSON.parse(key).title}
-                              textStyle={{ fontSize: 16 }}
-                              style={{ margin: 2 }}
-                              mode="outlined"
-                              compact={true}>
-                              {JSON.parse(key).title}
-                            </Chip>
-                          );
-                        }
-                      })}
+                        <View style={styles.space} />
+                        <View style={styles.space} />
+                      </View>
                     </View>
                   </View>
-                  <Text>{video.filename}</Text>
-                  <View style={styles.buttonContainer}>
-                    {/* <Button
-                        buttonStyle={styles.btnStyle}
-                        title="Convert to Audio"
-                        onPress={() => convertToAudio(video)}
-                      /> */}
-                    <View style={styles.space} />
-                    <View style={styles.space} />
-                  </View>
                 </View>
-              </View>
-            )}
-          </View>
-        );
-      }) : null}
-      {/* {
+              );
+            })
+          : null}
+        {/* {
             buttonPressed
           ? videos.map((video: VideoData) => {
               // const videoURI = require(MHMRfolderPath + '/' + video.filename);
@@ -486,13 +446,13 @@ function Dashboard() {
               );
             })
           : null} */}
-      <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPressTouch}>
-        <Text style={{ padding: 5, fontSize: 16, color: 'black' }}>
-          Scroll to Top
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
-    </View >
+        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
+          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
+            Scroll to Top
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
 const styles = StyleSheet.create({
