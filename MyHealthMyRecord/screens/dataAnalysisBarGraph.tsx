@@ -63,7 +63,7 @@ const DataAnalysisBarGraph = () => {
     //const yTest = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
     /* on press functionality for word frequency bar graph */
-    const [wordSelected, setWordSelected] = useState<any>(null);
+    const wordSelected = useState<any>(null);
     const wordFreq = wordFreqBarGraphData.map(
         (item, index) => ({
             y: item,
@@ -71,11 +71,11 @@ const DataAnalysisBarGraph = () => {
                 onPressIn: () => {
                     console.log(wordFreqBarGraphData[index]);
                     wordSelected[0] = index;
-                    const wordLabel = wordFreqBarGraphData[wordSelected].label;
+                    const wordLabel = wordFreqBarGraphData[wordSelected[0]].label;
                     navigation.navigate('Line Graph', {wordLabel});
                 },
                 onPressOut: () => {
-                    setWordSelected(null);
+                    wordSelected[0] = null;
                 },
                 //fill: wordSelected === index ? '#55C45E' : 'rgba(134, 65, 244, 0.8)',
             }

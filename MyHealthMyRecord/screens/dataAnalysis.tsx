@@ -13,20 +13,6 @@ import { Dropdown } from 'react-native-element-dropdown';
 const DataAnalysis = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  const barFill = 'rgb(134, 65, 244)';
-  const barData = [
-    50,
-    10,
-    40,
-    95,
-    85,
-    0,
-    35,
-    53,
-    24,
-    50,
-  ];
-
   /* ======================================================================= */
   // Line graph stuff below
   /* ======================================================================= */
@@ -87,8 +73,6 @@ const DataAnalysis = () => {
       value: 9,
     },
   ]
-
-
 
   const timestamp1 = new Date('2023-10-25T04:55:30');
   const timestamp2 = new Date('2023-10-25T12:55:30');
@@ -520,8 +504,6 @@ const DataAnalysis = () => {
   ]
 
   const yTest = Array.from({ length: 15 }, (_, i) => i + 1);
-  //const yTest = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-  //const yTest = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
   /* on press functionality for word frequency bar graph */
   const [wordSelected, setWordSelected] = useState<any>(null);
@@ -573,47 +555,22 @@ const DataAnalysis = () => {
 
   function onPressWordCloud() {
     navigation.navigate('Word Cloud');
-    /* setShowWordCloud(true);
-    setShowLineGraph(false);
-    setShowBarGraph(false);
-    setShowTextSummary(false);
-    setShowTextGraph(false); */
   }
 
   function onPressLineGraph() {
     navigation.navigate('Line Graph');
-    /* setShowWordCloud(false);
-    setShowLineGraph(true);
-    setShowBarGraph(false);
-    setShowTextSummary(false);
-    setShowTextGraph(false); */
   }
 
   function onPressBarGraph() {
     navigation.navigate('Bar Graph');
-    /* setShowWordCloud(false);
-    setShowLineGraph(false);
-    setShowBarGraph(true);
-    setShowTextSummary(false);
-    setShowTextGraph(false); */
   }
 
   function onPressTextSummary() {
     navigation.navigate('Text Summary');
-    /* setShowWordCloud(false);
-    setShowLineGraph(false);
-    setShowBarGraph(false);
-    setShowTextSummary(true);
-    setShowTextGraph(false); */
   }
 
   function onPressTextGraph() {
     navigation.navigate('Text Graph');
-    /* setShowWordCloud(false);
-    setShowLineGraph(false);
-    setShowBarGraph(false);
-    setShowTextSummary(false);
-    setShowTextGraph(true); */
   }
 
   const route: any = useRoute();
@@ -623,523 +580,14 @@ const DataAnalysis = () => {
   //   const video: any = useObject('VideoData', id);
   return (
     <View>
-      <View style={{ height: '87%' }}>
-        {showWordCloud && (
-          <View id="wordcloud">
-            <Text>test1</Text>
-          </View>
-        )}
-        {showLineGraph && (
-          /*           
-                    <View id="linegraph">
-                      <YAxis
-                        data={lineChartData}
-                        // contentInset={contentInset}
-                        svg={{
-                          fill: 'grey',
-                          fontSize: 10,
-                        }}
-                        numberOfTicks={10}
-                      // formatLabel={value => `${value}ºC`}
-                      />
-                      <LineChart
-                        style={{ height: '100%', padding: 40 }}
-                        data={lineChartData}
-                        svg={{ stroke: 'rgb(134, 65, 244)' }}
-                        contentInset={{ top: 20, bottom: 20 }}>
-                        <Grid />
-                      </LineChart>
-                    </View>
-                      */
 
-          /*   <View>
-              <Text style={{ padding: 20, fontSize: 20 }}>Word Count of "{wordFreqBarGraphData[wordSelected].label}" over time</Text>
-              <View id="linegraph" style={{ height: 600, padding: 20, flexDirection: 'row' }}>
-  
-                <YAxis
-                  data={freqMonth}
-                  yAccessor={({ item }) => item.value}
-                  style={{ marginBottom: xAxisHeight }}
-                  contentInset={verticalContentInset}
-                  svg={axesSvg}
-                />
-  
-                <ScrollView horizontal={true}>
-                  <View style={{ flex: 1, marginLeft: 10, marginRight: 10, width: windowWidth }}>
-                    <LineChart
-                      style={{ flex: 1 }}
-                      data={freqMonth}
-                      yAccessor={({ item }) => item.value}
-                      contentInset={verticalContentInset}
-                      svg={{ stroke: 'rgb(134, 65, 244)' }}
-                    >
-                      <Grid />
-                    </LineChart>
-                    <XAxis
-                      style={{ marginHorizontal: -40, height: xAxisHeight }}
-                      data={freqMonth}
-                      formatLabel={(value, index) => monthAbrev[(freqMonth[index].label).getMonth()]}
-                      contentInset={{ left: 50, right: 50 }}
-                      svg={axesSvg}
-                    />
-                  </View>
-                </ScrollView>
-  
-              </View>
-            </View> 
-   */
-          <View>
-            <Text style={{ padding: 20, fontSize: 20 }}>Word Count of "{wordFreqBarGraphData[wordSelected].label}" over time</Text>
-            <View id="linegraph" style={{ height: 600, padding: 20, flexDirection: 'row' }}>
-
-              <YAxis
-                data={freqDay}
-                yAccessor={({ item }) => item.value}
-                style={{ marginBottom: xAxisHeight }}
-                contentInset={verticalContentInset}
-                svg={axesSvg}
-              />
-
-              <ScrollView horizontal={true}>
-                <View style={{ flex: 1, marginLeft: 10, marginRight: 10, width: windowWidth * 1.5 }}>
-                  <LineChart
-                    style={{ flex: 1 }}
-                    data={freqDayArray[date]}
-                    yAccessor={({ item }) => item.value}
-                    xScale={scale.scaleTime}
-                    contentInset={verticalContentInset}
-                    svg={{ stroke: 'rgb(134, 65, 244)', strokeWidth: 5 }}
-                  >
-                    <Svg belowChart={true}>
-                      {/* day/night - 12 hour */}
-                      {segementDay == '12' && (
-                        <Rect
-                          x="0%"
-                          y="0"
-                          width="52%"
-                          height="100%"
-                          fill='rgb(194, 200, 209)'
-                        />
-                      )}
-                      {/* 6 hour */}
-                      {segementDay == '6' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                        </>
-                      )}
-                      {/* 3 hour */}
-                      {segementDay == '3' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="26%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="77%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                        </>
-                      )}
-                      {/* 1 hour */}
-                      {segementDay == '1' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="5.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="9.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="18%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="26.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="35%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="43.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="60.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="69%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="77.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="86%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                          <Rect
-                            x="94.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill='rgb(194, 200, 209)' />
-                        </>
-                      )}
-                    </Svg>
-                    <Grid />
-                  </LineChart>
-                  <XAxis
-                    style={{ marginHorizontal: -40, height: xAxisHeight }}
-                    data={freqDay}
-                    scale={scale.scaleTime}
-                    formatLabel={(value, index) => hours[freqDay[index].label]}
-                    labelStyle={{ margin: 5 }}
-                    contentInset={{ left: 50, right: 50 }}
-                    svg={axesSvg}
-                  />
-                </View>
-              </ScrollView>
-
-            </View>
-
-            <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
-              <Button
-                title="Previous"
-                style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
-                icon={{
-                  name: 'arrow-left',
-                  type: 'font-awesome',
-                  size: 15,
-                  color: 'white',
-                }}
-                onPress={() => {
-                  if (date > 0) {
-                    setDateValue(date-1);
-                  } else {
-                    console.log("There is no previous date");
-                  }
-                }}
-              />
-              <Dropdown
-                data={dateOptions}
-                maxHeight={300}
-                style={{ width: 400 }}
-                placeholderStyle={{ fontSize: 20 }}
-                selectedTextStyle={{ fontSize: 20 }}
-                labelField="label"
-                valueField="value"
-                onChange={item => {
-                  setDateValue(item.value);
-                }}
-              />
-              <Button
-                title="Next"
-                style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
-                iconPosition='right'
-                icon={{
-                  name: 'arrow-right',
-                  type: 'font-awesome',
-                  size: 15,
-                  color: 'white',
-                }}
-                onPress={() => {
-                  if (date < dateOptions.length-1) {
-                    setDateValue(date+1);
-                  } else {
-                    console.log("There is no next date");
-                  }
-                }}
-              />
-            </View>
-
-            <Text style={{ fontSize: 25, marginLeft: 20, marginTop: 20 }}>Filter and Sort</Text>
-            <View style={{ flexDirection: 'row', marginLeft: 20 }}>
-              <View id="period-dropdown" style={{ padding: 10 }}>
-                <Text style={{ fontSize: 20 }}>Select Period: </Text>
-                <Dropdown
-                  data={periodOptions}
-                  maxHeight={300}
-                  style={{ width: 200 }}
-                  labelField="label"
-                  valueField="value"
-                  onChange={item => {
-                    setPeriodValue(item.value);
-                  }}
-                />
-              </View>
-              {periodValue == '1' && (
-                <View id="segmentDay-dropdown" style={{ padding: 10 }}>
-                  <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                  <Dropdown
-                    data={segementDayOptions}
-                    //maxHeight={300}
-                    style={{ width: 200 }}
-                    labelField="label"
-                    valueField="value"
-                    onChange={item => {
-                      setSegementDayValue(item.value);
-                    }}
-                  />
-                </View>
-              )}
-              {periodValue == '2' && (
-                <View id="segmentWeek-dropdown" style={{ padding: 10 }}>
-                  <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                  <Dropdown
-                    data={segementWeekOptions}
-                    //maxHeight={300}
-                    style={{ width: 200 }}
-                    labelField="label"
-                    valueField="value"
-                    onChange={item => {
-                      setSegementWeekValue(item.value);
-                    }}
-                  />
-                </View>
-              )}
-              {periodValue == '3' && (
-                <View id="segmentMonth-dropdown" style={{ padding: 10 }}>
-                  <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                  <Dropdown
-                    data={segementMonthOptions}
-                    //maxHeight={300}
-                    style={{ width: 200 }}
-                    labelField="label"
-                    valueField="value"
-                    onChange={item => {
-                      setSegementMonthValue(item.value);
-                    }}
-                  />
-                </View>
-              )}
-            </View>
-
-          </View>
-
-        )}
-
-        {showBarGraph && (
-          <View id="bargraph" style={{ height: '90%', padding: 40 }}>
-            {/* 
-            <View style={{}}>
-            <YAxis
-              data={barData}
-              contentInset={{ top: 0, bottom: 0 }}
-              svg={{
-                fill: 'grey',
-                fontSize: 10,
-              }}
-              yAccessor={({ index }) => index}
-              numberOfTicks={10}
-              formatLabel={value => `${value}ºC`}
-            />
-            <BarChart
-              style={{ height: '90%', padding: 40 }}
-              data={barData}
-              svg={{ barFill }}
-              contentInset={{ top: 0, bottom: 0 }}>
-              <Grid />
-            </BarChart>
-            <XAxis
-              xAccessor={({ item, index }) => item}
-              style={{ marginHorizontal: -10 }}
-              data={barData}
-              formatLabel={(value, index) => index}
-              contentInset={{ left: 10, right: 10 }}
-              svg={{ fontSize: 10, fill: 'black' }}
-            />
-            </View> */}
-            {/*
-            <Text>Frequency of the word 'Pain' over January-April</Text>
-            <View style={{ flexDirection: 'row', height: 200, paddingVertical: 16 }}>
-              <YAxis
-                data={freqMonth}
-                yAccessor={({ index }) => index}
-                scale={scale.scaleBand}
-                contentInset={{ top: 10, bottom: 10 }}
-                spacing={0.2}
-                formatLabel={(_, index) => month[(freqMonth[index].label).getMonth()]}
-              />
-              <BarChart
-                style={{ flex: 1, marginLeft: 8 }}
-                data={freqMonth}
-                horizontal={true}
-                yAccessor={({ item }) => item.value}
-                svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
-                contentInset={{ top: 10, bottom: 10 }}
-                spacing={0.2}
-                gridMin={0}
-              //on={({ item }) => console.log(item.value)}
-              >
-                <Grid direction={Grid.Direction.VERTICAL} />
-                <Labels />
-              </BarChart>
-            </View> */}
-
-            {(barGraphVertical == true) ? (
-              <View id="bargraph-vertical">
-                <Text>Frequency of Words mentioned in Selected Video</Text>
-                <View style={{ flexDirection: 'row', height: 400, paddingVertical: 16 }}>
-                  <YAxis
-                    data={yTest}
-                    yAccessor={({ index }) => index}
-                    scale={scale.scaleBand}
-                    contentInset={{ top: 10, bottom: 10 }}
-                    spacing={0.2}
-                    formatLabel={(value) => value}
-                  />
-                  <BarChart
-                    style={{ flex: 1, marginLeft: 8 }}
-                    data={wordFreq}
-                    //horizontal={true}
-                    yAccessor={({ item }) => item.y.value}
-                    //xAccessor={({ item }) => item.y.value}
-                    svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
-                    contentInset={{ top: 10, bottom: 10 }}
-                    spacing={0.2}
-                    gridMin={0}
-                  >
-                    <Grid direction={Grid.Direction.HORIZONTAL} />
-                    <Labels />
-                  </BarChart>
-                </View>
-                <XAxis
-                  style={{ height: 100, marginTop: 20, marginBottom: 20 }}
-                  //xAccessor={({ index }) => index}
-                  //contentInset={{ left: 20, right: 40 }}
-                  data={wordFreqBarGraphData}
-                  scale={scale.scaleBand}
-                  svg={{ fontSize: 20, rotation: 40, fill: 'black', originY: 35, translateY: 0 }}
-                  formatLabel={(value, index) => wordFreqBarGraphData[index].label}
-                //labelStyle={ { color: 'black' } }
-                />
-              </View>
-            ) : (
-              <View id="bargraph-horizontal">
-                <Text>Frequency of Words mentioned in Selected Video</Text>
-                <View style={{ flexDirection: 'row', height: 200, paddingVertical: 16 }}>
-                  <YAxis
-                    data={wordFreqBarGraphData}
-                    yAccessor={({ index }) => index}
-                    scale={scale.scaleBand}
-                    contentInset={{ top: 10, bottom: 10 }}
-                    spacing={0.2}
-                    formatLabel={(value, index) => wordFreqBarGraphData[index].label}
-                  />
-                  <BarChart
-                    style={{ flex: 1, marginLeft: 8 }}
-                    data={wordFreq}
-                    horizontal={true}
-                    yAccessor={({ item }) => item.y.value}
-                    svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
-                    contentInset={{ top: 10, bottom: 10 }}
-                    spacing={0.2}
-                    gridMin={0}
-                  //on={({ item }) => console.log(item.value)}
-                  >
-                    <Grid direction={Grid.Direction.VERTICAL} />
-                    {/* <Labels /> */}
-                  </BarChart>
-                </View>
-                <XAxis
-                  data={yTest}
-                  yAccessor={({ index }) => index}
-                  scale={scale.scaleBand}
-                  contentInset={{ top: 10, bottom: 10 }}
-                  spacing={0.2}
-                  formatLabel={(value) => value}
-                />
-              </View>
-            )}
-            <Button
-              title="Horizontal"
-              onPress={() => setBarGraphVertical(false)}
-            />
-            <Button
-              title="Vertical"
-              onPress={() => setBarGraphVertical(true)}
-            />
-          </View>
-
-        )}
-
-        {showTextSummary && (
-          <View id="textsummary">
-            <Text>test4</Text>
-          </View>
-        )}
-        {showTextGraph && (
-          <View id="textgraph">
-            <Text>test5</Text>
-          </View>
-        )}
-      </View>
-      <View style={{}}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+        <View style={{  }}>
           <Button
             onPress={onPressWordCloud}
-            titleStyle={{ fontSize: 20 }}
+            titleStyle={{ fontSize: 40 }}
             containerStyle={{
-              width: 200,
+              width: 400,
               marginHorizontal: 30,
               marginVertical: 10,
             }}
@@ -1147,16 +595,16 @@ const DataAnalysis = () => {
             icon={{
               name: 'cloud',
               type: 'font-awesome',
-              size: 20,
+              size: 40,
               color: 'white',
             }}>
             Word Cloud
           </Button>
           <Button
             onPress={onPressLineGraph}
-            titleStyle={{ fontSize: 20 }}
+            titleStyle={{ fontSize: 40 }}
             containerStyle={{
-              width: 200,
+              width: 400,
               marginHorizontal: 30,
               marginVertical: 10,
             }}
@@ -1164,16 +612,16 @@ const DataAnalysis = () => {
             icon={{
               name: 'chart-line',
               type: 'font-awesome-5',
-              size: 20,
+              size: 40,
               color: 'white',
             }}>
             Line Graph
           </Button>
           <Button
             onPress={onPressTextSummary}
-            titleStyle={{ fontSize: 20 }}
+            titleStyle={{ fontSize: 40 }}
             containerStyle={{
-              width: 200,
+              width: 400,
               marginHorizontal: 30,
               marginVertical: 10,
             }}
@@ -1181,16 +629,16 @@ const DataAnalysis = () => {
             icon={{
               name: 'file-alt',
               type: 'font-awesome-5',
-              size: 20,
+              size: 40,
               color: 'white',
             }}>
             Text Summary
           </Button>
           <Button
             onPress={onPressBarGraph}
-            titleStyle={{ fontSize: 20 }}
+            titleStyle={{ fontSize: 40 }}
             containerStyle={{
-              width: 200,
+              width: 400,
               marginHorizontal: 30,
               marginVertical: 10,
             }}
@@ -1198,7 +646,7 @@ const DataAnalysis = () => {
             icon={{
               name: 'chart-bar',
               type: 'font-awesome-5',
-              size: 20,
+              size: 40,
               color: 'white',
             }}>
             Bar Graph
@@ -1206,17 +654,17 @@ const DataAnalysis = () => {
 
           <Button
             onPress={onPressTextGraph}
-            titleStyle={{ fontSize: 20 }}
+            titleStyle={{ fontSize: 40 }}
             containerStyle={{
-              width: 200,
-              marginHorizontal: 50,
+              width: 400,
+              marginHorizontal: 30,
               marginVertical: 10,
             }}
             iconRight={true}
             icon={{
               name: 'project-diagram',
               type: 'font-awesome-5',
-              size: 20,
+              size: 40,
               color: 'white',
             }}>
             Text Graph
