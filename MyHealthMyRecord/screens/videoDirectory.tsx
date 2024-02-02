@@ -574,7 +574,9 @@ const ViewRecordings = ({selected}) => {
                                 alignItems: 'flex-start',
                               }}>
                               <CheckBox
+                                uncheckedColor="white"
                                 checked={isChecked}
+                                size={25}
                                 onPress={() => {
                                   toggleVideoChecked(video._id.toString());
                                 }}

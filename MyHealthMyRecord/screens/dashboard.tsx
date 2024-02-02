@@ -9,6 +9,7 @@ import {
   ImageBackground,
   StyleSheet,
   View,
+  Alert,
 } from 'react-native';
 import {Chip, Dialog, Text} from 'react-native-paper';
 import {VideoData, useRealm, useQuery, useObject} from '../models/VideoData';
@@ -17,11 +18,53 @@ import RNFS from 'react-native-fs';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {base64} from 'rfc4648';
 import Config from 'react-native-config';
+import {API_OPENAI_CHATGPT} from '@env';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
-
   const [auth, setAuth] = useState('');
+  const [inputText, setInputText] = useState('');
+
+  const sendToChatGPT = async (textFileName, _id) => {
+    try {
+      // Create directories if they don't exist
+      const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
+      await RNFS.mkdir(directoryPath, {recursive: true});
+
+      // Send the input text to ChatGPT API
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`,
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [{role: 'user', content: inputText}],
+            max_tokens: 100,
+          }),
+        },
+      );
+
+      const data = await response.json();
+      console.log('Response from ChatGPT API:', data); // Log the response
+
+      // Check if data.choices is defined and contains at least one item
+      if (data.choices && data.choices.length > 0) {
+        const outputText = data.choices[0].message.content;
+        const filePath = `${directoryPath}/${textFileName}`;
+        await RNFS.writeFile(filePath, outputText, 'utf8');
+        Alert.alert('Success', 'Output saved to file: ' + filePath);
+      } else {
+        throw new Error('Invalid response from ChatGPT API');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'Failed to process input.');
+    }
+  };
 
   /**
    * Set auth state with a Bearer type authorization token
@@ -195,7 +238,6 @@ function Dashboard() {
     const wavFileName =
       // 'file://' +
       audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
-    console.log(mp3FileName);
     const mp4FileName =
       // 'file://' +
       MHMRfolderPath + '/' + video.filename;
@@ -277,9 +319,25 @@ function Dashboard() {
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
         {videos !== null
           ? videos.map((video: VideoData) => {
-             const isTranscriptEmpty = video => {
-               return video.transcript === undefined;
-             };
+              const isTranscriptEmpty = video => {
+                return (
+                  video.transcript === undefined || video.transcript === ''
+                );
+              };
+
+              const checkedTitles = video.keywords
+                .map(key => JSON.parse(key))
+                .filter(obj => obj.checked)
+                .map(obj => obj.title)
+                .join(', ');
+
+              const checkedLocations = video.locations
+                .map(key => JSON.parse(key))
+                .filter(obj => obj.checked)
+                .map(obj => obj.title)
+                .join(', ');
+
+              // console.log(checkedTitles);
 
               const transcriptIsEmpty = isTranscriptEmpty(video);
               const isChecked = checkedVideos.has(video._id.toString());
@@ -304,13 +362,12 @@ function Dashboard() {
                                 video.filename.replace('.mp4', '') + '.wav',
                                 video._id.toString(),
                               );
+
                               console.log('checked');
-                            }
-                            else if (!isChecked && transcriptIsEmpty) {
+                            } else if (!isChecked && transcriptIsEmpty) {
                               toggleVideoChecked(video._id.toString());
                               console.log('else if checked');
-                            }
-                            else {
+                            } else {
                               toggleVideoChecked(video._id.toString());
                               console.log('unchecked');
                             }
@@ -419,6 +476,32 @@ function Dashboard() {
                       </View>
                       <View>
                         <Text>Transcript: {video.transcript}</Text>
+                      </View>
+                      <View>
+                        <Text>
+                          Prompt: Summarize this video transcript "
+                          {video.transcript} " and include the summary of the
+                          keywords ({checkedTitles}) and locations (
+                          {checkedLocations}) tagged.
+                        </Text>
+                        <Button
+                          onPress={() => {
+                            setInputText(
+                              'Summarize this video transcript (' +
+                                `${video.transcript}` +
+                                ') and include the summary of the keywords (' +
+                                `${checkedTitles}` +
+                                ') and locations (' +
+                                `${checkedLocations}` +
+                                ') tagged.',
+                            );
+                            sendToChatGPT(
+                              video.filename.replace('.mp4', '') + '.txt',
+                              video._id.toString(),
+                            );
+                          }}>
+                          Send to ChatGPT
+                        </Button>
                       </View>
                       <Text>{video.filename}</Text>
                       <View style={styles.buttonContainer}>
