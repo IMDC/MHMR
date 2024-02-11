@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {useEffect} from 'react';
-import {  Text, View } from 'react-native';
-import { Button } from '@rneui/themed';
+import {Text, View} from 'react-native';
+import {Button} from '@rneui/themed';
 import 'react-native-get-random-values';
-import { RealmProvider } from './models/VideoData';
+import {RealmProvider} from './models/VideoData';
 import {
   NavigationContainer,
   useNavigation,
@@ -13,7 +13,7 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Home from './screens/home';
 import RecordVideo from './screens/recordVideo';
 import ViewRecordings from './screens/videoDirectory';
@@ -29,12 +29,10 @@ import Help from './screens/help';
 import Dashboard from './screens/dashboard';
 import DataAnalysis from './screens/dataAnalysis';
 import * as Styles from './assets/util/styles';
-import { Icon } from '@rneui/themed';
+import {Icon} from '@rneui/themed';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
-
-  
 
 function StackNav() {
   const [selected, setSelected] = React.useState(true);

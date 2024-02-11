@@ -2,6 +2,7 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
 import {
+  Alert,
   Dimensions,
   Image,
   ImageBackground,
@@ -26,6 +27,7 @@ import {Button, Dialog, Icon} from '@rneui/themed';
 import {Chip, Tooltip} from 'react-native-paper';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 import {CheckBox} from '@rneui/themed';
+import useAddToFile from '../components/addToFile';
 
 const worried = require('../assets/images/emojis/worried.png');
 
@@ -33,11 +35,19 @@ const ViewRecordings = ({selected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
-
+  const [selectedVideos, setSelectedVideos] = useState(new Set<string>());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
+
+  const handlePress = () => {
+    setSelectedVideos(selected);; // Call the hook inside the component
+    navigation.navigate('Dashboard');
+    Alert.alert('Your videos have been added to the dashboard');
+  };
+
+   useAddToFile(selectedVideos);
 
   const toggleDialog = () => {
     setVisible(!visible);
@@ -220,9 +230,10 @@ const ViewRecordings = ({selected}) => {
   useEffect(() => {
     {
       setVideos(videosByDate);
-      console.log(videoData);
+      // console.log(videoData);
+      console.log('selectedVideos:', selectedVideos);
     }
-  }, []);
+  }, [selectedVideos]);
 
   onPressTouch = () => {
     scrollRef.current?.scrollTo({
@@ -247,7 +258,6 @@ const ViewRecordings = ({selected}) => {
   ) => {
     return (
       <View>
-  
         <TouchableOpacity onPress={() => unSelect && unSelect(item)}>
           <View
             style={{
@@ -267,6 +277,31 @@ const ViewRecordings = ({selected}) => {
 
   return (
     <View>
+      {selected ? (
+        <View></View>
+      ) : (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+            marginBottom: 10,
+            elevation: 8,
+            zIndex: 100,
+          }}>
+          <Button
+            style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+            buttonStyle={[styles.btnStyle, {}]}
+            onPress={handlePress}>
+            <Text style={{color: 'white', fontSize: 25}}>
+              Send {selectedVideos.size} video(s) to Dashboard
+            </Text>
+          </Button>
+        </View>
+      )}
+
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
         {/* <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
           <Text
@@ -515,7 +550,12 @@ const ViewRecordings = ({selected}) => {
               renderSelectedItem={renderSelectedItem}
             />
           )}
-          <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'flex-end'}}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'flex-start',
+              alignItems: 'flex-end',
+            }}>
             <Dropdown
               data={viewData}
               maxHeight={300}
@@ -578,7 +618,23 @@ const ViewRecordings = ({selected}) => {
                                 checked={isChecked}
                                 size={25}
                                 onPress={() => {
-                                  toggleVideoChecked(video._id.toString());
+                                  const updatedSelectedVideos = new Set(
+                                    selectedVideos,
+                                  );
+
+                                  if (!isChecked) {
+                                    toggleVideoChecked(video._id.toString());
+                                    updatedSelectedVideos.add(video.filename);
+                                    setSelectedVideos(updatedSelectedVideos);
+                                    console.log('checked');
+                                  } else if (isChecked) {
+                                    toggleVideoChecked(video._id.toString());
+                                    updatedSelectedVideos.delete(
+                                      video.filename,
+                                    );
+                                    setSelectedVideos(updatedSelectedVideos);
+                                    console.log('unchecked');
+                                  }
                                 }}
                                 wrapperStyle={{backgroundColor: 'transparent'}}
                                 containerStyle={{
@@ -596,13 +652,13 @@ const ViewRecordings = ({selected}) => {
                                 id: video._id,
                               })
                             }>
-                            <Icon
+                            {/* <Icon
                               style={{height: 240, justifyContent: 'center'}}
                               name="play-sharp"
                               type="ionicon"
                               color="black"
                               size={40}
-                            />
+                            /> */}
                           </TouchableOpacity>
                         </ImageBackground>
                       </View>
@@ -774,8 +830,8 @@ const ViewRecordings = ({selected}) => {
                             justifyContent: 'flex-start',
                             alignItems: 'flex-start',
                           }}>
-                            <CheckBox
-                            uncheckedColor='white'
+                          <CheckBox
+                            uncheckedColor="white"
                             checked={isChecked}
                             size={25}
                             onPress={() => {

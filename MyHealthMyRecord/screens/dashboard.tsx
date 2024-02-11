@@ -24,6 +24,7 @@ function Dashboard() {
   const [checked, setChecked] = React.useState(false);
   const [auth, setAuth] = useState('');
   const [inputText, setInputText] = useState('');
+  const [dashboardVideos, setDashboardVideos] = useState<any[]>([]);
 
   const sendToChatGPT = async (textFileName, _id) => {
     try {
@@ -213,6 +214,7 @@ function Dashboard() {
   const [videos, setVideos] = React.useState<any | null>(null);
   const [buttonPressed, setButtonPressed] = React.useState(false);
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+  const MHMRdashboardPath = RNFS.DocumentDirectoryPath + '/MHMR/dashboard';
   const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
   const scrollRef: any = React.useRef();
   let onPressTouch = () => {
@@ -261,10 +263,24 @@ function Dashboard() {
   };
 
   React.useEffect(() => {
-    {
-      setVideos(videosByDate);
-    }
-  }, []);
+    const fetchVideos = async () => {
+      try {
+        const filteredVideos = await Promise.all(
+          videosByDate.map(async (video: any) => {
+            const videoPath =
+              RNFS.DocumentDirectoryPath + '/MHMR/dashboard/' + video.filename;
+            const exists = await RNFS.exists(videoPath);
+            return exists ? video : null;
+          }),
+        );
+        setVideos(filteredVideos.filter(video => video !== null));
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      }
+    };
+
+    fetchVideos();
+  }, [videosByDate]);
   //check file space
   /*
   const FSInfoResult = RNFS.getFSInfo();
