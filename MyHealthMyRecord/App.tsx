@@ -26,6 +26,10 @@ import Painscale from './screens/painscaleScreen';
 import Help from './screens/help';
 import Dashboard from './screens/dashboard';
 import DataAnalysis from './screens/dataAnalysis';
+import DataAnalysisBarGraph from './screens/dataAnalysisBarGraph';
+import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
+import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
+import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
 import { Icon } from '@rneui/themed';
 
@@ -34,24 +38,36 @@ const Tab: any = createBottomTabNavigator();
 
 function StackNav() {
   return (
-  <Stack.Navigator initialRouteName="Home" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Record Video" component={RecordVideo} />
-        <Stack.Screen
-          name="View Recordings"
-          component={ViewRecordings}></Stack.Screen>
-        <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
-        <Stack.Screen
-          name="Review Annotations"
-          component={ReviewAnnotations}
-        />
-        <Stack.Screen name="Keywords" component={KeywordTagging} />
-        <Stack.Screen name="Location" component={LocationTagging} />
-        <Stack.Screen name="Emotion Tagging" component={EmotionTagging} />
-        <Stack.Screen name="Text Comments" component={TextComments} />
-        <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
-        <Stack.Screen name="Painscale" component={Painscale} />
-      </Stack.Navigator>
+    <Stack.Navigator initialRouteName="Home" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
+      <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="Record Video" component={RecordVideo} />
+      <Stack.Screen
+        name="View Recordings"
+        component={ViewRecordings}></Stack.Screen>
+      <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
+      <Stack.Screen
+        name="Review Annotations"
+        component={ReviewAnnotations}
+      />
+      <Stack.Screen name="Keywords" component={KeywordTagging} />
+      <Stack.Screen name="Location" component={LocationTagging} />
+      <Stack.Screen name="Emotion Tagging" component={EmotionTagging} />
+      <Stack.Screen name="Text Comments" component={TextComments} />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
+      <Stack.Screen name="Painscale" component={Painscale} />
+    </Stack.Navigator>
+  )
+}
+
+function DataAnalysisStack() {
+  return (
+    <Stack.Navigator initialRouteName="Analysis" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
+      <Stack.Screen name="Data Analysis" component={DataAnalysis} />
+      <Stack.Screen name="Bar Graph" component={DataAnalysisBarGraph} />
+      <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
+      <Stack.Screen name="Text Summary" component={DataAnalysisTextSummary} />
+      <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
+    </Stack.Navigator>
   )
 }
 
@@ -69,18 +85,20 @@ function App() {
             },
           }}>
           <Tab.Screen
-            name="Data Analysis"
-            component={DataAnalysis}
+            name="Analysis"
+            component={DataAnalysisStack}
+            tabBarShowLabel={false}
             options={{
-              tabBarLabel: 'Dashboard',
-              headerStyle: {backgroundColor: Styles.NavBarGrey},
+              headerShown: false,
+              tabBarLabel: 'Analysis',
+              headerStyle: { backgroundColor: Styles.NavBarGrey },
               tabBarIcon: () => (
                 <Icon
                   name="bar-chart-outline"
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
+                  style={{ width: Styles.bottomNavIconSize }}
                 />
               ),
             }}
@@ -91,14 +109,14 @@ function App() {
             component={Dashboard}
             options={{
               tabBarLabel: 'Dashboard',
-              headerStyle: {backgroundColor: Styles.NavBarGrey},
+              headerStyle: { backgroundColor: Styles.NavBarGrey },
               tabBarIcon: () => (
                 <Icon
                   name="analytics-outline"
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
+                  style={{ width: Styles.bottomNavIconSize }}
                 />
               ),
             }}
@@ -116,7 +134,7 @@ function App() {
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
+                  style={{ width: Styles.bottomNavIconSize }}
                 />
               ),
             }}
@@ -126,14 +144,14 @@ function App() {
             component={Help}
             options={{
               tabBarLabel: 'Help',
-              headerStyle: {backgroundColor: Styles.NavBarGrey},
+              headerStyle: { backgroundColor: Styles.NavBarGrey },
               tabBarIcon: () => (
                 <Icon
                   name="information-circle-outline"
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
+                  style={{ width: Styles.bottomNavIconSize }}
                 />
               ),
             }}
