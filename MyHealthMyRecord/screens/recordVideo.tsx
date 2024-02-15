@@ -255,6 +255,16 @@ const RecordVideo = () => {
     },
   ];
 
+  const weekdayRef = [
+    {id: new Realm.BSON.ObjectID(), value: 1, title: 'Sun'},
+    {id: new Realm.BSON.ObjectID(), value: 2, title: 'Mon'},
+    {id: new Realm.BSON.ObjectID(), value: 3, title: 'Tues'},
+    {id: new Realm.BSON.ObjectID(), value: 4, title: 'Wed'},
+    {id: new Realm.BSON.ObjectID(), value: 5, title: 'Thu'},
+    {id: new Realm.BSON.ObjectID(), value: 6, title: 'Fri'},
+    {id: new Realm.BSON.ObjectID(), value: 7, title: 'Sat'},
+  ];
+
   const locationRef = [
     {id: new Realm.BSON.ObjectID(), value: 1, title: 'Home', checked: false},
     {id: new Realm.BSON.ObjectID(), value: 2, title: 'Work', checked: false},
@@ -299,10 +309,12 @@ const RecordVideo = () => {
   let keywordInit: string[] = [];
   let locationInit: string[] = [];
   let painscaleInit: string[] = [];
+  let weekdayInit: string[] = [];
 
   keywordRef.map(key => keywordInit.push(JSON.stringify(key)));
   locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
   painscaleRef.map(pain => painscaleInit.push(JSON.stringify(pain)));
+  weekdayRef.map(day => weekdayInit.push(JSON.stringify(day)));
 
   const createVideoData = (
     filename: string,
@@ -322,6 +334,8 @@ const RecordVideo = () => {
         locations: locationInit,
         painScale: painscaleInit,
         isConverted: false,
+        transcript:[],
+        weekday: new Date().toString().split(' ')[0],
       });
     });
   };

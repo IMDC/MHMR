@@ -15,6 +15,7 @@ export class VideoData extends Realm.Object<VideoData> {
   painScale!: Realm.List<string>;
   isConverted!: boolean;
   transcript!: Realm.List<string>;
+  weekday!: Date;
   //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
   static schema = {
@@ -31,9 +32,13 @@ export class VideoData extends Realm.Object<VideoData> {
       locations: {type: 'mixed[]', default: []},
       emotionStickers: {type: 'string[]', default: []},
       keywords: {type: 'mixed[]', default: []},
-      painScale: { type: 'string[]', default: [] },
+      painScale: {type: 'string[]', default: []},
       isConverted: {type: 'bool', default: false},
-      transcript: {type: 'mixed[]', default: []},
+      transcript: {type: 'string[]', default: []},
+      weekday: {
+        type: 'string',
+        default: new Date().toString().split(' ')[0],
+      },
     },
   };
 }
