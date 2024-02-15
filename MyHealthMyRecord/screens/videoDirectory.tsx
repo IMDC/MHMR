@@ -2,6 +2,7 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
 import {
+  Alert,
   Dimensions,
   Image,
   ImageBackground,
@@ -23,20 +24,30 @@ import Realm from 'realm';
 import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {Button, Dialog, Icon} from '@rneui/themed';
-import {Chip,Tooltip} from 'react-native-paper';
+import {Chip, Tooltip} from 'react-native-paper';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
+import {CheckBox} from '@rneui/themed';
+import useAddToFile from '../components/addToFile';
 
 const worried = require('../assets/images/emojis/worried.png');
 
-const ViewRecordings = () => {
+const ViewRecordings = ({selected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
-
+  const [selectedVideos, setSelectedVideos] = useState(new Set<string>());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
+
+  const handlePress = () => {
+    setSelectedVideos(selected);; // Call the hook inside the component
+    navigation.navigate('Dashboard');
+    Alert.alert('Your videos have been added to the dashboard');
+  };
+
+   useAddToFile(selectedVideos);
 
   const toggleDialog = () => {
     setVisible(!visible);
@@ -59,6 +70,12 @@ const ViewRecordings = () => {
       animated: true,
     });
   };
+
+  const viewData = [
+    {label: 'List View', value: 1},
+    {label: 'Grid View', value: 2},
+  ];
+
   const sortData = [
     {label: 'Date', value: 1},
     {label: 'Name', value: 2},
@@ -70,6 +87,16 @@ const ViewRecordings = () => {
   const oldestNewestData = [
     {label: 'Newest to Oldest', value: 1},
     {label: 'Oldest to Newest', value: 2},
+  ];
+
+  const weekdayData = [
+    {label: 'Sunday', value: 'Sun'},
+    {label: 'Monday', value: 'Mon'},
+    {label: 'Tuesday', value: 'Tue'},
+    {label: 'Wednesday', value: 'Wed'},
+    {label: 'Thursday', value: 'Thu'},
+    {label: 'Friday', value: 'Fri'},
+    {label: 'Saturday', value: 'Sat'},
   ];
 
   const keywordData = [
@@ -116,23 +143,18 @@ const ViewRecordings = () => {
 
   const [sortValue, setSortValue] = useState(null);
   const [oldestNewestValue, setOldestNewestValue] = useState(null);
+  const [weekdayValue, setWeekdayValue] = useState([]);
   const [keywordValue, setKeywordValue] = useState<any[]>([]);
   const [locationValue, setLocationValue] = useState([]);
   const [emotionValue, setEmotionValue] = useState([]);
   const [nameValue, setNameValue] = useState(null);
+  const [viewValue, setViewValue] = useState(1);
 
   const [showDropDown, setShowDropDown] = useState(false);
 
   const realm = useRealm();
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-  //console.log(videosByDate);
-
-  // delete after figuring out why this page re-renders when annotating on other pages
-  /* videoData.map((video: any) =>
-    console.log('test', video._id.toString(), video.title),
-  ); */
-
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
 
@@ -191,12 +213,27 @@ const ViewRecordings = () => {
     );
   };
 
+  const [checkedVideos, setCheckedVideos] = React.useState(new Set());
+
+  const toggleVideoChecked = (videoId: any) => {
+    const updatedCheckedVideos = new Set(checkedVideos);
+
+    if (updatedCheckedVideos.has(videoId)) {
+      updatedCheckedVideos.delete(videoId);
+    } else {
+      updatedCheckedVideos.add(videoId);
+    }
+
+    setCheckedVideos(updatedCheckedVideos);
+  };
+
   useEffect(() => {
     {
       setVideos(videosByDate);
-      console.log(videoData)
+      // console.log(videoData);
+      console.log('selectedVideos:', selectedVideos);
     }
-  }, []);
+  }, [selectedVideos]);
 
   onPressTouch = () => {
     scrollRef.current?.scrollTo({
@@ -240,8 +277,33 @@ const ViewRecordings = () => {
 
   return (
     <View>
+      {selected ? (
+        <View></View>
+      ) : (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+            marginBottom: 10,
+            elevation: 8,
+            zIndex: 100,
+          }}>
+          <Button
+            style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+            buttonStyle={[styles.btnStyle, {}]}
+            onPress={handlePress}>
+            <Text style={{color: 'white', fontSize: 25}}>
+              Send {selectedVideos.size} video(s) to Dashboard
+            </Text>
+          </Button>
+        </View>
+      )}
+
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
+        {/* <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
           <Text
             style={{
               fontSize: 16,
@@ -250,7 +312,7 @@ const ViewRecordings = () => {
             }}>
             Delete All Videos
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <View
           style={{
             flexDirection: 'row',
@@ -259,7 +321,7 @@ const ViewRecordings = () => {
           <Dropdown
             data={sortData}
             maxHeight={300}
-            style={{width: windowWidth / 2}}
+            style={{width: windowWidth / 2.5}}
             placeholderStyle={styles.dropdownText}
             selectedTextStyle={styles.dropdownText}
             itemTextStyle={{textAlign: 'center'}}
@@ -273,33 +335,52 @@ const ViewRecordings = () => {
           />
           {/* Sorts by date */}
           {sortValue == 1 && (
-            <Dropdown
-              data={oldestNewestData}
-              maxHeight={300}
-              style={{width: windowWidth / 2}}
+            <MultiSelect
+              data={weekdayData}
+              maxHeight={1000}
+              style={{width: windowWidth / 2.5}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              value={oldestNewestValue}
-              onChange={item => {
-                setOldestNewestValue(item.value);
-                if (item.value === 1) {
+              value={weekdayValue}
+              onChange={selectedItems => {
+                console.log('selectedItems', selectedItems);
+                setWeekdayValue(selectedItems);
+
+                if (selectedItems.length === 0) {
                   setVideos(videosByDate);
-                  console.log('if', item.value);
                 } else {
-                  setVideos(videosByDate.sorted('datetimeRecorded', false));
-                  console.log('else', item.value);
+                  // Map selected item label
+                  const selectedWeekdayLabels = selectedItems.map(item => {
+                    const selectedWeekday = weekdayData.find(
+                      item => item.value === selectedItems[0],
+                    );
+                    return selectedWeekday ? selectedWeekday.value : '';
+                  });
+                  console.log(
+                    'Selected Weekday Labels:',
+                    selectedWeekdayLabels,
+                  );
+
+                  // Filter videos based on selected weekday values
+                  const filteredVideos = videoData.filter(video => {
+                    return selectedWeekdayLabels.includes(video.weekday);
+                  });
+
+                  console.log('Filtered Videos:', filteredVideos);
+                  setVideos(filteredVideos);
                 }
               }}
+              renderSelectedItem={renderSelectedItem}
             />
           )}
           {sortValue == 2 && (
             <Dropdown
               data={nameData}
               maxHeight={1000}
-              style={{width: windowWidth / 2}}
+              style={{width: windowWidth / 2.5}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
@@ -321,7 +402,7 @@ const ViewRecordings = () => {
             <MultiSelect
               data={keywordData}
               maxHeight={1000}
-              style={{width: windowWidth / 2}}
+              style={{width: windowWidth / 2.5}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
@@ -382,7 +463,7 @@ const ViewRecordings = () => {
             <MultiSelect
               data={locationData}
               maxHeight={1000}
-              style={{width: windowWidth / 2}}
+              style={{width: windowWidth / 2.5}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
@@ -425,7 +506,7 @@ const ViewRecordings = () => {
             <MultiSelect
               data={emotionData}
               maxHeight={1000}
-              style={{width: windowWidth / 2}}
+              style={{width: windowWidth / 2.5}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
@@ -455,12 +536,11 @@ const ViewRecordings = () => {
                     return selectedEmotionLabels.some(label => {
                       return video.emotionStickers.some(emotion => {
                         const parsedEmotion = JSON.parse(emotion);
-                        console.log("test:", parsedEmotion.sentiment === label);
+                        console.log('test:', parsedEmotion.sentiment === label);
                         return (
                           parsedEmotion.sentiment.toLowerCase() ===
                           label.toLowerCase()
                         );
-                        
                       });
                     });
                   });
@@ -470,85 +550,323 @@ const ViewRecordings = () => {
               renderSelectedItem={renderSelectedItem}
             />
           )}
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'flex-start',
+              alignItems: 'flex-end',
+            }}>
+            <Dropdown
+              data={viewData}
+              maxHeight={300}
+              style={{width: windowWidth / 6}}
+              placeholderStyle={styles.dropdownText}
+              selectedTextStyle={styles.dropdownText}
+              itemTextStyle={{textAlign: 'center'}}
+              labelField="label"
+              valueField="value"
+              value={viewValue}
+              onChange={item => {
+                setViewValue(item.value);
+                console.log(item.value);
+              }}
+            />
+          </View>
         </View>
-        {videos !== null
-          ? videos.map((video: VideoData) => {
-            const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
-            const sentimentCounts = {}; // Create an object to keep track of sentiment counts
 
-            video.emotionStickers.forEach(key => {
-              const sentiment = JSON.parse(key).sentiment;
+        {viewValue == 1 && (
+          <View>
+            {videos !== null
+              ? videos.map((video: VideoData) => {
+                  const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
+                  const sentimentCounts = {}; // Create an object to keep track of sentiment counts
+                  const isChecked = checkedVideos.has(video._id.toString());
+                  video.emotionStickers.forEach((key: string) => {
+                    const sentiment = JSON.parse(key).sentiment;
 
-              if (!sentimentCounts[sentiment]) {
-                sentimentCounts[sentiment] = 1; // Initialize the count if not found
-              } else {
-                sentimentCounts[sentiment]++; // Increment the count
-              }
-            });
-            // const videoURI = require(MHMRfolderPath + '/' + video.filename);
-            return (
-              <View style={styles.container} key={video._id.toString()}>
-                <View style={styles.thumbnail}>
-                  {/* <VideoPlayer
-                      style={{}}
+                    if (!sentimentCounts[sentiment]) {
+                      sentimentCounts[sentiment] = 1; // Initialize the count if not found
+                    } else {
+                      sentimentCounts[sentiment]++; // Increment the count
+                    }
+                  });
+
+                  return (
+                    <View style={styles.container} key={video._id.toString()}>
+                      <View style={styles.thumbnail}>
+                        <ImageBackground
+                          style={{height: '100%', width: '100%'}}
+                          source={{
+                            uri:
+                              'file://' + MHMRfolderPath + '/' + video.filename,
+                          }}>
+                          {selected ? (
+                            <View></View>
+                          ) : (
+                            <View
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                justifyContent: 'flex-start',
+                                alignItems: 'flex-start',
+                              }}>
+                              <CheckBox
+                                uncheckedColor="white"
+                                checked={isChecked}
+                                size={25}
+                                onPress={() => {
+                                  const updatedSelectedVideos = new Set(
+                                    selectedVideos,
+                                  );
+
+                                  if (!isChecked) {
+                                    toggleVideoChecked(video._id.toString());
+                                    updatedSelectedVideos.add(video.filename);
+                                    setSelectedVideos(updatedSelectedVideos);
+                                    console.log('checked');
+                                  } else if (isChecked) {
+                                    toggleVideoChecked(video._id.toString());
+                                    updatedSelectedVideos.delete(
+                                      video.filename,
+                                    );
+                                    setSelectedVideos(updatedSelectedVideos);
+                                    console.log('unchecked');
+                                  }
+                                }}
+                                wrapperStyle={{backgroundColor: 'transparent'}}
+                                containerStyle={{
+                                  backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                                  // opacity: 1,
+                                  borderRadius: 15,
+                                  marginLeft: 6,
+                                }}
+                              />
+                            </View>
+                          )}
+                          <TouchableOpacity
+                            onPress={() =>
+                              navigation.navigate('Fullscreen Video', {
+                                id: video._id,
+                              })
+                            }>
+                            {/* <Icon
+                              style={{height: 240, justifyContent: 'center'}}
+                              name="play-sharp"
+                              type="ionicon"
+                              color="black"
+                              size={40}
+                            /> */}
+                          </TouchableOpacity>
+                        </ImageBackground>
+                      </View>
+                      <View style={styles.rightContainer}>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              color: 'black',
+                              fontWeight: 'bold',
+                            }}>
+                            {video.title}
+                            {video.textComments.length !== 0 ? (
+                              <Icon
+                                name="chatbox-ellipses"
+                                type="ionicon"
+                                color="black"
+                                size={22}
+                                style={{
+                                  alignSelf: 'flex-start',
+                                  paddingLeft: 5,
+                                }}
+                              />
+                            ) : null}
+                          </Text>
+                          <Text style={{fontSize: 20}}>
+                            {video.datetimeRecorded?.toLocaleString()}
+                          </Text>
+
+                          <View
+                            style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                            {video.keywords.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#E1BE6A',
+                                    }}
+                                    textStyle={{fontSize: 16}}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'tag'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                            {video.locations.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    textStyle={{fontSize: 16}}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#40B0A6',
+                                    }}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'map-marker'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                          </View>
+                          <View
+                            style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                            {video.emotionStickers.map(key => {
+                              const sentiment = JSON.parse(key).sentiment;
+                              const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
+
+                              if (!displayedSentiments.has(sentiment)) {
+                                displayedSentiments.add(sentiment);
+                                return (
+                                  <View>
+                                    <Tooltip
+                                      title={`${sentiment} (${sentimentCounts[sentiment]})`}>
+                                      {imageSource && (
+                                        <Image
+                                          style={{height: 60, width: 60}}
+                                          source={imageSource}
+                                        />
+                                      )}
+                                    </Tooltip>
+                                    <Text style={{fontWeight: 'bold'}}>
+                                      {sentimentCounts[sentiment]}
+                                    </Text>
+                                  </View>
+                                );
+                              }
+                              return null; // If sentiment has already been displayed, return null
+                            })}
+                          </View>
+                        </View>
+
+                        {selected ? (
+                          <View style={styles.buttonContainer}>
+                            <Button
+                              buttonStyle={styles.btnStyle}
+                              title="Review"
+                              onPress={() =>
+                                navigation.navigate('Review Annotations', {
+                                  id: video._id,
+                                })
+                              }
+                            />
+                            <View style={styles.space} />
+                            <Button
+                              buttonStyle={styles.btnStyle}
+                              title="Add/Edit Markups"
+                              onPress={() =>
+                                navigation.navigate('Annotation Menu', {
+                                  id: video._id,
+                                })
+                              }
+                            />
+                            <View style={styles.space} />
+                            <Button
+                              buttonStyle={styles.btnStyle}
+                              title="Delete Video"
+                              // onPress={() => deleteVideo(video, video.filename)}
+                              onPress={() => {
+                                setVideoSelectedData(video);
+                                setvideoSelectedFilename(video.filename);
+                                toggleDialog1();
+                              }}
+                            />
+                          </View>
+                        ) : (
+                          <View></View>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })
+              : null}
+          </View>
+        )}
+
+        {/* grid view */}
+        {viewValue == 2 && (
+          <View style={styles.gridContainer}>
+            {videos.map((video: VideoData) => {
+              const isChecked = checkedVideos.has(video._id.toString());
+
+              return (
+                <View style={styles.gridItem} key={video._id.toString()}>
+                  {!selected ? <View></View> : <View></View>}
+
+                  <View style={styles.gridThumbnail}>
+                    <ImageBackground
+                      style={{height: '100%', width: '100%'}}
                       source={{
-                        uri: MHMRfolderPath + '/' + video.filename,
-                      }}
-                      paused={true}
-                      disableBack={true}
-                      // toggleResizeModeOnFullscreen={true}
-                      showOnStart={true}
-                      disableSeekButtons={true}
-                      isFullscreen={false}
-                      onEnterFullscreen={() =>
-                        navigation.navigate('Fullscreen Video', {
-                          id: video._id,
-                        })
-                      }
-                    /> */}
+                        uri: 'file://' + MHMRfolderPath + '/' + video.filename,
+                      }}>
+                      {selected ? (
+                        <View></View>
+                      ) : (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            justifyContent: 'flex-start',
+                            alignItems: 'flex-start',
+                          }}>
+                          <CheckBox
+                            uncheckedColor="white"
+                            checked={isChecked}
+                            size={25}
+                            onPress={() => {
+                              toggleVideoChecked(video._id.toString());
+                            }}
+                            wrapperStyle={{backgroundColor: 'transparent'}}
+                            containerStyle={{
+                              backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                              // opacity: 1,
+                              borderRadius: 15,
+                              marginLeft: 6,
+                            }}
+                          />
+                        </View>
+                      )}
 
-                  <ImageBackground
-                    style={{height: '100%', width: '100%'}}
-                    source={{
-                      uri: 'file://' + MHMRfolderPath + '/' + video.filename,
-                    }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate('Fullscreen Video', {
-                          id: video._id,
-                        })
-                      }>
-                      <Icon
-                        style={{height: 240, justifyContent: 'center'}}
-                        name="play-sharp"
-                        type="ionicon"
-                        color="black"
-                        size={40}
-                      />
-                    </TouchableOpacity>
-                  </ImageBackground>
+                      {/* <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('Fullscreen Video', {
+                            id: video._id,
+                          })
+                        }>
+                        <Icon
+                          style={{height: 240, justifyContent: 'center'}}
+                          name="play-sharp"
+                          type="ionicon"
+                          color="black"
+                          size={40}
+                        />
+                      </TouchableOpacity> */}
+                    </ImageBackground>
+                  </View>
 
-                  {/* <VideoPlayer
-                      style={{}}
-                      source={{
-                        uri: MHMRfolderPath + '/' + video.filename,
-                      }}
-                      paused={true}
-                      disableBack={true}
-                      // toggleResizeModeOnFullscreen={true}
-                      showOnStart={true}
-                      disableSeekButtons={true}
-                      isFullscreen={false}
-                      onEnterFullscreen={() =>
-                        navigation.navigate('Fullscreen Video', {
-                          id: video._id,
-                        })
-                      }
-                    /> */}
-                </View>
-
-                <View style={styles.rightContainer}>
-                  <View>
+                  {/* bottom container */}
+                  <View style={{paddingLeft: 2}}>
                     <Text
                       style={{
                         fontSize: 24,
@@ -562,151 +880,381 @@ const ViewRecordings = () => {
                           type="ionicon"
                           color="black"
                           size={22}
-                          style={{alignSelf: 'flex-start', paddingLeft: 5}}
+                          style={{
+                            alignSelf: 'flex-start',
+                            paddingLeft: 5,
+                          }}
+                        />
+                      ) : null}
+                      {video.emotionStickers.length !== 0 ? (
+                        <Icon
+                          name="happy"
+                          type="ionicon"
+                          color="black"
+                          size={22}
+                          style={{
+                            alignSelf: 'flex-start',
+                            paddingLeft: 5,
+                          }}
                         />
                       ) : null}
                     </Text>
                     <Text style={{fontSize: 20}}>
                       {video.datetimeRecorded?.toLocaleString()}
                     </Text>
-
-                    {/* map temparray and display the keywords here */}
-                    <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                      {video.keywords.map((key: string) => {
-                        if (JSON.parse(key).checked) {
-                          return (
-                            <Chip
-                              key={JSON.parse(key).title}
-                              style={{margin: 2, backgroundColor: '#E1BE6A'}}
-                              textStyle={{fontSize: 16}}
-                              mode="outlined"
-                              compact={true}
-                              icon={'tag'}>
-                              {JSON.parse(key).title}
-                            </Chip>
-                          );
-                        }
-                      })}
-                      {video.locations.map((key: string) => {
-                        if (JSON.parse(key).checked) {
-                          return (
-                            <Chip
-                              key={JSON.parse(key).title}
-                              textStyle={{fontSize: 16}}
-                              style={{margin: 2, backgroundColor: '#40B0A6'}}
-                              mode="outlined"
-                              compact={true}
-                              icon={'map-marker'}>
-                              {JSON.parse(key).title}
-                            </Chip>
-                          );
-                        }
-                      })}
-                    </View>
-                    <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                      {video.emotionStickers.map(key => {
-                        const sentiment = JSON.parse(key).sentiment;
-                        const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
-
-                        if (!displayedSentiments.has(sentiment)) {
-                          displayedSentiments.add(sentiment);
-                          return (
-                            <View>
-                              <Tooltip
-                                title={`${sentiment} (${sentimentCounts[sentiment]})`}>
-                                {imageSource && (
-                                  <Image
-                                    style={{height: 60, width: 60}}
-                                    source={imageSource}
-                                  />
-                                )}
-                              </Tooltip>
-                              <Text style={{fontWeight: 'bold'}}>
-                                {sentimentCounts[sentiment]}
-                              </Text>
-                            </View>
-                          );
-                        }
-                        return null; // If sentiment has already been displayed, return null
-                      })}
-                    </View>
                   </View>
-                  {/* if textcomment length is does not equal 0, add an icon */}
-
-                  <View style={styles.buttonContainer}>
-                    <Button
-                      buttonStyle={styles.btnStyle}
-                      title="Review"
-                      onPress={() =>
-                        navigation.navigate('Review Annotations', {
-                          id: video._id,
-                        })
-                      }
-                    />
-                    <View style={styles.space} />
-                    <Button
-                      buttonStyle={styles.btnStyle}
-                      title="Add/Edit Markups"
-                      onPress={() =>
-                        navigation.navigate('Annotation Menu', {
-                          id: video._id,
-                        })
-                      }
-                    />
-                    <View style={styles.space} />
-                    <Button
-                      buttonStyle={styles.btnStyle}
-                      title="Delete Video"
-                      // onPress={() => deleteVideo(video, video.filename)}
-                      onPress={() => {
-                        setVideoSelectedData(video);
-                        setvideoSelectedFilename(video.filename);
-                        toggleDialog1();
-                      }}
-                    />
-                  </View>
+                  {selected ? (
+                    <View style={[styles.buttonContainer, {padding: 5}]}>
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Review"
+                        onPress={() =>
+                          navigation.navigate('Review Annotations', {
+                            id: video._id,
+                          })
+                        }
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Add/Edit Markups"
+                        onPress={() =>
+                          navigation.navigate('Annotation Menu', {
+                            id: video._id,
+                          })
+                        }
+                      />
+                      <View style={styles.space} />
+                      <Button
+                        buttonStyle={styles.btnStyle}
+                        title="Delete Video"
+                        // onPress={() => deleteVideo(video, video.filename)}
+                        onPress={() => {
+                          setVideoSelectedData(video);
+                          setvideoSelectedFilename(video.filename);
+                          toggleDialog1();
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <View></View>
+                  )}
                 </View>
-                <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-                  <Dialog.Title title="Are you sure you want to delete all videos?" />
-                  <Text style={{fontSize: 20}}>
-                    These videos will be deleted immediately. You can't undo
-                    this action.
-                  </Text>
-                  <Dialog.Actions>
-                    <Dialog.Button
-                      title="Delete"
-                      onPress={() => deleteAllVideoDataObjects()}
-                    />
-                    <Dialog.Button
-                      title="Cancel"
-                      onPress={() => toggleDialog()}
-                    />
-                  </Dialog.Actions>
-                </Dialog>
-                <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
-                  <Dialog.Title title="Are you sure you want to delete this video?" />
-                  <Text style={{fontSize: 20}}>
-                    This item will be deleted immediately. You can't undo this
-                    action.
-                  </Text>
-                  <Dialog.Actions>
-                    <Dialog.Button
-                      title="Delete"
-                      onPress={() => {
-                        deleteVideo(videoSelectedData, videoSelectedFilename);
-                        toggleDialog1();
-                      }}
-                    />
-                    <Dialog.Button
-                      title="Cancel"
-                      onPress={() => toggleDialog1()}
-                    />
-                  </Dialog.Actions>
-                </Dialog>
-              </View>
-            );
-          })
-          : null}
+              );
+            })}
+          </View>
+        )}
+
+        {/* {videos !== null
+          ? videos.map((video: VideoData) => {
+              const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
+              const sentimentCounts = {}; // Create an object to keep track of sentiment counts
+              const isChecked = checkedVideos.has(video._id.toString());
+              video.emotionStickers.forEach((key: string) => {
+                const sentiment = JSON.parse(key).sentiment;
+
+                if (!sentimentCounts[sentiment]) {
+                  sentimentCounts[sentiment] = 1; // Initialize the count if not found
+                } else {
+                  sentimentCounts[sentiment]++; // Increment the count
+                }
+              });
+
+              // const videoURI = require(MHMRfolderPath + '/' + video.filename);
+              return (
+                <View
+                  style={{flexDirection: 'row', flexWrap: 'wrap'}}
+                  key={video._id.toString()}>
+                  
+                  {viewValue == 1 && (
+                    <View style={styles.container} key={video._id.toString()}>
+                      {selected ? (
+                        <View>
+                          <View style={styles.thumbnail}></View>
+                        </View>
+                      ) : (
+                        <View
+                          style={{
+                            paddingTop: 100,
+                          }}>
+                          <CheckBox
+                            checked={isChecked}
+                            onPress={() => {
+                              toggleVideoChecked(video._id.toString());
+                            }}
+                            containerStyle={{ backgroundColor: 'transparent' }}
+                          />
+                        </View>
+                      )}
+
+                      <View style={styles.thumbnail}>
+                        <ImageBackground
+                          style={{ height: '100%', width: '100%' }}
+                          source={{
+                            uri:
+                              'file://' + MHMRfolderPath + '/' + video.filename,
+                          }}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              navigation.navigate('Fullscreen Video', {
+                                id: video._id,
+                              })
+                            }>
+                            <Icon
+                              style={{ height: 240, justifyContent: 'center' }}
+                              name="play-sharp"
+                              type="ionicon"
+                              color="black"
+                              size={40}
+                            />
+                          </TouchableOpacity>
+                        </ImageBackground>
+                      </View>
+
+                      <View style={styles.rightContainer}>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              color: 'black',
+                              fontWeight: 'bold',
+                            }}>
+                            {video.title}
+                            {video.textComments.length !== 0 ? (
+                              <Icon
+                                name="chatbox-ellipses"
+                                type="ionicon"
+                                color="black"
+                                size={22}
+                                style={{
+                                  alignSelf: 'flex-start',
+                                  paddingLeft: 5,
+                                }}
+                              />
+                            ) : null}
+                          </Text>
+                          <Text style={{ fontSize: 20 }}>
+                            {video.datetimeRecorded?.toLocaleString()}
+                          </Text>
+
+                        
+                          <View
+                            style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                            {video.keywords.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#E1BE6A',
+                                    }}
+                                    textStyle={{ fontSize: 16 }}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'tag'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                            {video.locations.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    textStyle={{ fontSize: 16 }}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#40B0A6',
+                                    }}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'map-marker'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                          </View>
+                          <View
+                            style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                            {video.emotionStickers.map(key => {
+                              const sentiment = JSON.parse(key).sentiment;
+                              const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
+
+                              if (!displayedSentiments.has(sentiment)) {
+                                displayedSentiments.add(sentiment);
+                                return (
+                                  <View>
+                                    <Tooltip
+                                      title={`${sentiment} (${sentimentCounts[sentiment]})`}>
+                                      {imageSource && (
+                                        <Image
+                                          style={{ height: 60, width: 60 }}
+                                          source={imageSource}
+                                        />
+                                      )}
+                                    </Tooltip>
+                                    <Text style={{ fontWeight: 'bold' }}>
+                                      {sentimentCounts[sentiment]}
+                                    </Text>
+                                  </View>
+                                );
+                              }
+                              return null; // If sentiment has already been displayed, return null
+                            })}
+                          </View>
+                        </View>
+                      
+
+                        <View style={styles.buttonContainer}>
+                          <Button
+                            buttonStyle={styles.btnStyle}
+                            title="Review"
+                            onPress={() =>
+                              navigation.navigate('Review Annotations', {
+                                id: video._id,
+                              })
+                            }
+                          />
+                          <View style={styles.space} />
+                          <Button
+                            buttonStyle={styles.btnStyle}
+                            title="Add/Edit Markups"
+                            onPress={() =>
+                              navigation.navigate('Annotation Menu', {
+                                id: video._id,
+                              })
+                            }
+                          />
+                          <View style={styles.space} />
+                          <Button
+                            buttonStyle={styles.btnStyle}
+                            title="Delete Video"
+                            // onPress={() => deleteVideo(video, video.filename)}
+                            onPress={() => {
+                              setVideoSelectedData(video);
+                              setvideoSelectedFilename(video.filename);
+                              toggleDialog1();
+                            }}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  )}
+                  {viewValue == 2 && (
+                    // View if value == 2
+
+                      <View
+                      style={styles.gridContainer}>
+                      {!selected ? <View></View> : <View></View>}
+
+                      <View style={styles.gridItem}>
+                        <View style={styles.gridThumbnail}>
+                          <ImageBackground
+                            style={{height: '100%', width: '100%'}}
+                            source={{
+                              uri:
+                                'file://' +
+                                MHMRfolderPath +
+                                '/' +
+                                video.filename,
+                            }}>
+                            <TouchableOpacity
+                              onPress={() =>
+                                navigation.navigate('Fullscreen Video', {
+                                  id: video._id,
+                                })
+                              }>
+                              <Icon
+                                style={{
+                                  height: 240,
+                                  justifyContent: 'center',
+                                }}
+                                name="play-sharp"
+                                type="ionicon"
+                                color="black"
+                                size={40}
+                              />
+                            </TouchableOpacity>
+                          </ImageBackground>
+                        </View>
+                        
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              color: 'black',
+                              fontWeight: 'bold',
+                            }}>
+                            {video.title}
+                            {video.textComments.length !== 0 ? (
+                              <Icon
+                                name="chatbox-ellipses"
+                                type="ionicon"
+                                color="black"
+                                size={22}
+                                style={{
+                                  alignSelf: 'flex-start',
+                                  paddingLeft: 5,
+                                }}
+                              />
+                            ) : null}
+                          </Text>
+                          <Text style={{fontSize: 20}}>
+                            {video.datetimeRecorded?.toLocaleString()}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
+
+                 
+
+                  <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+                    <Dialog.Title title="Are you sure you want to delete all videos?" />
+                    <Text style={{fontSize: 20}}>
+                      These videos will be deleted immediately. You can't undo
+                      this action.
+                    </Text>
+                    <Dialog.Actions>
+                      <Dialog.Button
+                        title="Delete"
+                        onPress={() => deleteAllVideoDataObjects()}
+                      />
+                      <Dialog.Button
+                        title="Cancel"
+                        onPress={() => toggleDialog()}
+                      />
+                    </Dialog.Actions>
+                  </Dialog>
+                  <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
+                    <Dialog.Title title="Are you sure you want to delete this video?" />
+                    <Text style={{fontSize: 20}}>
+                      This item will be deleted immediately. You can't undo this
+                      action.
+                    </Text>
+                    <Dialog.Actions>
+                      <Dialog.Button
+                        title="Delete"
+                        onPress={() => {
+                          deleteVideo(videoSelectedData, videoSelectedFilename);
+                          toggleDialog1();
+                        }}
+                      />
+                      <Dialog.Button
+                        title="Cancel"
+                        onPress={() => toggleDialog1()}
+                      />
+                    </Dialog.Actions>
+                  </Dialog>
+                  
+                </View>
+                
+              );
+            })
+          : null} */}
         <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
           <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
             Scroll to Top
@@ -758,6 +1306,25 @@ const styles = StyleSheet.create({
     // paddingLeft: 8,
     borderBottomColor: 'black',
     borderBottomWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'black',
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+
+  gridContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+
+  gridItem: {
+    padding: 1,
+    width: '50%',
+    borderColor: 'black',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  gridThumbnail: {
+    height: 240,
+    padding: 4,
   },
   cardLeft: {
     marginVertical: 8,
