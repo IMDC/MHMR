@@ -30,7 +30,7 @@ import {CheckBox} from '@rneui/themed';
 import useAddToFile from '../components/addToFile';
 const worried = require('../assets/images/emojis/worried.png');
 
-const ViewRecordings = ({ selected }) => {
+const ViewRecordings = ({selected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
@@ -294,7 +294,6 @@ const ViewRecordings = ({ selected }) => {
             elevation: 8,
             zIndex: 100,
           }}>
-
           <Button
             style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
             buttonStyle={[styles.btnStyle, {}]}
@@ -838,7 +837,20 @@ const ViewRecordings = ({ selected }) => {
                             checked={isChecked}
                             size={25}
                             onPress={() => {
-                              toggleVideoChecked(video._id.toString());
+                              const updatedSelectedVideos = new Set(
+                                selectedVideos,
+                              );
+                              if (!isChecked) {
+                                toggleVideoChecked(video._id.toString());
+                                updatedSelectedVideos.add(video.filename);
+                                setSelectedVideos(updatedSelectedVideos);
+                                console.log('checked');
+                              } else if (isChecked) {
+                                toggleVideoChecked(video._id.toString());
+                                updatedSelectedVideos.delete(video.filename);
+                                setSelectedVideos(updatedSelectedVideos);
+                                console.log('unchecked');
+                              }
                             }}
                             wrapperStyle={{backgroundColor: 'transparent'}}
                             containerStyle={{
@@ -954,7 +966,10 @@ const ViewRecordings = ({ selected }) => {
               <Dialog.Actions>
                 <Dialog.Button
                   title="Delete"
-                  onPress={() => deleteAllVideoDataObjects()}
+                  onPress={() => {
+                    deleteAllVideoDataObjects();
+                    console.log('delete all videos');
+                  }}
                 />
                 <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
               </Dialog.Actions>

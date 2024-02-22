@@ -269,10 +269,19 @@ function Dashboard() {
 React.useEffect(() => {
   const fetchVideos = async () => {
     try {
+      const dashboardFolderPath =
+        RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
+      const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
+
+      if (!dashboardFolderExists) {
+        // Handle the case where the dashboard folder doesn't exist
+        console.log('Dashboard folder does not exist');
+        return; // Exit early
+      }
+
       const filteredVideos = await Promise.all(
         videosByDate.map(async (video: any) => {
-          const videoPath =
-            RNFS.DocumentDirectoryPath + '/MHMR/dashboard/' + video.filename;
+          const videoPath = dashboardFolderPath + video.filename;
           const exists = await RNFS.exists(videoPath);
           return exists ? video : null;
         }),
@@ -298,6 +307,7 @@ React.useEffect(() => {
   fetchVideos();
   // addVideosToDashboard();
 }, [videosByDate, selectedVideos]);
+
   //check file space
   /*
   const FSInfoResult = RNFS.getFSInfo();
