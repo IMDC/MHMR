@@ -27,8 +27,12 @@ const useAddToFile = (selectedVideos: Set<string>) => {
       }
     };
 
-    if (selectedVideos.size > 0) {
+    if (selectedVideos && selectedVideos.size > 0) {
       copyFiles();
+    } else if (!selectedVideos) {
+      console.log('selectedVideos is undefined');
+    } else {
+      console.log('selectedVideos.size is undefined');
     }
   }, [selectedVideos]);
 };

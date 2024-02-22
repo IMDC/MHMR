@@ -1,4 +1,4 @@
-import {useNavigation, ParamListBase} from '@react-navigation/native';
+import {useNavigation, ParamListBase, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as React from 'react';
 import axios from 'axios';
@@ -19,12 +19,16 @@ import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {base64} from 'rfc4648';
 import Config from 'react-native-config';
 import {API_OPENAI_CHATGPT} from '@env';
+import useAddToFile from '../components/addToFile';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
   const [auth, setAuth] = useState('');
   const [inputText, setInputText] = useState('');
   const [dashboardVideos, setDashboardVideos] = useState<any[]>([]);
+  const route = useRoute();
+  const selectedVideos = route.params?.selectedVideos;
+  useAddToFile(selectedVideos);
 
   const sendToChatGPT = async (textFileName, _id) => {
     try {
@@ -262,25 +266,38 @@ function Dashboard() {
     });
   };
 
-  React.useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const filteredVideos = await Promise.all(
-          videosByDate.map(async (video: any) => {
-            const videoPath =
-              RNFS.DocumentDirectoryPath + '/MHMR/dashboard/' + video.filename;
-            const exists = await RNFS.exists(videoPath);
-            return exists ? video : null;
-          }),
-        );
-        setVideos(filteredVideos.filter(video => video !== null));
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
-    };
+React.useEffect(() => {
+  const fetchVideos = async () => {
+    try {
+      const filteredVideos = await Promise.all(
+        videosByDate.map(async (video: any) => {
+          const videoPath =
+            RNFS.DocumentDirectoryPath + '/MHMR/dashboard/' + video.filename;
+          const exists = await RNFS.exists(videoPath);
+          return exists ? video : null;
+        }),
+      );
+      setVideos(filteredVideos.filter(video => video !== null));
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+    }
+  };
 
-    fetchVideos();
-  }, [videosByDate]);
+  // const addVideosToDashboard = async () => {
+  //   try {
+  //     if (selectedVideos) {
+  //       await useAddToFile(selectedVideos);
+  //       Alert.alert('Your videos have been added to the dashboard');
+  //     }
+  //   } catch (error) {
+  //     Alert.alert('Error adding videos to dashboard');
+  //     console.error('Error adding videos to dashboard:', error);
+  //   }
+  // };
+
+  fetchVideos();
+  // addVideosToDashboard();
+}, [videosByDate, selectedVideos]);
   //check file space
   /*
   const FSInfoResult = RNFS.getFSInfo();
@@ -288,6 +305,23 @@ function Dashboard() {
   */
 
   const [checkedVideos, setCheckedVideos] = React.useState(new Set());
+
+  const deleteVideo = (filename: string) => {
+    var path = MHMRdashboardPath + '/' + filename;
+    //delete from storage
+    return (
+      RNFS.unlink(path)
+        .then(() => {
+          console.log('FILE DELETED FROM STORAGE');
+          //delete from db
+        })
+
+        // `unlink` will throw an error, if the item to unlink does not exist
+        .catch(err => {
+          console.log(err.message);
+        })
+    );
+  };
 
   const toggleVideoChecked = (videoId: any) => {
     const updatedCheckedVideos = new Set(checkedVideos);
@@ -500,6 +534,16 @@ function Dashboard() {
                           keywords ({checkedTitles}) and locations (
                           {checkedLocations}) tagged.
                         </Text>
+                        <Button
+                          buttonStyle={styles.btnStyle}
+                          title="Remove Video From Dashboard"
+                          onPress={() => deleteVideo(video.filename)}
+                          // onPress={() => {
+                          //   setVideoSelectedData(video);
+                          //   setvideoSelectedFilename(video.filename);
+                          //   toggleDialog1();
+                          // }}
+                        />
                         <Button
                           onPress={() => {
                             setInputText(
