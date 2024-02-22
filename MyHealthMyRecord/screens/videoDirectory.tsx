@@ -30,7 +30,7 @@ import {CheckBox} from '@rneui/themed';
 import useAddToFile from '../components/addToFile';
 const worried = require('../assets/images/emojis/worried.png');
 
-const ViewRecordings = ({selected}) => {
+const ViewRecordings = ({selected, setSelected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
@@ -44,6 +44,7 @@ const ViewRecordings = ({selected}) => {
     setSelectedVideos(selected);
     navigation.navigate('Dashboard', {selectedVideos});
     Alert.alert('Your videos have been added to the dashboard');
+    setSelected(true);
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
   };
