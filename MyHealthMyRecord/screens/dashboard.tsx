@@ -266,47 +266,47 @@ function Dashboard() {
     });
   };
 
-React.useEffect(() => {
-  const fetchVideos = async () => {
-    try {
-      const dashboardFolderPath =
-        RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
-      const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
+  React.useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const dashboardFolderPath =
+          RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
+        const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
 
-      if (!dashboardFolderExists) {
-        // Handle the case where the dashboard folder doesn't exist
-        console.log('Dashboard folder does not exist');
-        return; // Exit early
+        if (!dashboardFolderExists) {
+          // Handle the case where the dashboard folder doesn't exist
+          console.log('Dashboard folder does not exist');
+          return; // Exit early
+        }
+
+        const filteredVideos = await Promise.all(
+          videosByDate.map(async (video: any) => {
+            const videoPath = dashboardFolderPath + video.filename;
+            const exists = await RNFS.exists(videoPath);
+            return exists ? video : null;
+          }),
+        );
+        setVideos(filteredVideos.filter(video => video !== null));
+      } catch (error) {
+        console.error('Error fetching videos:', error);
       }
+    };
 
-      const filteredVideos = await Promise.all(
-        videosByDate.map(async (video: any) => {
-          const videoPath = dashboardFolderPath + video.filename;
-          const exists = await RNFS.exists(videoPath);
-          return exists ? video : null;
-        }),
-      );
-      setVideos(filteredVideos.filter(video => video !== null));
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-    }
-  };
+    // const addVideosToDashboard = async () => {
+    //   try {
+    //     if (selectedVideos) {
+    //       await useAddToFile(selectedVideos);
+    //       Alert.alert('Your videos have been added to the dashboard');
+    //     }
+    //   } catch (error) {
+    //     Alert.alert('Error adding videos to dashboard');
+    //     console.error('Error adding videos to dashboard:', error);
+    //   }
+    // };
 
-  // const addVideosToDashboard = async () => {
-  //   try {
-  //     if (selectedVideos) {
-  //       await useAddToFile(selectedVideos);
-  //       Alert.alert('Your videos have been added to the dashboard');
-  //     }
-  //   } catch (error) {
-  //     Alert.alert('Error adding videos to dashboard');
-  //     console.error('Error adding videos to dashboard:', error);
-  //   }
-  // };
-
-  fetchVideos();
-  // addVideosToDashboard();
-}, [videosByDate, selectedVideos]);
+    fetchVideos();
+    // addVideosToDashboard();
+  }, [videosByDate, selectedVideos]);
 
   //check file space
   /*
