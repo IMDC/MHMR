@@ -782,12 +782,12 @@ const ViewRecordings = ({selected}) => {
                             <Button
                               buttonStyle={styles.btnStyle}
                               title="Delete Video"
-                              // onPress={() => deleteVideo(video, video.filename)}
-                              onPress={() => {
+                              onPress={() => deleteVideo(video, video.filename)}
+                              /* onPress={() => {
                                 setVideoSelectedData(video);
                                 setvideoSelectedFilename(video.filename);
                                 toggleDialog1();
-                              }}
+                              }} */
                             />
                           </View>
                         ) : (

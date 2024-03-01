@@ -162,6 +162,7 @@ function Dashboard() {
           if (videoToUpdate) {
             // Update the transcript property within the specific video object
             videoToUpdate.transcript = [transcript];
+            videoToUpdate.isTranscribed = true;
 
             console.log('Realm write operation completed');
           } else {
@@ -254,6 +255,7 @@ function Dashboard() {
 
       if (ReturnCode.isSuccess(returnCode)) {
         console.log('success');
+        video.isConverted = true;
       } else if (ReturnCode.isCancel(returnCode)) {
         console.log('canceled');
       } else {
