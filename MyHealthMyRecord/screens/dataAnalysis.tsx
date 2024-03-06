@@ -9,6 +9,9 @@ import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
 import { Rect } from 'react-native-svg';
 import { Dropdown } from 'react-native-element-dropdown';
+//import { useQuery, useRealm } from '../models/AnalysisData';
+import Realm from 'realm';
+import * as Styles from '../assets/util/styles';
 
 const DataAnalysis = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -23,30 +26,91 @@ const DataAnalysis = () => {
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
 
-  console.log(videosByDate);
+  //console.log(videosByDate);
 
   const [test, setTest] = useState(null);
 
   // get videos selected
-  const videosSelected = videoData.filtered('isConverted == $0', true);
+  const videosSelected = videoData.filtered('isTranscribed == true');
+  console.log(videosSelected);
 
   // loop through, get and save transcript to array with datetime and video id
-  for (let i = 0; i < videosByDate.length; i++) {
-    console.log(videosByDate[i]._id);
+  for (let i = 0; i < videosSelected.length; i++) {
+    let transcript = videosSelected[i].transcript;
+    console.log(transcript);
+    if (transcript.length > 0) getFreq(transcript[0]);
   }
 
   // in loop (?) do transcript count function
 
+  function getFreq(transcript: string) {
+
+    let M = new Map();
+
+    let word = "";
+
+    for (let i = 0; i < transcript.length; i++) {
+
+      if (transcript[i] === " ") {
+        if (!M.has(word)) {
+          M.set(word, 1);
+          word = "";
+        }
+        else {
+          M.set(word, M.get(word) + 1);
+          word = "";
+        }
+      }
+      else {
+        word += transcript[i];
+      }
+    }
+
+    if (!M.has(word)) {
+      M.set(word, 1);
+    } else {
+      M.set(word, M.get(word) + 1);
+    }
+
+    M = new Map([...M.entries()].sort());
+
+    // TODO separate into pronouns, etc. (stopwords/medwords)
+    const deleteWords = ["", "the", "I", "a", "had", "them", "they", "they're", "don't", "from", "and", "all", "are", "but", "so", "you", "is", "of"];
+    for (let i = 0; i < deleteWords.length; i++) {
+      M.delete(deleteWords[i]);
+    }
+
+    // TODO remove sentiments with %
+
+    for (let [key, value] of M) {
+      console.log(`${key} - ${value}`);
+    }
+    const obj = Object.fromEntries(M);
+    console.log(obj);
+    return M;
+  }
+
+  const createAnalysisData = (
+    freqDataInput: string[],
+  ) => {
+    realm.write(() => {
+      realm.create('AnalysisData', {
+        _id: new Realm.BSON.ObjectID(),
+        datetime: new Date(),
+        frequencyData: freqDataInput,
+      });
+    });
+  };
 
 
   /* ======================================================================= */
   return (
     <View>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-        <View style={{}}>
+      <View style={{ height: '100%', width: '100%'}}>
+        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <Button
-            onPress={() => navigation.navigate('Word Cloud')}
+            onPress={() => navigation.navigate('Bar Graph')}
             titleStyle={{ fontSize: 40 }}
             containerStyle={{
               width: 400,
@@ -55,12 +119,14 @@ const DataAnalysis = () => {
             }}
             iconRight={true}
             icon={{
-              name: 'cloud',
-              type: 'font-awesome',
+              name: 'chart-bar',
+              type: 'font-awesome-5',
               size: 40,
               color: 'white',
-            }}>
-            Word Cloud
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}>
+            Bar Graph
           </Button>
           <Button
             onPress={() => navigation.navigate('Line Graph')}
@@ -76,8 +142,30 @@ const DataAnalysis = () => {
               type: 'font-awesome-5',
               size: 40,
               color: 'white',
-            }}>
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}>
             Line Graph
+          </Button>
+          <Button
+            disabled={true}
+            onPress={() => navigation.navigate('Word Cloud')}
+            titleStyle={{ fontSize: 40 }}
+            containerStyle={{
+              width: 400,
+              marginHorizontal: 30,
+              marginVertical: 10,
+            }}
+            iconRight={true}
+            icon={{
+              name: 'cloud',
+              type: 'font-awesome',
+              size: 40,
+              color: 'white',
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}>
+            Word Cloud
           </Button>
           <Button
             onPress={() => navigation.navigate('Text Summary')}
@@ -93,28 +181,13 @@ const DataAnalysis = () => {
               type: 'font-awesome-5',
               size: 40,
               color: 'white',
-            }}>
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}>
             Text Summary
           </Button>
           <Button
-            onPress={() => navigation.navigate('Bar Graph')}
-            titleStyle={{ fontSize: 40 }}
-            containerStyle={{
-              width: 400,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-            iconRight={true}
-            icon={{
-              name: 'chart-bar',
-              type: 'font-awesome-5',
-              size: 40,
-              color: 'white',
-            }}>
-            Bar Graph
-          </Button>
-
-          <Button
+            disabled={true}
             onPress={() => navigation.navigate('Text Graph')}
             titleStyle={{ fontSize: 40 }}
             containerStyle={{
@@ -128,7 +201,9 @@ const DataAnalysis = () => {
               type: 'font-awesome-5',
               size: 40,
               color: 'white',
-            }}>
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}>
             Text Graph
           </Button>
         </View>
