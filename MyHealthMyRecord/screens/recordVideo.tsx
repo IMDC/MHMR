@@ -69,6 +69,7 @@ const RecordVideo = () => {
     }
     makeDirectory(MHMRfolderPath);
     makeDirectory(MHMRfolderPath + '/audio');
+    makeDirectory(MHMRfolderPath + '/dashboard');
   }, [videoSource]);
 
   /**
