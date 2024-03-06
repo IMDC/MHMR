@@ -28,26 +28,28 @@ import {Chip, Tooltip} from 'react-native-paper';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 import {CheckBox} from '@rneui/themed';
 import useAddToFile from '../components/addToFile';
-
 const worried = require('../assets/images/emojis/worried.png');
 
-const ViewRecordings = ({selected}) => {
+const ViewRecordings = ({selected, setSelected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
-  const [selectedVideos, setSelectedVideos] = useState(new Set<string>());
+  const [selectedVideos, setSelectedVideos] = useState(new Set());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
 
   const handlePress = () => {
-    setSelectedVideos(selected);; // Call the hook inside the component
-    navigation.navigate('Dashboard');
+    setSelectedVideos(selected);
+    navigation.navigate('Dashboard', {selectedVideos});
     Alert.alert('Your videos have been added to the dashboard');
+    setSelected(true);
+    setSelectedVideos(new Set());
+    setCheckedVideos(new Set());
   };
 
-   useAddToFile(selectedVideos);
+  // useAddToFile(selectedVideos);
 
   const toggleDialog = () => {
     setVisible(!visible);
@@ -206,6 +208,7 @@ const ViewRecordings = ({selected}) => {
             console.log('FILE DELETED FROM DB');
           });
         })
+
         // `unlink` will throw an error, if the item to unlink does not exist
         .catch(err => {
           console.log(err.message);
@@ -230,7 +233,8 @@ const ViewRecordings = ({selected}) => {
   useEffect(() => {
     {
       setVideos(videosByDate);
-      // console.log(videoData);
+      // console.log(videoData
+      // useAddToFile(selectedVideos);
       console.log('selectedVideos:', selectedVideos);
     }
   }, [selectedVideos]);
@@ -303,7 +307,7 @@ const ViewRecordings = ({selected}) => {
       )}
 
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
-        {/* <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
+        <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
           <Text
             style={{
               fontSize: 16,
@@ -312,7 +316,7 @@ const ViewRecordings = ({selected}) => {
             }}>
             Delete All Videos
           </Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
         <View
           style={{
             flexDirection: 'row',
@@ -621,7 +625,6 @@ const ViewRecordings = ({selected}) => {
                                   const updatedSelectedVideos = new Set(
                                     selectedVideos,
                                   );
-
                                   if (!isChecked) {
                                     toggleVideoChecked(video._id.toString());
                                     updatedSelectedVideos.add(video.filename);
@@ -783,11 +786,11 @@ const ViewRecordings = ({selected}) => {
                               buttonStyle={styles.btnStyle}
                               title="Delete Video"
                               onPress={() => deleteVideo(video, video.filename)}
-                              /* onPress={() => {
-                                setVideoSelectedData(video);
-                                setvideoSelectedFilename(video.filename);
-                                toggleDialog1();
-                              }} */
+                              // onPress={() => {
+                              //   setVideoSelectedData(video);
+                              //   setvideoSelectedFilename(video.filename);
+                              //   toggleDialog1();
+                              // }}
                             />
                           </View>
                         ) : (
@@ -835,7 +838,20 @@ const ViewRecordings = ({selected}) => {
                             checked={isChecked}
                             size={25}
                             onPress={() => {
-                              toggleVideoChecked(video._id.toString());
+                              const updatedSelectedVideos = new Set(
+                                selectedVideos,
+                              );
+                              if (!isChecked) {
+                                toggleVideoChecked(video._id.toString());
+                                updatedSelectedVideos.add(video.filename);
+                                setSelectedVideos(updatedSelectedVideos);
+                                console.log('checked');
+                              } else if (isChecked) {
+                                toggleVideoChecked(video._id.toString());
+                                updatedSelectedVideos.delete(video.filename);
+                                setSelectedVideos(updatedSelectedVideos);
+                                console.log('unchecked');
+                              }
                             }}
                             wrapperStyle={{backgroundColor: 'transparent'}}
                             containerStyle={{
@@ -928,12 +944,12 @@ const ViewRecordings = ({selected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Delete Video"
-                        // onPress={() => deleteVideo(video, video.filename)}
-                        onPress={() => {
-                          setVideoSelectedData(video);
-                          setvideoSelectedFilename(video.filename);
-                          toggleDialog1();
-                        }}
+                        onPress={() => deleteVideo(video, video.filename)}
+                        // onPress={() => {
+                        //   setVideoSelectedData(video);
+                        //   setvideoSelectedFilename(video.filename);
+                        //   toggleDialog1();
+                        // }}
                       />
                     </View>
                   ) : (
@@ -942,6 +958,41 @@ const ViewRecordings = ({selected}) => {
                 </View>
               );
             })}
+            <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+              <Dialog.Title title="Are you sure you want to delete all videos?" />
+              <Text style={{fontSize: 20}}>
+                These videos will be deleted immediately. You can't undo this
+                action.
+              </Text>
+              <Dialog.Actions>
+                <Dialog.Button
+                  title="Delete"
+                  onPress={() => {
+                    deleteAllVideoDataObjects();
+                    console.log('delete all videos');
+                  }}
+                />
+                <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
+              </Dialog.Actions>
+            </Dialog>
+
+            <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
+              <Dialog.Title title="Are you sure you want to delete this video?" />
+              <Text style={{fontSize: 20}}>
+                This item will be deleted immediately. You can't undo this
+                action.
+              </Text>
+              <Dialog.Actions>
+                <Dialog.Button
+                  title="Delete"
+                  onPress={() => {
+                    deleteVideo(videoSelectedData, videoSelectedFilename);
+                    toggleDialog1();
+                  }}
+                />
+                <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
+              </Dialog.Actions>
+            </Dialog>
           </View>
         )}
 
@@ -1212,44 +1263,7 @@ const ViewRecordings = ({selected}) => {
 
                  
 
-                  <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-                    <Dialog.Title title="Are you sure you want to delete all videos?" />
-                    <Text style={{fontSize: 20}}>
-                      These videos will be deleted immediately. You can't undo
-                      this action.
-                    </Text>
-                    <Dialog.Actions>
-                      <Dialog.Button
-                        title="Delete"
-                        onPress={() => deleteAllVideoDataObjects()}
-                      />
-                      <Dialog.Button
-                        title="Cancel"
-                        onPress={() => toggleDialog()}
-                      />
-                    </Dialog.Actions>
-                  </Dialog>
-                  <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
-                    <Dialog.Title title="Are you sure you want to delete this video?" />
-                    <Text style={{fontSize: 20}}>
-                      This item will be deleted immediately. You can't undo this
-                      action.
-                    </Text>
-                    <Dialog.Actions>
-                      <Dialog.Button
-                        title="Delete"
-                        onPress={() => {
-                          deleteVideo(videoSelectedData, videoSelectedFilename);
-                          toggleDialog1();
-                        }}
-                      />
-                      <Dialog.Button
-                        title="Cancel"
-                        onPress={() => toggleDialog1()}
-                      />
-                    </Dialog.Actions>
-                  </Dialog>
-                  
+                 
                 </View>
                 
               );

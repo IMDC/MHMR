@@ -33,7 +33,7 @@ import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
 import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
-import {Icon} from '@rneui/themed';
+import { Icon } from '@rneui/themed';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
@@ -41,8 +41,16 @@ const Tab: any = createBottomTabNavigator();
 function StackNav() {
   const [selected, setSelected] = React.useState(true);
 
+// useEffect(() => {
+//   console.log('View Recordings component mounted');
+//   setSelected(true);
+//   console.log('selected after reset:', selected);
+// }, []);
+
   return (
-    <Stack.Navigator initialRouteName="Home" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
+    <Stack.Navigator
+      initialRouteName="Home"
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Record Video" component={RecordVideo} />
       <Stack.Screen
@@ -62,7 +70,8 @@ function StackNav() {
             />
           ),
         }}>
-        {props => <ViewRecordings {...props} selected={selected} />}
+        
+        {() => <ViewRecordings selected={selected} setSelected={setSelected} />}
       </Stack.Screen>
       <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
       <Stack.Screen name="Review Annotations" component={ReviewAnnotations} />
@@ -73,19 +82,21 @@ function StackNav() {
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
       <Stack.Screen name="Painscale" component={Painscale} />
     </Stack.Navigator>
-  )
+  );
 }
 
 function DataAnalysisStack() {
   return (
-    <Stack.Navigator initialRouteName="Analysis" screenOptions={{ headerStyle: { backgroundColor: Styles.NavBarGrey } }}>
+    <Stack.Navigator
+      initialRouteName="Analysis"
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Data Analysis" component={DataAnalysis} />
       <Stack.Screen name="Bar Graph" component={DataAnalysisBarGraph} />
       <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
       <Stack.Screen name="Text Summary" component={DataAnalysisTextSummary} />
       <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
     </Stack.Navigator>
-  )
+  );
 }
 
 function App() {
@@ -108,14 +119,14 @@ function App() {
             options={{
               headerShown: false,
               tabBarLabel: 'Analysis',
-              headerStyle: { backgroundColor: Styles.NavBarGrey },
+              headerStyle: {backgroundColor: Styles.NavBarGrey},
               tabBarIcon: () => (
                 <Icon
                   name="bar-chart-outline"
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{ width: Styles.bottomNavIconSize }}
+                  style={{width: Styles.bottomNavIconSize}}
                 />
               ),
             }}
@@ -126,14 +137,14 @@ function App() {
             component={Dashboard}
             options={{
               tabBarLabel: 'Dashboard',
-              headerStyle: { backgroundColor: Styles.NavBarGrey },
+              headerStyle: {backgroundColor: Styles.NavBarGrey},
               tabBarIcon: () => (
                 <Icon
                   name="analytics-outline"
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{ width: Styles.bottomNavIconSize }}
+                  style={{width: Styles.bottomNavIconSize}}
                 />
               ),
             }}
@@ -151,7 +162,7 @@ function App() {
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{ width: Styles.bottomNavIconSize }}
+                  style={{width: Styles.bottomNavIconSize}}
                 />
               ),
             }}
@@ -161,14 +172,14 @@ function App() {
             component={Help}
             options={{
               tabBarLabel: 'Help',
-              headerStyle: { backgroundColor: Styles.NavBarGrey },
+              headerStyle: {backgroundColor: Styles.NavBarGrey},
               tabBarIcon: () => (
                 <Icon
                   name="information-circle-outline"
                   size={Styles.bottomNavIconSize}
                   type="ionicon"
                   color={Styles.MHMRBlue}
-                  style={{ width: Styles.bottomNavIconSize }}
+                  style={{width: Styles.bottomNavIconSize}}
                 />
               ),
             }}
