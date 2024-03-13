@@ -287,12 +287,12 @@ const ViewRecordings = ({selected, setSelected}) => {
         <View
           style={{
             position: 'absolute',
-            bottom: 0,
+            bottom: 30,
             left: 0,
             right: 0,
             alignItems: 'center',
             marginBottom: 10,
-            elevation: 8,
+            // elevation: 8,
             zIndex: 100,
           }}>
           <Button
@@ -630,12 +630,20 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     updatedSelectedVideos.add(video.filename);
                                     setSelectedVideos(updatedSelectedVideos);
                                     console.log('checked');
+                                    realm.write(() => {
+                                      video.isSelected = true;
+                                    });
+                                    console.log(video.isSelected);
                                   } else if (isChecked) {
                                     toggleVideoChecked(video._id.toString());
                                     updatedSelectedVideos.delete(
                                       video.filename,
                                     );
                                     setSelectedVideos(updatedSelectedVideos);
+                                    realm.write(() => {
+                                      video.isSelected = false;
+                                    });
+                                    console.log(video.isSelected);
                                     console.log('unchecked');
                                   }
                                 }}
