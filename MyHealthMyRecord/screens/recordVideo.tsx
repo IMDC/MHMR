@@ -334,6 +334,7 @@ const RecordVideo = () => {
         keywords: keywordInit,
         locations: locationInit,
         painScale: painscaleInit,
+        isSelected: false,
         isConverted: false,
         transcript:[],
         weekday: new Date().toString().split(' ')[0],
