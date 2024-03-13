@@ -9,6 +9,7 @@ import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
 import { Rect } from 'react-native-svg';
 import { Dropdown } from 'react-native-element-dropdown';
+import * as Styles from '../assets/util/styles';
 
 const DataAnalysisBarGraph = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -72,7 +73,7 @@ const DataAnalysisBarGraph = () => {
                     console.log(wordFreqBarGraphData[index]);
                     wordSelected[0] = index;
                     const wordLabel = wordFreqBarGraphData[wordSelected[0]].label;
-                    navigation.navigate('Line Graph', {wordLabel});
+                    navigation.navigate('Line Graph', { wordLabel });
                 },
                 onPressOut: () => {
                     wordSelected[0] = null;
@@ -243,14 +244,33 @@ const DataAnalysisBarGraph = () => {
                             />
                         </View>
                     )}
-                    <Button
-                        title="Horizontal"
-                        onPress={() => setBarGraphVertical(false)}
-                    />
-                    <Button
-                        title="Vertical"
-                        onPress={() => setBarGraphVertical(true)}
-                    />
+                    <View style={{ height: '20%', width: '100%' }}>
+                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                            <Button
+                                title="Horizontal"
+                                onPress={() => setBarGraphVertical(false)}
+                                color={Styles.MHMRBlue}
+                                radius={50}
+                                containerStyle={{
+                                    width: 200,
+                                    marginHorizontal: 30,
+                                    //marginVertical: 10,
+                                }}
+                            />
+                            <Button
+                                title="Vertical"
+                                onPress={() => setBarGraphVertical(true)}
+                                color={Styles.MHMRBlue}
+                                radius={50}
+                                containerStyle={{
+                                    width: 200,
+                                    marginHorizontal: 30,
+                                    //marginVertical: 10,
+                                }}
+                            />
+                        </View>
+                    </View>
+
                 </View>
 
 

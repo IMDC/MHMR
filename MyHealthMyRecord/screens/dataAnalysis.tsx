@@ -102,12 +102,50 @@ const DataAnalysis = () => {
     });
   };
 
+  const [session, setSessionValue] = useState(null);
+  const testSessionOptions = [
+    { label: 'ex 1 - DDMMYYYY/timestamp', value: 0 },
+    { label: 'ex 2 - DDMMYYYY/timestamp', value: 1 },
+    { label: 'ex 3 - DDMMYYYY/timestamp', value: 2 },
+  ];
 
   /* ======================================================================= */
   return (
     <View>
 
-      <View style={{ height: '100%', width: '100%'}}>
+      <View style={{ height: '30%', width: '100%' }}>
+        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 20 }}>Select Session: </Text>
+          <Dropdown
+            data={testSessionOptions}
+            maxHeight={400}
+            style={{ height: 50, width: 600, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+            placeholderStyle={{ fontSize: 22 }}
+            selectedTextStyle={{ fontSize: 22 }}
+            activeColor='#FFC745'
+            //backgroundColor='#FFC745'
+            labelField="label"
+            valueField="value"
+            value={session}
+            onChange={item => {
+              setSessionValue(item.value);
+            }}
+          />
+          <Button
+            title="View Videos in Session"
+            onPress={() => navigation.navigate('Dashboard')}
+            color={Styles.MHMRBlue}
+            radius={50}
+            containerStyle={{
+              width: 300,
+              marginHorizontal: 30,
+              marginVertical: 30,
+            }}
+          />
+        </View>
+      </View>
+
+      <View style={{ height: '70%', width: '100%' }}>
         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <Button
             onPress={() => navigation.navigate('Bar Graph')}

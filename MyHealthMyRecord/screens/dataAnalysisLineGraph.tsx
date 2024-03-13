@@ -1,11 +1,13 @@
 import { ParamListBase, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useState } from "react";
-import { Button, Dimensions, ScrollView, Text, View } from "react-native";
+import { Dimensions, ScrollView, Text, View } from "react-native";
+import { Button } from '@rneui/themed';
 import { Dropdown } from "react-native-element-dropdown";
 import Svg, { Rect } from "react-native-svg";
 import { LineChart, BarChart, Grid, YAxis, XAxis } from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
+import * as Styles from '../assets/util/styles';
 
 const DataAnalysisLineGraph = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -635,80 +637,92 @@ const DataAnalysisLineGraph = () => {
 
                     </View>
 
-                    <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
-                        <Button
-                            title="Previous"
-                            style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
-                            icon={{
-                                name: 'arrow-left',
-                                type: 'font-awesome',
-                                size: 15,
-                                color: 'white',
-                            }}
-                            onPress={() => {
-                                if (date > 0) {
-                                    setDateValue(date - 1);
-                                } else {
-                                    console.log("There is no previous date");
-                                }
-                            }}
-                        />
-                        <Dropdown
-                            data={dateOptions}
-                            maxHeight={300}
-                            style={{ width: 400 }}
-                            placeholderStyle={{ fontSize: 20 }}
-                            selectedTextStyle={{ fontSize: 20 }}
-                            labelField="label"
-                            valueField="value"
-                            onChange={item => {
-                                setDateValue(item.value);
-                            }}
-                        />
-                        <Button
-                            title="Next"
-                            style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
-                            iconPosition='right'
-                            icon={{
-                                name: 'arrow-right',
-                                type: 'font-awesome',
-                                size: 15,
-                                color: 'white',
-                            }}
-                            onPress={() => {
-                                if (date < dateOptions.length - 1) {
-                                    setDateValue(date + 1);
-                                } else {
-                                    console.log("There is no next date");
-                                }
-                            }}
-                        />
+                    <View style={{ height: '10%', width: '100%' }}>
+                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                            <Button
+                                title="Previous"
+                                color={Styles.MHMRBlue}
+                                radius={50}
+                                //style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
+                                icon={{
+                                    name: 'arrow-left',
+                                    type: 'font-awesome',
+                                    size: 15,
+                                    color: 'white',
+                                }}
+                                onPress={() => {
+                                    if (date > 0) {
+                                        setDateValue(date - 1);
+                                    } else {
+                                        console.log("There is no previous date");
+                                    }
+                                }}
+                            />
+                            <Dropdown
+                                data={dateOptions}
+                                maxHeight={300}
+                                style={{ width: 400, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+                                placeholderStyle={{ fontSize: 20 }}
+                                selectedTextStyle={{ fontSize: 20 }}
+                                labelField="label"
+                                valueField="value"
+                                value={date}
+                                onChange={item => {
+                                    setDateValue(item.value);
+                                }}
+                            />
+                            <Button
+                                title="Next"
+                                color={Styles.MHMRBlue}
+                                radius={50}
+                                //style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
+                                iconPosition='right'
+                                icon={{
+                                    name: 'arrow-right',
+                                    type: 'font-awesome',
+                                    size: 15,
+                                    color: 'white',
+                                }}
+                                onPress={() => {
+                                    if (date < dateOptions.length - 1) {
+                                        setDateValue(date + 1);
+                                    } else {
+                                        console.log("There is no next date");
+                                    }
+                                }}
+                            />
+                        </View>
                     </View>
 
                     <Text style={{ fontSize: 25, marginLeft: 20, marginTop: 20 }}>Filter and Sort</Text>
-                    <View style={{ flexDirection: 'row', marginLeft: 20 }}>
-                        <View id="period-dropdown" style={{ padding: 10 }}>
+
+                    <View style={{ height: '10%', width: '100%' }}>
+                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
+
+                        <View id="period-dropdown" >
                             <Text style={{ fontSize: 20 }}>Select Period: </Text>
                             <Dropdown
                                 data={periodOptions}
                                 maxHeight={300}
-                                style={{ width: 200 }}
+                                style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
                                 labelField="label"
                                 valueField="value"
+                                value={periodValue}
                                 onChange={item => {
                                     setPeriodValue(item.value);
                                 }}
                             />
                         </View>
                         {periodValue == '1' && (
-                            <View id="segmentDay-dropdown" style={{ padding: 10 }}>
+                            <View id="segmentDay-dropdown">
                                 <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
                                 <Dropdown
                                     data={segementDayOptions}
                                     //maxHeight={300}
-                                    style={{ width: 200 }}
+                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
                                     labelField="label"
                                     valueField="value"
+                                    value={segementDay}
                                     onChange={item => {
                                         setSegementDayValue(item.value);
                                     }}
@@ -716,14 +730,15 @@ const DataAnalysisLineGraph = () => {
                             </View>
                         )}
                         {periodValue == '2' && (
-                            <View id="segmentWeek-dropdown" style={{ padding: 10 }}>
+                            <View id="segmentWeek-dropdown">
                                 <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
                                 <Dropdown
                                     data={segementWeekOptions}
                                     //maxHeight={300}
-                                    style={{ width: 200 }}
+                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
                                     labelField="label"
                                     valueField="value"
+                                    value={segementWeek}
                                     onChange={item => {
                                         setSegementWeekValue(item.value);
                                     }}
@@ -731,14 +746,15 @@ const DataAnalysisLineGraph = () => {
                             </View>
                         )}
                         {periodValue == '3' && (
-                            <View id="segmentMonth-dropdown" style={{ padding: 10 }}>
+                            <View id="segmentMonth-dropdown">
                                 <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
                                 <Dropdown
                                     data={segementMonthOptions}
                                     //maxHeight={300}
-                                    style={{ width: 200 }}
+                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
                                     labelField="label"
                                     valueField="value"
+                                    value={segementMonth}
                                     onChange={item => {
                                         setSegementMonthValue(item.value);
                                     }}
@@ -746,11 +762,11 @@ const DataAnalysisLineGraph = () => {
                             </View>
                         )}
                     </View>
-
+                    </View>
                 </View>
 
             </View>
-        </View>
-);
+        </View >
+    );
 };
 export default DataAnalysisLineGraph;
