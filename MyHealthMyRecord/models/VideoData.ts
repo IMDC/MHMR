@@ -14,6 +14,7 @@ export class VideoData extends Realm.Object<VideoData> {
   keywords!: Realm.List<string>;
   painScale!: Realm.List<string>;
   isConverted!: boolean;
+  isSelected!: boolean;
   isTranscribed!: boolean;
   transcript!: Realm.List<string>;
   weekday!: Date;
@@ -34,7 +35,8 @@ export class VideoData extends Realm.Object<VideoData> {
       emotionStickers: {type: 'string[]', default: []},
       keywords: {type: 'mixed[]', default: []},
       painScale: {type: 'string[]', default: []},
-      isConverted: {type: 'bool', default: false},
+      isConverted: { type: 'bool', default: false },
+      isSelected: { type: 'bool', default: false },
       isTranscribed: {type: 'bool', default: false},
       transcript: {type: 'string[]', default: []},
       weekday: {
