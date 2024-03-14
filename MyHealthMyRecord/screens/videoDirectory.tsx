@@ -42,7 +42,9 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   const handlePress = () => {
     setSelectedVideos(selected);
-    navigation.navigate('Dashboard', {selectedVideos});
+    // Convert the Set to an array before passing it as a parameter
+    const selectedVideosArray = Array.from(selectedVideos);
+    navigation.navigate('Dashboard', {selectedVideos: selectedVideosArray});
     Alert.alert('Your videos have been added to the dashboard');
     setSelected(true);
     setSelectedVideos(new Set());
@@ -297,6 +299,7 @@ const ViewRecordings = ({selected, setSelected}) => {
           }}>
           <Button
             style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+            radius={50}
             buttonStyle={[styles.btnStyle, {}]}
             onPress={handlePress}>
             <Text style={{color: 'white', fontSize: 25}}>
@@ -627,7 +630,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   );
                                   if (!isChecked) {
                                     toggleVideoChecked(video._id.toString());
-                                    updatedSelectedVideos.add(video.filename);
+                                    updatedSelectedVideos.add(video._id.toString());
                                     setSelectedVideos(updatedSelectedVideos);
                                     console.log('checked');
                                     realm.write(() => {
@@ -637,7 +640,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   } else if (isChecked) {
                                     toggleVideoChecked(video._id.toString());
                                     updatedSelectedVideos.delete(
-                                      video.filename,
+                                      video._id.toString(),
                                     );
                                     setSelectedVideos(updatedSelectedVideos);
                                     realm.write(() => {

@@ -2,7 +2,7 @@ import {useNavigation, ParamListBase, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as React from 'react';
 import axios from 'axios';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -20,8 +20,9 @@ import {base64} from 'rfc4648';
 import Config from 'react-native-config';
 import {API_OPENAI_CHATGPT} from '@env';
 import useAddToFile from '../components/addToFile';
-import { Dropdown } from 'react-native-element-dropdown';
+import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
+import addToIsSelected from '../components/addToIsSelected';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
@@ -30,7 +31,10 @@ function Dashboard() {
   const [dashboardVideos, setDashboardVideos] = useState<any[]>([]);
   const route = useRoute();
   const selectedVideos = route.params?.selectedVideos;
-  useAddToFile(selectedVideos);
+  // updateSelectedVideos(selectedVideos);
+  // if (selectedVideos && selectedVideos.size > 0) {
+    // addToIsSelected(selectedVideos);
+  // }
 
   const sendToChatGPT = async (textFileName, _id) => {
     try {
@@ -234,7 +238,7 @@ function Dashboard() {
 
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-
+  const videosByIsSelected = videoData.filtered('isSelected == true');
   /**
    * Convert a video to a .wav type audio file and save it in the MHMR/audio folder on the device
    * @param video VideoData object
@@ -270,47 +274,57 @@ function Dashboard() {
     });
   };
 
-  React.useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const dashboardFolderPath =
-          RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
-        const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
+  useEffect(() => {
+    {
+      setVideos(videosByIsSelected);
+      // console.log(videoData
+      // useAddToFile(selectedVideos);
+      console.log('test');
+      console.log('selectedVideos:', selectedVideos);
+    }
+  }, [selectedVideos]);
 
-        if (!dashboardFolderExists) {
-          // Handle the case where the dashboard folder doesn't exist
-          console.log('Dashboard folder does not exist');
-          return; // Exit early
-        }
+  // React.useEffect(() => {
+  //   const fetchVideos = async () => {
+  //     try {
+  //       const dashboardFolderPath =
+  //         RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
+  //       const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
 
-        const filteredVideos = await Promise.all(
-          videosByDate.map(async (video: any) => {
-            const videoPath = dashboardFolderPath + video.filename;
-            const exists = await RNFS.exists(videoPath);
-            return exists ? video : null;
-          }),
-        );
-        setVideos(filteredVideos.filter(video => video !== null));
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
-    };
+  //       if (!dashboardFolderExists) {
+  //         // Handle the case where the dashboard folder doesn't exist
+  //         console.log('Dashboard folder does not exist');
+  //         return; // Exit early
+  //       }
 
-    // const addVideosToDashboard = async () => {
-    //   try {
-    //     if (selectedVideos) {
-    //       await useAddToFile(selectedVideos);
-    //       Alert.alert('Your videos have been added to the dashboard');
-    //     }
-    //   } catch (error) {
-    //     Alert.alert('Error adding videos to dashboard');
-    //     console.error('Error adding videos to dashboard:', error);
-    //   }
-    // };
+  //       const filteredVideos = await Promise.all(
+  //         videosByDate.map(async (video: any) => {
+  //           const videoPath = dashboardFolderPath + video.filename;
+  //           const exists = await RNFS.exists(videoPath);
+  //           return exists ? video : null;
+  //         }),
+  //       );
+  //       setVideos(filteredVideos.filter(video => video !== null));
+  //     } catch (error) {
+  //       console.error('Error fetching videos:', error);
+  //     }
+  //   };
 
-    fetchVideos();
-    // addVideosToDashboard();
-  }, [videosByDate, selectedVideos]);
+  //   // const addVideosToDashboard = async () => {
+  //   //   try {
+  //   //     if (selectedVideos) {
+  //   //       await useAddToFile(selectedVideos);
+  //   //       Alert.alert('Your videos have been added to the dashboard');
+  //   //     }
+  //   //   } catch (error) {
+  //   //     Alert.alert('Error adding videos to dashboard');
+  //   //     console.error('Error adding videos to dashboard:', error);
+  //   //   }
+  //   // };
+
+  //   fetchVideos();
+  //   // addVideosToDashboard();
+  // }, [videosByDate, selectedVideos]);
 
   //check file space
   /*
@@ -336,6 +350,28 @@ function Dashboard() {
         })
     );
   };
+
+  async function removeFromIsSelected(id: any) {
+    let realm: Realm | null = null;
+
+    try {
+      realm = await Realm.open({
+        schema: [VideoData.schema],
+        deleteRealmIfMigrationNeeded: true,
+      });
+
+      const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
+      if (video) {
+        realm.write(() => {
+          video.isSelected = false;
+        });
+      } else {
+        console.log(`Video with ID ${id} not found.`);
+      }
+    } catch (error) {
+      console.error('Error removing from isSelected:', error);
+    }
+  }
 
   const toggleVideoChecked = (videoId: any) => {
     const updatedCheckedVideos = new Set(checkedVideos);
@@ -610,7 +646,9 @@ function Dashboard() {
                           color={Styles.MHMRBlue}
                           title="Remove Video From Video Set"
                           radius={50}
-                          onPress={() => deleteVideo(video.filename)}
+                          onPress={() => {
+                            removeFromIsSelected(video._id),
+                          console.log(video.isSelected) }}
                           // onPress={() => {
                           //   setVideoSelectedData(video);
                           //   setvideoSelectedFilename(video.filename);
@@ -675,7 +713,6 @@ function Dashboard() {
 const styles = StyleSheet.create({
   btnStyle: {
     backgroundColor: '#1C3EAA',
-    
   },
   backgroundVideo: {
     position: 'absolute',
