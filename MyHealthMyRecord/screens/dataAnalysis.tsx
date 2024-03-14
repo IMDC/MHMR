@@ -9,7 +9,7 @@ import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
 import { Rect } from 'react-native-svg';
 import { Dropdown } from 'react-native-element-dropdown';
-//import { useQuery, useRealm } from '../models/AnalysisData';
+import { VideoSet } from '../models/VideoSet';
 import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
 
@@ -90,11 +90,11 @@ const DataAnalysis = () => {
     return M;
   }
 
-  const createAnalysisData = (
+  const createVideoSet = (
     freqDataInput: string[],
   ) => {
     realm.write(() => {
-      realm.create('AnalysisData', {
+      realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
         datetime: new Date(),
         frequencyData: freqDataInput,
@@ -102,8 +102,8 @@ const DataAnalysis = () => {
     });
   };
 
-  const [session, setSessionValue] = useState(null);
-  const testSessionOptions = [
+  const [videoSet, setVideoSetValue] = useState(null);
+  const testVideoSetOptions = [
     { label: 'ex 1 - DDMMYYYY/timestamp', value: 0 },
     { label: 'ex 2 - DDMMYYYY/timestamp', value: 1 },
     { label: 'ex 3 - DDMMYYYY/timestamp', value: 2 },
@@ -115,9 +115,9 @@ const DataAnalysis = () => {
 
       <View style={{ height: '30%', width: '100%' }}>
         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 20 }}>Select Session: </Text>
+          <Text style={{ fontSize: 20 }}>Select Video Set: </Text>
           <Dropdown
-            data={testSessionOptions}
+            data={testVideoSetOptions}
             maxHeight={400}
             style={{ height: 50, width: 600, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
             placeholderStyle={{ fontSize: 22 }}
@@ -126,13 +126,24 @@ const DataAnalysis = () => {
             //backgroundColor='#FFC745'
             labelField="label"
             valueField="value"
-            value={session}
+            value={videoSet}
             onChange={item => {
-              setSessionValue(item.value);
+              setVideoSetValue(item.value);
             }}
           />
           <Button
-            title="View Videos in Session"
+            title="View Videos in Video Set"
+            onPress={() => navigation.navigate('Dashboard')}
+            color={Styles.MHMRBlue}
+            radius={50}
+            containerStyle={{
+              width: 300,
+              marginHorizontal: 30,
+              marginVertical: 30,
+            }}
+          />
+          <Button
+            title="Save Video Set"
             onPress={() => navigation.navigate('Dashboard')}
             color={Styles.MHMRBlue}
             radius={50}
