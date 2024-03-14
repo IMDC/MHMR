@@ -1,6 +1,8 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import VideoPlayer from 'react-native-media-console';
+import axios from 'axios';
+import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {
   Alert,
   Dimensions,
@@ -28,9 +30,10 @@ import {Chip, Tooltip} from 'react-native-paper';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 import {CheckBox} from '@rneui/themed';
 import useAddToFile from '../components/addToFile';
+import {convertToAudio, getAuth, getTranscript} from '../components/stt_api';
 const worried = require('../assets/images/emojis/worried.png');
 
-const ViewRecordings = ({selected, setSelected}) => {
+const ViewRecordings = ({selected, setSelected, auth}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [checked, setChecked] = useState(1);
@@ -39,6 +42,105 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
+  const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
+
+  const convertToAudio = (video: VideoData) => {
+    console.log('convert to audio');
+    const wavFileName =
+      // 'file://' +
+      audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
+    const mp4FileName =
+      // 'file://' +
+      MHMRfolderPath + '/' + video.filename;
+
+    FFmpegKit.execute(
+      '-i ' +
+        mp4FileName +
+        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
+        wavFileName,
+    ).then(async session => {
+      const returnCode = await session.getReturnCode();
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        console.log('success');
+        video.isConverted = true;
+      } else if (ReturnCode.isCancel(returnCode)) {
+        console.log('canceled');
+      } else {
+        console.log('error');
+      }
+    });
+  };
+
+  const getTranscript = async (audioFileName: any, _id: any) => {
+    const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
+    const audioFiles = RNFS.readDir(audioFolderPath);
+
+    RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64').then(
+      data => {
+        console.log(
+          data.substring(0, 5),
+          ', ',
+          data.substring(data.length - 5),
+        );
+        transcribeAudio(base64.parse(data), _id);
+        //RNFS.writeFile(savePath, data, 'base64');
+      },
+    );
+    console.log('done');
+    //}
+    //});
+  };
+
+  /**
+   * Transcribe an audio file by sending request to IBM speech-to-text service
+   * @param body - The audio file to transcribe
+   */
+  const transcribeAudio = async (body: any, _id: any) => {
+    axios
+      .post(
+        'https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize',
+        body,
+        {
+          headers: {
+            Authorization: auth,
+            'Content-Type': 'audio/wav',
+          },
+        },
+      )
+      .then(response => {
+        const transcript =
+          response.data.results[0]?.alternatives[0]?.transcript || '';
+        const confidence =
+          response.data.results[0]?.alternatives[0]?.confidence || 0;
+        console.log('Transcript:', transcript);
+        console.log('Confidence:', confidence);
+        realm.write(() => {
+          // Assuming videoData is an array of video objects
+          const videoToUpdate = videoData.find(
+            video => video._id.toString() === _id,
+          );
+
+          if (videoToUpdate) {
+            // Update the transcript property within the specific video object
+            videoToUpdate.transcript = [transcript];
+            videoToUpdate.isTranscribed = true;
+
+            console.log('Realm write operation completed');
+          } else {
+            console.log('Could not find video to update in the array');
+          }
+        });
+      })
+      .catch((err: any) => {
+        console.log('Error during transcription:', err.message || err);
+
+        if (err.response?.status === 401) {
+          console.log('Need to get a new auth token');
+          getAuth();
+        }
+      });
+  };
 
   const handlePress = () => {
     setSelectedVideos(selected);
@@ -630,12 +732,16 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   );
                                   if (!isChecked) {
                                     toggleVideoChecked(video._id.toString());
-                                    updatedSelectedVideos.add(video._id.toString());
+                                    updatedSelectedVideos.add(
+                                      video._id.toString(),
+                                    );
                                     setSelectedVideos(updatedSelectedVideos);
                                     console.log('checked');
                                     realm.write(() => {
                                       video.isSelected = true;
                                     });
+                                    // convertToAudio(video);
+                                    // getTranscript(video.filename, video._id);
                                     console.log(video.isSelected);
                                   } else if (isChecked) {
                                     toggleVideoChecked(video._id.toString());

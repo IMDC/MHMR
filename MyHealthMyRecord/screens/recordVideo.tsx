@@ -89,7 +89,7 @@ const RecordVideo = () => {
       setRecordingInProgress(true);
       timeOfRecording[0] = 0;
       setEnableTimer(true);
-      getAuth();
+      // getAuth();
     }
   }
 
@@ -227,6 +227,7 @@ const RecordVideo = () => {
           // save video details to db here ?
           Alert.alert('Your recording has been saved');
           navigation.navigate('Home');
+          // getTranscript(fileName, saveDate[0], 'Bearer ' + getAuth());
         })
         .catch(err => {
           console.log(err.message);

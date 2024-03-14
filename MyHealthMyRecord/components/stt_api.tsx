@@ -1,8 +1,11 @@
-import * as React from 'react';
+import Realm from 'realm';
 import axios from 'axios';
 import RNFS from 'react-native-fs';
-import { FFmpegKit } from 'ffmpeg-kit-react-native';
+import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import Config from 'react-native-config';
+import { VideoData, useRealm } from '../models/VideoData';
+
+ const realm = useRealm();
 
 export const getAuth = async () => {
   try {
@@ -38,10 +41,17 @@ export const getAuth = async () => {
   }
 };
 
-export const getTranscript = async (audioFileName: any, _id: any, auth: string) => {
+export const getTranscript = async (
+  audioFileName: any,
+  _id: any,
+  auth: string,
+) => {
   try {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-    const data = await RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64');
+    const data = await RNFS.readFile(
+      audioFolderPath + '/' + audioFileName,
+      'base64',
+    );
     console.log(data.substring(0, 5), ', ', data.substring(data.length - 5));
     await transcribeAudio(data, _id, auth);
     console.log('done');
@@ -61,7 +71,7 @@ const transcribeAudio = async (body: any, _id: any, auth: string) => {
           Authorization: auth,
           'Content-Type': 'audio/wav',
         },
-      }
+      },
     );
     const transcript =
       response.data.results[0]?.alternatives[0]?.transcript || '';
@@ -79,5 +89,32 @@ const transcribeAudio = async (body: any, _id: any, auth: string) => {
       // Call transcribeAudio again with the new auth token
     }
     throw error;
+  }
+};
+
+export const convertToAudio = async (video: VideoData) => {
+  
+  const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
+  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+  try {
+    console.log('convert to audio');
+    const wavFileName =
+      audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
+    const mp4FileName = MHMRfolderPath + '/' + video.filename;
+
+    await FFmpegKit.execute(
+      '-i ' +
+        mp4FileName +
+        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
+        wavFileName,
+    );
+
+    console.log('Conversion completed');
+    realm.write(() => {
+      video.isConverted = true;
+      console.log('Video converted:', video.isConverted);
+    });
+  } catch (error) {
+    console.error('Error converting video to audio:', error);
   }
 };
