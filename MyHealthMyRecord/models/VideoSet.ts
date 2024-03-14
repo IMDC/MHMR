@@ -1,7 +1,7 @@
 import {createRealmContext} from '@realm/react';
 import Realm from 'realm';
 
-export class AnalysisData extends Realm.Object<AnalysisData> {
+export class VideoSet extends Realm.Object<VideoSet> {
     _id!: Realm.BSON.ObjectId;
     //userId!: number;
     datetime!: Date;
@@ -9,7 +9,7 @@ export class AnalysisData extends Realm.Object<AnalysisData> {
     frequencyData!: Realm.List<string>;
   
     static schema = {
-      name: 'VideoData',
+      name: 'VideoSet',
       primaryKey: '_id',
       properties: {
         _id: {type: 'objectId', default: new Realm.BSON.ObjectID()},
@@ -23,6 +23,6 @@ export class AnalysisData extends Realm.Object<AnalysisData> {
   
   export const {RealmProvider, useRealm, useObject, useQuery} =
     createRealmContext({
-      schema: [AnalysisData.schema],
+      schema: [VideoSet.schema],
       deleteRealmIfMigrationNeeded: true,
     });
