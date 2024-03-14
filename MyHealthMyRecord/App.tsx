@@ -60,6 +60,7 @@ function StackNav() {
           headerRight: () => (
             <Button
               buttonStyle={{backgroundColor: Styles.MHMRBlue}}
+              radius={50}
               onPress={() => {
                 setSelected(!selected);
                 console.log('selected:', selected);
@@ -70,7 +71,6 @@ function StackNav() {
             />
           ),
         }}>
-        
         {() => <ViewRecordings selected={selected} setSelected={setSelected} />}
       </Stack.Screen>
       <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />

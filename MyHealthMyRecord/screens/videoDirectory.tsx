@@ -773,6 +773,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                             <Button
                               buttonStyle={styles.btnStyle}
                               title="Review"
+                              radius={50}
                               onPress={() =>
                                 navigation.navigate('Review Annotations', {
                                   id: video._id,
@@ -782,6 +783,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                             <View style={styles.space} />
                             <Button
                               buttonStyle={styles.btnStyle}
+                              radius={50}
                               title="Add/Edit Markups"
                               onPress={() =>
                                 navigation.navigate('Annotation Menu', {
@@ -792,6 +794,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                             <View style={styles.space} />
                             <Button
                               buttonStyle={styles.btnStyle}
+                              radius={50}
                               title="Delete Video"
                               onPress={() => deleteVideo(video, video.filename)}
                               // onPress={() => {

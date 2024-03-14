@@ -155,7 +155,7 @@ const ReviewAnnotations = () => {
         }}>
         <VideoPlayer
           videoRef={videoPlayerRef}
-          source={{ uri: MHMRfolderPath + '/' + video.filename }}
+          source={{uri: MHMRfolderPath + '/' + video.filename}}
           paused={true}
           disableBack={true}
           toggleResizeModeOnFullscreen={true}
@@ -174,18 +174,25 @@ const ReviewAnnotations = () => {
           }
         />
         {overlayComment[0] != '' ? (
-          <View style={[styles.overlayText, styles.overlayTextForComment, { marginRight: windowWidth / 1.5 }]}>
+          <View
+            style={[
+              styles.overlayText,
+              styles.overlayTextForComment,
+              {marginRight: windowWidth / 1.5},
+            ]}>
             <Icon
               name="chatbox-ellipses"
               type="ionicon"
               color="black"
               size={40}
-            //style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
+              //style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
             />
           </View>
         ) : null}
         {overlaySticker[0] != '' ? (
-          <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlaySticker[0]}</Text>
+          <Text style={[styles.overlayText, {marginRight: windowWidth / 1.5}]}>
+            {overlaySticker[0]}
+          </Text>
         ) : null}
       </View>
 
@@ -199,8 +206,8 @@ const ReviewAnnotations = () => {
                 return (
                   <Chip
                     key={JSON.parse(key).title}
-                    style={{ margin: 2 }}
-                    textStyle={{ fontSize: 18 }}
+                    style={{margin: 2}}
+                    textStyle={{fontSize: 18}}
                     mode="outlined"
                     compact={true}>
                     {JSON.parse(key).title}
@@ -213,8 +220,8 @@ const ReviewAnnotations = () => {
                 return (
                   <Chip
                     key={JSON.parse(key).title}
-                    style={{ margin: 2 }}
-                    textStyle={{ fontSize: 18 }}
+                    style={{margin: 2}}
+                    textStyle={{fontSize: 18}}
                     mode="outlined"
                     compact={true}>
                     {JSON.parse(key).title}
@@ -231,30 +238,26 @@ const ReviewAnnotations = () => {
             <ScrollView style={styles.container}>
               {parsedComments.length != 0
                 ? parsedComments.map((c: any, i) => {
-                  return (
-                    <View
-                      ref={el => {
-                        if (el != null) {
-                          commentRef[i] = el;
-                        }
-                      }}
-                      key={c.id}
-                      style={[styles.commentContainer, styles.row]}
-                    >
+                    return (
                       <View
-                        style={styles.row}>
-                        <TouchableOpacity
-                          onPress={() => seekToTimestamp(c.timestamp)}
-                        >
-                          <Text key={c.id} style={styles.textStyle}>
-                            {secondsToHms(c.timestamp)} - {c.text}
-                          </Text>
-                        </TouchableOpacity>
+                        ref={el => {
+                          if (el != null) {
+                            commentRef[i] = el;
+                          }
+                        }}
+                        key={c.id}
+                        style={[styles.commentContainer, styles.row]}>
+                        <View style={styles.row}>
+                          <TouchableOpacity
+                            onPress={() => seekToTimestamp(c.timestamp)}>
+                            <Text key={c.id} style={styles.textStyle}>
+                              {secondsToHms(c.timestamp)} - {c.text}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
-
-                    </View>
-                  );
-                })
+                    );
+                  })
                 : null}
             </ScrollView>
           </SafeAreaView>
@@ -267,39 +270,36 @@ const ReviewAnnotations = () => {
             <ScrollView style={styles.container}>
               {parsedStickers.length != 0
                 ? parsedStickers.map((s: any, i) => {
-                  return (
-                    <View
-                      ref={el => {
-                        if (el != null) {
-                          stickerRef[i] = el;
-                        }
-                      }}
-                      key={s.id}
-                      style={[styles.commentContainer, styles.row]}
-                    >
-                      <View style={styles.row}>
-                        <TouchableOpacity
-                          onPress={() => seekToTimestamp(s.timestamp)}
-                        >
-                          <Text style={styles.textStyle}>
-                            {secondsToHms(s.timestamp)} - {s.sentiment}
-                          </Text>
-                        </TouchableOpacity>
+                    return (
+                      <View
+                        ref={el => {
+                          if (el != null) {
+                            stickerRef[i] = el;
+                          }
+                        }}
+                        key={s.id}
+                        style={[styles.commentContainer, styles.row]}>
+                        <View style={styles.row}>
+                          <TouchableOpacity
+                            onPress={() => seekToTimestamp(s.timestamp)}>
+                            <Text style={styles.textStyle}>
+                              {secondsToHms(s.timestamp)} - {s.sentiment}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
-
-                    </View>
-                  );
-                })
+                    );
+                  })
                 : null}
             </ScrollView>
           </SafeAreaView>
-
         </View>
       </View>
 
       <Button
-        buttonStyle={{ width: 220, height: 75, alignSelf: 'center' }}
+        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         color="#1C3EAA"
+        radius={50}
         title="Save Changes"
         onPress={() => saveChanges()}
       />

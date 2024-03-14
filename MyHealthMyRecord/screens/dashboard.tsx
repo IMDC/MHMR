@@ -20,6 +20,8 @@ import {base64} from 'rfc4648';
 import Config from 'react-native-config';
 import {API_OPENAI_CHATGPT} from '@env';
 import useAddToFile from '../components/addToFile';
+import { Dropdown } from 'react-native-element-dropdown';
+import * as Styles from '../assets/util/styles';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
@@ -353,9 +355,18 @@ function Dashboard() {
       animated: true,
     });
   };
+
+  const [session, setSessionValue] = useState(null);
+  const testSessionOptions = [
+    {label: 'ex 1 - DDMMYYYY/timestamp', value: 0},
+    {label: 'ex 2 - DDMMYYYY/timestamp', value: 1},
+    {label: 'ex 3 - DDMMYYYY/timestamp', value: 2},
+  ];
+
   return (
     <View>
-      {buttonPressed ? (
+      {/* beginning of dashboard */}
+      {/* {buttonPressed ? (
         <Button
           onPress={() => {
             setButtonPressed(!buttonPressed);
@@ -371,14 +382,58 @@ function Dashboard() {
           }}>
           Select Videos
         </Button>
-      )}
+      )} */}
 
-      <Button onPress={getAuth}>get auth</Button>
+      {/* <Button onPress={getAuth}>get auth</Button> */}
       {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
       {/* <Button onPress={transcribeAudio}>transcribe audio</Button>
       <Button onPress={cognosSession}>cognos session</Button> */}
 
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
+        {/* <View style={{height: '15%', width: '100%'}}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingTop: 10,
+            }}>
+            <Text style={{fontSize: 20}}>Select Session: </Text>
+            <Dropdown
+              data={testSessionOptions}
+              maxHeight={400}
+              style={{
+                height: 50,
+                width: 600,
+                paddingHorizontal: 20,
+                backgroundColor: '#DBDBDB',
+                borderRadius: 22,
+              }}
+              placeholderStyle={{fontSize: 22}}
+              selectedTextStyle={{fontSize: 22}}
+              activeColor="#FFC745"
+              //backgroundColor='#FFC745'
+              labelField="label"
+              valueField="value"
+              value={session}
+              onChange={item => {
+                setSessionValue(item.value);
+              }}
+            />
+            <Button
+              title="View Videos in Session"
+              onPress={() => navigation.navigate('Dashboard')}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{
+                width: 300,
+                marginHorizontal: 30,
+                marginVertical: 30,
+              }}
+            />
+          </View>
+        </View> */}
         {videos !== null
           ? videos.map((video: VideoData) => {
               const isTranscriptEmpty = video => {
@@ -536,19 +591,25 @@ function Dashboard() {
                           })}
                         </View>
                       </View>
-                      <View>
+                      {/* <View>
                         <Text>Transcript: {video.transcript}</Text>
-                      </View>
-                      <View>
                         <Text>
                           Prompt: Summarize this video transcript "
                           {video.transcript} " and include the summary of the
                           keywords ({checkedTitles}) and locations (
                           {checkedLocations}) tagged.
                         </Text>
+                      </View> */}
+                      <View>
                         <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Remove Video From Dashboard"
+                          buttonStyle={{
+                            width: 250,
+                            height: 50,
+                            alignSelf: 'center',
+                          }}
+                          color={Styles.MHMRBlue}
+                          title="Remove Video From Video Set"
+                          radius={50}
                           onPress={() => deleteVideo(video.filename)}
                           // onPress={() => {
                           //   setVideoSelectedData(video);
@@ -556,7 +617,8 @@ function Dashboard() {
                           //   toggleDialog1();
                           // }}
                         />
-                        <Button
+                        {/* send to chatgpt button */}
+                        {/* <Button
                           onPress={() => {
                             setInputText(
                               'Summarize this video transcript (' +
@@ -573,9 +635,9 @@ function Dashboard() {
                             );
                           }}>
                           Send to ChatGPT
-                        </Button>
+                        </Button> */}
                       </View>
-                      <Text>{video.filename}</Text>
+                      {/* <Text>{video.filename}</Text> */}
                       <View style={styles.buttonContainer}>
                         {/* <Button
                         buttonStyle={styles.btnStyle}
@@ -613,6 +675,7 @@ function Dashboard() {
 const styles = StyleSheet.create({
   btnStyle: {
     backgroundColor: '#1C3EAA',
+    
   },
   backgroundVideo: {
     position: 'absolute',
@@ -626,8 +689,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexWrap: 'wrap',
     // paddingLeft: 8,
-    borderBottomColor: 'black',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: 'black',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   cardLeft: {
     marginVertical: 8,
