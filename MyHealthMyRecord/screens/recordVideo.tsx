@@ -10,6 +10,7 @@ import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { useQuery, useRealm } from '../models/VideoData';
 import Realm from 'realm';
 import { createRealmContext } from '@realm/react';
+import { getAuth, getTranscript } from '../components/stt_api';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -88,6 +89,7 @@ const RecordVideo = () => {
       setRecordingInProgress(true);
       timeOfRecording[0] = 0;
       setEnableTimer(true);
+      getAuth();
     }
   }
 
