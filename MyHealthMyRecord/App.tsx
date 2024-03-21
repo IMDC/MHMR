@@ -82,7 +82,7 @@ function StackNav() {
               onPress={() => {
                 setSelected(!selected);
                 console.log('selected:', selected);
-                handleAuth();
+                // handleAuth();
               }}
               // if selected = false, then change the button to say "Done"
               // if selected = true, then change the button to say "Select Videos"

@@ -11,10 +11,12 @@ import { useQuery, useRealm } from '../models/VideoData';
 import Realm from 'realm';
 import { createRealmContext } from '@realm/react';
 import { getAuth, getTranscript } from '../components/stt_api';
+import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
+  
   const camera: any = useRef(null);
   const videoPlayer: any = useRef();
   const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
@@ -206,7 +208,14 @@ const RecordVideo = () => {
     const filePath = path.replace('file://', '');
     const pathSegments = filePath.split('/');
     const fileName = pathSegments[pathSegments.length - 1];
+    const audioFileName = fileName.replace('.mp4', '.wav');
+    const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
 
+     const audioFolderExists = await RNFS.exists(audioFolderPath);
+     if (!audioFolderExists) {
+       await RNFS.mkdir(audioFolderPath);
+    }
+    
     // delete console logs later
     console.log(filePath);
     // ex. /data/user/0/com.myhealthmyrecord/cache/VisionCamera-20230606_1208147672158123173592211.mp4
@@ -222,9 +231,23 @@ const RecordVideo = () => {
     try {
       createVideoData(fileName, videoSource.duration, saveDate[0]);
       RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
-        .then(() => {
+        .then(async () => {
           console.log('File moved.');
-          // save video details to db here ?
+          // convert to audio
+          const ffmpegCommand = `-i ${MHMRfolderPath}/${fileName} -vn -acodec pcm_s16le -ar 44100 -ac 2 ${audioFolderPath}/${audioFileName}`;
+          const session = await FFmpegKit.execute(ffmpegCommand);
+          const returnCode = await session.getReturnCode();
+
+              if (ReturnCode.isSuccess(returnCode)) {
+                console.log('Conversion success');
+                // if isConverted is for audio and not STT
+                // video.isConverted = true;
+              } else if (ReturnCode.isCancel(returnCode)) {
+                console.log('Conversion canceled');
+              } else {
+                console.error('Conversion failed');
+              }
+
           Alert.alert('Your recording has been saved');
           navigation.navigate('Home');
           // getTranscript(fileName, saveDate[0], 'Bearer ' + getAuth());
@@ -233,6 +256,7 @@ const RecordVideo = () => {
           console.log(err.message);
         });
     } catch (err: any) {
+      console.error('Error during video saving or conversion:', err);
       Alert.alert(
         'There was an issue saving your recording. Please try again.',
       );

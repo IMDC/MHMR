@@ -796,15 +796,15 @@ const ViewRecordings = ({selected, setSelected}) => {
                                       video.isSelected = true;
                                     });
                                     convertToAudio(video);
-                                    realm.write(() => {
-                                      video.isConverted = true;
-                                    });
-                                    getAuth();
-                                    getTranscript(
-                                      video.filename.replace('.mp4', '') +
-                                        '.wav',
-                                      video._id.toString(),
-                                    );
+                                    // realm.write(() => {
+                                    //   video.isConverted = true;
+                                    // });
+                                    // getAuth();
+                                    // getTranscript(
+                                    //   video.filename.replace('.mp4', '') +
+                                    //     '.wav',
+                                    //   video._id.toString(),
+                                    // );
 
                                     console.log('checked');
                                     console.log(video.isSelected);
