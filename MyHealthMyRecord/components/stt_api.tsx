@@ -5,8 +5,6 @@ import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import Config from 'react-native-config';
 import { VideoData, useRealm } from '../models/VideoData';
 
- const realm = useRealm();
-
 export const getAuth = async () => {
   try {
     let headersList = {

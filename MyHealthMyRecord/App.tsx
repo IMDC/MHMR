@@ -34,7 +34,7 @@ import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
-import {getAuth, getTranscript,} from './components/stt_api';
+import {getAuth} from './components/stt_api';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
@@ -90,7 +90,8 @@ function StackNav() {
             />
           ),
         }}>
-        {() => <ViewRecordings selected={selected} setSelected={setSelected} auth={auth} />}
+        {() => <ViewRecordings selected={selected} setSelected={setSelected}
+        />}
       </Stack.Screen>
       <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
       <Stack.Screen name="Review Annotations" component={ReviewAnnotations} />

@@ -30,12 +30,17 @@ import {Chip, Tooltip} from 'react-native-paper';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 import {CheckBox} from '@rneui/themed';
 import useAddToFile from '../components/addToFile';
-import {convertToAudio, getAuth, getTranscript} from '../components/stt_api';
+// import {getAuth} from '../components/stt_api';
+import {base64} from 'rfc4648';
 const worried = require('../assets/images/emojis/worried.png');
+import Config from 'react-native-config';
+import {sendToChatGPT} from '../components/chatgpt_api';
 
-const ViewRecordings = ({selected, setSelected, auth}) => {
+const ViewRecordings = ({selected, setSelected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
+  const [auth, setAuth] = useState('');
+  const [inputText, setInputText] = useState('');
   const [checked, setChecked] = useState(1);
   const [selectedVideos, setSelectedVideos] = useState(new Set());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
@@ -43,6 +48,39 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
     '',
   );
   const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
+
+  const getAuth = async () => {
+    try {
+      let headersList = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+
+      let bodyContent =
+        'grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=' +
+        Config.API_KEY_SPEECH_TO_TEXT;
+
+      let reqOptions = {
+        url: 'https://iam.cloud.ibm.com/identity/token',
+        method: 'POST',
+        headers: headersList,
+        data: bodyContent,
+      };
+
+      let response = await axios.request(reqOptions);
+      setAuth(response.data.token_type + ' ' + response.data.access_token);
+      console.log('New auth token set:', response.data.access_token);
+    } catch (error) {
+      console.error('Error getting auth token:', error.message);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('No response received. Request details:', error.request);
+      } else {
+        console.error('Error details:', error.message);
+      }
+    }
+  };
 
   const convertToAudio = (video: VideoData) => {
     console.log('convert to audio');
@@ -74,7 +112,6 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
 
   const getTranscript = async (audioFileName: any, _id: any) => {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-    const audioFiles = RNFS.readDir(audioFolderPath);
 
     RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64').then(
       data => {
@@ -84,12 +121,9 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
           data.substring(data.length - 5),
         );
         transcribeAudio(base64.parse(data), _id);
-        //RNFS.writeFile(savePath, data, 'base64');
       },
     );
     console.log('done');
-    //}
-    //});
   };
 
   /**
@@ -142,12 +176,26 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
       });
   };
 
+  const getVideoIdFromFilename = filename => {
+    const video = videoData.find(video => video.filename === filename);
+    return video ? video._id : null;
+  };
+
   const handlePress = () => {
     setSelectedVideos(selected);
-    // Convert the Set to an array before passing it as a parameter
-    const selectedVideosArray = Array.from(selectedVideos);
-    navigation.navigate('Dashboard', {selectedVideos: selectedVideosArray});
+    navigation.navigate('Dashboard', {selectedVideos});
     Alert.alert('Your videos have been added to the dashboard');
+    // selectedVideos.forEach(async filename => {
+    //   try {
+    //     // Assuming _id and inputText are already defined in your context
+    //     const videoId = getVideoIdFromFilename(filename);
+    //     await sendToChatGPT(filename, videoId.toString());
+    //     console.log(`Successfully processed ${filename}`);
+    //   } catch (error) {
+    //     console.error(`Error processing ${filename}:`, error);
+    //   }
+    // });
+
     setSelected(true);
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
@@ -413,14 +461,14 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
 
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
         <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
-          <Text
+          {/* <Text
             style={{
               fontSize: 16,
               // paddingRight: 20,
               color: 'black',
             }}>
             Delete All Videos
-          </Text>
+          </Text> */}
         </TouchableOpacity>
         <View
           style={{
@@ -700,8 +748,17 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
                     }
                   });
 
+                  const isTranscriptEmpty = video => {
+                    return (
+                      video.transcript === undefined || video.transcript === ''
+                    );
+                  };
+
+                  const transcriptIsEmpty = isTranscriptEmpty(video);
+
                   return (
                     <View style={styles.container} key={video._id.toString()}>
+                      <View></View>
                       <View style={styles.thumbnail}>
                         <ImageBackground
                           style={{height: '100%', width: '100%'}}
@@ -730,23 +787,34 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
                                   const updatedSelectedVideos = new Set(
                                     selectedVideos,
                                   );
-                                  if (!isChecked) {
+                                  if (!isChecked && !transcriptIsEmpty) {
                                     toggleVideoChecked(video._id.toString());
-                                    updatedSelectedVideos.add(
-                                      video._id.toString(),
-                                    );
+                                    updatedSelectedVideos.add(video.filename);
                                     setSelectedVideos(updatedSelectedVideos);
-                                    console.log('checked');
+
                                     realm.write(() => {
                                       video.isSelected = true;
                                     });
-                                    // convertToAudio(video);
-                                    // getTranscript(video.filename, video._id);
+                                    convertToAudio(video);
+                                    realm.write(() => {
+                                      video.isConverted = true;
+                                    });
+                                    getAuth();
+                                    getTranscript(
+                                      video.filename.replace('.mp4', '') +
+                                        '.wav',
+                                      video._id.toString(),
+                                    );
+
+                                    console.log('checked');
                                     console.log(video.isSelected);
+                                  } else if (!isChecked && transcriptIsEmpty) {
+                                    toggleVideoChecked(video._id.toString());
+                                    console.log('else if checked');
                                   } else if (isChecked) {
                                     toggleVideoChecked(video._id.toString());
                                     updatedSelectedVideos.delete(
-                                      video._id.toString(),
+                                      video.filename,
                                     );
                                     setSelectedVideos(updatedSelectedVideos);
                                     realm.write(() => {
@@ -791,6 +859,7 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
                               fontWeight: 'bold',
                             }}>
                             {video.title}
+
                             {video.textComments.length !== 0 ? (
                               <Icon
                                 name="chatbox-ellipses"
@@ -807,6 +876,7 @@ const ViewRecordings = ({selected, setSelected, auth}) => {
                           <Text style={{fontSize: 20}}>
                             {video.datetimeRecorded?.toLocaleString()}
                           </Text>
+                          <Text>{video.filename}</Text>
 
                           <View
                             style={{flexDirection: 'row', flexWrap: 'wrap'}}>

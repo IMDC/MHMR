@@ -190,37 +190,6 @@ function Dashboard() {
       });
   };
 
-  const cognosSession = async () => {
-    var bodyFormData = new FormData();
-    bodyFormData.append('expiresIn', 3600);
-    bodyFormData.append(
-      'webDomain',
-      'http://127.0.0.1:5500/connectWatson.html',
-    );
-    axios
-      .post('https://dde-us-south.analytics.ibm.com/daas/v1/session', {
-        headers: {
-          authorization:
-            'Basic <base64 158e9446-f8b4-4b7d-a909-1b3635ddb8f1:9d61b8972454239901863057b753424994391b0e>',
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        data: bodyFormData,
-      })
-      .then((data: any) => {
-        console.log(data);
-        console.log(data.data.results);
-      })
-      .catch((err: any) => {
-        console.log(err.response);
-        console.log(err.response.data);
-        //console.log(err.response.headers);
-        if (err.response.status == 401) {
-          console.log('need to get new auth token');
-        }
-      });
-  };
-
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [videos, setVideos] = React.useState<any | null>(null);
   const [buttonPressed, setButtonPressed] = React.useState(false);
@@ -243,35 +212,58 @@ function Dashboard() {
    * Convert a video to a .wav type audio file and save it in the MHMR/audio folder on the device
    * @param video VideoData object
    */
-  const convertToAudio = (video: VideoData) => {
+  const convertToAudio = async (video: VideoData) => {
     console.log('convert to audio');
     const mp3FileName =
-      // 'file://' +
       audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.mp3';
     const wavFileName =
-      // 'file://' +
       audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
-    const mp4FileName =
-      // 'file://' +
-      MHMRfolderPath + '/' + video.filename;
+    const mp4FileName = MHMRfolderPath + '/' + video.filename;
 
+    // Check if the input MP4 file exists
+    const mp4FileExists = await RNFS.exists(mp4FileName);
+    if (!mp4FileExists) {
+      console.error('Input file does not exist:', mp4FileName);
+      return; // Exit the function if the file doesn't exist
+    }
+
+    // Ensure the output audio directory exists
+    const audioFolderExists = await RNFS.exists(audioFolderPath);
+    if (!audioFolderExists) {
+      try {
+        await RNFS.mkdir(audioFolderPath);
+      } catch (error) {
+        console.error(
+          'Failed to create output directory:',
+          audioFolderPath,
+          error,
+        );
+        return; // Exit the function if unable to create the directory
+      }
+    }
+
+    // Execute FFmpegKit command
     FFmpegKit.execute(
       '-i ' +
         mp4FileName +
         ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
         wavFileName,
-    ).then(async session => {
-      const returnCode = await session.getReturnCode();
+    )
+      .then(async session => {
+        const returnCode = await session.getReturnCode();
 
-      if (ReturnCode.isSuccess(returnCode)) {
-        console.log('success');
-        video.isConverted = true;
-      } else if (ReturnCode.isCancel(returnCode)) {
-        console.log('canceled');
-      } else {
-        console.log('error');
-      }
-    });
+        if (ReturnCode.isSuccess(returnCode)) {
+          console.log('success');
+          video.isConverted = true;
+        } else if (ReturnCode.isCancel(returnCode)) {
+          console.log('cancelled');
+        } else {
+          console.log('error with FFmpegKit execution');
+        }
+      })
+      .catch(error => {
+        console.error('FFmpegKit execution failed:', error);
+      });
   };
 
   useEffect(() => {
@@ -506,11 +498,15 @@ function Dashboard() {
                         }}>
                         <CheckBox
                           checked={isChecked}
-                          onPress={() => {
+                          onPress={async () => {
+                            // Mark this function as async
                             if (!isChecked && !transcriptIsEmpty) {
                               toggleVideoChecked(video._id.toString());
-                              convertToAudio(video);
+                              // Assuming getAuth doesn't need to wait for convertToAudio, you can call it without await
                               getAuth();
+
+                              await convertToAudio(video); // Wait for convertToAudio to complete
+
                               getTranscript(
                                 video.filename.replace('.mp4', '') + '.wav',
                                 video._id.toString(),
@@ -639,7 +635,6 @@ function Dashboard() {
                       <View>
                         <Button
                           buttonStyle={{
-                            width: 250,
                             height: 50,
                             alignSelf: 'center',
                           }}
@@ -648,7 +643,8 @@ function Dashboard() {
                           radius={50}
                           onPress={() => {
                             removeFromIsSelected(video._id),
-                          console.log(video.isSelected) }}
+                              console.log(video.isSelected);
+                          }}
                           // onPress={() => {
                           //   setVideoSelectedData(video);
                           //   setvideoSelectedFilename(video.filename);
