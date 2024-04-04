@@ -54,7 +54,7 @@ const DataAnalysisBarGraph = () => {
             value: 1,
         },
         {
-            label: "Fever",
+            label: "Test",
             value: 0,
         },
     ]
@@ -83,15 +83,15 @@ const DataAnalysisBarGraph = () => {
         })
     );
 
-    const CUT_OFF = 14;
-    const Labels = ({ x, y, bandwidth, data }) => (
+    const CUT_OFF_VER = 14;
+    const LabelsVertical = ({ x, y, bandwidth, data }) => (
         wordFreqBarGraphData.map((value, index) => (
             <svg.Text
                 key={index}
-                x={x(index) + (bandwidth / 2)}
-                y={value.value > CUT_OFF ? y(value.value) + 20 : y(value.value) - 15}
+                x={x(index) + (bandwidth / 2) - 10}
+                y={value.value > CUT_OFF_VER ? y(value.value) + 20 : y(value.value) - 15}
                 fontSize={20}
-                fill={value.value > CUT_OFF ? 'white' : 'black'}
+                fill={value.value > CUT_OFF_VER ? 'white' : 'black'}
                 alignmentBaseline={'middle'}
 
             >
@@ -99,6 +99,22 @@ const DataAnalysisBarGraph = () => {
             </svg.Text>
         ))
     );
+
+    const CUT_OFF_HOR = 14
+        const LabelsHorizontal = ({  x, y, bandwidth, data }) => (
+            wordFreqBarGraphData.map((value, index) => (
+                <Text
+                    key={ index }
+                    x={ value.value > CUT_OFF_HOR ? x(value.value) + 0 : x(value.value) - 10 }
+                    y={ y(index) + (bandwidth / 2) - 10 }
+                    fontSize={ 14 }
+                    fill={ value.value > CUT_OFF_HOR ? 'white' : 'black' }
+                    alignmentBaseline={ 'middle' }
+                >
+                    {value.value}
+                </Text>
+            ))
+        )
 
     /* ======================================================================= */
 
@@ -187,22 +203,22 @@ const DataAnalysisBarGraph = () => {
                                     //horizontal={true}
                                     yAccessor={({ item }) => item.y.value}
                                     //xAccessor={({ item }) => item.y.value}
-                                    svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
+                                    svg={{ fill: 'rgba('+ Styles.MHMRBlueRGB + ', 0.7)' }}
                                     contentInset={{ top: 10, bottom: 10 }}
                                     spacing={0.2}
                                     gridMin={0}
                                 >
                                     <Grid direction={Grid.Direction.HORIZONTAL} />
-                                    <Labels />
+                                    <LabelsVertical />
                                 </BarChart>
                             </View>
                             <XAxis
-                                style={{ height: 100, marginTop: 20, marginBottom: 20 }}
+                                style={{ height: 100, marginTop: 0, marginBottom: 20 }}
                                 //xAccessor={({ index }) => index}
                                 //contentInset={{ left: 20, right: 40 }}
                                 data={wordFreqBarGraphData}
                                 scale={scale.scaleBand}
-                                svg={{ fontSize: 20, rotation: 40, fill: 'black', originY: 35, translateY: 0 }}
+                                svg={{ fontSize: 20, rotation: 25, fill: 'black', originY: 55, translateY: 20 }}
                                 formatLabel={(value, index) => wordFreqBarGraphData[index].label}
                             //labelStyle={ { color: 'black' } }
                             />
@@ -210,7 +226,7 @@ const DataAnalysisBarGraph = () => {
                     ) : (
                         <View id="bargraph-horizontal">
                             <Text>Frequency of Words mentioned in Selected Video</Text>
-                            <View style={{ flexDirection: 'row', height: 200, paddingVertical: 16 }}>
+                            <View style={{ flexDirection: 'row', height: 400, paddingVertical: 16 }}>
                                 <YAxis
                                     data={wordFreqBarGraphData}
                                     yAccessor={({ index }) => index}
@@ -218,20 +234,25 @@ const DataAnalysisBarGraph = () => {
                                     contentInset={{ top: 10, bottom: 10 }}
                                     spacing={0.2}
                                     formatLabel={(value, index) => wordFreqBarGraphData[index].label}
+                                    svg={{ fontSize: 20, margin: 10 }}
+                                    
                                 />
                                 <BarChart
                                     style={{ flex: 1, marginLeft: 8 }}
                                     data={wordFreq}
                                     horizontal={true}
                                     yAccessor={({ item }) => item.y.value}
-                                    svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
+                                    svg={{ fill: 'rgba('+ Styles.MHMRBlueRGB + ', 0.7)' }}
                                     contentInset={{ top: 10, bottom: 10 }}
                                     spacing={0.2}
                                     gridMin={0}
+                                    //bandwidth={30}
+                                    //spacingInner={0.1}
+                                    //spacingOuter={0.1}
                                 //on={({ item }) => console.log(item.value)}
                                 >
                                     <Grid direction={Grid.Direction.VERTICAL} />
-                                    {/* <Labels /> */}
+                                    <LabelsHorizontal />
                                 </BarChart>
                             </View>
                             <XAxis
