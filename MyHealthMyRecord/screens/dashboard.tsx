@@ -487,8 +487,8 @@ function Dashboard() {
               const transcriptIsEmpty = isTranscriptEmpty(video);
               const isChecked = checkedVideos.has(video._id.toString());
               return (
-                <View>
-                  <View style={styles.container} key={video._id.toString()}>
+                <View key={video._id.toString()}>
+                  <View style={styles.container}>
                     {!buttonPressed ? (
                       <View></View>
                     ) : (
