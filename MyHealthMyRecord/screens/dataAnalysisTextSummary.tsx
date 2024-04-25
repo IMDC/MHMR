@@ -31,7 +31,7 @@ const DataAnalysisTextSummary = () => {
               .join(', ');
 
             return (
-              <View style={styles.container}>
+              <View key={video._id.toString()} style={styles.container}>
                 <View style={{padding: 5}}>
                   <Text
                     style={{fontWeight: 'bold', fontSize: 32, color: 'black'}}>
