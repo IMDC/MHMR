@@ -505,6 +505,30 @@ const DataAnalysisLineGraph = () => {
         </G>
     )
 
+    interface DecoratorProps {
+        x: (arg: number) => number,
+        y: (arg: number) => number,
+        data: number[]
+    }
+    
+    const Dots = (props: Partial<DecoratorProps>) => {
+        const { x, y, data } = props 
+        return (
+            <>
+                {data?.map((value, index) => (
+                    <Circle
+                        key={index}
+                        cx={x(index)}
+                        cy={y(value)}
+                        r={4}
+                        stroke={'rgb(0, 0, 0)'}
+                        fill={'white'}
+                    />
+                ))}
+            </>
+        )
+    }
+
     return (
         <View>
             <View style={{ height: '87%' }}>

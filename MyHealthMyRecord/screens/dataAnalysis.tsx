@@ -60,9 +60,10 @@ const DataAnalysis = () => {
   // loop through, get and save transcript to array with datetime and video id
   for (let i = 0; i < videosSelected.length; i++) {
     let transcript = videosSelected[i].transcript;
+    let datetime = videosSelected[i].datetimeRecorded;
     console.log(transcript);
     if (transcript.length > 0) {
-      getFreq(transcript[0]);
+      getFreq(transcript[0], datetime);
     } else {
       console.log("empty transcript");
     }
@@ -70,7 +71,11 @@ const DataAnalysis = () => {
 
   // in loop (?) do transcript count function
 
-  function getFreq(transcript: string) {
+  const [map, setMap] = useState<any>([]);
+  const [trackedDates, setTrackedDates] = useState(null);
+  const [barData, setBarData] = useState<any>([]);
+
+  function getFreq(transcript: string, datetime: any) {
 
     let M = new Map();
 
@@ -102,19 +107,25 @@ const DataAnalysis = () => {
     M = new Map([...M.entries()].sort());
 
     // TODO separate into pronouns, etc. (stopwords/medwords)
-    const stopWords = ["HESITATION","I", "i", "ive", "im", "id", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "can", "will", "just", "dont", "should", "now"];
+    const stopWords = ["", "HESITATION","I", "i", "ive", "im", "id", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "can", "will", "just", "dont", "should", "now"];
     const medWords = ["hurt", "hurts", "hurting", "sore", "soreness", "dizzy", "dizziness", "vertigo", "light-headed", "chill", "chills", "diarrhea", "stiff", "stiffness", "pain", "painful", "nausea", "nauseous", "nauseate", "nauseated", "insomnia", "sick", "fever", "ache", "aches", "ached", "aching", "pains", "flu", "vomit", "vomiting", "cough", "coughing", "coughs", "coughed", "tired", "exhausted", "numb", "numbness", "numbed", "weak", "weakness", "tingle", "tingling", "tingles", "tingled", "fever", "shiver", "shivering", "shivered", "rash", "swell", "swollen", "sweat", "sweaty", "sweats", "fatigue", "fatigued", "heartburn", "headache", "headaches", "constipation", "constipated", "bloated", "bloating", "cramp", "cramps", "cramped", "cramping"];
     for (let i = 0; i < stopWords.length; i++) {
       M.delete(stopWords[i]);
     }
 
-    // TODO remove sentiments with %
 
+
+    let jsonTest = [];
+    let dayJson = [];
     for (let [key, value] of M) {
       console.log(`${key} - ${value}`);
+      jsonTest.push({ label: `${key}`, value: `${value}`, date: datetime });
+      dayJson.push({ label: datetime.getHours(), value: `${value}` });
     }
     const obj = Object.fromEntries(M);
     console.log(obj);
+    console.log(jsonTest);
+    console.log(dayJson);
     return M;
   }
 
@@ -122,29 +133,6 @@ const DataAnalysis = () => {
     //M = 
   }
 
-  function saveVideoSet(frequencyData: string[], videoIDs: string[]) {
-    let tempName = Date().toString().split(' GMT-')[0];
-
-  }
-
-  function getVideoSetName() {
-
-  }
-
-  const createVideoSet = (
-    frequencyData: string[],
-    videoIDs: string[],
-  ) => {
-    realm.write(() => {
-      realm.create('VideoSet', {
-        _id: new Realm.BSON.ObjectID(),
-        datetime: new Date(),
-        name: new Date().toString().split(' GMT-')[0],
-        frequencyData: frequencyData,
-        videoIDs: videoIDs,
-      });
-    });
-  };
 
   const [videoSetValue, setVideoSetValue] = useState(0);
   let testVideoSetOptions = [];
@@ -156,26 +144,6 @@ const DataAnalysis = () => {
       console.log(dropdownOptions[i]);
     }
     setVideoSetDropdown(dropdownOptions);
-  }
-
-  /**
-   * Deselect videos after user changes videoset selection from dropdown
-   */
-  function deselectVideos() {
-    for (let i = 0; i < videosSelected.length; i++) {
-      videosSelected[i].isSelected = false;
-    }
-  }
-
-  /**
-   * Select new videos after user changes videoset selection from dropdown
-   */
-  function selectVideos() {
-    let targetVideoSet = "";
-    for (let i = 0; i < videoSetDropdown.length; i++) {
-      if (videoSetValue == videoSetDropdown[i].value) targetVideoSet = videoSetDropdown.id;
-    }
-    // tbc
   }
 
   /* ======================================================================= */
@@ -202,7 +170,7 @@ const DataAnalysis = () => {
         </Dialog.Actions>
       </Dialog> */}
 
-      <View style={{ height: '30%', width: '100%' }}>
+      <View style={{ height: '25%', width: '100%' }}>
         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ fontSize: 20 }}>Select Video Set: </Text>
           <Dropdown
@@ -231,7 +199,7 @@ const DataAnalysis = () => {
               marginVertical: 30,
             }}
           />
-          <Button
+{/*           <Button
             title="Save Video Set"
             onPress={() => createVideoSet([], videoSetIDs)}
             color={Styles.MHMRBlue}
@@ -241,14 +209,16 @@ const DataAnalysis = () => {
               marginHorizontal: 30,
               marginVertical: 30,
             }}
-          />
+          /> */}
         </View>
       </View>
 
       <View style={{ height: '70%', width: '100%' }}>
         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <Button
-            onPress={() => navigation.navigate('Bar Graph')}
+            onPress={() => navigation.navigate('Bar Graph', {
+              data: barData,
+            })}
             titleStyle={{ fontSize: 40 }}
             containerStyle={{
               width: 400,
