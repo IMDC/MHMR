@@ -234,7 +234,7 @@ const RecordVideo = () => {
         .then(async () => {
           console.log('File moved.');
           // convert to audio
-          const ffmpegCommand = `-i ${MHMRfolderPath}/${fileName} -vn -acodec pcm_s16le -ar 44100 -ac 2 ${audioFolderPath}/${audioFileName}`;
+          const ffmpegCommand = `-i ${MHMRfolderPath}/${fileName} -ar 16000 -ac 1 -vn -acodec pcm_s16le ${audioFolderPath}/${audioFileName}`;
           const session = await FFmpegKit.execute(ffmpegCommand);
           const returnCode = await session.getReturnCode();
 

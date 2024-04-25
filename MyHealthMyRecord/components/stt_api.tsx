@@ -4,6 +4,7 @@ import RNFS from 'react-native-fs';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import Config from 'react-native-config';
 import { VideoData, useRealm } from '../models/VideoData';
+import {Buffer} from 'buffer';
 
 export const getAuth = async () => {
   try {
@@ -40,21 +41,23 @@ export const getAuth = async () => {
 };
 
 export const getTranscript = async (
-  audioFileName: any,
-  _id: any,
+  audioFileName: string,
+  _id: string,
   auth: string,
 ) => {
   try {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-    const data = await RNFS.readFile(
-      audioFolderPath + '/' + audioFileName,
-      'base64',
-    );
+    const audioFilePath = `${audioFolderPath}/${audioFileName}`;
+    const data = await RNFS.readFile(audioFilePath, 'base64');
+    const bufferData = Buffer.from(data, 'base64'); // Correctly convert base64 to binary
     console.log(data.substring(0, 5), ', ', data.substring(data.length - 5));
-    await transcribeAudio(data, _id, auth);
+    await transcribeAudio(bufferData, _id, auth); // Use bufferData instead of data
     console.log('done');
   } catch (error) {
-    console.error('Error reading audio file:', error);
+    console.error('Error during transcription:', error.message);
+    if (error.response) {
+      console.error('Response error:', error.response.data);
+    }
     throw error;
   }
 };
@@ -82,37 +85,11 @@ const transcribeAudio = async (body: any, _id: any, auth: string) => {
     console.log('Error during transcription:', error.message || error);
 
     if (error.response?.status === 401) {
-      console.log('Need to get a new auth token');
-      await getAuth();
-      // Call transcribeAudio again with the new auth token
+      console.log('Authentication error, obtaining new token...');
+      const newAuth = await getAuth();
+      await transcribeAudio(body, _id, newAuth); // Ensure to use the new token
     }
+
     throw error;
-  }
-};
-
-export const convertToAudio = async (video: VideoData) => {
-  
-  const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
-  try {
-    console.log('convert to audio');
-    const wavFileName =
-      audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
-    const mp4FileName = MHMRfolderPath + '/' + video.filename;
-
-    await FFmpegKit.execute(
-      '-i ' +
-        mp4FileName +
-        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
-        wavFileName,
-    );
-
-    console.log('Conversion completed');
-    realm.write(() => {
-      video.isConverted = true;
-      console.log('Video converted:', video.isConverted);
-    });
-  } catch (error) {
-    console.error('Error converting video to audio:', error);
   }
 };

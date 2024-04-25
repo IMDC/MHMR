@@ -1,11 +1,43 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text} from 'react-native';
 import {Dialog} from '@rneui/themed';
-import {useRealm} from '../models/VideoData';
+import { useRealm } from '../models/VideoData';
+import { getAuth, getTranscript } from './stt_api';
+import { VideoData } from '../models/VideoData';
+import RNFS from 'react-native-fs';
 
 const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
   const realm = useRealm();
   const [selectedVideoCount, setSelectedVideoCount] = useState(0);
+
+ const processSelectedVideos = async () => {
+   const auth = await getAuth();
+   const selectedVideos: Realm.Results<VideoData> = realm
+     .objects<VideoData>('VideoData')
+     .filtered('isConverted == false AND isSelected == true');
+   
+   console.log(`Found ${selectedVideos.length} videos to process.`);
+
+   for (const video of selectedVideos) {
+     const audioFileName = video.filename.replace('.mp4', '.wav');
+     console.log('audioFileName:', audioFileName);
+      console.log(
+        `Processing video ${video._id.toHexString()}: ${audioFileName}`,
+      );
+     
+     try {
+       await getTranscript(audioFileName, video._id.toHexString(), auth); 
+       console.log(
+         `Transcription successful for video ${video._id.toHexString()}`,
+       );
+     } catch (error) {
+       console.error(
+         `Failed to process video ${video._id.toHexString()}:`,
+         error,
+       );
+     }
+   }
+ };
 
   useEffect(() => {
     const selectedVideos = realm
@@ -14,7 +46,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
     console.log('Selected Videos:', selectedVideos);
     console.log('Count:', selectedVideos.length);
     setSelectedVideoCount(selectedVideos.length);
-  }, [onlineDialogVisible, realm]); // Re-run this effect when the dialog becomes visible or the realm instance changes
+  }, [onlineDialogVisible, realm]); 
 
   if (selectedVideoCount === 0) {
     return null;
@@ -63,6 +95,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
               title="YES"
               onPress={() => {
                 console.log('YES clicked!');
+                processSelectedVideos();
                 toggleOnlineDialog();
               }}
             />
