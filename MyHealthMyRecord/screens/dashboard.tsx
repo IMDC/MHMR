@@ -344,14 +344,6 @@ function Dashboard() {
   };
 
   async function removeFromIsSelected(id: any) {
-    let realm: Realm | null = null;
-
-    try {
-      realm = await Realm.open({
-        schema: [VideoData.schema],
-        deleteRealmIfMigrationNeeded: true,
-      });
-
       const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
       if (video) {
         realm.write(() => {
@@ -360,9 +352,6 @@ function Dashboard() {
       } else {
         console.log(`Video with ID ${id} not found.`);
       }
-    } catch (error) {
-      console.error('Error removing from isSelected:', error);
-    }
   }
 
   const toggleVideoChecked = (videoId: any) => {

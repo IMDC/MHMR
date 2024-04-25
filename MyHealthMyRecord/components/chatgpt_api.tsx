@@ -93,7 +93,7 @@ const getCheckedLocations = filename => {
 
 videoFilenamesSet.forEach(async filename => {
   try {
-    // Read the content of the video file (assuming it's text) - Replace this with your own logic to read video content
+    // Read the content of the video file (assuming it's text)
     const videoContent = 'Sample video content for ' + filename;
 
     // Call the sendToChatGPT function with the filename, unique identifier (_id), and input text (video content)
