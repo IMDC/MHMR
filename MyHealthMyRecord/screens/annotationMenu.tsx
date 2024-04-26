@@ -256,6 +256,7 @@ const AnnotationMenu = () => {
         containerStyle={{paddingTop: 100}}
         buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         color="#1C3EAA"
+        radius={50}
         title="Review Markups"
         onPress={() =>
           navigation.navigate('Review Annotations', {

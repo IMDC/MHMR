@@ -2,7 +2,7 @@ import {useNavigation, ParamListBase, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as React from 'react';
 import axios from 'axios';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -20,6 +20,9 @@ import {base64} from 'rfc4648';
 import Config from 'react-native-config';
 import {API_OPENAI_CHATGPT} from '@env';
 import useAddToFile from '../components/addToFile';
+import {Dropdown} from 'react-native-element-dropdown';
+import * as Styles from '../assets/util/styles';
+import addToIsSelected from '../components/addToIsSelected';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
@@ -28,7 +31,10 @@ function Dashboard() {
   const [dashboardVideos, setDashboardVideos] = useState<any[]>([]);
   const route = useRoute();
   const selectedVideos = route.params?.selectedVideos;
-  useAddToFile(selectedVideos);
+  // updateSelectedVideos(selectedVideos);
+  // if (selectedVideos && selectedVideos.size > 0) {
+    // addToIsSelected(selectedVideos);
+  // }
 
   const sendToChatGPT = async (textFileName, _id) => {
     try {
@@ -184,37 +190,6 @@ function Dashboard() {
       });
   };
 
-  const cognosSession = async () => {
-    var bodyFormData = new FormData();
-    bodyFormData.append('expiresIn', 3600);
-    bodyFormData.append(
-      'webDomain',
-      'http://127.0.0.1:5500/connectWatson.html',
-    );
-    axios
-      .post('https://dde-us-south.analytics.ibm.com/daas/v1/session', {
-        headers: {
-          authorization:
-            'Basic <base64 158e9446-f8b4-4b7d-a909-1b3635ddb8f1:9d61b8972454239901863057b753424994391b0e>',
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        data: bodyFormData,
-      })
-      .then((data: any) => {
-        console.log(data);
-        console.log(data.data.results);
-      })
-      .catch((err: any) => {
-        console.log(err.response);
-        console.log(err.response.data);
-        //console.log(err.response.headers);
-        if (err.response.status == 401) {
-          console.log('need to get new auth token');
-        }
-      });
-  };
-
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [videos, setVideos] = React.useState<any | null>(null);
   const [buttonPressed, setButtonPressed] = React.useState(false);
@@ -232,83 +207,116 @@ function Dashboard() {
 
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-
+  const videosByIsSelected = videoData.filtered('isSelected == true');
   /**
    * Convert a video to a .wav type audio file and save it in the MHMR/audio folder on the device
    * @param video VideoData object
    */
-  const convertToAudio = (video: VideoData) => {
+  const convertToAudio = async (video: VideoData) => {
     console.log('convert to audio');
     const mp3FileName =
-      // 'file://' +
       audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.mp3';
     const wavFileName =
-      // 'file://' +
       audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
-    const mp4FileName =
-      // 'file://' +
-      MHMRfolderPath + '/' + video.filename;
+    const mp4FileName = MHMRfolderPath + '/' + video.filename;
 
+    // Check if the input MP4 file exists
+    const mp4FileExists = await RNFS.exists(mp4FileName);
+    if (!mp4FileExists) {
+      console.error('Input file does not exist:', mp4FileName);
+      return; // Exit the function if the file doesn't exist
+    }
+
+    // Ensure the output audio directory exists
+    const audioFolderExists = await RNFS.exists(audioFolderPath);
+    if (!audioFolderExists) {
+      try {
+        await RNFS.mkdir(audioFolderPath);
+      } catch (error) {
+        console.error(
+          'Failed to create output directory:',
+          audioFolderPath,
+          error,
+        );
+        return; // Exit the function if unable to create the directory
+      }
+    }
+
+    // Execute FFmpegKit command
     FFmpegKit.execute(
       '-i ' +
         mp4FileName +
         ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
         wavFileName,
-    ).then(async session => {
-      const returnCode = await session.getReturnCode();
+    )
+      .then(async session => {
+        const returnCode = await session.getReturnCode();
 
-      if (ReturnCode.isSuccess(returnCode)) {
-        console.log('success');
-        video.isConverted = true;
-      } else if (ReturnCode.isCancel(returnCode)) {
-        console.log('canceled');
-      } else {
-        console.log('error');
-      }
-    });
+        if (ReturnCode.isSuccess(returnCode)) {
+          console.log('success');
+          video.isConverted = true;
+        } else if (ReturnCode.isCancel(returnCode)) {
+          console.log('cancelled');
+        } else {
+          console.log('error with FFmpegKit execution');
+        }
+      })
+      .catch(error => {
+        console.error('FFmpegKit execution failed:', error);
+      });
   };
 
-  React.useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const dashboardFolderPath =
-          RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
-        const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
+  useEffect(() => {
+    {
+      setVideos(videosByIsSelected);
+      // console.log(videoData
+      // useAddToFile(selectedVideos);
+      console.log('test');
+      console.log('selectedVideos:', selectedVideos);
+    }
+  }, [selectedVideos]);
 
-        if (!dashboardFolderExists) {
-          // Handle the case where the dashboard folder doesn't exist
-          console.log('Dashboard folder does not exist');
-          return; // Exit early
-        }
+  // React.useEffect(() => {
+  //   const fetchVideos = async () => {
+  //     try {
+  //       const dashboardFolderPath =
+  //         RNFS.DocumentDirectoryPath + '/MHMR/dashboard/';
+  //       const dashboardFolderExists = await RNFS.exists(dashboardFolderPath);
 
-        const filteredVideos = await Promise.all(
-          videosByDate.map(async (video: any) => {
-            const videoPath = dashboardFolderPath + video.filename;
-            const exists = await RNFS.exists(videoPath);
-            return exists ? video : null;
-          }),
-        );
-        setVideos(filteredVideos.filter(video => video !== null));
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
-    };
+  //       if (!dashboardFolderExists) {
+  //         // Handle the case where the dashboard folder doesn't exist
+  //         console.log('Dashboard folder does not exist');
+  //         return; // Exit early
+  //       }
 
-    // const addVideosToDashboard = async () => {
-    //   try {
-    //     if (selectedVideos) {
-    //       await useAddToFile(selectedVideos);
-    //       Alert.alert('Your videos have been added to the dashboard');
-    //     }
-    //   } catch (error) {
-    //     Alert.alert('Error adding videos to dashboard');
-    //     console.error('Error adding videos to dashboard:', error);
-    //   }
-    // };
+  //       const filteredVideos = await Promise.all(
+  //         videosByDate.map(async (video: any) => {
+  //           const videoPath = dashboardFolderPath + video.filename;
+  //           const exists = await RNFS.exists(videoPath);
+  //           return exists ? video : null;
+  //         }),
+  //       );
+  //       setVideos(filteredVideos.filter(video => video !== null));
+  //     } catch (error) {
+  //       console.error('Error fetching videos:', error);
+  //     }
+  //   };
 
-    fetchVideos();
-    // addVideosToDashboard();
-  }, [videosByDate, selectedVideos]);
+  //   // const addVideosToDashboard = async () => {
+  //   //   try {
+  //   //     if (selectedVideos) {
+  //   //       await useAddToFile(selectedVideos);
+  //   //       Alert.alert('Your videos have been added to the dashboard');
+  //   //     }
+  //   //   } catch (error) {
+  //   //     Alert.alert('Error adding videos to dashboard');
+  //   //     console.error('Error adding videos to dashboard:', error);
+  //   //   }
+  //   // };
+
+  //   fetchVideos();
+  //   // addVideosToDashboard();
+  // }, [videosByDate, selectedVideos]);
 
   //check file space
   /*
@@ -335,6 +343,19 @@ function Dashboard() {
     );
   };
 
+  async function removeFromIsSelected(id: any) {
+      const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
+      if (video) {
+        realm.write(() => {
+          video.isSelected = false;
+          video.isConverted = false;
+        });
+        console.log(`Video with ID ${id} removed from isSelected and isConverted.`);
+      } else {
+        console.log(`Video with ID ${id} not found.`);
+      }
+  }
+
   const toggleVideoChecked = (videoId: any) => {
     const updatedCheckedVideos = new Set(checkedVideos);
 
@@ -353,9 +374,18 @@ function Dashboard() {
       animated: true,
     });
   };
+
+  const [session, setSessionValue] = useState(null);
+  const testSessionOptions = [
+    {label: 'ex 1 - DDMMYYYY/timestamp', value: 0},
+    {label: 'ex 2 - DDMMYYYY/timestamp', value: 1},
+    {label: 'ex 3 - DDMMYYYY/timestamp', value: 2},
+  ];
+
   return (
     <View>
-      {buttonPressed ? (
+      {/* beginning of dashboard */}
+      {/* {buttonPressed ? (
         <Button
           onPress={() => {
             setButtonPressed(!buttonPressed);
@@ -371,14 +401,58 @@ function Dashboard() {
           }}>
           Select Videos
         </Button>
-      )}
+      )} */}
 
-      <Button onPress={getAuth}>get auth</Button>
+      {/* <Button onPress={getAuth}>get auth</Button> */}
       {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
       {/* <Button onPress={transcribeAudio}>transcribe audio</Button>
       <Button onPress={cognosSession}>cognos session</Button> */}
 
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
+        {/* <View style={{height: '15%', width: '100%'}}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingTop: 10,
+            }}>
+            <Text style={{fontSize: 20}}>Select Session: </Text>
+            <Dropdown
+              data={testSessionOptions}
+              maxHeight={400}
+              style={{
+                height: 50,
+                width: 600,
+                paddingHorizontal: 20,
+                backgroundColor: '#DBDBDB',
+                borderRadius: 22,
+              }}
+              placeholderStyle={{fontSize: 22}}
+              selectedTextStyle={{fontSize: 22}}
+              activeColor="#FFC745"
+              //backgroundColor='#FFC745'
+              labelField="label"
+              valueField="value"
+              value={session}
+              onChange={item => {
+                setSessionValue(item.value);
+              }}
+            />
+            <Button
+              title="View Videos in Session"
+              onPress={() => navigation.navigate('Dashboard')}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{
+                width: 300,
+                marginHorizontal: 30,
+                marginVertical: 30,
+              }}
+            />
+          </View>
+        </View> */}
         {videos !== null
           ? videos.map((video: VideoData) => {
               const isTranscriptEmpty = video => {
@@ -404,8 +478,8 @@ function Dashboard() {
               const transcriptIsEmpty = isTranscriptEmpty(video);
               const isChecked = checkedVideos.has(video._id.toString());
               return (
-                <View>
-                  <View style={styles.container} key={video._id.toString()}>
+                <View key={video._id.toString()}>
+                  <View style={styles.container}>
                     {!buttonPressed ? (
                       <View></View>
                     ) : (
@@ -415,11 +489,15 @@ function Dashboard() {
                         }}>
                         <CheckBox
                           checked={isChecked}
-                          onPress={() => {
+                          onPress={async () => {
+                            // Mark this function as async
                             if (!isChecked && !transcriptIsEmpty) {
                               toggleVideoChecked(video._id.toString());
-                              convertToAudio(video);
+                              // Assuming getAuth doesn't need to wait for convertToAudio, you can call it without await
                               getAuth();
+
+                              await convertToAudio(video); // Wait for convertToAudio to complete
+
                               getTranscript(
                                 video.filename.replace('.mp4', '') + '.wav',
                                 video._id.toString(),
@@ -511,10 +589,14 @@ function Dashboard() {
                               return (
                                 <Chip
                                   key={JSON.parse(key).title}
-                                  style={{margin: 2}}
+                                  style={{
+                                    margin: 2,
+                                    backgroundColor: '#E1BE6A',
+                                  }}
                                   textStyle={{fontSize: 16}}
                                   mode="outlined"
-                                  compact={true}>
+                                  compact={true}
+                                  icon={'tag'}>
                                   {JSON.parse(key).title}
                                 </Chip>
                               );
@@ -526,9 +608,13 @@ function Dashboard() {
                                 <Chip
                                   key={JSON.parse(key).title}
                                   textStyle={{fontSize: 16}}
-                                  style={{margin: 2}}
+                                  style={{
+                                    margin: 2,
+                                    backgroundColor: '#40B0A6',
+                                  }}
                                   mode="outlined"
-                                  compact={true}>
+                                  compact={true}
+                                  icon={'map-marker'}>
                                   {JSON.parse(key).title}
                                 </Chip>
                               );
@@ -536,27 +622,36 @@ function Dashboard() {
                           })}
                         </View>
                       </View>
-                      <View>
+                      {/* <View>
                         <Text>Transcript: {video.transcript}</Text>
-                      </View>
-                      <View>
                         <Text>
                           Prompt: Summarize this video transcript "
                           {video.transcript} " and include the summary of the
                           keywords ({checkedTitles}) and locations (
                           {checkedLocations}) tagged.
                         </Text>
+                      </View> */}
+                      <View>
                         <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Remove Video From Dashboard"
-                          onPress={() => deleteVideo(video.filename)}
+                          buttonStyle={{
+                            height: 50,
+                            alignSelf: 'center',
+                          }}
+                          color={Styles.MHMRBlue}
+                          title="Remove Video From Video Set"
+                          radius={50}
+                          onPress={() => {
+                            removeFromIsSelected(video._id),
+                              console.log(video.isSelected);
+                          }}
                           // onPress={() => {
                           //   setVideoSelectedData(video);
                           //   setvideoSelectedFilename(video.filename);
                           //   toggleDialog1();
                           // }}
                         />
-                        <Button
+                        {/* send to chatgpt button */}
+                        {/* <Button
                           onPress={() => {
                             setInputText(
                               'Summarize this video transcript (' +
@@ -573,9 +668,9 @@ function Dashboard() {
                             );
                           }}>
                           Send to ChatGPT
-                        </Button>
+                        </Button> */}
                       </View>
-                      <Text>{video.filename}</Text>
+                      {/* <Text>{video.filename}</Text> */}
                       <View style={styles.buttonContainer}>
                         {/* <Button
                         buttonStyle={styles.btnStyle}
@@ -626,8 +721,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexWrap: 'wrap',
     // paddingLeft: 8,
-    borderBottomColor: 'black',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: 'black',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   cardLeft: {
     marginVertical: 8,

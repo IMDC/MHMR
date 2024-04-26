@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Dimensions, ScrollView, Text, View } from "react-native";
 import { Button } from '@rneui/themed';
 import { Dropdown } from "react-native-element-dropdown";
-import Svg, { Rect } from "react-native-svg";
+import Svg, { Circle, G, Line, Rect } from "react-native-svg";
 import { LineChart, BarChart, Grid, YAxis, XAxis } from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
 import * as Styles from '../assets/util/styles';
@@ -461,6 +461,50 @@ const DataAnalysisLineGraph = () => {
         { label: new Date('2023-10-27T23:59:59').toDateString(), value: 2 },
     ];
 
+    const Tooltip = ({ x, y }) => (
+        <G
+            x={x(1) - (75 / 2)}
+            key={'tooltip'}
+            onPress={() => console.log('tooltip clicked')}
+        >
+            <G y={50}>
+                <Rect
+                    height={40}
+                    width={75}
+                    stroke={'grey'}
+                    fill={'white'}
+                    ry={10}
+                    rx={10}
+                />
+                <Text
+                    x={75 / 2}
+                    dy={20}
+                    alignmentBaseline={'middle'}
+                    textAnchor={'middle'}
+                    stroke={'rgb(134, 65, 244)'}
+                >
+                    {/* {`${freqDayArray[date][1].label}ºC`} */}
+                    {`${'test'}`}
+                </Text>
+            </G>
+            <G x={75 / 2}>
+                <Line
+                    y1={50 + 40}
+                    y2={y(freqDayArray[date][1].label)}
+                    stroke={'grey'}
+                    strokeWidth={2}
+                />
+                <Circle
+                    cy={y(freqDayArray[date][1].label)}
+                    r={6}
+                    stroke={'rgb(134, 65, 244)'}
+                    strokeWidth={2}
+                    fill={'white'}
+                />
+            </G>
+        </G>
+    )
+
     return (
         <View>
             <View style={{ height: '87%' }}>
@@ -484,7 +528,7 @@ const DataAnalysisLineGraph = () => {
                                     yAccessor={({ item }) => item.value}
                                     xScale={scale.scaleTime}
                                     contentInset={verticalContentInset}
-                                    svg={{ stroke: 'rgb(134, 65, 244)', strokeWidth: 5 }}
+                                    svg={{ stroke: 'rgb(' + Styles.MHMRBlueRGB + ')', strokeWidth: 5 }}
                                 >
                                     <Svg belowChart={true}>
                                         {/* day/night - 12 hour */}
@@ -622,6 +666,7 @@ const DataAnalysisLineGraph = () => {
                                         )}
                                     </Svg>
                                     <Grid />
+                                    <Tooltip />
                                 </LineChart>
                                 <XAxis
                                     style={{ marginHorizontal: -40, height: xAxisHeight }}
@@ -699,69 +744,69 @@ const DataAnalysisLineGraph = () => {
                     <View style={{ height: '10%', width: '100%' }}>
                         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
 
-                        <View id="period-dropdown" >
-                            <Text style={{ fontSize: 20 }}>Select Period: </Text>
-                            <Dropdown
-                                data={periodOptions}
-                                maxHeight={300}
-                                style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                labelField="label"
-                                valueField="value"
-                                value={periodValue}
-                                onChange={item => {
-                                    setPeriodValue(item.value);
-                                }}
-                            />
+                            <View id="period-dropdown" >
+                                <Text style={{ fontSize: 20 }}>Select Period: </Text>
+                                <Dropdown
+                                    data={periodOptions}
+                                    maxHeight={300}
+                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+                                    labelField="label"
+                                    valueField="value"
+                                    value={periodValue}
+                                    onChange={item => {
+                                        setPeriodValue(item.value);
+                                    }}
+                                />
+                            </View>
+                            {periodValue == '1' && (
+                                <View id="segmentDay-dropdown">
+                                    <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
+                                    <Dropdown
+                                        data={segementDayOptions}
+                                        //maxHeight={300}
+                                        style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+                                        labelField="label"
+                                        valueField="value"
+                                        value={segementDay}
+                                        onChange={item => {
+                                            setSegementDayValue(item.value);
+                                        }}
+                                    />
+                                </View>
+                            )}
+                            {periodValue == '2' && (
+                                <View id="segmentWeek-dropdown">
+                                    <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
+                                    <Dropdown
+                                        data={segementWeekOptions}
+                                        //maxHeight={300}
+                                        style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+                                        labelField="label"
+                                        valueField="value"
+                                        value={segementWeek}
+                                        onChange={item => {
+                                            setSegementWeekValue(item.value);
+                                        }}
+                                    />
+                                </View>
+                            )}
+                            {periodValue == '3' && (
+                                <View id="segmentMonth-dropdown">
+                                    <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
+                                    <Dropdown
+                                        data={segementMonthOptions}
+                                        //maxHeight={300}
+                                        style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+                                        labelField="label"
+                                        valueField="value"
+                                        value={segementMonth}
+                                        onChange={item => {
+                                            setSegementMonthValue(item.value);
+                                        }}
+                                    />
+                                </View>
+                            )}
                         </View>
-                        {periodValue == '1' && (
-                            <View id="segmentDay-dropdown">
-                                <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                                <Dropdown
-                                    data={segementDayOptions}
-                                    //maxHeight={300}
-                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                    labelField="label"
-                                    valueField="value"
-                                    value={segementDay}
-                                    onChange={item => {
-                                        setSegementDayValue(item.value);
-                                    }}
-                                />
-                            </View>
-                        )}
-                        {periodValue == '2' && (
-                            <View id="segmentWeek-dropdown">
-                                <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                                <Dropdown
-                                    data={segementWeekOptions}
-                                    //maxHeight={300}
-                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                    labelField="label"
-                                    valueField="value"
-                                    value={segementWeek}
-                                    onChange={item => {
-                                        setSegementWeekValue(item.value);
-                                    }}
-                                />
-                            </View>
-                        )}
-                        {periodValue == '3' && (
-                            <View id="segmentMonth-dropdown">
-                                <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                                <Dropdown
-                                    data={segementMonthOptions}
-                                    //maxHeight={300}
-                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                    labelField="label"
-                                    valueField="value"
-                                    value={segementMonth}
-                                    onChange={item => {
-                                        setSegementMonthValue(item.value);
-                                    }}
-                                />
-                            </View>
-                        )}
-                    </View>
                     </View>
                 </View>
 

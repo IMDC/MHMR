@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {Text, View} from 'react-native';
 import {Button} from '@rneui/themed';
 import 'react-native-get-random-values';
@@ -33,19 +33,38 @@ import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
 import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
-import { Icon } from '@rneui/themed';
+import {Icon} from '@rneui/themed';
+import {getAuth} from './components/stt_api';
+import {NetworkProvider} from './components/networkProvider';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
 
 function StackNav() {
-  const [selected, setSelected] = React.useState(true);
+  const [selected, setSelected] = useState(true);
+  const [auth, setAuth] = useState('');
 
-// useEffect(() => {
-//   console.log('View Recordings component mounted');
-//   setSelected(true);
-//   console.log('selected after reset:', selected);
-// }, []);
+  // useEffect(() => {
+  //   console.log('View Recordings component mounted');
+  //   setSelected(true);
+  //   console.log('selected after reset:', selected);
+  // }, []);
+
+  const [lastAuthTime, setLastAuthTime] = useState(0);
+
+  const handleAuth = async () => {
+    const currentTime = Date.now();
+    if (currentTime - lastAuthTime >= 60000) {
+      // Check if 1 minute has passed since the last auth
+      setSelected(!selected);
+      console.log('selected:', selected);
+      // Call the getAuth function and store the return in a variable
+      setAuth(await getAuth());
+      setLastAuthTime(currentTime); // Update lastAuthTime
+    } else {
+      console.log('Auth already performed within the last minute.');
+    }
+  };
 
   return (
     <Stack.Navigator
@@ -60,9 +79,11 @@ function StackNav() {
           headerRight: () => (
             <Button
               buttonStyle={{backgroundColor: Styles.MHMRBlue}}
+              radius={50}
               onPress={() => {
                 setSelected(!selected);
                 console.log('selected:', selected);
+                // handleAuth();
               }}
               // if selected = false, then change the button to say "Done"
               // if selected = true, then change the button to say "Select Videos"
@@ -70,7 +91,6 @@ function StackNav() {
             />
           ),
         }}>
-        
         {() => <ViewRecordings selected={selected} setSelected={setSelected} />}
       </Stack.Screen>
       <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
@@ -102,90 +122,92 @@ function DataAnalysisStack() {
 function App() {
   return (
     <RealmProvider>
-      <NavigationContainer>
-        <Tab.Navigator
-          initialRouteName="MyHealthMyRecord"
-          screenOptions={{
-            tabBarShowLabel: false,
-            tabBarStyle: {
-              height: Styles.bottomNavBarHeight,
-              backgroundColor: Styles.NavBarGrey,
-            },
-          }}>
-          <Tab.Screen
-            name="Analysis"
-            component={DataAnalysisStack}
-            tabBarShowLabel={false}
-            options={{
-              headerShown: false,
-              tabBarLabel: 'Analysis',
-              headerStyle: {backgroundColor: Styles.NavBarGrey},
-              tabBarIcon: () => (
-                <Icon
-                  name="bar-chart-outline"
-                  size={Styles.bottomNavIconSize}
-                  type="ionicon"
-                  color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
-                />
-              ),
-            }}
-          />
+      <NetworkProvider>
+        <NavigationContainer>
+          <Tab.Navigator
+            initialRouteName="MyHealthMyRecord"
+            screenOptions={{
+              tabBarShowLabel: false,
+              tabBarStyle: {
+                height: Styles.bottomNavBarHeight,
+                backgroundColor: Styles.NavBarGrey,
+              },
+            }}>
+            <Tab.Screen
+              name="Analysis"
+              component={DataAnalysisStack}
+              tabBarShowLabel={false}
+              options={{
+                headerShown: false,
+                tabBarLabel: 'Analysis',
+                headerStyle: {backgroundColor: Styles.NavBarGrey},
+                tabBarIcon: () => (
+                  <Icon
+                    name="bar-chart-outline"
+                    size={Styles.bottomNavIconSize}
+                    type="ionicon"
+                    color={Styles.MHMRBlue}
+                    style={{width: Styles.bottomNavIconSize}}
+                  />
+                ),
+              }}
+            />
 
-          <Tab.Screen
-            name="Dashboard"
-            component={Dashboard}
-            options={{
-              tabBarLabel: 'Dashboard',
-              headerStyle: {backgroundColor: Styles.NavBarGrey},
-              tabBarIcon: () => (
-                <Icon
-                  name="analytics-outline"
-                  size={Styles.bottomNavIconSize}
-                  type="ionicon"
-                  color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="MyHealthMyRecord"
-            component={StackNav}
-            tabBarShowLabel={false}
-            options={{
-              headerShown: false,
-              tabBarLabel: 'MyHealthMyRecord',
-              tabBarIcon: () => (
-                <Icon
-                  name="home-outline"
-                  size={Styles.bottomNavIconSize}
-                  type="ionicon"
-                  color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Help"
-            component={Help}
-            options={{
-              tabBarLabel: 'Help',
-              headerStyle: {backgroundColor: Styles.NavBarGrey},
-              tabBarIcon: () => (
-                <Icon
-                  name="information-circle-outline"
-                  size={Styles.bottomNavIconSize}
-                  type="ionicon"
-                  color={Styles.MHMRBlue}
-                  style={{width: Styles.bottomNavIconSize}}
-                />
-              ),
-            }}
-          />
-        </Tab.Navigator>
-      </NavigationContainer>
+            <Tab.Screen
+              name="Dashboard"
+              component={Dashboard}
+              options={{
+                tabBarLabel: 'Dashboard',
+                headerStyle: {backgroundColor: Styles.NavBarGrey},
+                tabBarIcon: () => (
+                  <Icon
+                    name="analytics-outline"
+                    size={Styles.bottomNavIconSize}
+                    type="ionicon"
+                    color={Styles.MHMRBlue}
+                    style={{width: Styles.bottomNavIconSize}}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="MyHealthMyRecord"
+              component={StackNav}
+              tabBarShowLabel={false}
+              options={{
+                headerShown: false,
+                tabBarLabel: 'MyHealthMyRecord',
+                tabBarIcon: () => (
+                  <Icon
+                    name="home-outline"
+                    size={Styles.bottomNavIconSize}
+                    type="ionicon"
+                    color={Styles.MHMRBlue}
+                    style={{width: Styles.bottomNavIconSize}}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Help"
+              component={Help}
+              options={{
+                tabBarLabel: 'Help',
+                headerStyle: {backgroundColor: Styles.NavBarGrey},
+                tabBarIcon: () => (
+                  <Icon
+                    name="information-circle-outline"
+                    size={Styles.bottomNavIconSize}
+                    type="ionicon"
+                    color={Styles.MHMRBlue}
+                    style={{width: Styles.bottomNavIconSize}}
+                  />
+                ),
+              }}
+            />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </NetworkProvider>
     </RealmProvider>
   );
 }
