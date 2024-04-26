@@ -13,6 +13,11 @@ import * as Styles from '../assets/util/styles';
 
 const DataAnalysisBarGraph = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+    const route: any = useRoute();
+    //const wordFreqBarGraphData = route.params?.data;
+
+    const realm = useRealm();
+    //   const video: any = useObject('VideoData', id);
 
     /* ======================================================================= */
     // bar graph stuff below
@@ -22,7 +27,7 @@ const DataAnalysisBarGraph = () => {
 
     const wordFreqBarGraphData = [
         {
-            label: "Tired",
+            label: "Pain",
             value: 15,
         },
         {
@@ -42,24 +47,25 @@ const DataAnalysisBarGraph = () => {
             value: 7,
         },
         {
-            label: "Pain",
-            value: 3,
+            label: "Tired",
+            value: 4,
         },
         {
             label: "Energized",
             value: 3,
         },
         {
-            label: "Fever",
+            label: "Sad",
             value: 1,
         },
         {
-            label: "Test",
-            value: 0,
+            label: "Arm",
+            value: 1,
         },
     ]
 
-    const yTest = Array.from({ length: 15 }, (_, i) => i + 1);
+    // array of length of max value in data (first index value) for yAxis
+    const yTest = Array.from({ length: wordFreqBarGraphData[0].value }, (_, i) => i + 1);
     //const yTest = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
     //const yTest = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
@@ -85,7 +91,7 @@ const DataAnalysisBarGraph = () => {
 
     // TODO: Get cutoff values dynamically instead of manually/hard-coding
 
-    const CUT_OFF_VER = 14;
+    const CUT_OFF_VER = wordFreqBarGraphData[0].value - 1;
     const LabelsVertical = ({ x, y, bandwidth, data }) => (
         wordFreqBarGraphData.map((value, index) => (
             <svg.Text
@@ -102,7 +108,7 @@ const DataAnalysisBarGraph = () => {
         ))
     );
 
-    const CUT_OFF_HOR = 14
+    const CUT_OFF_HOR = wordFreqBarGraphData[0].value - 1;
     const LabelsHorizontal = ({ x, y, bandwidth, data }) => (
         wordFreqBarGraphData.map((value, index) => (
             <svg.Text
@@ -120,22 +126,21 @@ const DataAnalysisBarGraph = () => {
 
     /* ======================================================================= */
 
-    const route: any = useRoute();
-    const id = route.params?.id;
-
-    const realm = useRealm();
-    //   const video: any = useObject('VideoData', id);
     return (
         <View>
             <View style={{ height: '87%' }}>
 
-                <View id="bargraph" style={{ height: '90%', padding: 40 }}>
+                <View id="bargraph" style={{ height: '90%', width: '100%', padding: 40 }}>
 
                     {(barGraphVertical == true) ? (
                         <View id="bargraph-vertical">
+
                             <Text>Frequency of Words mentioned in Selected Video</Text>
-                            <View style={{ flexDirection: 'row', height: 400, width: '100%', paddingVertical: 16 }}>
-                                    {/* <Text style={{ transform: [{ rotate: '-90deg' }], width: '10%', textAlign: 'center' }}>Frequency</Text> */}
+
+                            {/* <Text style={{ transform: [{ rotate: '-90deg' },], width: '100%', textAlign: 'center' }}>Frequency</Text> */}
+
+                            <View style={{ flexDirection: 'row', height: 400, paddingVertical: 16 }}>
+
                                 <YAxis
                                     data={yTest}
                                     yAccessor={({ index }) => index}
@@ -144,7 +149,8 @@ const DataAnalysisBarGraph = () => {
                                     spacing={0.2}
                                     formatLabel={(value) => value}
                                     min={0}
-                                    max={15}
+                                    max={wordFreqBarGraphData[0].value}
+                                    numberOfTicks={wordFreqBarGraphData[0].value}
                                 />
                                 <BarChart
                                     style={{ flex: 1, marginLeft: 8 }}
@@ -156,7 +162,9 @@ const DataAnalysisBarGraph = () => {
                                     contentInset={{ top: 10, bottom: 10 }}
                                     spacing={0.2}
                                     gridMin={0}
-
+                                    //yMin={0}
+                                    //yMax={wordFreqBarGraphData[0].value}
+                                    numberOfTicks={wordFreqBarGraphData[0].value}
                                 >
                                     <Grid direction={Grid.Direction.HORIZONTAL} />
                                     <LabelsVertical />
@@ -166,15 +174,17 @@ const DataAnalysisBarGraph = () => {
                             <XAxis
                                 style={{ height: 100, marginTop: 0, marginBottom: 20 }}
                                 //xAccessor={({ index }) => index}
-                                //contentInset={{ left: 20, right: 40 }}
+                                contentInset={{ left: 20, right: 20 }}
                                 data={wordFreqBarGraphData}
                                 scale={scale.scaleBand}
-                                svg={{ fontSize: 20, rotation: 25, fill: 'black', originY: 55, translateY: 20 }}
+                                svg={{ fontSize: 20, rotation: 25, fill: 'black', originY: 35, translateY: 15, translateX: 0 }}
                                 formatLabel={(value, index) => wordFreqBarGraphData[index].label}
-
+                            //numberOfTicks={wordFreqBarGraphData.length}
                             //labelStyle={ { color: 'black' } }
                             />
                             <Text style={{ textAlign: 'center' }}>Word</Text>
+
+
                         </View>
                     ) : (
                         <View id="bargraph-horizontal">
@@ -189,7 +199,7 @@ const DataAnalysisBarGraph = () => {
                                     formatLabel={(value, index) => wordFreqBarGraphData[index].label}
                                     svg={{ fontSize: 20, margin: 10 }}
                                     min={0}
-                                    max={15}
+                                    max={wordFreqBarGraphData[0].value}
                                 //numberOfTicks={9}
                                 />
                                 <BarChart
@@ -201,6 +211,7 @@ const DataAnalysisBarGraph = () => {
                                     contentInset={{ top: 10, bottom: 10 }}
                                     spacing={0.2}
                                     gridMin={0}
+                                //numberOfTicks={wordFreqBarGraphData[0].value}
                                 //bandwidth={30}
                                 //spacingInner={0.1}
                                 //spacingOuter={0.1}
@@ -219,7 +230,7 @@ const DataAnalysisBarGraph = () => {
                                 spacing={0.2}
                                 formatLabel={(value) => value}
                                 style={{ marginLeft: 65 }}
-
+                            //numberOfTicks={wordFreqBarGraphData[0].value}
                             />
                             <Text style={{ textAlign: 'center' }}>Frequency</Text>
                         </View>

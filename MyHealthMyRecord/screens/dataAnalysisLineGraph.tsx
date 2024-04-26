@@ -1,7 +1,7 @@
 import { ParamListBase, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useState } from "react";
-import { Dimensions, ScrollView, Text, View } from "react-native";
+import { Alert, Dimensions, ScrollView, Text, View } from "react-native";
 import { Button } from '@rneui/themed';
 import { Dropdown } from "react-native-element-dropdown";
 import Svg, { Circle, G, Line, Rect } from "react-native-svg";
@@ -74,8 +74,6 @@ const DataAnalysisLineGraph = () => {
             value: 9,
         },
     ]
-
-
 
     const timestamp1 = new Date('2023-10-25T04:55:30');
     const timestamp2 = new Date('2023-10-25T12:55:30');
@@ -461,73 +459,52 @@ const DataAnalysisLineGraph = () => {
         { label: new Date('2023-10-27T23:59:59').toDateString(), value: 2 },
     ];
 
-    const Tooltip = ({ x, y }) => (
-        <G
-            x={x(1) - (75 / 2)}
-            key={'tooltip'}
-            onPress={() => console.log('tooltip clicked')}
-        >
-            <G y={50}>
-                <Rect
-                    height={40}
-                    width={75}
-                    stroke={'grey'}
-                    fill={'white'}
-                    ry={10}
-                    rx={10}
-                />
-                <Text
-                    x={75 / 2}
-                    dy={20}
-                    alignmentBaseline={'middle'}
-                    textAnchor={'middle'}
-                    stroke={'rgb(134, 65, 244)'}
-                >
-                    {/* {`${freqDayArray[date][1].label}ºC`} */}
-                    {`${'test'}`}
-                </Text>
-            </G>
-            <G x={75 / 2}>
-                <Line
-                    y1={50 + 40}
-                    y2={y(freqDayArray[date][1].label)}
-                    stroke={'grey'}
-                    strokeWidth={2}
-                />
-                <Circle
-                    cy={y(freqDayArray[date][1].label)}
-                    r={6}
-                    stroke={'rgb(134, 65, 244)'}
-                    strokeWidth={2}
-                    fill={'white'}
-                />
-            </G>
-        </G>
-    )
-
     interface DecoratorProps {
         x: (arg: number) => number,
         y: (arg: number) => number,
         data: number[]
     }
     
+    // Dots on the peaks/points of line graph data
     const Dots = (props: Partial<DecoratorProps>) => {
         const { x, y, data } = props 
         return (
             <>
-                {data?.map((value, index) => (
+                {freqDayArray[date]?.map((value, index) => (
                     <Circle
                         key={index}
                         cx={x(index)}
-                        cy={y(value)}
-                        r={4}
+                        cy={y(value.value)}
+                        r={8}
                         stroke={'rgb(0, 0, 0)'}
                         fill={'white'}
+                        onPressIn={ () => {
+                            // redirect to videos associated with timestamp
+                            console.log("start");
+                            Alert.alert('View video(s) with this data');
+                        }}
+                        onPressOut={ () => {
+                            // reference state change during onPressOut from barGraph page
+                            console.log("end");
+                        }}
                     />
                 ))}
             </>
         )
     }
+
+/*     const Decorator = ({ x, y, data }) => {
+        return freqDayArray[date].map((value, index) => (
+            <Circle
+                key={ index }
+                cx={ x(index) }
+                cy={ y(value) }
+                r={ 4 }
+                stroke={ 'rgb(134, 65, 244)' }
+                fill={ 'white' }
+            />
+        ))
+    } */
 
     return (
         <View>
@@ -690,7 +667,8 @@ const DataAnalysisLineGraph = () => {
                                         )}
                                     </Svg>
                                     <Grid />
-                                    <Tooltip />
+                                    <Dots />
+                                    
                                 </LineChart>
                                 <XAxis
                                     style={{ marginHorizontal: -40, height: xAxisHeight }}
@@ -701,6 +679,7 @@ const DataAnalysisLineGraph = () => {
                                     contentInset={{ left: 50, right: 50 }}
                                     svg={axesSvg}
                                 />
+                                
                             </View>
                         </ScrollView>
 
