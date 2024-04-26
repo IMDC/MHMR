@@ -898,9 +898,9 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                   const transcriptIsEmpty = isTranscriptEmpty(video);
 
-                  return (
-                    <View style={styles.container} key={video._id.toString()}>
-                      <View></View>
+                return (
+                  <View key={video._id.toString()}>
+                    <View style={styles.container}>
                       <View style={styles.thumbnail}>
                         <ImageBackground
                           style={{height: '100%', width: '100%'}}
@@ -1130,7 +1130,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                         )}
                       </View>
                     </View>
-                  );
+                  </View>
+                );
                 })
               : null}
           </View>

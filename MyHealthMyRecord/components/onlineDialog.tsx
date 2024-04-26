@@ -47,71 +47,70 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
     }
   };
 
-   async function handleYesAnalysis() {
-     const selectedVideos: Realm.Results<VideoData> = realm
-       .objects<VideoData>('VideoData')
-       .filtered('isConverted == false AND isSelected == true');
+  async function handleYesAnalysis() {
+    const selectedVideos: Realm.Results<VideoData> = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == false AND isSelected == true');
 
-     for (const video of selectedVideos) {
-       const getTranscriptByFilename = filename => {
-         if (!videos || videos.length === 0) {
-           console.log('No videos available.');
-           return [];
-         }
-         const video = videos.find(video => video.filename === filename);
-         return video ? video.transcript : [];
-       };
+    for (const video of selectedVideos) {
+      const getTranscriptByFilename = filename => {
+        if (!videos || videos.length === 0) {
+          console.log('No videos available.');
+          return [];
+        }
+        const video = videos.find(video => video.filename === filename);
+        return video ? video.transcript : [];
+      };
 
+      const getCheckedKeywords = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedKeywords = video.keywords
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedKeywords;
+        }
+        return [];
+      };
 
-       const getCheckedKeywords = filename => {
-         const video = videos.find(video => video.filename === filename);
-         if (video) {
-           const checkedKeywords = video.keywords
-             .map(key => JSON.parse(key))
-             .filter(obj => obj.checked)
-             .map(obj => obj.title);
-           return checkedKeywords;
-         }
-         return [];
-       };
+      const getCheckedLocations = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedLocations = video.locations
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedLocations;
+        }
+        return [];
+      };
 
-       const getCheckedLocations = filename => {
-         const video = videos.find(video => video.filename === filename);
-         if (video) {
-           const checkedLocations = video.locations
-             .map(key => JSON.parse(key))
-             .filter(obj => obj.checked)
-             .map(obj => obj.title);
-           return checkedLocations;
-         }
-         return [];
-       };
+      const transcript = getTranscriptByFilename(video.filename);
+      const keywords = getCheckedKeywords(video.filename).join(', ');
+      const locations = getCheckedLocations(video.filename).join(', ');
 
-       const transcript = getTranscriptByFilename(video.filename);
-       const keywords = getCheckedKeywords(video.filename).join(', ');
-       const locations = getCheckedLocations(video.filename).join(', ');
-
-       try {
-         const outputText = await sendToChatGPT(
-           video.filename,
-           transcript,
-           keywords,
-           locations,
-           realm,
-           video._id.toHexString(),
-         );
-         setInputText(outputText); // State update here
-         console.log(
-           `Transcription successful for video ${video._id.toHexString()}`,
-         );
-       } catch (error) {
-         console.error(
-           `Failed to process video ${video._id.toHexString()}:`,
-           error,
-         );
-       }
-     }
-   }
+      try {
+        const outputText = await sendToChatGPT(
+          video.filename,
+          transcript,
+          keywords,
+          locations,
+          realm,
+          video._id.toHexString(),
+        );
+        setInputText(outputText); // State update here
+        console.log(
+          `Transcription successful for video ${video._id.toHexString()}`,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to process video ${video._id.toHexString()}:`,
+          error,
+        );
+      }
+    }
+  }
 
   useEffect(() => {
     const selectedVideos = realm
