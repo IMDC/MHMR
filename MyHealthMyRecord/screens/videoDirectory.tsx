@@ -1018,7 +1018,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           <Text style={{fontSize: 20}}>
                             {video.datetimeRecorded?.toLocaleString()}
                           </Text>
-                          <Text>{video.filename}</Text>
+                          {/* <Text>{video.filename}</Text> */}
 
                           <View
                             style={{flexDirection: 'row', flexWrap: 'wrap'}}>
@@ -1257,6 +1257,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Review"
+                        radius={50}
                         onPress={() =>
                           navigation.navigate('Review Annotations', {
                             id: video._id,
@@ -1267,6 +1268,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Add/Edit Markups"
+                        radius={50}
                         onPress={() =>
                           navigation.navigate('Annotation Menu', {
                             id: video._id,
@@ -1277,6 +1279,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Delete Video"
+                        radius={50}
                         onPress={() => deleteVideo(video, video.filename)}
                         // onPress={() => {
                         //   setVideoSelectedData(video);

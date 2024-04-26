@@ -206,10 +206,14 @@ const ReviewAnnotations = () => {
                 return (
                   <Chip
                     key={JSON.parse(key).title}
-                    style={{margin: 2}}
-                    textStyle={{fontSize: 18}}
+                    style={{
+                      margin: 2,
+                      backgroundColor: '#E1BE6A',
+                    }}
+                    textStyle={{fontSize: 16}}
                     mode="outlined"
-                    compact={true}>
+                    compact={true}
+                    icon={'tag'}>
                     {JSON.parse(key).title}
                   </Chip>
                 );
@@ -220,10 +224,14 @@ const ReviewAnnotations = () => {
                 return (
                   <Chip
                     key={JSON.parse(key).title}
-                    style={{margin: 2}}
-                    textStyle={{fontSize: 18}}
+                    textStyle={{fontSize: 16}}
+                    style={{
+                      margin: 2,
+                      backgroundColor: '#40B0A6',
+                    }}
                     mode="outlined"
-                    compact={true}>
+                    compact={true}
+                    icon={'map-marker'}>
                     {JSON.parse(key).title}
                   </Chip>
                 );

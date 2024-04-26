@@ -589,10 +589,14 @@ function Dashboard() {
                               return (
                                 <Chip
                                   key={JSON.parse(key).title}
-                                  style={{margin: 2}}
+                                  style={{
+                                    margin: 2,
+                                    backgroundColor: '#E1BE6A',
+                                  }}
                                   textStyle={{fontSize: 16}}
                                   mode="outlined"
-                                  compact={true}>
+                                  compact={true}
+                                  icon={'tag'}>
                                   {JSON.parse(key).title}
                                 </Chip>
                               );
@@ -604,9 +608,13 @@ function Dashboard() {
                                 <Chip
                                   key={JSON.parse(key).title}
                                   textStyle={{fontSize: 16}}
-                                  style={{margin: 2}}
+                                  style={{
+                                    margin: 2,
+                                    backgroundColor: '#40B0A6',
+                                  }}
                                   mode="outlined"
-                                  compact={true}>
+                                  compact={true}
+                                  icon={'map-marker'}>
                                   {JSON.parse(key).title}
                                 </Chip>
                               );
