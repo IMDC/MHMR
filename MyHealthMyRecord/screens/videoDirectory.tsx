@@ -1,6 +1,5 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import VideoPlayer from 'react-native-media-console';
 import axios, {AxiosError, AxiosRequestConfig} from 'axios';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {
@@ -39,9 +38,6 @@ import {useNetwork} from '../components/networkProvider';
 import {getAuth, getTranscript} from '../components/stt_api';
 
 const ViewRecordings = ({selected, setSelected}) => {
-  const [auth, setAuth] = useState('');
-  const [checked, setChecked] = useState(1);
-  const [inputText, setInputText] = useState('');
   const [selectedVideos, setSelectedVideos] = useState(new Set());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
@@ -49,6 +45,7 @@ const ViewRecordings = ({selected, setSelected}) => {
   );
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
+  const [visible2, setVisible2] = useState(false);
 
   const processSelectedVideos = async () => {
     const auth = await getAuth();
@@ -66,7 +63,12 @@ const ViewRecordings = ({selected, setSelected}) => {
       );
 
       try {
-        await getTranscript(audioFileName, video._id.toHexString(), auth);
+        await getTranscript(
+          audioFileName,
+          video._id.toHexString(),
+          auth,
+          realm,
+        );
         console.log(
           `Transcription successful for video ${video._id.toHexString()}`,
         );
@@ -79,12 +81,29 @@ const ViewRecordings = ({selected, setSelected}) => {
     }
   };
 
-  // Function to handle API requests
-  async function handlePress() {
+  async function handleSendToDashboard() {
+    const state = await NetInfo.fetch();
+    if (state.isConnected) {
+      toggleDialog2();
+    } else {
+      navigation.navigate('Dashboard', {selectedVideos});
+      Alert.alert(
+        'Added to Video Set',
+        'Your videos have been added to the Video Set!',
+      );
+      handleSend();
+      
+      
+    }
+  }
+
+  async function handleYesAnalysis() {}
+
+  //handleSend just adds videos to video set
+  async function handleSend() {
     const state = await NetInfo.fetch();
     setSelectedVideos(selected);
-    navigation.navigate('Dashboard', {selectedVideos});
-    Alert.alert('Your videos have been added to the dashboard');
+    
     setSelected(true);
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
@@ -95,18 +114,7 @@ const ViewRecordings = ({selected, setSelected}) => {
     } else {
       console.log('Offline and disconnected');
     }
-
   }
-
-  // Event listener for network status changes
-  NetInfo.addEventListener(state => {
-    if (state.isConnected) {
-      console.log(
-        'Device is now connected to the internet, running queued tasks.',
-      );
-    }
-  });
-
   // useAddToFile(selectedVideos);
 
   const toggleDialog = () => {
@@ -115,6 +123,11 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   const toggleDialog1 = () => {
     setVisible1(!visible1);
+  };
+
+  const toggleDialog2 = () => {
+    setVisible2(!visible2);
+    console.log('visible2:', visible2);
   };
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -339,6 +352,79 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   return (
     <View>
+      <Dialog isVisible={visible2} onBackdropPress={toggleDialog2}>
+        <Dialog.Title title="You are about to send your videos to the video set." />
+        <Text style={{fontSize: 18}}>
+          Would you like to analyze these videos? If you click NO you will still
+          have the option to analyze it later.
+        </Text>
+        <View style={{paddingHorizontal: 20}}>
+          <Dialog.Actions>
+            <Dialog.Button
+              title="NO"
+              onPress={async () => {
+                console.log('NO clicked!');
+                navigation.navigate('Dashboard', {selectedVideos});
+                Alert.alert('Your transcripts have been generated, and your videos have been added to the Video Set!');
+                toggleDialog2();
+                navigation.navigate('Dashboard', {selectedVideos});
+                Alert.alert(
+                  'Video Transcripts Generated',
+                  'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                );
+                await handleSend();
+                
+              }}
+            />
+            <Dialog.Button
+              title="YES"
+              onPress={async () => {
+                console.log('YES clicked!');
+                toggleDialog2();
+                 navigation.navigate('Dashboard', {selectedVideos});
+                 Alert.alert(
+                   'Video Transcripts Generated and Analyzed','Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                 );
+                await handleSend();
+               
+              }}
+            />
+          </Dialog.Actions>
+        </View>
+      </Dialog>
+      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+        <Dialog.Title title="Are you sure you want to delete all videos?" />
+        <Text style={{fontSize: 20}}>
+          These videos will be deleted immediately. You can't undo this action.
+        </Text>
+        <Dialog.Actions>
+          <Dialog.Button
+            title="Delete"
+            onPress={() => {
+              deleteAllVideoDataObjects();
+              console.log('delete all videos');
+            }}
+          />
+          <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
+        </Dialog.Actions>
+      </Dialog>
+
+      <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
+        <Dialog.Title title="Are you sure you want to delete this video?" />
+        <Text style={{fontSize: 20}}>
+          This item will be deleted immediately. You can't undo this action.
+        </Text>
+        <Dialog.Actions>
+          <Dialog.Button
+            title="Delete"
+            onPress={() => {
+              deleteVideo(videoSelectedData, videoSelectedFilename);
+              toggleDialog1();
+            }}
+          />
+          <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
+        </Dialog.Actions>
+      </Dialog>
       <View>
         {/* <Button
           onPress={() => {
@@ -403,12 +489,12 @@ const ViewRecordings = ({selected, setSelected}) => {
             style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
             radius={50}
             buttonStyle={[styles.btnStyle, {}]}
-            // onPress={handlePress}>
+            // onPress={handleSend}>
             onPress={() => {
-              handlePress();
+              handleSendToDashboard();
             }}>
             <Text style={{color: 'white', fontSize: 25}}>
-              Send {selectedVideos.size} video(s) to Dashboard
+              Send {selectedVideos.size} video(s) to Video Set
             </Text>
           </Button>
         </View>
@@ -1137,42 +1223,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                 </View>
               );
             })}
-
-            <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-              <Dialog.Title title="Are you sure you want to delete all videos?" />
-              <Text style={{fontSize: 20}}>
-                These videos will be deleted immediately. You can't undo this
-                action.
-              </Text>
-              <Dialog.Actions>
-                <Dialog.Button
-                  title="Delete"
-                  onPress={() => {
-                    deleteAllVideoDataObjects();
-                    console.log('delete all videos');
-                  }}
-                />
-                <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
-              </Dialog.Actions>
-            </Dialog>
-
-            <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
-              <Dialog.Title title="Are you sure you want to delete this video?" />
-              <Text style={{fontSize: 20}}>
-                This item will be deleted immediately. You can't undo this
-                action.
-              </Text>
-              <Dialog.Actions>
-                <Dialog.Button
-                  title="Delete"
-                  onPress={() => {
-                    deleteVideo(videoSelectedData, videoSelectedFilename);
-                    toggleDialog1();
-                  }}
-                />
-                <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
-              </Dialog.Actions>
-            </Dialog>
           </View>
         )}
         <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>

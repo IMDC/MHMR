@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Alert} from 'react-native';
 import {Dialog} from '@rneui/themed';
 import { useRealm } from '../models/VideoData';
 import { getAuth, getTranscript } from './stt_api';
@@ -26,7 +26,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
       );
      
      try {
-       await getTranscript(audioFileName, video._id.toHexString(), auth); 
+       await getTranscript(audioFileName, video._id.toHexString(), auth, realm); 
        console.log(
          `Transcription successful for video ${video._id.toHexString()}`,
        );
@@ -68,22 +68,16 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
         onBackdropPress={toggleOnlineDialog}>
         <Dialog.Title title="Connected!"></Dialog.Title>
         {selectedVideoCount === 0 ? null : (
-          <Text>
+          <Text style={{ fontSize: 18 }} >
             You are now connected to the internet! You have {selectedVideoCount}{' '}
             videos ready to be analyzed. Would you like to analyze Video Set
-            videos?
+            videos? If you click NO you will still have the option to analyze it
+            later.
           </Text>
         )}
 
         <View style={{paddingHorizontal: 20}}>
           <Dialog.Actions>
-            <Dialog.Button
-              title="LATER"
-              onPress={() => {
-                console.log('LATER clicked!');
-                toggleOnlineDialog();
-              }}
-            />
             <Dialog.Button
               title="NO"
               onPress={() => {
@@ -96,6 +90,10 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
               onPress={() => {
                 console.log('YES clicked!');
                 processSelectedVideos();
+                Alert.alert(
+                  'Video Transcripts Generated and Analyzed',
+                  'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                );
                 toggleOnlineDialog();
               }}
             />
