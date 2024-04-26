@@ -95,10 +95,10 @@ const transcribeAudio = async (
         // Add the new transcript
         video.transcript.push(transcript);
         console.log('Transcript:', video.transcript);
-        video.isConverted = true; // Mark the video as converted
-        console.log('isConverted:', video.isConverted);
+        // video.isConverted = true; // Mark the video as converted
+        // console.log('isConverted:', video.isConverted);
         console.log(
-          'Updated video with new transcript and marked as converted.',
+          'Updated video with transcript',
         );
       } else {
         console.log('No video found with ID:', _id);

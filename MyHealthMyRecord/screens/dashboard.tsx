@@ -348,7 +348,9 @@ function Dashboard() {
       if (video) {
         realm.write(() => {
           video.isSelected = false;
+          video.isConverted = false;
         });
+        console.log(`Video with ID ${id} removed from isSelected and isConverted.`);
       } else {
         console.log(`Video with ID ${id} not found.`);
       }

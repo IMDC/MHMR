@@ -36,6 +36,7 @@ import Config from 'react-native-config';
 import NetInfo from '@react-native-community/netinfo';
 import {useNetwork} from '../components/networkProvider';
 import {getAuth, getTranscript} from '../components/stt_api';
+import {sendToChatGPT} from '../components/chatgpt_api';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const [selectedVideos, setSelectedVideos] = useState(new Set());
@@ -92,18 +93,80 @@ const ViewRecordings = ({selected, setSelected}) => {
         'Your videos have been added to the Video Set!',
       );
       handleSend();
-      
-      
     }
   }
 
-  async function handleYesAnalysis() {}
+  const [inputText, setInputText] = useState('');
+
+  async function handleYesAnalysis() {
+    const selectedVideos: Realm.Results<VideoData> = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == false AND isSelected == true');
+
+    for (const video of selectedVideos) {
+      const getTranscriptByFilename = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          return video.transcript;
+        }
+        return [];
+      };
+
+      const getCheckedKeywords = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedKeywords = video.keywords
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedKeywords;
+        }
+        return [];
+      };
+
+      const getCheckedLocations = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedLocations = video.locations
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedLocations;
+        }
+        return [];
+      };
+
+      const transcript = getTranscriptByFilename(video.filename);
+      const keywords = getCheckedKeywords(video.filename).join(', ');
+      const locations = getCheckedLocations(video.filename).join(', ');
+
+      try {
+        const outputText = await sendToChatGPT(
+          video.filename,
+          transcript,
+          keywords,
+          locations,
+          realm,
+          video._id.toHexString(),
+        );
+        setInputText(outputText); // State update here
+        console.log(
+          `Transcription successful for video ${video._id.toHexString()}`,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to process video ${video._id.toHexString()}:`,
+          error,
+        );
+      }
+    }
+  }
 
   //handleSend just adds videos to video set
   async function handleSend() {
     const state = await NetInfo.fetch();
     setSelectedVideos(selected);
-    
+
     setSelected(true);
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
@@ -365,15 +428,17 @@ const ViewRecordings = ({selected, setSelected}) => {
               onPress={async () => {
                 console.log('NO clicked!');
                 navigation.navigate('Dashboard', {selectedVideos});
-                Alert.alert('Your transcripts have been generated, and your videos have been added to the Video Set!');
+                Alert.alert(
+                  'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                );
                 toggleDialog2();
                 navigation.navigate('Dashboard', {selectedVideos});
+
+                await handleSend();
                 Alert.alert(
                   'Video Transcripts Generated',
                   'Your transcripts have been generated, and your videos have been added to the Video Set!',
                 );
-                await handleSend();
-                
               }}
             />
             <Dialog.Button
@@ -381,12 +446,14 @@ const ViewRecordings = ({selected, setSelected}) => {
               onPress={async () => {
                 console.log('YES clicked!');
                 toggleDialog2();
-                 navigation.navigate('Dashboard', {selectedVideos});
-                 Alert.alert(
-                   'Video Transcripts Generated and Analyzed','Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
-                 );
+                navigation.navigate('Dashboard', {selectedVideos});
+
                 await handleSend();
-               
+                await handleYesAnalysis();
+                Alert.alert(
+                  'Video Transcripts Generated and Analyzed',
+                  'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                );
               }}
             />
           </Dialog.Actions>
