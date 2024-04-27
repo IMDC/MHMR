@@ -1,8 +1,8 @@
-import {useNavigation, ParamListBase, useRoute} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { useNavigation, ParamListBase, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as React from 'react';
 import axios from 'axios';
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -11,16 +11,16 @@ import {
   View,
   Alert,
 } from 'react-native';
-import {Chip, Dialog, Text} from 'react-native-paper';
-import {VideoData, useRealm, useQuery, useObject} from '../models/VideoData';
-import {Button, Icon, CheckBox} from '@rneui/themed';
+import { Chip, Dialog, Text } from 'react-native-paper';
+import { VideoData, useRealm, useQuery, useObject } from '../models/VideoData';
+import { Button, Icon, CheckBox } from '@rneui/themed';
 import RNFS from 'react-native-fs';
-import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
-import {base64} from 'rfc4648';
+import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
+import { base64 } from 'rfc4648';
 import Config from 'react-native-config';
-import {API_OPENAI_CHATGPT} from '@env';
+import { API_OPENAI_CHATGPT } from '@env';
 import useAddToFile from '../components/addToFile';
-import {Dropdown} from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import addToIsSelected from '../components/addToIsSelected';
 
@@ -33,14 +33,14 @@ function Dashboard() {
   const selectedVideos = route.params?.selectedVideos;
   // updateSelectedVideos(selectedVideos);
   // if (selectedVideos && selectedVideos.size > 0) {
-    // addToIsSelected(selectedVideos);
+  // addToIsSelected(selectedVideos);
   // }
 
   const sendToChatGPT = async (textFileName, _id) => {
     try {
       // Create directories if they don't exist
       const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
-      await RNFS.mkdir(directoryPath, {recursive: true});
+      await RNFS.mkdir(directoryPath, { recursive: true });
 
       // Send the input text to ChatGPT API
       const response = await fetch(
@@ -53,7 +53,7 @@ function Dashboard() {
           },
           body: JSON.stringify({
             model: 'gpt-3.5-turbo',
-            messages: [{role: 'user', content: inputText}],
+            messages: [{ role: 'user', content: inputText }],
             max_tokens: 100,
           }),
         },
@@ -190,6 +190,8 @@ function Dashboard() {
       });
   };
 
+  // ------------------------------------------------------------------------------------------------------------------ //
+
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [videos, setVideos] = React.useState<any | null>(null);
   const [buttonPressed, setButtonPressed] = React.useState(false);
@@ -245,9 +247,9 @@ function Dashboard() {
     // Execute FFmpegKit command
     FFmpegKit.execute(
       '-i ' +
-        mp4FileName +
-        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
-        wavFileName,
+      mp4FileName +
+      ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
+      wavFileName,
     )
       .then(async session => {
         const returnCode = await session.getReturnCode();
@@ -377,39 +379,241 @@ function Dashboard() {
 
   const [session, setSessionValue] = useState(null);
   const testSessionOptions = [
-    {label: 'ex 1 - DDMMYYYY/timestamp', value: 0},
-    {label: 'ex 2 - DDMMYYYY/timestamp', value: 1},
-    {label: 'ex 3 - DDMMYYYY/timestamp', value: 2},
+    { label: 'ex 1 - DDMMYYYY/timestamp', value: 0 },
+    { label: 'ex 2 - DDMMYYYY/timestamp', value: 1 },
+    { label: 'ex 3 - DDMMYYYY/timestamp', value: 2 },
   ];
+
+  function saveVideoSet(frequencyData: string[], videoIDs: string[]) {
+    let tempName = Date().toString().split(' GMT-')[0];
+
+  }
+
+  function getVideoSetName() {
+
+  }
+
+  const createVideoSet = (
+    frequencyData: string[],
+    videoIDs: string[],
+  ) => {
+    realm.write(() => {
+      realm.create('VideoSet', {
+        _id: new Realm.BSON.ObjectID(),
+        datetime: new Date(),
+        name: new Date().toString().split(' GMT-')[0],
+        frequencyData: frequencyData,
+        videoIDs: videoIDs,
+      });
+    });
+  };
+
+  // ---------- DROPDOWN STUFF ------------- //
+
+  const [videoSetIDs, setVideoSetIDs] = useState<any>([]);
+  const [videoSetDropdown, setVideoSetDropdown] = useState<any>([]);
+
+  const videosSelected = videoData.filtered('isSelected == true');
+
+  const videoSets: any = useQuery('VideoSet');
+  const videosSetsByDate = videoSets.sorted('datetime', false);
+  console.log("sets", videoSets);
+
+  const [videoSetValue, setVideoSetValue] = useState(0);
+  let testVideoSetOptions = [];
+
+  useEffect(() => {
+    //formatVideoSetDropdown();
+    console.log("dropdown", videoSetDropdown);
+    setVideoSetIDs(getSelectedVideoIDS);
+  }, []);
+
+  function getSelectedVideoIDS() {
+    let tempVideoSetIDs = [];
+    for (let i = 0; i < videosSelected.length; i++) {
+      tempVideoSetIDs.push(videosSelected[i]._id);
+    }
+    console.log(tempVideoSetIDs);
+    return tempVideoSetIDs;
+  }
+
+  function formatVideoSetDropdown() {
+    let dropdownOptions = [];
+    for (let i = 0; i < videosSetsByDate.length; i++) {
+      dropdownOptions.push({ label: videosSetsByDate[i].name, value: i, id: videosSetsByDate[i]._id });
+      console.log(dropdownOptions[i]);
+    }
+    setVideoSetDropdown(dropdownOptions);
+  }
+
+  /**
+   * Deselect videos after user changes videoset selection from dropdown
+   */
+  function deselectVideos() {
+    for (let i = 0; i < videosSelected.length; i++) {
+      videosSelected[i].isSelected = false;
+    }
+  }
+
+  /**
+   * Select new videos after user changes videoset selection from dropdown
+   */
+  function selectVideos() {
+
+    console.log("1 -- currentVideoSetDetails", videoSetDropdown[videoSetValue], "---", videoSetValue);
+    const currentVideoSetDetails = videoSets.filtered('_id == $0', videoSetDropdown[videoSetValue].id);
+
+    let videoIDsFromSet = currentVideoSetDetails[0].videoIDs;
+
+    console.log("currentVideoSetDetails", currentVideoSetDetails);
+    console.log("videoIDsFromSet", videoIDsFromSet);
+
+    for (let i = 0; i < videoIDsFromSet.length; i++) {
+      let videoMatch = videoData.filtered('_id == $0', videoIDsFromSet[i]);
+      //matchedVideoIDs.push(videoIDsFromSet[i]);
+      console.log("match- ", videoMatch[0].isSelected);
+      updateIsSelect(videoIDsFromSet[i]);
+    }
+
+  }
+
+  // maybe this can be moved to dropdown onChange function?
+  useEffect(() => {
+    if (videoSetDropdown.length > 0) {
+      clearVideoSet();
+      selectVideos();
+    }
+  }, [videoSetValue]);
+
+  function updateIsSelect(id: any) {
+    const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
+    if (video) {
+      realm.write(() => {
+        video.isSelected! = true;
+      })
+    }
+  }
+
+  function clearVideoSet() {
+    //if (videoSetDropdown.length > 0) {
+    /* const currentVideoSetID = videoSetDropdown[videoSetValue].id;
+    const currentVideoSetDetails = videoSets.filtered('_id == $0', currentVideoSetID);
+    //console.log("-----", currentVideoSetDetails[0], "----------", currentVideoSetDetails[0].videoIDs);
+    let videoIDsFromSet = currentVideoSetDetails[0].videoIDs;
+    console.log("CLEAR------------", videoIDsFromSet) */
+
+    let selectedVideoIDs = getSelectedVideoIDS();
+    console.log("CLEAR------------", selectedVideoIDs)
+    for (let i = 0; i < selectedVideoIDs.length; i++) {
+      removeFromIsSelected(selectedVideoIDs[i]);
+    }
+    //}
+  }
 
   return (
     <View>
-      {/* beginning of dashboard */}
-      {/* {buttonPressed ? (
-        <Button
-          onPress={() => {
-            setButtonPressed(!buttonPressed);
-            console.log(buttonPressed);
-          }}>
-          Done
-        </Button>
-      ) : (
-        <Button
-          onPress={() => {
-            setButtonPressed(!buttonPressed);
-            // console.log(buttonPressed);
-          }}>
-          Select Videos
-        </Button>
-      )} */}
 
-      {/* <Button onPress={getAuth}>get auth</Button> */}
-      {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
-      {/* <Button onPress={transcribeAudio}>transcribe audio</Button>
-      <Button onPress={cognosSession}>cognos session</Button> */}
+      <View style={{ height: '25%', width: '100%' }}>
+        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 20 }}>Select Video Set: </Text>
+          <Dropdown
+            data={videoSetDropdown}
+            maxHeight={400}
+            style={{ height: 50, width: 600, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+            placeholderStyle={{ fontSize: 22 }}
+            selectedTextStyle={{ fontSize: 22 }}
+            activeColor='#FFC745'
+            //backgroundColor='#FFC745'
+            labelField="label"
+            valueField="value"
+            value={videoSetValue}
+            onChange={item => {
+              setVideoSetValue(item.value);
+              //clearVideoSet();
+            }}
+          />
+          <View style={{ flexDirection: 'row', paddingTop: 10 }}>
+            <Button
+              title="Save Video Set"
+              onPress={() => {
+                createVideoSet([], getSelectedVideoIDS());
+                formatVideoSetDropdown();
+                console.log("SAVE", videosSelected);
+              }}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{
+                width: 300,
+                marginHorizontal: 30,
+                marginVertical: 15,
+              }}
+            />
+            <Button
+              title="Clear Video Set"
+              onPress={() => {
+                // TODO: move this to a function and call onPress()
+                clearVideoSet();
+              }}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{
+                width: 300,
+                marginHorizontal: 30,
+                marginVertical: 15,
+              }}
+            />
+          </View>
 
-      <ScrollView style={{marginTop: 5}} ref={scrollRef}>
-        {/* <View style={{height: '15%', width: '100%'}}>
+          <Button
+            title="Delete all Video Sets"
+            onPress={() => {
+              // TODO: move this to a function and call onPress()
+              realm.write(() => {
+                realm.delete(videoSets);
+              });
+              formatVideoSetDropdown();
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}
+            containerStyle={{
+              width: 300,
+              marginHorizontal: 30,
+              marginVertical: 10,
+            }}
+          />
+
+        </View>
+      </View>
+      <View style={{ height: '75%', width: '100%' }}>
+
+        {/* beginning of dashboard */}
+        {buttonPressed ? (
+          <Button
+            onPress={() => {
+              setButtonPressed(!buttonPressed);
+              console.log(buttonPressed);
+            }}>
+            Done
+          </Button>
+        ) : (
+          <Button
+            onPress={() => {
+              setButtonPressed(!buttonPressed);
+              // console.log(buttonPressed);
+            }}>
+            Select Videos
+          </Button>
+        )}
+        <Button onPress={getAuth}>get auth</Button>
+        <Button onPress={transcribeAudio}>transcribe audio</Button>
+
+
+        {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
+
+        {/* <Button onPress={cognosSession}>cognos session</Button> */}
+
+        <ScrollView style={{ marginTop: 5 }} ref={scrollRef}>
+          {/* <View style={{height: '15%', width: '100%'}}>
           <View
             style={{
               flex: 1,
@@ -453,8 +657,8 @@ function Dashboard() {
             />
           </View>
         </View> */}
-        {videos !== null
-          ? videos.map((video: VideoData) => {
+          {videos !== null
+            ? videos.map((video: VideoData) => {
               const isTranscriptEmpty = video => {
                 return (
                   video.transcript === undefined || video.transcript === ''
@@ -512,14 +716,14 @@ function Dashboard() {
                               console.log('unchecked');
                             }
                           }}
-                          containerStyle={{backgroundColor: 'transparent'}}
+                          containerStyle={{ backgroundColor: 'transparent' }}
                         />
                       </View>
                     )}
 
                     <View style={styles.thumbnail}>
                       <ImageBackground
-                        style={{height: '100%', width: '100%'}}
+                        style={{ height: '100%', width: '100%' }}
                         source={{
                           uri:
                             'file://' + MHMRfolderPath + '/' + video.filename,
@@ -531,7 +735,7 @@ function Dashboard() {
                             })
                           }>
                           <Icon
-                            style={{height: 240, justifyContent: 'center'}}
+                            style={{ height: 240, justifyContent: 'center' }}
                             name="play-sharp"
                             type="ionicon"
                             color="black"
@@ -579,21 +783,23 @@ function Dashboard() {
                             />
                           ) : null}
                         </Text>
-                        <Text style={{fontSize: 20}}>
+                        <Text style={{ fontSize: 20 }}>
                           {video.datetimeRecorded?.toLocaleString()}
                         </Text>
                         {/* map temparray and display the keywords here */}
-                        <View style={{flexDirection: 'row'}}>
+                        <View style={{ flexDirection: 'row' }}>
                           {video.keywords.map((key: string) => {
                             if (JSON.parse(key).checked) {
                               return (
                                 <Chip
                                   key={JSON.parse(key).title}
+
                                   style={{
                                     margin: 2,
                                     backgroundColor: '#E1BE6A',
                                   }}
                                   textStyle={{fontSize: 16}}
+
                                   mode="outlined"
                                   compact={true}
                                   icon={'tag'}>
@@ -607,11 +813,13 @@ function Dashboard() {
                               return (
                                 <Chip
                                   key={JSON.parse(key).title}
+
                                   textStyle={{fontSize: 16}}
                                   style={{
                                     margin: 2,
                                     backgroundColor: '#40B0A6',
                                   }}
+
                                   mode="outlined"
                                   compact={true}
                                   icon={'map-marker'}>
@@ -621,6 +829,9 @@ function Dashboard() {
                             }
                           })}
                         </View>
+                        {/* <Text style={{ fontSize: 20 }}>
+                          {video._id.toString()}
+                        </Text> */}
                       </View>
                       {/* <View>
                         <Text>Transcript: {video.transcript}</Text>
@@ -644,11 +855,11 @@ function Dashboard() {
                             removeFromIsSelected(video._id),
                               console.log(video.isSelected);
                           }}
-                          // onPress={() => {
-                          //   setVideoSelectedData(video);
-                          //   setvideoSelectedFilename(video.filename);
-                          //   toggleDialog1();
-                          // }}
+                        // onPress={() => {
+                        //   setVideoSelectedData(video);
+                        //   setvideoSelectedFilename(video.filename);
+                        //   toggleDialog1();
+                        // }}
                         />
                         {/* send to chatgpt button */}
                         {/* <Button
@@ -685,8 +896,8 @@ function Dashboard() {
                 </View>
               );
             })
-          : null}
-        {/* {
+            : null}
+          {/* {
             buttonPressed
           ? videos.map((video: VideoData) => {
               // const videoURI = require(MHMRfolderPath + '/' + video.filename);
@@ -696,12 +907,13 @@ function Dashboard() {
               );
             })
           : null} */}
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
-            Scroll to Top
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPressTouch}>
+            <Text style={{ padding: 5, fontSize: 16, color: 'black' }}>
+              Scroll to Top
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
     </View>
   );
 }

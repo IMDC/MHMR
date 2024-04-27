@@ -266,7 +266,7 @@ const ReviewAnnotations = () => {
                       </View>
                     );
                   })
-                : null}
+                : <Text>No Comments Added</Text>}
             </ScrollView>
           </SafeAreaView>
         </View>
@@ -298,7 +298,7 @@ const ReviewAnnotations = () => {
                       </View>
                     );
                   })
-                : null}
+                : <Text>No Stickers Added</Text>}
             </ScrollView>
           </SafeAreaView>
         </View>
