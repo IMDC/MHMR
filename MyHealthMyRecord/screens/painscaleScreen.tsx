@@ -25,6 +25,8 @@ import {useObject, useRealm} from '../models/VideoData';
 export default function Painscale() {
   const [refreshFlatlist, setRefreshFlatList] = useState(false);
 
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  
   const route: any = useRoute();
   const id = route.params?.id;
 

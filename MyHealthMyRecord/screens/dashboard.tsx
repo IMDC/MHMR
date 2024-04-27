@@ -587,7 +587,7 @@ function Dashboard() {
       <View style={{ height: '75%', width: '100%' }}>
 
         {/* beginning of dashboard */}
-        {buttonPressed ? (
+        {/* {buttonPressed ? (
           <Button
             onPress={() => {
               setButtonPressed(!buttonPressed);
@@ -605,7 +605,7 @@ function Dashboard() {
           </Button>
         )}
         <Button onPress={getAuth}>get auth</Button>
-        <Button onPress={transcribeAudio}>transcribe audio</Button>
+        <Button onPress={transcribeAudio}>transcribe audio</Button> */}
 
 
         {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
