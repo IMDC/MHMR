@@ -1,6 +1,5 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import VideoPlayer from 'react-native-media-console';
 import axios, {AxiosError, AxiosRequestConfig} from 'axios';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {
@@ -36,11 +35,10 @@ const worried = require('../assets/images/emojis/worried.png');
 import Config from 'react-native-config';
 import NetInfo from '@react-native-community/netinfo';
 import {useNetwork} from '../components/networkProvider';
+import {getAuth, getTranscript} from '../components/stt_api';
+import {sendToChatGPT} from '../components/chatgpt_api';
 
 const ViewRecordings = ({selected, setSelected}) => {
-  const [auth, setAuth] = useState('');
-  const [checked, setChecked] = useState(1);
-  const [inputText, setInputText] = useState('');
   const [selectedVideos, setSelectedVideos] = useState(new Set());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
@@ -48,198 +46,138 @@ const ViewRecordings = ({selected, setSelected}) => {
   );
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
+  const [visible2, setVisible2] = useState(false);
 
-  const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-  const requestQueue: any[] = [];
-  const functionQueue: any[] = [];
-  
-  const {toggleOnlineDialog} = useNetwork();
+  const processSelectedVideos = async () => {
+    const auth = await getAuth();
+    const selectedVideos: Realm.Results<VideoData> = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == false AND isSelected == true');
 
-  function runFunctionQueue() {
-    console.log('Running function queue');
-    while (functionQueue.length > 0) {
-      functionQueue.shift();
+    console.log(`Found ${selectedVideos.length} videos to process.`);
+
+    for (const video of selectedVideos) {
+      const audioFileName = video.filename.replace('.mp4', '.wav');
+      console.log('audioFileName:', audioFileName);
+      console.log(
+        `Processing video ${video._id.toHexString()}: ${audioFileName}`,
+      );
+
+      try {
+        await getTranscript(
+          audioFileName,
+          video._id.toHexString(),
+          auth,
+          realm,
+        );
+        console.log(
+          `Transcription successful for video ${video._id.toHexString()}`,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to process video ${video._id.toHexString()}:`,
+          error,
+        );
+      }
+    }
+  };
+
+  async function handleSendToDashboard() {
+    const state = await NetInfo.fetch();
+    if (state.isConnected) {
+      toggleDialog2();
+    } else {
+      navigation.navigate('Dashboard', {selectedVideos});
+      Alert.alert(
+        'Added to Video Set',
+        'Your videos have been added to the Video Set!',
+      );
+      handleSend();
     }
   }
 
-  // Function to queue requests when offline
-  function queueRequest(request: any) {
-    requestQueue.push(request);
+  const [inputText, setInputText] = useState('');
+
+  async function handleYesAnalysis() {
+    const selectedVideos: Realm.Results<VideoData> = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == false AND isSelected == true');
+
+    for (const video of selectedVideos) {
+      const getTranscriptByFilename = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          return video.transcript;
+        }
+        return [];
+      };
+
+      const getCheckedKeywords = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedKeywords = video.keywords
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedKeywords;
+        }
+        return [];
+      };
+
+      const getCheckedLocations = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedLocations = video.locations
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedLocations;
+        }
+        return [];
+      };
+
+      const transcript = getTranscriptByFilename(video.filename);
+      const keywords = getCheckedKeywords(video.filename).join(', ');
+      const locations = getCheckedLocations(video.filename).join(', ');
+
+      try {
+        const outputText = await sendToChatGPT(
+          video.filename,
+          transcript,
+          keywords,
+          locations,
+          realm,
+          video._id.toHexString(),
+        );
+        setInputText(outputText); // State update here
+        console.log(
+          `Transcription successful for video ${video._id.toHexString()}`,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to process video ${video._id.toHexString()}:`,
+          error,
+        );
+      }
+    }
   }
 
-  // Function to handle API requests
-  // async function handleRequest(request: any) {
-  async function handlePress() {
+  //handleSend just adds videos to video set
+  async function handleSend() {
     const state = await NetInfo.fetch();
     setSelectedVideos(selected);
-    navigation.navigate('Dashboard', {selectedVideos});
-    Alert.alert('Your videos have been added to the dashboard');
+
     setSelected(true);
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
 
     if (state.isConnected) {
       console.log('Online and connected');
-      runFunctionQueue();
+      processSelectedVideos();
     } else {
       console.log('Offline and disconnected');
-      // functionQueue.push(toggleOnlineDialog);
     }
-    // try {
-    //   const response = await axios(request);
-    //   console.log('Request successful', response);
-    // } catch (error) {
-    //   console.error('Request failed', error);
-    // }
   }
-
-  // Event listener for network status changes
-  NetInfo.addEventListener(state => {
-    if (state.isConnected) {
-      console.log(
-        'Device is now connected to the internet, running queued tasks.',
-      );
-      runFunctionQueue();
-    }
-  });
-
-  // Function to get IBM Speech-to-Text API authentication token
-  const getAuth = async () => {
-    try {
-      let headersList = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      };
-
-      let bodyContent =
-        'grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=' +
-        Config.API_KEY_SPEECH_TO_TEXT;
-
-      let reqOptions = {
-        url: 'https://iam.cloud.ibm.com/identity/token',
-        method: 'POST',
-        headers: headersList,
-        data: bodyContent,
-      };
-
-      let response = await axios.request(reqOptions);
-      setAuth(response.data.token_type + ' ' + response.data.access_token);
-      console.log('New auth token set:', response.data.access_token);
-    } catch (error) {
-      console.error('Error getting auth token:', error.message);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('No response received. Request details:', error.request);
-      } else {
-        console.error('Error details:', error.message);
-      }
-    }
-  };
-
-  // Function to convert video audio to WAV format
-  const convertToAudio = (video: VideoData) => {
-    console.log('convert to audio');
-    const wavFileName =
-      // 'file://' +
-      audioFolderPath + '/' + video.filename.replace('.mp4', '') + '.wav';
-    const mp4FileName =
-      // 'file://' +
-      MHMRfolderPath + '/' + video.filename;
-
-    FFmpegKit.execute(
-      '-i ' +
-        mp4FileName +
-        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
-        wavFileName,
-    ).then(async session => {
-      const returnCode = await session.getReturnCode();
-
-      if (ReturnCode.isSuccess(returnCode)) {
-        console.log('success');
-        video.isConverted = true;
-      } else if (ReturnCode.isCancel(returnCode)) {
-        console.log('canceled');
-      } else {
-        console.log('error');
-      }
-    });
-  };
-
-  const getTranscript = async (audioFileName: any, _id: any) => {
-    const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-
-    RNFS.readFile(audioFolderPath + '/' + audioFileName, 'base64').then(
-      data => {
-        console.log(
-          data.substring(0, 5),
-          ', ',
-          data.substring(data.length - 5),
-        );
-        transcribeAudio(base64.parse(data), _id);
-      },
-    );
-    console.log('done');
-  };
-
-  /**
-   * Transcribe an audio file by sending request to IBM speech-to-text service
-   * @param body - The audio file to transcribe
-   */
-  const transcribeAudio = async (body: any, _id: any) => {
-    axios
-      .post(
-        'https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize',
-        body,
-        {
-          headers: {
-            Authorization: auth,
-            'Content-Type': 'audio/wav',
-          },
-        },
-      )
-      .then(response => {
-        const transcript =
-          response.data.results[0]?.alternatives[0]?.transcript || '';
-        const confidence =
-          response.data.results[0]?.alternatives[0]?.confidence || 0;
-        console.log('Transcript:', transcript);
-        console.log('Confidence:', confidence);
-        realm.write(() => {
-          // Assuming videoData is an array of video objects
-          const videoToUpdate = videoData.find(
-            (video: {_id: {toString: () => any}}) =>
-              video._id.toString() === _id,
-          );
-
-          if (videoToUpdate) {
-            // Update the transcript property within the specific video object
-            videoToUpdate.transcript = [transcript];
-            videoToUpdate.isTranscribed = true;
-
-            console.log('Realm write operation completed');
-          } else {
-            console.log('Could not find video to update in the array');
-          }
-        });
-      })
-      .catch((err: any) => {
-        console.log('Error during transcription:', err.message || err);
-
-        if (err.response?.status === 401) {
-          console.log('Need to get a new auth token');
-          getAuth();
-        }
-      });
-  };
-
-  const getVideoIdFromFilename = (filename: any) => {
-    const video = videoData.find(
-      (video: {filename: any}) => video.filename === filename,
-    );
-    return video ? video._id : null;
-  };
-
   // useAddToFile(selectedVideos);
 
   const toggleDialog = () => {
@@ -248,6 +186,11 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   const toggleDialog1 = () => {
     setVisible1(!visible1);
+  };
+
+  const toggleDialog2 = () => {
+    setVisible2(!visible2);
+    console.log('visible2:', visible2);
   };
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -472,6 +415,83 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   return (
     <View>
+      <Dialog isVisible={visible2} onBackdropPress={toggleDialog2}>
+        <Dialog.Title title="You are about to send your videos to the video set." />
+        <Text style={{fontSize: 18}}>
+          Would you like to analyze these videos? If you click NO you will still
+          have the option to analyze it later.
+        </Text>
+        <View style={{paddingHorizontal: 20}}>
+          <Dialog.Actions>
+            <Dialog.Button
+              title="NO"
+              onPress={async () => {
+                console.log('NO clicked!');
+                navigation.navigate('Dashboard', {selectedVideos});
+                Alert.alert(
+                  'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                );
+                toggleDialog2();
+                navigation.navigate('Dashboard', {selectedVideos});
+
+                await handleSend();
+                Alert.alert(
+                  'Video Transcripts Generated',
+                  'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                );
+              }}
+            />
+            <Dialog.Button
+              title="YES"
+              onPress={async () => {
+                console.log('YES clicked!');
+                toggleDialog2();
+                navigation.navigate('Dashboard', {selectedVideos});
+
+                await handleSend();
+                await handleYesAnalysis();
+                Alert.alert(
+                  'Video Transcripts Generated and Analyzed',
+                  'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                );
+              }}
+            />
+          </Dialog.Actions>
+        </View>
+      </Dialog>
+      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+        <Dialog.Title title="Are you sure you want to delete all videos?" />
+        <Text style={{fontSize: 20}}>
+          These videos will be deleted immediately. You can't undo this action.
+        </Text>
+        <Dialog.Actions>
+          <Dialog.Button
+            title="Delete"
+            onPress={() => {
+              deleteAllVideoDataObjects();
+              console.log('delete all videos');
+            }}
+          />
+          <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
+        </Dialog.Actions>
+      </Dialog>
+
+      <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
+        <Dialog.Title title="Are you sure you want to delete this video?" />
+        <Text style={{fontSize: 20}}>
+          This item will be deleted immediately. You can't undo this action.
+        </Text>
+        <Dialog.Actions>
+          <Dialog.Button
+            title="Delete"
+            onPress={() => {
+              deleteVideo(videoSelectedData, videoSelectedFilename);
+              toggleDialog1();
+            }}
+          />
+          <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
+        </Dialog.Actions>
+      </Dialog>
       <View>
         {/* <Button
           onPress={() => {
@@ -536,12 +556,12 @@ const ViewRecordings = ({selected, setSelected}) => {
             style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
             radius={50}
             buttonStyle={[styles.btnStyle, {}]}
-            // onPress={handlePress}>
+            // onPress={handleSend}>
             onPress={() => {
-              handlePress();
+              handleSendToDashboard();
             }}>
             <Text style={{color: 'white', fontSize: 25}}>
-              Send {selectedVideos.size} video(s) to Dashboard
+              Send {selectedVideos.size} video(s) to Video Set
             </Text>
           </Button>
         </View>
@@ -878,9 +898,9 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                   const transcriptIsEmpty = isTranscriptEmpty(video);
 
-                  return (
-                    <View style={styles.container} key={video._id.toString()}>
-                      <View></View>
+                return (
+                  <View key={video._id.toString()}>
+                    <View style={styles.container}>
                       <View style={styles.thumbnail}>
                         <ImageBackground
                           style={{height: '100%', width: '100%'}}
@@ -998,7 +1018,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           <Text style={{fontSize: 20}}>
                             {video.datetimeRecorded?.toLocaleString()}
                           </Text>
-                          <Text>{video.filename}</Text>
+                          {/* <Text>{video.filename}</Text> */}
 
                           <View
                             style={{flexDirection: 'row', flexWrap: 'wrap'}}>
@@ -1110,7 +1130,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                         )}
                       </View>
                     </View>
-                  );
+                  </View>
+                );
                 })
               : null}
           </View>
@@ -1236,6 +1257,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Review"
+                        radius={50}
                         onPress={() =>
                           navigation.navigate('Review Annotations', {
                             id: video._id,
@@ -1246,6 +1268,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Add/Edit Markups"
+                        radius={50}
                         onPress={() =>
                           navigation.navigate('Annotation Menu', {
                             id: video._id,
@@ -1256,6 +1279,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Delete Video"
+                        radius={50}
                         onPress={() => deleteVideo(video, video.filename)}
                         // onPress={() => {
                         //   setVideoSelectedData(video);
@@ -1270,42 +1294,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                 </View>
               );
             })}
-
-            <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-              <Dialog.Title title="Are you sure you want to delete all videos?" />
-              <Text style={{fontSize: 20}}>
-                These videos will be deleted immediately. You can't undo this
-                action.
-              </Text>
-              <Dialog.Actions>
-                <Dialog.Button
-                  title="Delete"
-                  onPress={() => {
-                    deleteAllVideoDataObjects();
-                    console.log('delete all videos');
-                  }}
-                />
-                <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
-              </Dialog.Actions>
-            </Dialog>
-
-            <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
-              <Dialog.Title title="Are you sure you want to delete this video?" />
-              <Text style={{fontSize: 20}}>
-                This item will be deleted immediately. You can't undo this
-                action.
-              </Text>
-              <Dialog.Actions>
-                <Dialog.Button
-                  title="Delete"
-                  onPress={() => {
-                    deleteVideo(videoSelectedData, videoSelectedFilename);
-                    toggleDialog1();
-                  }}
-                />
-                <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
-              </Dialog.Actions>
-            </Dialog>
           </View>
         )}
         <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>

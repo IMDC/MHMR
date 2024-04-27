@@ -346,14 +346,16 @@ function Dashboard() {
   };
 
   async function removeFromIsSelected(id: any) {
-    const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
-    if (video) {
-      realm.write(() => {
-        video.isSelected = false;
-      });
-    } else {
-      console.log(`Video with ID ${id} not found.`);
-    }
+      const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
+      if (video) {
+        realm.write(() => {
+          video.isSelected = false;
+          video.isConverted = false;
+        });
+        console.log(`Video with ID ${id} removed from isSelected and isConverted.`);
+      } else {
+        console.log(`Video with ID ${id} not found.`);
+      }
   }
 
   const toggleVideoChecked = (videoId: any) => {
@@ -791,10 +793,16 @@ function Dashboard() {
                               return (
                                 <Chip
                                   key={JSON.parse(key).title}
-                                  style={{ margin: 2 }}
-                                  textStyle={{ fontSize: 16 }}
+
+                                  style={{
+                                    margin: 2,
+                                    backgroundColor: '#E1BE6A',
+                                  }}
+                                  textStyle={{fontSize: 16}}
+
                                   mode="outlined"
-                                  compact={true}>
+                                  compact={true}
+                                  icon={'tag'}>
                                   {JSON.parse(key).title}
                                 </Chip>
                               );
@@ -805,10 +813,16 @@ function Dashboard() {
                               return (
                                 <Chip
                                   key={JSON.parse(key).title}
-                                  textStyle={{ fontSize: 16 }}
-                                  style={{ margin: 2 }}
+
+                                  textStyle={{fontSize: 16}}
+                                  style={{
+                                    margin: 2,
+                                    backgroundColor: '#40B0A6',
+                                  }}
+
                                   mode="outlined"
-                                  compact={true}>
+                                  compact={true}
+                                  icon={'map-marker'}>
                                   {JSON.parse(key).title}
                                 </Chip>
                               );
