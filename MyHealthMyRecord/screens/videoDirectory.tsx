@@ -1271,7 +1271,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           })
                         }
                       />
-                      <View style={styles.space} />
+                      <View style={{width: 15}} />
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Add/Edit Markups"
@@ -1282,7 +1282,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           })
                         }
                       />
-                      <View style={styles.space} />
+                      <View style={{width: 15}} />
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Delete Video"
@@ -1395,6 +1395,7 @@ const styles = StyleSheet.create({
   space: {
     width: 50,
   },
+
 });
 
 export default ViewRecordings;
