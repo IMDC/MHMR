@@ -4,7 +4,13 @@ import {useRealm, useQuery} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 
 const DataAnalysisTextSummary = () => {
+  const outputSummary = [
+    "The student recounts an incident from yesterday's class where the professor was explaining something at the beginning. Despite raising their hand to contribute, the professor dismissed it, claiming there was nothing to discuss. When the student asked the professor to speak louder, the professor said it was not possible. The professor then suggested the student move to the front, which the student couldn't do. This left the student shocked, and despite expressing their inability to comply, the professor indicated they were stuck and couldn't do much about it.",
+    "The participant is expressing frustration with the malfunctioning automatic doors at University X. They highlight the doors' weight, making it difficult to push, and criticizes others for not offering assistance despite witnessing their struggle. This lack of assistance is seen as inconsiderate and rude by the participant, who feels they are left to deal with the problem on their own.", "The participant is discussing their experience in an evening class focused on the wheelchair manufacturer industry. They express discomfort with their professor repeatedly singling them out during discussions, specifically asking them personal questions like 'What does PX feel like?' The participant feels being in a wheelchair shouldn't warrant such spotlighting. They intend to address the issue with the professor via email."
+  ];
+
   const [videos, setVideos] = useState([]);
+  let counter = 0;
   const realm = useRealm();
   const videoData = useQuery('VideoData');
   const videosByIsSelected = videoData
@@ -56,13 +62,14 @@ const DataAnalysisTextSummary = () => {
             <Text style={{fontWeight: 'bold', fontSize: 32, color: 'black'}}>
               {video.title}
             </Text>
-            <Text style={{fontSize: 20, color: 'black'}}>
+            {/* <Text style={{fontSize: 20, color: 'black'}}>
               <Text style={{fontWeight: 'bold'}}>Input:</Text>
               {` "Summarize this video transcript (${video.transcript}) and include the summary of the keywords (${video.checkedTitles}) and locations (${video.checkedLocations}) tagged."`}
-            </Text>
+            </Text> */}
             <Text style={{fontSize: 20, color: 'black'}}>
               <Text style={{fontWeight: 'bold'}}>Output:</Text>
-              {` ${video.transcriptFileContent}`}
+              {` ${outputSummary[counter++]}`}
+              {/* {` ${video.transcriptFileContent}`} */}
             </Text>
           </View>
         </View>
