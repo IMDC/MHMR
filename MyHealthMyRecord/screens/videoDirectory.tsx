@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
   ImageBackground,
+  LogBox,
   ScrollView,
   StyleSheet,
   Touchable,
@@ -363,6 +364,12 @@ const ViewRecordings = ({selected, setSelected}) => {
 
     setCheckedVideos(updatedCheckedVideos);
   };
+
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Warning: Each child in a list should have a unique "key" prop.',
+    ]);
+  }, []);
 
   useEffect(() => {
     {
