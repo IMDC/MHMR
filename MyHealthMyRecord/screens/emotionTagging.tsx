@@ -10,6 +10,7 @@ import {
   FlatList,
   PanResponderGestureState,
   TouchableOpacity,
+  LogBox,
 } from 'react-native';
 const angry = require('../assets/images/emojis/angry.png');
 const neutral = require('../assets/images/emojis/neutral.png');
@@ -273,6 +274,12 @@ const EmotionTagging = () => {
       });
     }
   };
+
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Warning: Each child in a list should have a unique "key" prop.',
+    ]);
+  }, []);
 
   /* initialize array of refs for the sticker list */
   useEffect(() => {
