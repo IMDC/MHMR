@@ -1,8 +1,8 @@
 import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { VideoData, useRealm, useObject } from '../models/VideoData';
-import { SafeAreaView, View, Text, ScrollView, Dimensions } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, Dimensions, Switch } from 'react-native';
 import { Button } from '@rneui/themed';
 import { LineChart, BarChart, Grid, YAxis, XAxis } from 'react-native-svg-charts';
 import Svg, * as svg from 'react-native-svg';
@@ -14,7 +14,11 @@ import * as Styles from '../assets/util/styles';
 const DataAnalysisBarGraph = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const route: any = useRoute();
-    //const wordFreqBarGraphData = route.params?.data;
+    const barData = route.params?.data;
+    const freqMaps = route.params?.freqMaps;
+
+    const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(barData.data);
+    //const wordFreqBarGraphData = data.data;
 
     const realm = useRealm();
     //   const video: any = useObject('VideoData', id);
@@ -25,44 +29,44 @@ const DataAnalysisBarGraph = () => {
 
     const [barGraphVertical, setBarGraphVertical] = useState(true);
 
-    const wordFreqBarGraphData = [
-        {
-            label: "Pain",
-            value: 15,
-        },
-        {
-            label: "Ache",
-            value: 13,
-        },
-        {
-            label: "Weak",
-            value: 12,
-        },
-        {
-            label: "Sleep",
-            value: 8,
-        },
-        {
-            label: "Happy",
-            value: 7,
-        },
-        {
-            label: "Tired",
-            value: 4,
-        },
-        {
-            label: "Energized",
-            value: 3,
-        },
-        {
-            label: "Sad",
-            value: 1,
-        },
-        {
-            label: "Arm",
-            value: 1,
-        },
-    ]
+    /*     const wordFreqBarGraphData = [
+            {
+                label: "Pain",
+                value: 15,
+            },
+            {
+                label: "Ache",
+                value: 13,
+            },
+            {
+                label: "Weak",
+                value: 12,
+            },
+            {
+                label: "Sleep",
+                value: 8,
+            },
+            {
+                label: "Happy",
+                value: 7,
+            },
+            {
+                label: "Tired",
+                value: 4,
+            },
+            {
+                label: "Energized",
+                value: 3,
+            },
+            {
+                label: "Sad",
+                value: 1,
+            },
+            {
+                label: "Arm",
+                value: 1,
+            },
+        ] */
 
     // array of length of max value in data (first index value) for yAxis
     const yTest = Array.from({ length: wordFreqBarGraphData[0].value }, (_, i) => i + 1);
@@ -89,8 +93,9 @@ const DataAnalysisBarGraph = () => {
         })
     );
 
-    // TODO: Get cutoff values dynamically instead of manually/hard-coding
-
+    /**
+     * Labels on each bar with the frequency value for the vertical view
+     */
     const CUT_OFF_VER = wordFreqBarGraphData[0].value - 1;
     const LabelsVertical = ({ x, y, bandwidth, data }) => (
         wordFreqBarGraphData.map((value, index) => (
@@ -101,13 +106,15 @@ const DataAnalysisBarGraph = () => {
                 fontSize={20}
                 fill={value.value > CUT_OFF_VER ? 'white' : 'black'}
                 alignmentBaseline={'middle'}
-
             >
                 {value.value}
             </svg.Text>
         ))
     );
 
+    /**
+     * Labels on each bar with the frequency value for the horizontal view
+     */
     const CUT_OFF_HOR = wordFreqBarGraphData[0].value - 1;
     const LabelsHorizontal = ({ x, y, bandwidth, data }) => (
         wordFreqBarGraphData.map((value, index) => (
@@ -123,6 +130,94 @@ const DataAnalysisBarGraph = () => {
             </svg.Text>
         ))
     )
+
+    /**
+     * toggle filters
+     */
+    const [isEnabledStopWords, setIsEnabledStopWords] = useState(true);
+    const toggleSwitchStopWords = () => setIsEnabledStopWords(previousState => !previousState);
+    const [isEnabledMedWords, setIsEnabledMedWords] = useState(true);
+    const toggleSwitchMedWords = () => setIsEnabledMedWords(previousState => !previousState);
+    function updateData() {
+        if (!isEnabledMedWords && !isEnabledStopWords) {
+            setWordFreqBarGraphData(barData.dataNone);
+        } else if (!isEnabledStopWords) {
+            setWordFreqBarGraphData(barData.dataNoStop);
+        } else if (!isEnabledMedWords) {
+            setWordFreqBarGraphData(barData.dataNoMed);
+        } else {
+            setWordFreqBarGraphData(barData.data);
+        }
+    }
+    useEffect(() => {
+        updateData();
+    }, [isEnabledStopWords, isEnabledMedWords]);
+
+    /* ======================================================================= */
+    // line graph stuff below
+    /* ======================================================================= */
+
+    function accessFreqMaps() {
+        let temp = freqMaps;
+        let result = [];
+        for (let i = 0; i < temp.length; i++) {
+          result.push(temp[i].map);
+        }
+        return result;
+      }
+
+    function setLineGraphDataDay(word) {
+        let maps = accessFreqMaps();
+        
+        //let trackedDates = [];
+        //trackedDates.push(temp[0].datetime);
+
+        let trackedDates = new Map();
+        let trackedHours = new Map();
+
+        let result = maps[0];
+        let saveDate = freqMaps[0].datetime.toString().split(' ');
+        // ex. result of above: Array ["Mon", "Apr", "29", "2024", "13:05:26", "GMT-0400", "(Eastern", "Daylight", "Time)"]
+        let date = saveDate[0] + " " + saveDate[1] + " " + saveDate[2] + " " + saveDate[3];
+        // result of above: "Mon Apr 29 2024"
+        let hour = freqMaps[0].datetime.getHours();
+        // result of above: 13
+        trackedDates.set(date, 1);
+        trackedHours.set(hour, 1);
+
+        // !! i think i can change loop to start at 0
+        // check map has word, then do rest
+        // if map has word, add json {freq, date, hour}
+        // next iteration - check duplicate date+hour
+        // if exists, combine count
+        // else new json
+        // no need to combine maps
+        for (let i = 1; i < freqMaps.length; i++) {
+            //result = combineMaps(result, maps[i]);
+
+            saveDate = freqMaps[i].datetime.toString().split(' ');
+            date = saveDate[0] + saveDate[1] + saveDate[2] + saveDate[3];;
+            hour = freqMaps[i].datetime.getHours();
+
+            if (!trackedDates.has(date)) {
+                trackedDates.set(date, 1);
+                trackedHours.set(hour, 1);
+                // then get freq of this word and add json for this date and hour
+
+                //result = combineMaps(result, maps[i]);
+            } else {
+                trackedDates.set(date, trackedDates.get(date) + 1);
+                if (!trackedHours.has(hour)) {
+                    trackedHours.set(hour, 1);
+                } else {
+                    trackedHours.set(hour, trackedHours.get(hour) + 1);
+                }
+                //result = combineMaps(result, maps[i]);
+            }
+
+
+        }
+    }
 
     /* ======================================================================= */
 
@@ -264,9 +359,29 @@ const DataAnalysisBarGraph = () => {
 
                 </View>
 
-
+                <View style={{ height: '10%', width: '100%' }}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text>Include Stop Words</Text>
+                        <Switch
+                            trackColor={{ false: '#767577', true: '#81b0ff' }}
+                            thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
+                            ios_backgroundColor="#3e3e3e"
+                            onValueChange={toggleSwitchStopWords}
+                            value={isEnabledStopWords}
+                        />
+                        <Text>Include Medical Words</Text>
+                        <Switch
+                            trackColor={{ false: '#767577', true: '#81b0ff' }}
+                            thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
+                            ios_backgroundColor="#3e3e3e"
+                            onValueChange={toggleSwitchMedWords}
+                            value={isEnabledMedWords}
+                        />
+                    </View>
+                </View>
 
             </View>
+
             <View style={{}}>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
 

@@ -14,6 +14,14 @@ const DataAnalysisLineGraph = () => {
 
     const route: any = useRoute();
     const wordLabel = route.params?.wordLabel;
+
+    if (wordLabel == undefined) {
+        Alert.alert('No Word Selected', 'Please select a word from the bar graph to view the word count over time.', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
+    }
+        
+
     /* ======================================================================= */
     // Line graph stuff below
     /* ======================================================================= */
@@ -445,12 +453,12 @@ const DataAnalysisLineGraph = () => {
     ];
 
     const segementMonthOptions = [
-        { label: '1 month', value: '1' },
-        { label: '2 month', value: '2' },
-        { label: '3 month', value: '3' },
-        { label: '4 month', value: '4' },
-        { label: '5 month', value: '5' },
-        { label: '6 month', value: '6' },
+        { label: 'Every Other Month', value: '1' },
+        { label: 'Every 2 Months', value: '2' },
+        { label: 'Quarters', value: '3' },
+        { label: 'Thirds', value: '4' },
+        /* { label: '5 month', value: '5' }, */
+        { label: 'Half Year', value: '6' },
     ];
 
     const dateOptions = [
@@ -464,10 +472,10 @@ const DataAnalysisLineGraph = () => {
         y: (arg: number) => number,
         data: number[]
     }
-    
+
     // Dots on the peaks/points of line graph data
     const Dots = (props: Partial<DecoratorProps>) => {
-        const { x, y, data } = props 
+        const { x, y, data } = props
         return (
             <>
                 {freqDayArray[date]?.map((value, index) => (
@@ -478,12 +486,12 @@ const DataAnalysisLineGraph = () => {
                         r={8}
                         stroke={'rgb(0, 0, 0)'}
                         fill={'white'}
-                        onPressIn={ () => {
+                        onPressIn={() => {
                             // redirect to videos associated with timestamp
                             console.log("start");
                             Alert.alert('View video(s) with this data');
                         }}
-                        onPressOut={ () => {
+                        onPressOut={() => {
                             // reference state change during onPressOut from barGraph page
                             console.log("end");
                         }}
@@ -493,18 +501,18 @@ const DataAnalysisLineGraph = () => {
         )
     }
 
-/*     const Decorator = ({ x, y, data }) => {
-        return freqDayArray[date].map((value, index) => (
-            <Circle
-                key={ index }
-                cx={ x(index) }
-                cy={ y(value) }
-                r={ 4 }
-                stroke={ 'rgb(134, 65, 244)' }
-                fill={ 'white' }
-            />
-        ))
-    } */
+    /*     const Decorator = ({ x, y, data }) => {
+            return freqDayArray[date].map((value, index) => (
+                <Circle
+                    key={ index }
+                    cx={ x(index) }
+                    cy={ y(value) }
+                    r={ 4 }
+                    stroke={ 'rgb(134, 65, 244)' }
+                    fill={ 'white' }
+                />
+            ))
+        } */
 
     return (
         <View>
@@ -668,7 +676,7 @@ const DataAnalysisLineGraph = () => {
                                     </Svg>
                                     <Grid />
                                     <Dots />
-                                    
+
                                 </LineChart>
                                 <XAxis
                                     style={{ marginHorizontal: -40, height: xAxisHeight }}
@@ -679,7 +687,7 @@ const DataAnalysisLineGraph = () => {
                                     contentInset={{ left: 50, right: 50 }}
                                     svg={axesSvg}
                                 />
-                                
+
                             </View>
                         </ScrollView>
 
