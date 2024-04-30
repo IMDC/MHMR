@@ -216,12 +216,12 @@ const DataAnalysis = () => {
       mapNone.delete(medWords[i]);
     }
 
+    // TODO: function to get map that ONLY includes medWords is probably necessary too
+
     let bar = [];
     let barNoStop = [];
     let barNoMed = [];
     let barNone = [];
-
-    // TODO: function to get map that ONLY includes medWords is probably necessary too
 
     // barData formatting
     for (let [key, value] of result) {

@@ -15,7 +15,7 @@ const DataAnalysisBarGraph = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const route: any = useRoute();
     const barData = route.params?.data;
-    const freqMaps = route.params?.freqMaps;
+    const [freqMaps, setFreqMaps] = useState(route.params?.freqMaps);
 
     const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(barData.data);
     //const wordFreqBarGraphData = data.data;
@@ -83,7 +83,11 @@ const DataAnalysisBarGraph = () => {
                     console.log(wordFreqBarGraphData[index]);
                     wordSelected[0] = index;
                     const wordLabel = wordFreqBarGraphData[wordSelected[0]].label;
-                    navigation.navigate('Line Graph', { wordLabel });
+                    let result = setLineGraphDataDay(wordLabel);
+                    navigation.navigate('Line Graph', {
+                        word: wordLabel,
+                        data: result,
+                    });
                 },
                 onPressOut: () => {
                     wordSelected[0] = null;
@@ -157,66 +161,341 @@ const DataAnalysisBarGraph = () => {
     // line graph stuff below
     /* ======================================================================= */
 
+    // maybe not necessary, just gets a list of only the maps
+    // currently used in setLineGraphDataDay() but instances can probably be replaced with freqMaps[i].map
     function accessFreqMaps() {
         let temp = freqMaps;
         let result = [];
         for (let i = 0; i < temp.length; i++) {
-          result.push(temp[i].map);
+            result.push(temp[i].map);
         }
         return result;
-      }
+    }
 
-    function setLineGraphDataDay(word) {
+    // base template for how to format each day
+    let freqDayTemplate = [
+        {
+            label: 0,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 1,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 2,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 3,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 4,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 5,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 6,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 7,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 8,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 9,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 10,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 11,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 12,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 13,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 14,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 15,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 16,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 17,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 18,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 19,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 20,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 21,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 22,
+            value: 0,
+            videoIDs: [],
+        },
+        {
+            label: 23,
+            value: 0,
+            videoIDs: [],
+        },
+    ]
+
+    /**
+     * Get the line graph data for the daily view
+     * @param word the word that the line graph is for
+     * @returns 
+     */
+    function setLineGraphDataDay(word: any) {
         let maps = accessFreqMaps();
-        
-        //let trackedDates = [];
-        //trackedDates.push(temp[0].datetime);
 
         let trackedDates = new Map();
         let trackedHours = new Map();
 
-        let result = maps[0];
-        let saveDate = freqMaps[0].datetime.toString().split(' ');
-        // ex. result of above: Array ["Mon", "Apr", "29", "2024", "13:05:26", "GMT-0400", "(Eastern", "Daylight", "Time)"]
-        let date = saveDate[0] + " " + saveDate[1] + " " + saveDate[2] + " " + saveDate[3];
-        // result of above: "Mon Apr 29 2024"
-        let hour = freqMaps[0].datetime.getHours();
-        // result of above: 13
-        trackedDates.set(date, 1);
-        trackedHours.set(hour, 1);
+        let saveDate = "";
+        let date = "";
+        let hour = 0;
 
-        // !! i think i can change loop to start at 0
-        // check map has word, then do rest
-        // if map has word, add json {freq, date, hour}
-        // next iteration - check duplicate date+hour
-        // if exists, combine count
-        // else new json
-        // no need to combine maps
-        for (let i = 1; i < freqMaps.length; i++) {
-            //result = combineMaps(result, maps[i]);
+        /** will map to the "Choose Day" Dropdown
+         * example: dropdown = [
+         * {"label": "Tue Apr 30 2024", "value": 0},
+         * {"label": "Wed May 1 2024", "value": 1},
+         * ]
+         */
+        let resultsDates = [];
+        /** will map to the line graph data
+         * example (two arrays for two days): lineData = [
+         * [{"label": 0, "value": 0, videoIDs: []}, ... , {"label": 23, "value": 0, videoIDs: []}],
+         * [{"label": 0, "value": 0, videoIDs: []}, ... , {"label": 23, "value": 0, videoIDs: []}],
+         * ]
+         */
+        let resultByHour = [];
+
+        for (let i = 0; i < freqMaps.length; i++) {
 
             saveDate = freqMaps[i].datetime.toString().split(' ');
-            date = saveDate[0] + saveDate[1] + saveDate[2] + saveDate[3];;
+            // ex. result of above: Array ["Mon", "Apr", "29", "2024", "13:05:26", "GMT-0400", "(Eastern", "Daylight", "Time)"]
+            date = saveDate[0] + " " + saveDate[1] + " " + saveDate[2] + " " + saveDate[3];
+            // result of above: "Mon Apr 29 2024"
             hour = freqMaps[i].datetime.getHours();
+            // result of above: 13
 
-            if (!trackedDates.has(date)) {
-                trackedDates.set(date, 1);
-                trackedHours.set(hour, 1);
-                // then get freq of this word and add json for this date and hour
-
-                //result = combineMaps(result, maps[i]);
-            } else {
-                trackedDates.set(date, trackedDates.get(date) + 1);
-                if (!trackedHours.has(hour)) {
+            // if word is in the map, then...
+            if (freqMaps[i].map.has(word)) {
+                // if new day, then...
+                if (!trackedDates.has(date)) {
+                    trackedDates.set(date, 1);
+                    // refresh tracked hours for a new day
+                    [...trackedHours.keys()].forEach((key) => {
+                        trackedHours.set(key, 0);
+                        console.log("reset key ", key);
+                    });
+                    // need to reset template data
+                    freqDayTemplate = [
+                        {
+                            label: 0,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 1,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 2,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 3,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 4,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 5,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 6,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 7,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 8,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 9,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 10,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 11,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 12,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 13,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 14,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 15,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 16,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 17,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 18,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 19,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 20,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 21,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 22,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                        {
+                            label: 23,
+                            value: 0,
+                            videoIDs: [],
+                        },
+                    ]
                     trackedHours.set(hour, 1);
+                    // add a day to resultsByHour array
+                    resultByHour.push(freqDayTemplate);
+                    // add a date for the drop down
+                    resultsDates.push({ label: date, value: trackedDates.size - 1 })
+                    console.log("ooooooooo new tracked date", date, trackedDates, hour, trackedHours);
                 } else {
-                    trackedHours.set(hour, trackedHours.get(hour) + 1);
+                    trackedDates.set(date, trackedDates.get(date) + 1);
+                    if (!trackedHours.has(hour)) {
+                        trackedHours.set(hour, 1);
+                        console.log("ooooooooo new tracked hour", hour, trackedHours);
+                    } else {
+                        trackedHours.set(hour, trackedHours.get(hour) + 1);
+                        console.log("ooooooooo already tracked hour", hour, trackedHours);
+                    }
                 }
-                //result = combineMaps(result, maps[i]);
+                // access most recent day (because maps should be orderd by date already)
+                // increment the count for the current video's hour
+                resultByHour[trackedDates.size - 1][hour].value += maps[i].get(word);
+                resultByHour[trackedDates.size - 1][hour].videoIDs.push(freqMaps[i].videoID);
+                console.log("ooooooooo adding word count by hour ---- count: ", hour, maps[i].get(word));
             }
-
-
         }
+        console.log(resultsDates);
+        console.log(resultByHour);
+        
+        //setFreqMaps([]);
+        return { dates: resultsDates, byHour: resultByHour };
     }
 
     /* ======================================================================= */
