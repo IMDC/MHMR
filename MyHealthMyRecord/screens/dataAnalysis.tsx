@@ -200,11 +200,15 @@ const DataAnalysis = () => {
     let mapNoMed = new Map([...result.entries()]);
     let mapNone = new Map([...result.entries()]);
 
-    // remove "" (empty string) from all maps
+    // remove "" (empty string) and "%HESITATION" from all maps
     result.delete("");
     mapNoStop.delete("");
     mapNoMed.delete("");
     mapNone.delete("");
+    result.delete("HESITATION");
+    mapNoStop.delete("HESITATION");
+    mapNoMed.delete("HESITATION");
+    mapNone.delete("HESITATION");
 
     // remove stop words and med words
     for (let i = 0; i < stopWords.length; i++) {
