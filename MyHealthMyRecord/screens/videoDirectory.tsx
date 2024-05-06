@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
   ImageBackground,
+  LogBox,
   ScrollView,
   StyleSheet,
   Touchable,
@@ -363,6 +364,12 @@ const ViewRecordings = ({selected, setSelected}) => {
 
     setCheckedVideos(updatedCheckedVideos);
   };
+
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Warning: Each child in a list should have a unique "key" prop.',
+    ]);
+  }, []);
 
   useEffect(() => {
     {
@@ -1264,7 +1271,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           })
                         }
                       />
-                      <View style={styles.space} />
+                      <View style={{width: 15}} />
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Add/Edit Markups"
@@ -1275,7 +1282,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           })
                         }
                       />
-                      <View style={styles.space} />
+                      <View style={{width: 15}} />
                       <Button
                         buttonStyle={styles.btnStyle}
                         title="Delete Video"
@@ -1388,6 +1395,7 @@ const styles = StyleSheet.create({
   space: {
     width: 50,
   },
+
 });
 
 export default ViewRecordings;

@@ -10,8 +10,7 @@ import * as scale from 'd3-scale';
 import * as Styles from '../assets/util/styles';
 
 const DataAnalysisLineGraph = () => {
-    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const route: any = useRoute();
     const wordLabel = route.params?.word;
     const lineData = route.params?.data;
@@ -545,32 +544,32 @@ const DataAnalysisLineGraph = () => {
     const [segementMonth, setSegementMonthValue] = useState('1');
     const [date, setDateValue] = useState(0);
 
-    const periodOptions = [
-        { label: 'Daily', value: '1' },
-        { label: 'Weekly', value: '2' },
-        { label: 'Monthly', value: '3' },
-    ];
 
-    const segementDayOptions = [
-        { label: '1 hour', value: '1' },
-        //{ label: '2 hour', value: '2' },
-        { label: '3 hour', value: '3' },
-        //{ label: '4 hour', value: '4' },
-        //{ label: '5 hour', value: '5' },
-        { label: '6 hour', value: '6' },
-        //{ label: '7 hour', value: '7' },
-        //{ label: '8 hour', value: '8' },
-        //{ label: '9 hour', value: '9' },
-        //{ label: '10 hour', value: '10' },
-        //{ label: '11 hour', value: '11' },
-        { label: '12 hour', value: '12' },
-    ];
+  const periodOptions = [
+    {label: 'Daily', value: '1'},
+    {label: 'Weekly', value: '2'},
+    {label: 'Monthly', value: '3'},
+  ];
 
-    const segementWeekOptions = [
-        { label: 'Every Other Day', value: '1' },
-        { label: 'Weekday/Weekend', value: '2' },
-    ];
+  const segementDayOptions = [
+    {label: '1 hour', value: '1'},
+    //{ label: '2 hour', value: '2' },
+    {label: '3 hour', value: '3'},
+    //{ label: '4 hour', value: '4' },
+    //{ label: '5 hour', value: '5' },
+    {label: '6 hour', value: '6'},
+    //{ label: '7 hour', value: '7' },
+    //{ label: '8 hour', value: '8' },
+    //{ label: '9 hour', value: '9' },
+    //{ label: '10 hour', value: '10' },
+    //{ label: '11 hour', value: '11' },
+    {label: '12 hour', value: '12'},
+  ];
 
+  const segementWeekOptions = [
+    {label: 'Every Other Day', value: '1'},
+    {label: 'Weekday/Weekend', value: '2'},
+  ];
     const segementMonthOptions = [
         { label: 'Every Other Month', value: '1' },
         { label: 'Every 2 Months', value: '2' },
@@ -628,11 +627,19 @@ const DataAnalysisLineGraph = () => {
 
     return (
         <View>
-            <View style={{ height: '87%' }}>
-                <View>
-                    <Text style={{ padding: 20, fontSize: 20 }}>Word Count of "{wordLabel}" over time</Text>
-                    <View id="linegraph" style={{ height: 600, padding: 20, flexDirection: 'row' }}>
-
+          <Text style={{padding: 20, fontSize: 20}}>
+            Word Count of "{wordLabel}" over time
+          </Text>
+          <View
+            id="linegraph"
+            style={{height: 600, padding: 20, flexDirection: 'row'}}>
+            <YAxis
+              data={freqDay}
+              yAccessor={({item}) => item.value}
+              style={{marginBottom: xAxisHeight}}
+              contentInset={verticalContentInset}
+              svg={axesSvg}
+            />
                         <YAxis
                             data={freqDayArray[date]}
                             yAccessor={({ item }) => item.value}
@@ -640,7 +647,153 @@ const DataAnalysisLineGraph = () => {
                             contentInset={verticalContentInset}
                             svg={axesSvg}
                         />
-
+                        <Rect
+                          x="52%"
+                          y="0"
+                          width="26%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                      </>
+                    )}
+                    {/* 3 hour */}
+                    {segementDay == '3' && (
+                      <>
+                        <Rect
+                          x="0%"
+                          y="0"
+                          width="13%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="26%"
+                          y="0"
+                          width="13%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="52%"
+                          y="0"
+                          width="13%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="77%"
+                          y="0"
+                          width="13%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                      </>
+                    )}
+                    {/* 1 hour */}
+                    {segementDay == '1' && (
+                      <>
+                        <Rect
+                          x="0%"
+                          y="0"
+                          width="5.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="9.5%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="18%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="26.5%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="35%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="43.5%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="52%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="60.5%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="69%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="77.5%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="86%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                        <Rect
+                          x="94.5%"
+                          y="0"
+                          width="4.25%"
+                          height="100%"
+                          fill="rgb(194, 200, 209)"
+                        />
+                      </>
+                    )}
+                  </Svg>
+                  <Grid />
+                  <Dots />
+                </LineChart>
+                <XAxis
+                  style={{marginHorizontal: -40, height: xAxisHeight}}
+                  data={freqDay}
+                  scale={scale.scaleTime}
+                  formatLabel={(value, index) => hours[freqDay[index].label]}
+                  labelStyle={{margin: 5}}
+                  contentInset={{left: 50, right: 50}}
+                  svg={axesSvg}
+                />
+              </View>
+            </ScrollView>
+          </View>
                         <ScrollView horizontal={true}>
                             <View style={{ flex: 1, marginLeft: 10, marginRight: 10, width: windowWidth * 1.5 }}>
                                 <LineChart
@@ -862,79 +1015,107 @@ const DataAnalysisLineGraph = () => {
                         </View>
                     </View>
 
-                    <Text style={{ fontSize: 25, marginLeft: 20, marginTop: 20 }}>Filter and Sort</Text>
+                    <Text style={{ fontSize: 25, marginLeft: 20, marginTop: 20 }}>Filter and Sort</Text
 
-                    <View style={{ height: '10%', width: '100%' }}>
-                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' }}>
+          <Text style={{fontSize: 25, marginLeft: 20, marginTop: 20}}>
+            Filter and Sort
+          </Text>
 
-                            <View id="period-dropdown" >
-                                <Text style={{ fontSize: 20 }}>Select Period: </Text>
-                                <Dropdown
-                                    data={periodOptions}
-                                    maxHeight={300}
-                                    style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                    labelField="label"
-                                    valueField="value"
-                                    value={periodValue}
-                                    onChange={item => {
-                                        setPeriodValue(item.value);
-                                    }}
-                                />
-                            </View>
-                            {periodValue == '1' && (
-                                <View id="segmentDay-dropdown">
-                                    <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                                    <Dropdown
-                                        data={segementDayOptions}
-                                        //maxHeight={300}
-                                        style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                        labelField="label"
-                                        valueField="value"
-                                        value={segementDay}
-                                        onChange={item => {
-                                            setSegementDayValue(item.value);
-                                        }}
-                                    />
-                                </View>
-                            )}
-                            {periodValue == '2' && (
-                                <View id="segmentWeek-dropdown">
-                                    <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                                    <Dropdown
-                                        data={segementWeekOptions}
-                                        //maxHeight={300}
-                                        style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                        labelField="label"
-                                        valueField="value"
-                                        value={segementWeek}
-                                        onChange={item => {
-                                            setSegementWeekValue(item.value);
-                                        }}
-                                    />
-                                </View>
-                            )}
-                            {periodValue == '3' && (
-                                <View id="segmentMonth-dropdown">
-                                    <Text style={{ fontSize: 20 }}>Select Segment Option: </Text>
-                                    <Dropdown
-                                        data={segementMonthOptions}
-                                        //maxHeight={300}
-                                        style={{ width: 300, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-                                        labelField="label"
-                                        valueField="value"
-                                        value={segementMonth}
-                                        onChange={item => {
-                                            setSegementMonthValue(item.value);
-                                        }}
-                                    />
-                                </View>
-                            )}
-                        </View>
-                    </View>
+          <View style={{height: '10%', width: '100%'}}>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-evenly',
+              }}>
+              <View id="period-dropdown">
+                <Text style={{fontSize: 20}}>Select Period: </Text>
+                <Dropdown
+                  data={periodOptions}
+                  maxHeight={300}
+                  style={{
+                    width: 300,
+                    paddingHorizontal: 20,
+                    backgroundColor: '#DBDBDB',
+                    borderRadius: 22,
+                  }}
+                  labelField="label"
+                  valueField="value"
+                  value={periodValue}
+                  onChange={item => {
+                    setPeriodValue(item.value);
+                  }}
+                />
+              </View>
+              {periodValue == '1' && (
+                <View id="segmentDay-dropdown">
+                  <Text style={{fontSize: 20}}>Select Segment Option: </Text>
+                  <Dropdown
+                    data={segementDayOptions}
+                    //maxHeight={300}
+                    style={{
+                      width: 300,
+                      paddingHorizontal: 20,
+                      backgroundColor: '#DBDBDB',
+                      borderRadius: 22,
+                    }}
+                    labelField="label"
+                    valueField="value"
+                    value={segementDay}
+                    onChange={item => {
+                      setSegementDayValue(item.value);
+                    }}
+                  />
                 </View>
-
+              )}
+              {periodValue == '2' && (
+                <View id="segmentWeek-dropdown">
+                  <Text style={{fontSize: 20}}>Select Segment Option: </Text>
+                  <Dropdown
+                    data={segementWeekOptions}
+                    //maxHeight={300}
+                    style={{
+                      width: 300,
+                      paddingHorizontal: 20,
+                      backgroundColor: '#DBDBDB',
+                      borderRadius: 22,
+                    }}
+                    labelField="label"
+                    valueField="value"
+                    value={segementWeek}
+                    onChange={item => {
+                      setSegementWeekValue(item.value);
+                    }}
+                  />
+                </View>
+              )}
+              {periodValue == '3' && (
+                <View id="segmentMonth-dropdown">
+                  <Text style={{fontSize: 20}}>Select Segment Option: </Text>
+                  <Dropdown
+                    data={segementMonthOptions}
+                    //maxHeight={300}
+                    style={{
+                      width: 300,
+                      paddingHorizontal: 20,
+                      backgroundColor: '#DBDBDB',
+                      borderRadius: 22,
+                    }}
+                    labelField="label"
+                    valueField="value"
+                    value={segementMonth}
+                    onChange={item => {
+                      setSegementMonthValue(item.value);
+                    }}
+                  />
+                </View>
+              )}
             </View>
-        </View >
-    );
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 };
 export default DataAnalysisLineGraph;
