@@ -209,7 +209,7 @@ function Dashboard() {
 
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-  const videosByIsSelected = videoData.filtered('isSelected == true');
+  const videosByIsSelected = videosByDate.filtered('isSelected == true');
   /**
    * Convert a video to a .wav type audio file and save it in the MHMR/audio folder on the device
    * @param video VideoData object
@@ -413,7 +413,7 @@ function Dashboard() {
   const [videoSetIDs, setVideoSetIDs] = useState<any>([]);
   const [videoSetDropdown, setVideoSetDropdown] = useState<any>([]);
 
-  const videosSelected = videoData.filtered('isSelected == true');
+  const videosSelected = videosByDate.filtered('isSelected == true');
 
   const videoSets: any = useQuery('VideoSet');
   const videosSetsByDate = videoSets.sorted('datetime', false);
