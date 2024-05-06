@@ -68,8 +68,8 @@ const DataAnalysisTextSummary = () => {
             </Text> */}
             <Text style={{fontSize: 20, color: 'black'}}>
               <Text style={{fontWeight: 'bold'}}>Output:</Text>
-              {` ${outputSummary[counter++]}`}
-              {/* {` ${video.transcriptFileContent}`} */}
+              {/* {` ${outputSummary[counter++]}`} */}
+              {` ${video.transcriptFileContent}`}
             </Text>
           </View>
         </View>
