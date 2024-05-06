@@ -1,8 +1,8 @@
-import { useNavigation, ParamListBase, useRoute } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {useNavigation, ParamListBase, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as React from 'react';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -11,18 +11,20 @@ import {
   View,
   Alert,
 } from 'react-native';
-import { Chip, Dialog, Text } from 'react-native-paper';
-import { VideoData, useRealm, useQuery, useObject } from '../models/VideoData';
-import { Button, Icon, CheckBox } from '@rneui/themed';
+import {Chip, Dialog, Text} from 'react-native-paper';
+import {VideoData, useRealm, useQuery, useObject} from '../models/VideoData';
+import {Button, Icon, CheckBox, Badge} from '@rneui/themed';
 import RNFS from 'react-native-fs';
-import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
-import { base64 } from 'rfc4648';
+import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import {base64} from 'rfc4648';
 import Config from 'react-native-config';
-import { API_OPENAI_CHATGPT } from '@env';
+import {API_OPENAI_CHATGPT} from '@env';
 import useAddToFile from '../components/addToFile';
-import { Dropdown } from 'react-native-element-dropdown';
+import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import addToIsSelected from '../components/addToIsSelected';
+import NetInfo from '@react-native-community/netinfo';
+import { sendToChatGPT } from '../components/chatgpt_api';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
@@ -31,51 +33,144 @@ function Dashboard() {
   const [dashboardVideos, setDashboardVideos] = useState<any[]>([]);
   const route = useRoute();
   const selectedVideos = route.params?.selectedVideos;
-  // updateSelectedVideos(selectedVideos);
-  // if (selectedVideos && selectedVideos.size > 0) {
-  // addToIsSelected(selectedVideos);
-  // }
 
-  const sendToChatGPT = async (textFileName, _id) => {
-    try {
-      // Create directories if they don't exist
-      const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
-      await RNFS.mkdir(directoryPath, { recursive: true });
+  async function handleYesAnalysis() {
+    const selectedVideos: Realm.Results<VideoData> = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == false AND isSelected == true');
 
-      // Send the input text to ChatGPT API
-      const response = await fetch(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: inputText }],
-            max_tokens: 100,
-          }),
-        },
-      );
+    for (const video of selectedVideos) {
+      const getTranscriptByFilename = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          return video.transcript;
+        }
+        return [];
+      };
 
-      const data = await response.json();
-      console.log('Response from ChatGPT API:', data); // Log the response
+      const getCheckedKeywords = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedKeywords = video.keywords
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedKeywords;
+        }
+        return [];
+      };
 
-      // Check if data.choices is defined and contains at least one item
-      if (data.choices && data.choices.length > 0) {
-        const outputText = data.choices[0].message.content;
-        const filePath = `${directoryPath}/${textFileName}`;
-        await RNFS.writeFile(filePath, outputText, 'utf8');
-        Alert.alert('Success', 'Output saved to file: ' + filePath);
-      } else {
-        throw new Error('Invalid response from ChatGPT API');
+      const getCheckedLocations = filename => {
+        const video = videos.find(video => video.filename === filename);
+        if (video) {
+          const checkedLocations = video.locations
+            .map(key => JSON.parse(key))
+            .filter(obj => obj.checked)
+            .map(obj => obj.title);
+          return checkedLocations;
+        }
+        return [];
+      };
+
+      const transcript = getTranscriptByFilename(video.filename);
+      const keywords = getCheckedKeywords(video.filename).join(', ');
+      const locations = getCheckedLocations(video.filename).join(', ');
+
+      try {
+        const outputText = await sendToChatGPT(
+          video.filename,
+          transcript,
+          keywords,
+          locations,
+          realm,
+          video._id.toHexString(),
+        );
+        setInputText(outputText); // State update here
+        console.log(
+          `Transcription successful for video ${video._id.toHexString()}`,
+        );
+         Alert.alert(
+           'Your transcripts have been generated, and your videos have been added to the Video Set!',
+         );
+      } catch (error) {
+        console.error(
+          `Failed to process video ${video._id.toHexString()}:`,
+          error,
+        );
       }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Failed to process input.');
     }
-  };
+  }
+
+  async function handleQueuePress() {
+    const state = await NetInfo.fetch();
+    if (videosByIsConvertedAndSelected.length == 0) {
+      Alert.alert('No videos to queue');
+    }
+    else {
+      if (state.isConnected) {
+        //if online display that you have _ videos available to convert
+        Alert.alert(
+          'Videos Ready to Analyze',
+          'You have ' +
+            videosByIsConvertedAndSelected.length +
+            ' video(s) ready to be analyzed. Would you like to analyze these videos? If you click NO you will still have the option to analyze it later.',
+          [
+            {
+              text: 'YES',
+              onPress: () => handleYesAnalysis(),
+      
+            },
+            {text: 'NO', onPress: () => console.log('NO Pressed')},
+          ],
+        );
+      }
+      else {
+        Alert.alert('You are offline', 'You cannot queue videos while offline');
+      }
+    }
+    
+  }
+
+  // const sendToChatGPT = async (textFileName, _id) => {
+  //   try {
+  //     // Create directories if they don't exist
+  //     const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
+  //     await RNFS.mkdir(directoryPath, {recursive: true});
+
+  //     // Send the input text to ChatGPT API
+  //     const response = await fetch(
+  //       'https://api.openai.com/v1/chat/completions',
+  //       {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`,
+  //         },
+  //         body: JSON.stringify({
+  //           model: 'gpt-3.5-turbo',
+  //           messages: [{role: 'user', content: inputText}],
+  //           max_tokens: 100,
+  //         }),
+  //       },
+  //     );
+
+  //     const data = await response.json();
+  //     console.log('Response from ChatGPT API:', data); // Log the response
+
+  //     // Check if data.choices is defined and contains at least one item
+  //     if (data.choices && data.choices.length > 0) {
+  //       const outputText = data.choices[0].message.content;
+  //       const filePath = `${directoryPath}/${textFileName}`;
+  //       await RNFS.writeFile(filePath, outputText, 'utf8');
+  //       Alert.alert('Success', 'Output saved to file: ' + filePath);
+  //     } else {
+  //       throw new Error('Invalid response from ChatGPT API');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Error', 'Failed to process input.');
+  //   }
+  // };
 
   /**
    * Set auth state with a Bearer type authorization token
@@ -210,6 +305,9 @@ function Dashboard() {
   const videoData: any = useQuery('VideoData');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsSelected = videosByDate.filtered('isSelected == true');
+  const videosByIsConvertedAndSelected = videosByDate.filtered(
+    'isConverted == false AND isSelected == true',
+  );
   /**
    * Convert a video to a .wav type audio file and save it in the MHMR/audio folder on the device
    * @param video VideoData object
@@ -247,9 +345,9 @@ function Dashboard() {
     // Execute FFmpegKit command
     FFmpegKit.execute(
       '-i ' +
-      mp4FileName +
-      ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
-      wavFileName,
+        mp4FileName +
+        ' -vn -acodec pcm_s16le -ar 44100 -ac 2 ' +
+        wavFileName,
     )
       .then(async session => {
         const returnCode = await session.getReturnCode();
@@ -346,16 +444,18 @@ function Dashboard() {
   };
 
   async function removeFromIsSelected(id: any) {
-      const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
-      if (video) {
-        realm.write(() => {
-          video.isSelected = false;
-          video.isConverted = false;
-        });
-        console.log(`Video with ID ${id} removed from isSelected and isConverted.`);
-      } else {
-        console.log(`Video with ID ${id} not found.`);
-      }
+    const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
+    if (video) {
+      realm.write(() => {
+        video.isSelected = false;
+        video.isConverted = false;
+      });
+      console.log(
+        `Video with ID ${id} removed from isSelected and isConverted.`,
+      );
+    } else {
+      console.log(`Video with ID ${id} not found.`);
+    }
   }
 
   const toggleVideoChecked = (videoId: any) => {
@@ -379,24 +479,18 @@ function Dashboard() {
 
   const [session, setSessionValue] = useState(null);
   const testSessionOptions = [
-    { label: 'ex 1 - DDMMYYYY/timestamp', value: 0 },
-    { label: 'ex 2 - DDMMYYYY/timestamp', value: 1 },
-    { label: 'ex 3 - DDMMYYYY/timestamp', value: 2 },
+    {label: 'ex 1 - DDMMYYYY/timestamp', value: 0},
+    {label: 'ex 2 - DDMMYYYY/timestamp', value: 1},
+    {label: 'ex 3 - DDMMYYYY/timestamp', value: 2},
   ];
 
   function saveVideoSet(frequencyData: string[], videoIDs: string[]) {
     let tempName = Date().toString().split(' GMT-')[0];
-
   }
 
-  function getVideoSetName() {
+  function getVideoSetName() {}
 
-  }
-
-  const createVideoSet = (
-    frequencyData: string[],
-    videoIDs: string[],
-  ) => {
+  const createVideoSet = (frequencyData: string[], videoIDs: string[]) => {
     realm.write(() => {
       realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
@@ -417,14 +511,14 @@ function Dashboard() {
 
   const videoSets: any = useQuery('VideoSet');
   const videosSetsByDate = videoSets.sorted('datetime', false);
-  console.log("sets", videoSets);
+  console.log('sets', videoSets);
 
   const [videoSetValue, setVideoSetValue] = useState(0);
   let testVideoSetOptions = [];
 
   useEffect(() => {
     //formatVideoSetDropdown();
-    console.log("dropdown", videoSetDropdown);
+    console.log('dropdown', videoSetDropdown);
     setVideoSetIDs(getSelectedVideoIDS);
   }, []);
 
@@ -440,7 +534,11 @@ function Dashboard() {
   function formatVideoSetDropdown() {
     let dropdownOptions = [];
     for (let i = 0; i < videosSetsByDate.length; i++) {
-      dropdownOptions.push({ label: videosSetsByDate[i].name, value: i, id: videosSetsByDate[i]._id });
+      dropdownOptions.push({
+        label: videosSetsByDate[i].name,
+        value: i,
+        id: videosSetsByDate[i]._id,
+      });
       console.log(dropdownOptions[i]);
     }
     setVideoSetDropdown(dropdownOptions);
@@ -459,22 +557,28 @@ function Dashboard() {
    * Select new videos after user changes videoset selection from dropdown
    */
   function selectVideos() {
-
-    console.log("1 -- currentVideoSetDetails", videoSetDropdown[videoSetValue], "---", videoSetValue);
-    const currentVideoSetDetails = videoSets.filtered('_id == $0', videoSetDropdown[videoSetValue].id);
+    console.log(
+      '1 -- currentVideoSetDetails',
+      videoSetDropdown[videoSetValue],
+      '---',
+      videoSetValue,
+    );
+    const currentVideoSetDetails = videoSets.filtered(
+      '_id == $0',
+      videoSetDropdown[videoSetValue].id,
+    );
 
     let videoIDsFromSet = currentVideoSetDetails[0].videoIDs;
 
-    console.log("currentVideoSetDetails", currentVideoSetDetails);
-    console.log("videoIDsFromSet", videoIDsFromSet);
+    console.log('currentVideoSetDetails', currentVideoSetDetails);
+    console.log('videoIDsFromSet', videoIDsFromSet);
 
     for (let i = 0; i < videoIDsFromSet.length; i++) {
       let videoMatch = videoData.filtered('_id == $0', videoIDsFromSet[i]);
       //matchedVideoIDs.push(videoIDsFromSet[i]);
-      console.log("match- ", videoMatch[0].isSelected);
+      console.log('match- ', videoMatch[0].isSelected);
       updateIsSelect(videoIDsFromSet[i]);
     }
-
   }
 
   // maybe this can be moved to dropdown onChange function?
@@ -490,7 +594,7 @@ function Dashboard() {
     if (video) {
       realm.write(() => {
         video.isSelected! = true;
-      })
+      });
     }
   }
 
@@ -503,7 +607,7 @@ function Dashboard() {
     console.log("CLEAR------------", videoIDsFromSet) */
 
     let selectedVideoIDs = getSelectedVideoIDS();
-    console.log("CLEAR------------", selectedVideoIDs)
+    console.log('CLEAR------------', selectedVideoIDs);
     for (let i = 0; i < selectedVideoIDs.length; i++) {
       removeFromIsSelected(selectedVideoIDs[i]);
     }
@@ -512,17 +616,64 @@ function Dashboard() {
 
   return (
     <View>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 30,
+          left: 0,
+          right: 20,
+          alignItems: 'flex-end',
+          marginBottom: 10,
+          // elevation: 8,
+          zIndex: 100,
+        }}>
+        <View style={{position: 'absolute', top: 5, right: 5, zIndex: 100}}>
+          <Badge value={videosByIsConvertedAndSelected.length} status="primary" />
+        </View>
+        {/* <Button
+          style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+          radius={50}
+          buttonStyle={[styles.btnStyle, {}]}
+          // onPress={handleSend}>
+          onPress={() => {
+            console.log('SENDING', selectedVideos);
+          }}>
+          <Text style={{color: 'white', fontSize: 25}}>Queue</Text>
+        </Button> */}
 
-      <View style={{ height: '25%', width: '100%' }}>
-        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 20 }}>Select Video Set: </Text>
+        <Icon
+          reverse
+          name="albums-outline"
+          size={30}
+          type="ionicon"
+          color="#1C3EAA"
+          onPress={() => {
+            handleQueuePress();
+          }}
+        />
+      </View>
+      <View style={{height: '25%', width: '100%'}}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text style={{fontSize: 20}}>Select Video Set: </Text>
           <Dropdown
             data={videoSetDropdown}
             maxHeight={400}
-            style={{ height: 50, width: 600, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-            placeholderStyle={{ fontSize: 22 }}
-            selectedTextStyle={{ fontSize: 22 }}
-            activeColor='#FFC745'
+            style={{
+              height: 50,
+              width: 600,
+              paddingHorizontal: 20,
+              backgroundColor: '#DBDBDB',
+              borderRadius: 22,
+            }}
+            placeholderStyle={{fontSize: 22}}
+            selectedTextStyle={{fontSize: 22}}
+            activeColor="#FFC745"
             //backgroundColor='#FFC745'
             labelField="label"
             valueField="value"
@@ -532,13 +683,13 @@ function Dashboard() {
               //clearVideoSet();
             }}
           />
-          <View style={{ flexDirection: 'row', paddingTop: 10 }}>
+          <View style={{flexDirection: 'row', paddingTop: 10}}>
             <Button
               title="Save Video Set"
               onPress={() => {
                 createVideoSet([], getSelectedVideoIDS());
                 formatVideoSetDropdown();
-                console.log("SAVE", videosSelected);
+                console.log('SAVE', videosSelected);
               }}
               color={Styles.MHMRBlue}
               radius={50}
@@ -564,28 +715,28 @@ function Dashboard() {
             />
           </View>
 
-          <Button
-            title="Delete all Video Sets"
-            onPress={() => {
-              // TODO: move this to a function and call onPress()
-              realm.write(() => {
-                realm.delete(videoSets);
-              });
-              formatVideoSetDropdown();
-            }}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-          />
-
+          <View style={{flexDirection: 'row', paddingTop: 10}}>
+            <Button
+              title="Delete all Video Sets"
+              onPress={() => {
+                // TODO: move this to a function and call onPress()
+                realm.write(() => {
+                  realm.delete(videoSets);
+                });
+                formatVideoSetDropdown();
+              }}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{
+                width: 300,
+                marginHorizontal: 30,
+                marginVertical: 10,
+              }}
+            />
+          </View>
         </View>
       </View>
-      <View style={{ height: '75%', width: '100%' }}>
-
+      <View style={{height: '75%', width: '100%'}}>
         {/* beginning of dashboard */}
         {/* {buttonPressed ? (
           <Button
@@ -607,12 +758,11 @@ function Dashboard() {
         <Button onPress={getAuth}>get auth</Button>
         <Button onPress={transcribeAudio}>transcribe audio</Button> */}
 
-
         {/* <Button onPress={getBinaryAudio}>get binary</Button> */}
 
         {/* <Button onPress={cognosSession}>cognos session</Button> */}
 
-        <ScrollView style={{ marginTop: 5 }} ref={scrollRef}>
+        <ScrollView style={{marginTop: 5}} ref={scrollRef}>
           {/* <View style={{height: '15%', width: '100%'}}>
           <View
             style={{
@@ -659,91 +809,91 @@ function Dashboard() {
         </View> */}
           {videos !== null
             ? videos.map((video: VideoData) => {
-              const isTranscriptEmpty = video => {
+                const isTranscriptEmpty = video => {
+                  return (
+                    video.transcript === undefined || video.transcript === ''
+                  );
+                };
+
+                const checkedTitles = video.keywords
+                  .map(key => JSON.parse(key))
+                  .filter(obj => obj.checked)
+                  .map(obj => obj.title)
+                  .join(', ');
+
+                const checkedLocations = video.locations
+                  .map(key => JSON.parse(key))
+                  .filter(obj => obj.checked)
+                  .map(obj => obj.title)
+                  .join(', ');
+
+                // console.log(checkedTitles);
+
+                const transcriptIsEmpty = isTranscriptEmpty(video);
+                const isChecked = checkedVideos.has(video._id.toString());
                 return (
-                  video.transcript === undefined || video.transcript === ''
-                );
-              };
+                  <View key={video._id.toString()}>
+                    <View style={styles.container}>
+                      {!buttonPressed ? (
+                        <View></View>
+                      ) : (
+                        <View
+                          style={{
+                            paddingTop: 100,
+                          }}>
+                          <CheckBox
+                            checked={isChecked}
+                            onPress={async () => {
+                              // Mark this function as async
+                              if (!isChecked && !transcriptIsEmpty) {
+                                toggleVideoChecked(video._id.toString());
+                                // Assuming getAuth doesn't need to wait for convertToAudio, you can call it without await
+                                getAuth();
 
-              const checkedTitles = video.keywords
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
+                                await convertToAudio(video); // Wait for convertToAudio to complete
 
-              const checkedLocations = video.locations
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
+                                getTranscript(
+                                  video.filename.replace('.mp4', '') + '.wav',
+                                  video._id.toString(),
+                                );
 
-              // console.log(checkedTitles);
-
-              const transcriptIsEmpty = isTranscriptEmpty(video);
-              const isChecked = checkedVideos.has(video._id.toString());
-              return (
-                <View key={video._id.toString()}>
-                  <View style={styles.container}>
-                    {!buttonPressed ? (
-                      <View></View>
-                    ) : (
-                      <View
-                        style={{
-                          paddingTop: 100,
-                        }}>
-                        <CheckBox
-                          checked={isChecked}
-                          onPress={async () => {
-                            // Mark this function as async
-                            if (!isChecked && !transcriptIsEmpty) {
-                              toggleVideoChecked(video._id.toString());
-                              // Assuming getAuth doesn't need to wait for convertToAudio, you can call it without await
-                              getAuth();
-
-                              await convertToAudio(video); // Wait for convertToAudio to complete
-
-                              getTranscript(
-                                video.filename.replace('.mp4', '') + '.wav',
-                                video._id.toString(),
-                              );
-
-                              console.log('checked');
-                            } else if (!isChecked && transcriptIsEmpty) {
-                              toggleVideoChecked(video._id.toString());
-                              console.log('else if checked');
-                            } else {
-                              toggleVideoChecked(video._id.toString());
-                              console.log('unchecked');
-                            }
-                          }}
-                          containerStyle={{ backgroundColor: 'transparent' }}
-                        />
-                      </View>
-                    )}
-
-                    <View style={styles.thumbnail}>
-                      <ImageBackground
-                        style={{ height: '100%', width: '100%' }}
-                        source={{
-                          uri:
-                            'file://' + MHMRfolderPath + '/' + video.filename,
-                        }}>
-                        <TouchableOpacity
-                          onPress={() =>
-                            navigation.navigate('Fullscreen Video', {
-                              id: video._id,
-                            })
-                          }>
-                          <Icon
-                            style={{ height: 240, justifyContent: 'center' }}
-                            name="play-sharp"
-                            type="ionicon"
-                            color="black"
-                            size={40}
+                                console.log('checked');
+                              } else if (!isChecked && transcriptIsEmpty) {
+                                toggleVideoChecked(video._id.toString());
+                                console.log('else if checked');
+                              } else {
+                                toggleVideoChecked(video._id.toString());
+                                console.log('unchecked');
+                              }
+                            }}
+                            containerStyle={{backgroundColor: 'transparent'}}
                           />
-                        </TouchableOpacity>
-                      </ImageBackground>
-                      {/* <VideoPlayer
+                        </View>
+                      )}
+
+                      <View style={styles.thumbnail}>
+                        <ImageBackground
+                          style={{height: '100%', width: '100%'}}
+                          source={{
+                            uri:
+                              'file://' + MHMRfolderPath + '/' + video.filename,
+                          }}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              navigation.navigate('Fullscreen Video', {
+                                id: video._id,
+                              })
+                            }>
+                            <Icon
+                              style={{height: 240, justifyContent: 'center'}}
+                              name="play-sharp"
+                              type="ionicon"
+                              color="black"
+                              size={40}
+                            />
+                          </TouchableOpacity>
+                        </ImageBackground>
+                        {/* <VideoPlayer
                       style={{}}
                       source={{
                         uri: MHMRfolderPath + '/' + video.filename,
@@ -760,80 +910,76 @@ function Dashboard() {
                         })
                       }
                     /> */}
-                    </View>
-                    <View style={styles.rightContainer}>
-                      <View>
-                        <Text
-                          style={{
-                            fontSize: 24,
-                            color: 'black',
-                            fontWeight: 'bold',
-                          }}>
-                          {video.title}
-                          {video.textComments.length !== 0 ? (
-                            <Icon
-                              name="chatbox-ellipses"
-                              type="ionicon"
-                              color="black"
-                              size={22}
-                              style={{
-                                alignSelf: 'flex-start',
-                                paddingLeft: 5,
-                              }}
-                            />
-                          ) : null}
-                        </Text>
-                        <Text style={{ fontSize: 20 }}>
-                          {video.datetimeRecorded?.toLocaleString()}
-                        </Text>
-                        {/* map temparray and display the keywords here */}
-                        <View style={{ flexDirection: 'row' }}>
-                          {video.keywords.map((key: string) => {
-                            if (JSON.parse(key).checked) {
-                              return (
-                                <Chip
-                                  key={JSON.parse(key).title}
-
-                                  style={{
-                                    margin: 2,
-                                    backgroundColor: '#E1BE6A',
-                                  }}
-                                  textStyle={{fontSize: 16}}
-
-                                  mode="outlined"
-                                  compact={true}
-                                  icon={'tag'}>
-                                  {JSON.parse(key).title}
-                                </Chip>
-                              );
-                            }
-                          })}
-                          {video.locations.map((key: string) => {
-                            if (JSON.parse(key).checked) {
-                              return (
-                                <Chip
-                                  key={JSON.parse(key).title}
-
-                                  textStyle={{fontSize: 16}}
-                                  style={{
-                                    margin: 2,
-                                    backgroundColor: '#40B0A6',
-                                  }}
-
-                                  mode="outlined"
-                                  compact={true}
-                                  icon={'map-marker'}>
-                                  {JSON.parse(key).title}
-                                </Chip>
-                              );
-                            }
-                          })}
-                        </View>
-                        {/* <Text style={{ fontSize: 20 }}>
+                      </View>
+                      <View style={styles.rightContainer}>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              color: 'black',
+                              fontWeight: 'bold',
+                            }}>
+                            {video.title}
+                            {video.textComments.length !== 0 ? (
+                              <Icon
+                                name="chatbox-ellipses"
+                                type="ionicon"
+                                color="black"
+                                size={22}
+                                style={{
+                                  alignSelf: 'flex-start',
+                                  paddingLeft: 5,
+                                }}
+                              />
+                            ) : null}
+                          </Text>
+                          <Text style={{fontSize: 20}}>
+                            {video.datetimeRecorded?.toLocaleString()}
+                          </Text>
+                          {/* map temparray and display the keywords here */}
+                          <View style={{flexDirection: 'row'}}>
+                            {video.keywords.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#E1BE6A',
+                                    }}
+                                    textStyle={{fontSize: 16}}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'tag'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                            {video.locations.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    textStyle={{fontSize: 16}}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#40B0A6',
+                                    }}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'map-marker'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                          </View>
+                          {/* <Text style={{ fontSize: 20 }}>
                           {video._id.toString()}
                         </Text> */}
-                      </View>
-                      {/* <View>
+                        </View>
+                        {/* <View>
                         <Text>Transcript: {video.transcript}</Text>
                         <Text>
                           Prompt: Summarize this video transcript "
@@ -842,27 +988,27 @@ function Dashboard() {
                           {checkedLocations}) tagged.
                         </Text>
                       </View> */}
-                      <View>
-                        <Button
-                          buttonStyle={{
-                            height: 50,
-                            alignSelf: 'center',
-                          }}
-                          color={Styles.MHMRBlue}
-                          title="Remove Video From Video Set"
-                          radius={50}
-                          onPress={() => {
-                            removeFromIsSelected(video._id),
-                              console.log(video.isSelected);
-                          }}
-                        // onPress={() => {
-                        //   setVideoSelectedData(video);
-                        //   setvideoSelectedFilename(video.filename);
-                        //   toggleDialog1();
-                        // }}
-                        />
-                        {/* send to chatgpt button */}
-                        {/* <Button
+                        <View>
+                          <Button
+                            buttonStyle={{
+                              height: 50,
+                              alignSelf: 'center',
+                            }}
+                            color={Styles.MHMRBlue}
+                            title="Remove Video From Video Set"
+                            radius={50}
+                            onPress={() => {
+                              removeFromIsSelected(video._id),
+                                console.log(video.isSelected);
+                            }}
+                            // onPress={() => {
+                            //   setVideoSelectedData(video);
+                            //   setvideoSelectedFilename(video.filename);
+                            //   toggleDialog1();
+                            // }}
+                          />
+                          {/* send to chatgpt button */}
+                          {/* <Button
                           onPress={() => {
                             setInputText(
                               'Summarize this video transcript (' +
@@ -880,22 +1026,22 @@ function Dashboard() {
                           }}>
                           Send to ChatGPT
                         </Button> */}
-                      </View>
-                      {/* <Text>{video.filename}</Text> */}
-                      <View style={styles.buttonContainer}>
-                        {/* <Button
+                        </View>
+                        {/* <Text>{video.filename}</Text> */}
+                        <View style={styles.buttonContainer}>
+                          {/* <Button
                         buttonStyle={styles.btnStyle}
                         title="Convert to Audio"
                         onPress={() => convertToAudio(video)}
                       /> */}
-                        <View style={styles.space} />
-                        <View style={styles.space} />
+                          <View style={styles.space} />
+                          <View style={styles.space} />
+                        </View>
                       </View>
                     </View>
                   </View>
-                </View>
-              );
-            })
+                );
+              })
             : null}
           {/* {
             buttonPressed
@@ -907,8 +1053,10 @@ function Dashboard() {
               );
             })
           : null} */}
-          <TouchableOpacity style={{ alignItems: 'center' }} onPress={onPressTouch}>
-            <Text style={{ padding: 5, fontSize: 16, color: 'black' }}>
+          <TouchableOpacity
+            style={{alignItems: 'center'}}
+            onPress={onPressTouch}>
+            <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
               Scroll to Top
             </Text>
           </TouchableOpacity>
