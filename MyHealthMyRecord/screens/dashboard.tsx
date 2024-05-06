@@ -24,7 +24,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import addToIsSelected from '../components/addToIsSelected';
 import NetInfo from '@react-native-community/netinfo';
-import { sendToChatGPT } from '../components/chatgpt_api';
+import {sendToChatGPT} from '../components/chatgpt_api';
 
 function Dashboard() {
   const [checked, setChecked] = React.useState(false);
@@ -89,9 +89,6 @@ function Dashboard() {
         console.log(
           `Transcription successful for video ${video._id.toHexString()}`,
         );
-         Alert.alert(
-           'Your transcripts have been generated, and your videos have been added to the Video Set!',
-         );
       } catch (error) {
         console.error(
           `Failed to process video ${video._id.toHexString()}:`,
@@ -99,14 +96,14 @@ function Dashboard() {
         );
       }
     }
+    Alert.alert('Your transcripts have been generated and analyzed.');
   }
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
     if (videosByIsConvertedAndSelected.length == 0) {
-      Alert.alert('No videos to queue');
-    }
-    else {
+      Alert.alert('No videos in queue');
+    } else {
       if (state.isConnected) {
         //if online display that you have _ videos available to convert
         Alert.alert(
@@ -117,18 +114,17 @@ function Dashboard() {
           [
             {
               text: 'YES',
-              onPress: () => handleYesAnalysis(),
-      
+              onPress: () => {
+                handleYesAnalysis();
+              },
             },
             {text: 'NO', onPress: () => console.log('NO Pressed')},
           ],
         );
-      }
-      else {
+      } else {
         Alert.alert('You are offline', 'You cannot queue videos while offline');
       }
     }
-    
   }
 
   // const sendToChatGPT = async (textFileName, _id) => {
@@ -443,7 +439,7 @@ function Dashboard() {
     );
   };
 
-  async function removeFromIsSelected(id: any) {
+  async function removeFromIsSelectedAndIsConverted(id: any) {
     const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
     if (video) {
       realm.write(() => {
@@ -453,6 +449,18 @@ function Dashboard() {
       console.log(
         `Video with ID ${id} removed from isSelected and isConverted.`,
       );
+    } else {
+      console.log(`Video with ID ${id} not found.`);
+    }
+  }
+
+  async function removeFromIsSelected(id: any) {
+    const video = realm.objectForPrimaryKey<VideoData>('VideoData', id);
+    if (video) {
+      realm.write(() => {
+        video.isSelected = false;
+      });
+      console.log(`Video with ID ${id} removed from isSelected`);
     } else {
       console.log(`Video with ID ${id} not found.`);
     }
@@ -628,7 +636,10 @@ function Dashboard() {
           zIndex: 100,
         }}>
         <View style={{position: 'absolute', top: 5, right: 5, zIndex: 100}}>
-          <Badge value={videosByIsConvertedAndSelected.length} status="primary" />
+          <Badge
+            value={videosByIsConvertedAndSelected.length}
+            status="primary"
+          />
         </View>
         {/* <Button
           style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
@@ -998,7 +1009,7 @@ function Dashboard() {
                             title="Remove Video From Video Set"
                             radius={50}
                             onPress={() => {
-                              removeFromIsSelected(video._id),
+                              removeFromIsSelectedAndIsConverted(video._id),
                                 console.log(video.isSelected);
                             }}
                             // onPress={() => {
