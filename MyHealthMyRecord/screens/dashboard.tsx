@@ -27,12 +27,9 @@ import NetInfo from '@react-native-community/netinfo';
 import {sendToChatGPT} from '../components/chatgpt_api';
 
 function Dashboard() {
-  const [checked, setChecked] = React.useState(false);
-  const [auth, setAuth] = useState('');
-  const [inputText, setInputText] = useState('');
-  const [dashboardVideos, setDashboardVideos] = useState<any[]>([]);
   const route = useRoute();
   const selectedVideos = route.params?.selectedVideos;
+  const [inputText, setInputText] = useState('');
 
   async function handleYesAnalysis() {
     const selectedVideos: Realm.Results<VideoData> = realm
@@ -126,6 +123,16 @@ function Dashboard() {
       }
     }
   }
+
+  useEffect(() => {
+    {
+      setVideos(videosByIsSelected);
+      // console.log(videoData
+      // useAddToFile(selectedVideos);
+      console.log('test');
+      console.log('selectedVideos:', selectedVideos);
+    }
+  }, [selectedVideos]);
 
   // ------------------------------------------------------------------------------------------------------------------ //
 
