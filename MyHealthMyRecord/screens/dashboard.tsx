@@ -127,6 +127,7 @@ function Dashboard() {
   useEffect(() => {
     {
       setVideos(videosByIsSelected);
+      //set videos by current dropdown video set)
       // console.log(videoData
       // useAddToFile(selectedVideos);
       console.log('test');
@@ -262,7 +263,7 @@ function Dashboard() {
   let testVideoSetOptions = [];
 
   useEffect(() => {
-    //formatVideoSetDropdown();
+    formatVideoSetDropdown();
     console.log('dropdown', videoSetDropdown);
     setVideoSetIDs(getSelectedVideoIDS);
   }, []);
@@ -284,7 +285,7 @@ function Dashboard() {
         value: i,
         id: videosSetsByDate[i]._id,
       });
-      console.log(dropdownOptions[i]);
+      console.log('dropdownOptions', dropdownOptions[i]);
     }
     setVideoSetDropdown(dropdownOptions);
   }
