@@ -9,12 +9,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Icon } from '@rneui/themed';
+import { Button, Icon } from '@rneui/themed';
 import { Chip } from 'react-native-paper';
 import RNFS from 'react-native-fs';
 import { useRealm, VideoData } from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
-
 
 const ManageVideoSet = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -26,11 +25,24 @@ const ManageVideoSet = () => {
     fetchVideos();
   }, [realm]);
 
-
   const fetchVideos = () => {
     const videoSet = realm.objects<VideoData>('VideoData').filtered('isSelected == true');
     const videoArray = Array.from(videoSet);
     setVideos(videoArray);
+  };
+
+  const handleRemoveVideo = (video: VideoData) => {
+    realm.write(() => {
+      video.isSelected = false;
+    });
+    fetchVideos();
+  };
+
+  const handleRenameVideo = (video: VideoData, newName: string) => {
+    realm.write(() => {
+      video.title = newName;
+    });
+    setVideos([...videos]);
   };
 
   return (
@@ -50,6 +62,18 @@ const ManageVideoSet = () => {
             <View style={styles.infoContainer}>
               <Text style={styles.videoTitle}>{video.title}</Text>
               <Chip icon="tag" textStyle={styles.chipText}>{video.keywords.join(', ')}</Chip>
+              <View style={styles.actionContainer}>
+                <Button
+                  title="Rename"
+                  onPress={() => handleRenameVideo(video, 'New Video Name')}
+                  buttonStyle={styles.button}
+                />
+                <Button
+                  title="Remove"
+                  onPress={() => handleRemoveVideo(video)}
+                  buttonStyle={styles.button}
+                />
+              </View>
             </View>
           </View>
         ))}
@@ -94,6 +118,15 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 16,
     color: '#000'
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10
+  },
+  button: {
+    padding: 5,
+    paddingHorizontal: 10
   }
 });
 
