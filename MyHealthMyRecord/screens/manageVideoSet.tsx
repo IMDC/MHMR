@@ -66,12 +66,12 @@ const ManageVideoSet = () => {
                 <Button
                   title="Rename"
                   onPress={() => handleRenameVideo(video, 'New Video Name')}
-                  buttonStyle={styles.button}
+                  color={Styles.MHMRBlue}
                 />
                 <Button
                   title="Remove"
                   onPress={() => handleRemoveVideo(video)}
-                  buttonStyle={styles.button}
+                  color={Styles.MHMRBlue}
                 />
               </View>
             </View>
