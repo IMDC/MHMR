@@ -263,6 +263,20 @@ function Dashboard() {
   let testVideoSetOptions = [];
 
   useEffect(() => {
+    //iterate through videosets and no matches are found/undefined, delete videoset from database and remove from dropdown
+    for (let i = 0; i < videosSetsByDate.length; i++) {
+      let videoSet = videosSetsByDate[i];
+      let videoSetVideoIDs = videoSet.videoIDs;
+      let videoSetVideoIDsLength = videoSetVideoIDs.length;
+      let videoSetVideos = videoData.filtered('_id == $0', videoSetVideoIDs[0]);
+      console.log('videosetvideos', videoSetVideos);
+      if (videoSetVideos.length == 0) {
+        realm.write(() => {
+          realm.delete(videoSet);
+        });
+      }
+    }
+
     formatVideoSetDropdown();
     console.log('dropdown', videoSetDropdown);
     setVideoSetIDs(getSelectedVideoIDS);
@@ -314,15 +328,16 @@ function Dashboard() {
       videoSetDropdown[videoSetValue].id,
     );
 
-    let videoIDsFromSet = currentVideoSetDetails[0].videoIDs;
+    let videoIDsFromSet = currentVideoSetDetails[0]?.videoIDs;
 
     console.log('currentVideoSetDetails', currentVideoSetDetails);
     console.log('videoIDsFromSet', videoIDsFromSet);
 
+    //let matchedVideoIDs = [];
     for (let i = 0; i < videoIDsFromSet.length; i++) {
       let videoMatch = videoData.filtered('_id == $0', videoIDsFromSet[i]);
       //matchedVideoIDs.push(videoIDsFromSet[i]);
-      console.log('match- ', videoMatch[0].isSelected);
+      console.log('match- ', videoMatch[0]?.isSelected);
       updateIsSelect(videoIDsFromSet[i]);
     }
   }
@@ -434,6 +449,7 @@ function Dashboard() {
           />
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             <Button
+              disabled={videosSelected.length > 0 ? false : true}
               title="Save Video Set"
               onPress={() => {
                 createVideoSet([], getSelectedVideoIDS());
@@ -449,6 +465,8 @@ function Dashboard() {
               }}
             />
             <Button
+              // if videosSelected.length > 0, then disabled={false}
+              disabled={videosSelected.length > 0 ? false : true}
               title="Clear Video Set"
               onPress={() => {
                 // TODO: move this to a function and call onPress()
