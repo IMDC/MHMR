@@ -510,10 +510,6 @@ function Dashboard() {
     //}
   }
 
-  function manageVideoSet() {
-    throw new Error('Function not implemented.');
-  }
-
   return (
 <View>
   <View style={{ height: '25%', width: '100%' }}>
@@ -587,9 +583,7 @@ function Dashboard() {
           />
           <Button
             title="Manage Video Set"
-            onPress={() => {
-              manageVideoSet();
-            }}
+            onPress={() => navigation.navigate('Manage Video Set')}
             color={Styles.MHMRBlue}
             radius={50}
             containerStyle={{
