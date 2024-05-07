@@ -510,60 +510,48 @@ function Dashboard() {
     //}
   }
 
-  return (
-    <View>
+  function manageVideoSet() {
+    throw new Error('Function not implemented.');
+  }
 
-      <View style={{ height: '25%', width: '100%' }}>
-        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 20 }}>Select Video Set: </Text>
-          <Dropdown
-            data={videoSetDropdown}
-            maxHeight={400}
-            style={{ height: 50, width: 600, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
-            placeholderStyle={{ fontSize: 22 }}
-            selectedTextStyle={{ fontSize: 22 }}
-            activeColor='#FFC745'
-            //backgroundColor='#FFC745'
-            labelField="label"
-            valueField="value"
-            value={videoSetValue}
-            onChange={item => {
-              setVideoSetValue(item.value);
-              //clearVideoSet();
+  return (
+<View>
+  <View style={{ height: '25%', width: '100%' }}>
+    <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 20 }}>Select Video Set: </Text>
+      <Dropdown
+        data={videoSetDropdown}
+        maxHeight={400}
+        style={{ height: 50, width: 600, paddingHorizontal: 20, backgroundColor: '#DBDBDB', borderRadius: 22 }}
+        placeholderStyle={{ fontSize: 22 }}
+        selectedTextStyle={{ fontSize: 22 }}
+        activeColor='#FFC745'
+        //backgroundColor='#FFC745'
+        labelField="label"
+        valueField="value"
+        value={videoSetValue}
+        onChange={item => {
+          setVideoSetValue(item.value);
+          //clearVideoSet();
+        }}
+      />
+      <View style={{ flexDirection: 'row', paddingTop: 10, justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+          <Button
+            title="Save Video Set"
+            onPress={() => {
+              createVideoSet([], getSelectedVideoIDS());
+              formatVideoSetDropdown();
+              console.log("SAVE", videosSelected);
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}
+            containerStyle={{
+              width: 300,
+              marginHorizontal: 10,
+              marginVertical: 15,
             }}
           />
-          <View style={{ flexDirection: 'row', paddingTop: 10 }}>
-            <Button
-              title="Save Video Set"
-              onPress={() => {
-                createVideoSet([], getSelectedVideoIDS());
-                formatVideoSetDropdown();
-                console.log("SAVE", videosSelected);
-              }}
-              color={Styles.MHMRBlue}
-              radius={50}
-              containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
-                marginVertical: 15,
-              }}
-            />
-            <Button
-              title="Clear Video Set"
-              onPress={() => {
-                // TODO: move this to a function and call onPress()
-                clearVideoSet();
-              }}
-              color={Styles.MHMRBlue}
-              radius={50}
-              containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
-                marginVertical: 15,
-              }}
-            />
-          </View>
-
           <Button
             title="Delete all Video Sets"
             onPress={() => {
@@ -577,13 +565,44 @@ function Dashboard() {
             radius={50}
             containerStyle={{
               width: 300,
-              marginHorizontal: 30,
+              marginHorizontal: 10,
               marginVertical: 10,
             }}
           />
-
+        </View>
+        <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+          <Button
+            title="Clear Video Set"
+            onPress={() => {
+              // TODO: move this to a function and call onPress()
+              clearVideoSet();
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}
+            containerStyle={{
+              width: 300,
+              marginHorizontal: 10,
+              marginVertical: 15,
+            }}
+          />
+          <Button
+            title="Manage Video Set"
+            onPress={() => {
+              manageVideoSet();
+            }}
+            color={Styles.MHMRBlue}
+            radius={50}
+            containerStyle={{
+              width: 300,
+              marginHorizontal: 10,
+              marginVertical: 10,
+            }}
+          />
         </View>
       </View>
+    </View>
+  </View>
+
       <View style={{ height: '75%', width: '100%' }}>
 
         {/* beginning of dashboard */}
