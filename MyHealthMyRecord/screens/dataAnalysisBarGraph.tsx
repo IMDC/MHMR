@@ -552,7 +552,7 @@ const DataAnalysisBarGraph = () => {
                                 data={wordFreqBarGraphData}
                                 scale={scale.scaleBand}
                                 svg={{ fontSize: 20, rotation: 25, fill: 'black', originY: 35, translateY: 15, translateX: 0 }}
-                                formatLabel={(value, index) => wordFreqBarGraphData[index].label}
+                                formatLabel={(value: any, index: string | number) => wordFreqBarGraphData[index].label}
                             //numberOfTicks={wordFreqBarGraphData.length}
                             //labelStyle={ { color: 'black' } }
                             />

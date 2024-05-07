@@ -422,7 +422,7 @@ const DataAnalysis = () => {
             Line Graph
           </Button>
           <Button
-            disabled={true}
+            // disabled={true}
             onPress={() => navigation.navigate('Word Cloud')}
             titleStyle={{ fontSize: 40 }}
             containerStyle={{
