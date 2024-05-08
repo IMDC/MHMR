@@ -11,7 +11,6 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Icon } from '@rneui/themed';
-import { Chip } from 'react-native-paper';
 import RNFS from 'react-native-fs';
 import { useRealm, VideoData } from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
@@ -76,7 +75,6 @@ const ManageVideoSet = () => {
                 placeholder="Enter new name"
               />
               <Text style={styles.videoTitle}>{video.title}</Text>
-              <Chip icon="tag" textStyle={styles.chipText}>{video.keywords.join(', ')}</Chip>
               <View style={styles.actionContainer}>
                 <Button
                   title="Rename"
@@ -129,10 +127,6 @@ const styles = StyleSheet.create({
   videoTitle: {
     fontSize: 18,
     fontWeight: 'bold'
-  },
-  chipText: {
-    fontSize: 16,
-    color: '#000'
   },
   actionContainer: {
     flexDirection: 'row',
