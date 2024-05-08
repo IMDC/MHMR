@@ -101,7 +101,7 @@ const ManageVideoSet = () => {
                 <TouchableOpacity onPress={() => selectVideoToRename(video._id.toString())}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={styles.videoTitle}>{video.title}</Text>
-                    <Icon name="create" type="ionicon" size={20} color="#ccc" style={{ marginLeft: 5 }} />
+                    <Icon name="create" type="ionicon" size={20} color={Styles.MHMRBlue} style={{ marginLeft: 5 }} />
                   </View>
                 </TouchableOpacity>
               )}
