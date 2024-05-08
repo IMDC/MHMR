@@ -77,26 +77,26 @@ const ManageVideoSet = () => {
             </TouchableOpacity>
             <View style={styles.infoContainer}>
               {selectedVideoId === video._id.toString() && editing ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.editingContainer}>
                   <TextInput
                     style={styles.input}
                     value={newName}
                     onChangeText={text => setNewName(text)}
                     placeholder="Enter new name"
                   />
-                  <Button
-                    title="Save"
-                    onPress={() => handleRenameVideo(video)}
-                    color={Styles.MHMRBlue}
-                    style={styles.button}
-                  />
-                  <Button
-                    title="Cancel"
-                    onPress={cancelRename}
-                    color={Styles.MHMRBlue}
-                    style={styles.button}
-                  />
-                </View>
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      title="Save"
+                      onPress={() => handleRenameVideo(video)}
+                      buttonStyle={styles.button}
+                    />
+                    <Button
+                      title="Cancel"
+                      onPress={cancelRename}
+                      buttonStyle={styles.button}
+                    />
+                  </View>
+              </View>
               ) : (
                 <TouchableOpacity onPress={() => selectVideoToRename(video._id.toString())}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -158,18 +158,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10
   },
+  editingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   button: {
-    padding: 5,
-    paddingHorizontal: 10
+    width: 100,
+    marginHorizontal: 10,
+    backgroundColor: Styles.MHMRBlue,
   },
   input: {
     flex: 1,
     fontSize: 18,
-    marginBottom: 10,
     borderWidth: 1,
     padding: 8,
     borderRadius: 10,
-    borderColor: '#ccc'
+    borderColor: '#ccc',
+    maxWidth: 400
   }
 });
 
