@@ -5,7 +5,8 @@ import {
   Text,
   ScrollView,
   ImageBackground,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,6 +21,8 @@ const ManageVideoSet = () => {
   const realm = useRealm();
   const [videos, setVideos] = useState<VideoData[]>([]);
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+
+  const [newNames, setNewNames] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     fetchVideos();
@@ -38,11 +41,18 @@ const ManageVideoSet = () => {
     fetchVideos();
   };
 
-  const handleRenameVideo = (video: VideoData, newName: string) => {
-    realm.write(() => {
-      video.title = newName;
-    });
-    setVideos([...videos]);
+  const handleRenameVideo = (video: VideoData) => {
+    const newName = newNames[video._id.toString()] || '';
+    if (newName !== '') {
+      realm.write(() => {
+        video.title = newName;
+      });
+      fetchVideos();
+    }
+  };
+
+  const updateNewName = (id: string, newName: string) => {
+    setNewNames({ ...newNames, [id]: newName });
   };
 
   return (
@@ -60,12 +70,17 @@ const ManageVideoSet = () => {
               </TouchableOpacity>
             </ImageBackground>
             <View style={styles.infoContainer}>
+              <TextInput
+                style={styles.input}
+                onChangeText={(text) => updateNewName(video._id.toString(), text)}
+                placeholder="Enter new name"
+              />
               <Text style={styles.videoTitle}>{video.title}</Text>
               <Chip icon="tag" textStyle={styles.chipText}>{video.keywords.join(', ')}</Chip>
               <View style={styles.actionContainer}>
                 <Button
                   title="Rename"
-                  onPress={() => handleRenameVideo(video, 'New Video Name')}
+                  onPress={() => handleRenameVideo(video)}
                   color={Styles.MHMRBlue}
                 />
                 <Button
@@ -127,6 +142,14 @@ const styles = StyleSheet.create({
   button: {
     padding: 5,
     paddingHorizontal: 10
+  },
+  input: {
+    fontSize: 18,
+    marginBottom: 10,
+    borderWidth: 1,
+    padding: 8,
+    borderRadius: 10,
+    borderColor: '#ccc'
   }
 });
 
