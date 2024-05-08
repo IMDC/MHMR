@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  ImageBackground,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
+import { StyleSheet, View, Text, ScrollView, ImageBackground, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Icon } from '@rneui/themed';
@@ -21,7 +13,9 @@ const ManageVideoSet = () => {
   const [videos, setVideos] = useState<VideoData[]>([]);
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-  const [newNames, setNewNames] = useState<{ [key: string]: string }>({});
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [newName, setNewName] = useState<string>('');
+  const [editing, setEditing] = useState<boolean>(false);
 
   useEffect(() => {
     fetchVideos();
@@ -41,17 +35,30 @@ const ManageVideoSet = () => {
   };
 
   const handleRenameVideo = (video: VideoData) => {
-    const newName = newNames[video._id.toString()] || '';
-    if (newName !== '') {
+    if (newName.trim() !== '') {
       realm.write(() => {
-        video.title = newName;
+        video.title = newName.trim();
       });
       fetchVideos();
+      setNewName('');
+      setSelectedVideoId(null);
+      setEditing(false);
     }
   };
 
-  const updateNewName = (id: string, newName: string) => {
-    setNewNames({ ...newNames, [id]: newName });
+  const selectVideoToRename = (videoId: string) => {
+    setSelectedVideoId(videoId);
+    const selectedVideo = videos.find(video => video._id.toString() === videoId);
+    if (selectedVideo) {
+      setNewName(selectedVideo.title);
+      setEditing(true);
+    }
+  };
+
+  const cancelRename = () => {
+    setNewName('');
+    setSelectedVideoId(null);
+    setEditing(false);
   };
 
   return (
@@ -60,27 +67,45 @@ const ManageVideoSet = () => {
       <ScrollView>
         {videos.map((video, index) => (
           <View key={video._id.toString()} style={styles.videoContainer}>
-            <ImageBackground
-              source={{ uri: `file://${MHMRfolderPath}/${video.filename}` }}
-              style={styles.thumbnail}
-            >
-              <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
+            <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
+              <ImageBackground
+                source={{ uri: `file://${MHMRfolderPath}/${video.filename}` }}
+                style={styles.thumbnail}
+              >
                 <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
-              </TouchableOpacity>
-            </ImageBackground>
+              </ImageBackground>
+            </TouchableOpacity>
             <View style={styles.infoContainer}>
-              <TextInput
-                style={styles.input}
-                onChangeText={(text) => updateNewName(video._id.toString(), text)}
-                placeholder="Enter new name"
-              />
-              <Text style={styles.videoTitle}>{video.title}</Text>
+              {selectedVideoId === video._id.toString() && editing ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TextInput
+                    style={styles.input}
+                    value={newName}
+                    onChangeText={text => setNewName(text)}
+                    placeholder="Enter new name"
+                  />
+                  <Button
+                    title="Save"
+                    onPress={() => handleRenameVideo(video)}
+                    color={Styles.MHMRBlue}
+                    style={styles.button}
+                  />
+                  <Button
+                    title="Cancel"
+                    onPress={cancelRename}
+                    color={Styles.MHMRBlue}
+                    style={styles.button}
+                  />
+                </View>
+              ) : (
+                <TouchableOpacity onPress={() => selectVideoToRename(video._id.toString())}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={styles.videoTitle}>{video.title}</Text>
+                    <Icon name="create" type="ionicon" size={20} color="#ccc" style={{ marginLeft: 5 }} />
+                  </View>
+                </TouchableOpacity>
+              )}
               <View style={styles.actionContainer}>
-                <Button
-                  title="Rename"
-                  onPress={() => handleRenameVideo(video)}
-                  color={Styles.MHMRBlue}
-                />
                 <Button
                   title="Remove"
                   onPress={() => handleRemoveVideo(video)}
@@ -138,6 +163,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10
   },
   input: {
+    flex: 1,
     fontSize: 18,
     marginBottom: 10,
     borderWidth: 1,
