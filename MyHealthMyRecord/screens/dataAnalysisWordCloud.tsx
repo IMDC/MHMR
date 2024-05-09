@@ -4,9 +4,9 @@ import {Text, View} from 'react-native';
 import WordCloud from 'rn-wordcloud';
 
 const DataAnalysisWordCloud = () => {
-   const route: any = useRoute();
-   const barData = route.params?.data;
-   const [wordFrequency, setWordFrequency] = useState(barData.data);
+  const route: any = useRoute();
+  const barData = route.params?.data;
+  const [wordFrequency, setWordFrequency] = useState(barData.data);
   const data = [
     {text: 'happy', value: 8},
     {text: 'joyful', value: 6},
@@ -40,11 +40,11 @@ const DataAnalysisWordCloud = () => {
         options={{
           words: barData.data,
           verticalEnabled: true,
-          minFont: 20,
+          minFont: 10,
           maxFont: 60,
-          fontOffset: 1,
+          fontOffset: 5,
           width: 400,
-          height: 400,
+          height: 500,
           fontFamily: 'Arial',
         }}
       />

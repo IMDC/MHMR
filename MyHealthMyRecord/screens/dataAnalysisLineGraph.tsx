@@ -665,11 +665,20 @@ const DataAnalysisLineGraph = () => {
               console.log('start');
               Alert.alert(
                 'View video(s) with this data',
+
+                // Iterate through videoIDs
+                // Display the videoID title in a TouchableOpacity
+                // OnPress, navigate to the video
                 value.videoIDs.toString(),
                 [
                   {
                     text: 'OK',
                     onPress: () => console.log('go to video function here'),
+                  },
+                
+                  {
+                    text: 'CLOSE',
+                    onPress: () => console.log('CLOSE pressed'),
                   },
                 ],
               );

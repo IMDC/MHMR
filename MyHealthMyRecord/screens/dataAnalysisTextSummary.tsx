@@ -52,23 +52,26 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
-      {videos !== null ? (
-        videos.map(video => (
-          <View key={video._id} style={styles.container}>
-            <View style={{padding: 5}}>
-              <Text style={{fontWeight: 'bold', fontSize: 32, color: 'black'}}>
-                {video.title}
-              </Text>
-              <Text style={{fontSize: 20, color: 'black'}}>
-                <Text style={{fontWeight: 'bold'}}>Output:</Text>
-                {` ${video.transcriptFileContent}`}
-              </Text>
+      {videos !== null
+        ? videos.map(video => (
+            <View key={video._id} style={styles.container}>
+              <View style={{padding: 5}}>
+                <Text
+                  style={{fontWeight: 'bold', fontSize: 32, color: 'black'}}>
+                  {video.title}
+                </Text>
+                <Text style={{fontSize: 20, color: 'black'}}>
+                  <Text style={{fontWeight: 'bold'}}>Video Transcript: </Text>
+                  {video.transcript[0]}
+                </Text>
+                <Text style={{fontSize: 20, color: 'black'}}>
+                  <Text style={{fontWeight: 'bold'}}>Output: </Text>
+                  {video.transcriptFileContent}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))
-      ) : 
-       null
-      }
+          ))
+        : null}
     </ScrollView>
   );
 };
