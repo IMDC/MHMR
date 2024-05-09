@@ -30,6 +30,7 @@ function Dashboard() {
   const route = useRoute();
   const selectedVideos = route.params?.selectedVideos;
   const [inputText, setInputText] = useState('');
+  const [selectedVideoSet, setSelectedVideoSet] = useState('');
 
   async function handleYesAnalysis() {
     const selectedVideos: Realm.Results<VideoData> = realm
@@ -360,13 +361,6 @@ function Dashboard() {
   }
 
   function clearVideoSet() {
-    //if (videoSetDropdown.length > 0) {
-    /* const currentVideoSetID = videoSetDropdown[videoSetValue].id;
-    const currentVideoSetDetails = videoSets.filtered('_id == $0', currentVideoSetID);
-    //console.log("-----", currentVideoSetDetails[0], "----------", currentVideoSetDetails[0].videoIDs);
-    let videoIDsFromSet = currentVideoSetDetails[0].videoIDs;
-    console.log("CLEAR------------", videoIDsFromSet) */
-
     let selectedVideoIDs = getSelectedVideoIDS();
     console.log('CLEAR------------', selectedVideoIDs);
     for (let i = 0; i < selectedVideoIDs.length; i++) {
@@ -425,28 +419,31 @@ function Dashboard() {
             justifyContent: 'center',
           }}>
           <Text style={{fontSize: 20}}>Select Video Set: </Text>
-          <Dropdown
-            data={videoSetDropdown}
-            maxHeight={400}
-            style={{
-              height: 50,
-              width: 600,
-              paddingHorizontal: 20,
-              backgroundColor: '#DBDBDB',
-              borderRadius: 22,
-            }}
-            placeholderStyle={{fontSize: 22}}
-            selectedTextStyle={{fontSize: 22}}
-            activeColor="#FFC745"
-            //backgroundColor='#FFC745'
-            labelField="label"
-            valueField="value"
-            value={videoSetValue}
-            onChange={item => {
-              setVideoSetValue(item.value);
-              //clearVideoSet();
-            }}
-          />
+     
+            <Dropdown
+              data={videoSetDropdown}
+              maxHeight={400}
+              style={{
+                height: 50,
+                width: 600,
+                paddingHorizontal: 20,
+                backgroundColor: '#DBDBDB',
+                borderRadius: 22,
+              }}
+              placeholderStyle={{fontSize: 22}}
+              selectedTextStyle={{fontSize: 22}}
+              activeColor="#FFC745"
+              //backgroundColor='#FFC745'
+              labelField="label"
+              valueField="value"
+              value={videoSetValue}
+              onChange={item => {
+                setVideoSetValue(item.value);
+                setSelectedVideoSet(videoSets[item.value].name);
+                console.log('************ selected videoSet ID', videoSets[item.value]._id);
+                //clearVideoSet();
+              }}
+            />
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             <Button
               disabled={videosSelected.length > 0 ? false : true}
@@ -455,6 +452,8 @@ function Dashboard() {
                 createVideoSet([], getSelectedVideoIDS());
                 formatVideoSetDropdown();
                 console.log('SAVE', videosSelected);
+                // set video set value as the most recently added video set
+                setVideoSetValue(videoSetDropdown.length);
               }}
               color={Styles.MHMRBlue}
               radius={50}
