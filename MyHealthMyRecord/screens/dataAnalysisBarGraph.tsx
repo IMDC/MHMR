@@ -93,7 +93,7 @@ const DataAnalysisBarGraph = () => {
       onPressIn: () => {
         console.log(wordFreqBarGraphData[index]);
         wordSelected[0] = index;
-        const wordLabel = wordFreqBarGraphData[wordSelected[0]].label;
+        const wordLabel = wordFreqBarGraphData[wordSelected[0]].text;
         let result = setLineGraphDataDay(wordLabel);
         navigation.navigate('Line Graph', {
           word: wordLabel,
@@ -583,7 +583,7 @@ const DataAnalysisBarGraph = () => {
                   translateX: 0,
                 }}
                 formatLabel={(value: any, index: string | number) =>
-                  wordFreqBarGraphData[index].label
+                  wordFreqBarGraphData[index].text
                 }
                 //numberOfTicks={wordFreqBarGraphData.length}
                 //labelStyle={ { color: 'black' } }
@@ -606,7 +606,7 @@ const DataAnalysisBarGraph = () => {
                   contentInset={{top: 10, bottom: 10}}
                   spacing={0.2}
                   formatLabel={(value, index) =>
-                    wordFreqBarGraphData[index].label
+                    wordFreqBarGraphData[index].text
                   }
                   svg={{fontSize: 20, margin: 10}}
                   min={0}
