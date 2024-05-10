@@ -12,6 +12,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 //import { VideoSet } from '../models/VideoSet';
 import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
+import VideoSetDropdown from '../components/videoSetDropdown';
 
 const DataAnalysis = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -553,8 +554,8 @@ const DataAnalysis = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Text style={{fontSize: 20}}>Select Video Set: </Text>
-          <Dropdown
+          {/* <Text style={{fontSize: 20}}>Select Video Set: </Text> */}
+          {/* <Dropdown
             data={videoSetDropdown}
             maxHeight={400}
             style={{
@@ -574,7 +575,10 @@ const DataAnalysis = () => {
             onChange={item => {
               setVideoSetValue(item.value);
             }}
-          />
+          /> */}
+          <VideoSetDropdown
+            videoSetDropdown={videoSetDropdown}
+            videoSets={videosSetsByDate}/>
           <Button
             title="View Videos in Video Set"
             onPress={() => navigation.navigate('Dashboard')}
