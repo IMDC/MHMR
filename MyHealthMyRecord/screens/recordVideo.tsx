@@ -36,7 +36,7 @@ const RecordVideo = () => {
   // taken from timeOfRecording, used for display
   const displayTime = useState(0);
   // max length of recording allowed in seconds
-  const maxLength = useState(20);
+  const maxLength = useState(10);
   const timeWarningMessage = useState('');
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
