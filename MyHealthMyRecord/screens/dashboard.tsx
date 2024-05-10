@@ -14,7 +14,7 @@ import {VideoData, useRealm, useQuery} from '../models/VideoData';
 import {Icon, Badge, Button} from '@rneui/themed';
 import RNFS from 'react-native-fs';
 import NetInfo from '@react-native-community/netinfo';
-import { sendToChatGPT } from '../components/chatgpt_api';
+import {sendToChatGPT} from '../components/chatgpt_api';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import * as Styles from '../assets/util/styles';
 
@@ -27,12 +27,20 @@ function Dashboard() {
   const [videoSetDropdown, setVideoSetDropdown] = useState([]);
   const [inputText, setInputText] = useState('');
   const videoData: any = useQuery('VideoData');
+  const videoSets: any = useQuery('VideoSet');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsSelected = videosByDate.filtered('isSelected == true');
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',
   );
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+   const scrollRef: any = React.useRef();
+   let onPressTouch = () => {
+     scrollRef.current?.scrollTo({
+       y: 0,
+       animated: true,
+     });
+   };
 
   // Fetch videos and video sets
   useEffect(() => {
@@ -146,8 +154,8 @@ function Dashboard() {
   }
 
   return (
-    <View style={styles.container}>
-      <View
+    <View>
+      {/* <View
         style={{
           position: 'absolute',
           bottom: 30,
@@ -155,6 +163,7 @@ function Dashboard() {
           right: 20,
           alignItems: 'flex-end',
           marginBottom: 10,
+          // elevation: 8,
           zIndex: 100,
         }}>
         <View style={{position: 'absolute', top: 5, right: 5, zIndex: 100}}>
@@ -163,17 +172,6 @@ function Dashboard() {
             status="primary"
           />
         </View>
-        {/* <Button
-          style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
-          radius={50}
-          buttonStyle={[styles.btnStyle, {}]}
-          // onPress={handleSend}>
-          onPress={() => {
-            console.log('SENDING', selectedVideos);
-          }}>
-          <Text style={{color: 'white', fontSize: 25}}>Queue</Text>
-        </Button> */}
-
         <Icon
           reverse
           name="albums-outline"
@@ -184,52 +182,59 @@ function Dashboard() {
             handleQueuePress();
           }}
         />
-      </View>
-
-      <ScrollView style={styles.scrollView}>
-        <VideoSetDropdown
-          videoSetDropdown={videoSetDropdown}
-          videoSets={realm.objects('VideoSet')}
-          saveVideoSetBtn={true}
-          clearVideoSetBtn={true}
-          deleteAllVideoSetsBtn={true}
-          manageSetBtn={true}
-          onVideoSetChange={handleVideoSelectionChange}
-          onDeleteAll={handleDeleteAllVideoSets}
-        />
-        <View style={styles.videoSetDropdownContainer}>
-          {/* <Text style={styles.title}>Select Video Set:</Text> */}
+      </View> */}
+      <View style={{flexDirection: 'column'}}>
+        <View style={{flex: 1}}>
+          <VideoSetDropdown
+            videoSetDropdown={videoSetDropdown}
+            videoSets={realm.objects('VideoSet')}
+            saveVideoSetBtn={true}
+            clearVideoSetBtn={true}
+            deleteAllVideoSetsBtn={true}
+            manageSetBtn={true}
+            onVideoSetChange={handleVideoSelectionChange}
+            onDeleteAll={handleDeleteAllVideoSets}
+          />
         </View>
-        {videos !== null
-          ? videos.map((video: VideoData) => {
-              const isTranscriptEmpty = video => {
+
+        <ScrollView style={{marginTop: 5}} ref={scrollRef}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}></View>
+          {videos !== null
+            ? videos.map((video: VideoData) => {
+                const isTranscriptEmpty = video => {
+                  return (
+                    video.transcript === undefined || video.transcript === ''
+                  );
+                };
+
+                const checkedTitles = video.keywords
+                  .map(key => JSON.parse(key))
+                  .filter(obj => obj.checked)
+                  .map(obj => obj.title)
+                  .join(', ');
+
+                const checkedLocations = video.locations
+                  .map(key => JSON.parse(key))
+                  .filter(obj => obj.checked)
+                  .map(obj => obj.title)
+                  .join(', ');
                 return (
-                  video.transcript === undefined || video.transcript === ''
-                );
-              };
-
-              const checkedTitles = video.keywords
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
-
-              const checkedLocations = video.locations
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
-              return (
-                <View key={video._id.toString()}>
-                  <View style={styles.container}>
-                    <View style={styles.thumbnail}>
-                      <ImageBackground
-                        style={{height: '100%', width: '100%'}}
-                        source={{
-                          uri:
-                            'file://' + MHMRfolderPath + '/' + video.filename,
-                        }}>
-                        {/* <TouchableOpacity
+                  <View key={video._id.toString()}>
+                    <View style={styles.container}>
+                      <View style={styles.thumbnail}>
+                        <ImageBackground
+                          style={{height: '100%', width: '100%'}}
+                          source={{
+                            uri:
+                              'file://' + MHMRfolderPath + '/' + video.filename,
+                          }}>
+                          {/* <TouchableOpacity
                           onPress={() =>
                             navigation.navigate('Fullscreen Video', {
                               id: video._id,
@@ -243,8 +248,8 @@ function Dashboard() {
                             size={40}
                           />
                         </TouchableOpacity> */}
-                      </ImageBackground>
-                      {/* <VideoPlayer
+                        </ImageBackground>
+                        {/* <VideoPlayer
                       style={{}}
                       source={{
                         uri: MHMRfolderPath + '/' + video.filename,
@@ -261,93 +266,93 @@ function Dashboard() {
                         })
                       }
                     /> */}
-                    </View>
-                    <View style={styles.rightContainer}>
-                      <View>
-                        <Text
-                          style={{
-                            fontSize: 24,
-                            color: 'black',
-                            fontWeight: 'bold',
-                          }}>
-                          {video.title}
-                          {video.textComments.length !== 0 ? (
-                            <Icon
-                              name="chatbox-ellipses"
-                              type="ionicon"
-                              color="black"
-                              size={22}
-                              style={{
-                                alignSelf: 'flex-start',
-                                paddingLeft: 5,
-                              }}
-                            />
-                          ) : null}
-                        </Text>
-                        <Text style={{fontSize: 20}}>
-                          {video.datetimeRecorded?.toLocaleString()}
-                        </Text>
-                        {/* map temparray and display the keywords here */}
-                        <View style={{flexDirection: 'row'}}>
-                          {video.keywords.map((key: string) => {
-                            if (JSON.parse(key).checked) {
-                              return (
-                                <Chip
-                                  key={JSON.parse(key).title}
-                                  style={{
-                                    margin: 2,
-                                    backgroundColor: '#E1BE6A',
-                                  }}
-                                  textStyle={{fontSize: 16}}
-                                  mode="outlined"
-                                  compact={true}
-                                  icon={'tag'}>
-                                  {JSON.parse(key).title}
-                                </Chip>
-                              );
-                            }
-                          })}
-                          {video.locations.map((key: string) => {
-                            if (JSON.parse(key).checked) {
-                              return (
-                                <Chip
-                                  key={JSON.parse(key).title}
-                                  textStyle={{fontSize: 16}}
-                                  style={{
-                                    margin: 2,
-                                    backgroundColor: '#40B0A6',
-                                  }}
-                                  mode="outlined"
-                                  compact={true}
-                                  icon={'map-marker'}>
-                                  {JSON.parse(key).title}
-                                </Chip>
-                              );
-                            }
-                          })}
-                        </View>
                       </View>
-                      <View>
-                        <Button
-                          buttonStyle={{
-                            height: 50,
-                            alignSelf: 'center',
-                          }}
-                          color={Styles.MHMRBlue}
-                          title="Remove Video From Video Set"
-                          radius={50}
-                          onPress={() => {
-                            removeFromIsSelectedAndIsConverted(video._id),
-                              console.log(video.isSelected);
-                          }}
-                          // onPress={() => {
-                          //   setVideoSelectedData(video);
-                          //   setvideoSelectedFilename(video.filename);
-                          //   toggleDialog1();
-                          // }}
-                        />
-                        {/* send to chatgpt button */}
-                        {/* <Button
+                      <View style={styles.rightContainer}>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              color: 'black',
+                              fontWeight: 'bold',
+                            }}>
+                            {video.title}
+                            {video.textComments.length !== 0 ? (
+                              <Icon
+                                name="chatbox-ellipses"
+                                type="ionicon"
+                                color="black"
+                                size={22}
+                                style={{
+                                  alignSelf: 'flex-start',
+                                  paddingLeft: 5,
+                                }}
+                              />
+                            ) : null}
+                          </Text>
+                          <Text style={{fontSize: 20}}>
+                            {video.datetimeRecorded?.toLocaleString()}
+                          </Text>
+                          {/* map temparray and display the keywords here */}
+                          <View style={{flexDirection: 'row'}}>
+                            {video.keywords.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#E1BE6A',
+                                    }}
+                                    textStyle={{fontSize: 16}}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'tag'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                            {video.locations.map((key: string) => {
+                              if (JSON.parse(key).checked) {
+                                return (
+                                  <Chip
+                                    key={JSON.parse(key).title}
+                                    textStyle={{fontSize: 16}}
+                                    style={{
+                                      margin: 2,
+                                      backgroundColor: '#40B0A6',
+                                    }}
+                                    mode="outlined"
+                                    compact={true}
+                                    icon={'map-marker'}>
+                                    {JSON.parse(key).title}
+                                  </Chip>
+                                );
+                              }
+                            })}
+                          </View>
+                        </View>
+                        <View>
+                          <Button
+                            buttonStyle={{
+                              height: 50,
+                              alignSelf: 'center',
+                            }}
+                            color={Styles.MHMRBlue}
+                            title="Remove Video From Video Set"
+                            radius={50}
+                            onPress={() => {
+                              removeFromIsSelectedAndIsConverted(video._id),
+                                console.log(video.isSelected);
+                            }}
+                            // onPress={() => {
+                            //   setVideoSelectedData(video);
+                            //   setvideoSelectedFilename(video.filename);
+                            //   toggleDialog1();
+                            // }}
+                          />
+                          {/* send to chatgpt button */}
+                          {/* <Button
                           onPress={() => {
                             setInputText(
                               'Summarize this video transcript (' +
@@ -365,30 +370,25 @@ function Dashboard() {
                           }}>
                           Send to ChatGPT
                         </Button> */}
-                      </View>
-                      {/* <Text>{video.filename}</Text> */}
-                      <View style={styles.buttonContainer}>
-                        {/* <Button
+                        </View>
+                        {/* <Text>{video.filename}</Text> */}
+                        <View style={styles.buttonContainer}>
+                          {/* <Button
                         buttonStyle={styles.btnStyle}
                         title="Convert to Audio"
                         onPress={() => convertToAudio(video)}
                       /> */}
-                        <View style={styles.space} />
-                        <View style={styles.space} />
+                          <View style={styles.space} />
+                          <View style={styles.space} />
+                        </View>
                       </View>
                     </View>
                   </View>
-                </View>
-              );
-            })
-          : null}
-      </ScrollView>
-      <Icon
-        name="albums-outline"
-        size={30}
-        style={styles.queueIcon}
-        onPress={handleQueuePress}
-      />
+                );
+              })
+            : null}
+        </ScrollView>
+      </View>
     </View>
   );
 }

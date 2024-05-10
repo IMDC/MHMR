@@ -2,7 +2,7 @@ import React, {useContext, useState, useEffect} from 'react';
 import {View, Text} from 'react-native';
 import {Button, Icon, CheckBox, Badge} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
-import {VideoSetContext} from './videoSetProvider';
+import {VideoSetContext, useDropdownContext} from './videoSetProvider';
 import {VideoData, useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 
@@ -14,12 +14,13 @@ const VideoSetDropdown = ({
   deleteAllVideoSetsBtn,
   manageSetBtn,
 }) => {
-  const {videoSetValue, setVideoSetValue, handleChange} =
-    useContext(VideoSetContext);
+  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
+  
+
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
 
-  // Helper function to get IDs of selected videos
+  // Helper function to get IDs of current selected videos
   const getSelectedVideoIDs = () => {
     const selectedVideos = realm
       .objects('VideoData')
@@ -28,6 +29,7 @@ const VideoSetDropdown = ({
   };
 
   useEffect(() => {
+    
     // Format and update dropdown upon component mount or change in videoSets
     const formattedDropdown = videoSets.map(set => ({
       label: set.name,
@@ -51,12 +53,14 @@ const VideoSetDropdown = ({
     refreshDropdown();
   };
 
-  // Clear the current video set
+  // Clear the current video set - add this to provider so it clears the current set
   const clearVideoSet = () => {
     realm.write(() => {
       getSelectedVideoIDs().forEach(id => {
-        const video = realm.objectForPrimaryKey('VideoData', id);
-        if (video) video.isSelected = false;
+        const video = realm.objectForPrimaryKey;
+        if (video) {
+          video.isSelected = false;
+        }
       });
     });
     refreshDropdown();
@@ -106,8 +110,11 @@ const VideoSetDropdown = ({
         valueField="value"
         value={videoSetValue}
         onChange={item => {
+          // setVideoSetValue is not a function
+          
           setVideoSetValue(item.value);
-          handleChange(item, videoSets);
+          clearVideoSet();
+          handleChange(item.value, videoSets);
         }}
       />
       <View style={{flexDirection: 'row', paddingTop: 10}}>
@@ -115,7 +122,10 @@ const VideoSetDropdown = ({
           <Button
             disabled={getSelectedVideoIDs().length === 0}
             title="Save Video Set"
-            onPress={() => createVideoSet([], getSelectedVideoIDs())}
+            onPress={() => {
+              createVideoSet([], getSelectedVideoIDs()),
+                setVideoSetValue(videoSetDropdown.length);
+            }}
             color={Styles.MHMRBlue}
             radius={50}
             containerStyle={{
