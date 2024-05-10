@@ -1,5 +1,5 @@
 import React, {useContext, useState, useEffect} from 'react';
-import { View, Text } from 'react-native';
+import {View, Text} from 'react-native';
 import {Button, Icon, CheckBox, Badge} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import {VideoSetContext} from './videoSetProvider';
@@ -16,12 +16,14 @@ const VideoSetDropdown = ({
 }) => {
   const {videoSetValue, setVideoSetValue, handleChange} =
     useContext(VideoSetContext);
-    const realm = useRealm();
+  const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
 
   // Helper function to get IDs of selected videos
   const getSelectedVideoIDs = () => {
-    const selectedVideos = realm.objects('VideoData').filtered('isSelected == true');
+    const selectedVideos = realm
+      .objects('VideoData')
+      .filtered('isSelected == true');
     return selectedVideos.map(video => video._id.toString());
   };
 
@@ -36,12 +38,13 @@ const VideoSetDropdown = ({
   }, [videoSets]);
 
   // Create a new video set
-  const createVideoSet = videoIDs => {
+  const createVideoSet = (frequencyData: string[], videoIDs: string[]) => {
     realm.write(() => {
       realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
         datetime: new Date(),
-        name: new Date().toISOString(),
+        name: new Date().toString().split(' GMT-')[0],
+        frequencyData: frequencyData,
         videoIDs: videoIDs,
       });
     });
@@ -112,7 +115,7 @@ const VideoSetDropdown = ({
           <Button
             disabled={getSelectedVideoIDs().length === 0}
             title="Save Video Set"
-            onPress={() => createVideoSet(getSelectedVideoIDs())}
+            onPress={() => createVideoSet([], getSelectedVideoIDs())}
             color={Styles.MHMRBlue}
             radius={50}
             containerStyle={{
