@@ -283,6 +283,21 @@ function Dashboard() {
     setVideoSetIDs(getSelectedVideoIDS);
   }, []);
 
+  useEffect(() => {
+    const videoSets = realm.objects('VideoSet');
+  
+    const handleChange = () => {
+      formatVideoSetDropdown();
+    };
+  
+    videoSets.addListener(handleChange);
+    handleChange();  
+  
+    return () => {
+      videoSets.removeListener(handleChange);
+    };
+  }, [realm]);
+  
   function getSelectedVideoIDS() {
     let tempVideoSetIDs = [];
     for (let i = 0; i < videosSelected.length; i++) {
