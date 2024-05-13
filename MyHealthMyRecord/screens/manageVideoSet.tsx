@@ -1,67 +1,92 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, ImageBackground, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Icon } from '@rneui/themed';
 import RNFS from 'react-native-fs';
-import { useRealm, VideoData, VideoSet } from '../models/VideoData';
+import { useRealm, VideoSet, VideoData } from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 
 const ManageVideoSet = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const realm = useRealm();
-  const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSets, setVideoSets] = useState<VideoSet[]>([]);
-  const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+  const [selectedVideoSet, setSelectedVideoSet] = useState<VideoSet | null>(null);
+  const [videoSetTitle, setVideoSetTitle] = useState('');
 
   useEffect(() => {
-    fetchVideoSets();
-    fetchVideos();
+    const videoSets = realm.objects<VideoSet>('VideoSet');
+    setVideoSets(Array.from(videoSets));
   }, [realm]);
 
-  const fetchVideoSets = () => {
-    const sets = realm.objects<VideoSet>('VideoSet');
-    setVideoSets(Array.from(sets));
-  };
+  const selectVideoSet = (videoSet: VideoSet) => {
+    setSelectedVideoSet(videoSet);
+    setVideoSetTitle(videoSet.name);
+  };  
 
-  const fetchVideos = () => {
-    const videoSet = realm.objects<VideoData>('VideoData').filtered('isSelected == true');
-    const videoArray = Array.from(videoSet);
-    setVideos(videoArray);
+  const handleRenameVideoSet = () => {
+    if (selectedVideoSet) {
+      realm.write(() => {
+        selectedVideoSet.name = videoSetTitle;
+      });
+    }
   };
 
   const handleRemoveVideo = (video: VideoData) => {
     realm.write(() => {
       video.isSelected = false;
     });
-    fetchVideos();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Manage Video Set</Text>
-      <ScrollView>
-        {videoSets.map((set, index) => (
-          <View key={set._id.toString()} style={styles.setContainer}>
-            <Text style={styles.setName}>{set.name}</Text>
+      <Text style={styles.title}>Manage Video Sets</Text>
+      {selectedVideoSet ? (
+        <>
+          <View style={styles.header}>
+            <TextInput
+              style={styles.input}
+              onChangeText={setVideoSetTitle}
+              value={videoSetTitle}
+              placeholder="Enter new video set name"
+            />
+            <Button title="Rename" onPress={handleRenameVideoSet} color={Styles.MHMRBlue} />
           </View>
-        ))}
-        {videos.map((video, index) => (
-          <View key={video._id.toString()} style={styles.videoContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
-              <ImageBackground source={{ uri: `file://${MHMRfolderPath}/${video.filename}` }} style={styles.thumbnail}>
-                <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
-              </ImageBackground>
+          <ScrollView>
+            {selectedVideoSet.videoIDs.map((videoId) => {
+              const video = realm.objectForPrimaryKey<VideoData>('VideoData', videoId);
+              return video ? (
+                <View key={video._id.toString()} style={styles.videoContainer}>
+                  <ImageBackground
+                    source={{ uri: `file://${RNFS.DocumentDirectoryPath}/MHMR/${video.filename}` }}
+                    style={styles.thumbnail}
+                  >
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
+                      <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
+                    </TouchableOpacity>
+                  </ImageBackground>
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.videoTitle}>{video.title}</Text>
+                    <Button
+                      title="Remove"
+                      onPress={() => handleRemoveVideo(video)}
+                      color={Styles.MHMRBlue}
+                    />
+                  </View>
+                </View>
+              ) : null;
+            })}
+          </ScrollView>
+        </>
+      ) : (
+        <ScrollView>
+          {videoSets.map((videoSet) => (
+            <TouchableOpacity key={videoSet._id.toString()} onPress={() => selectVideoSet(videoSet)}>
+              <Text style={styles.videoSetTitle}>{videoSet.name}</Text>
             </TouchableOpacity>
-            <View style={styles.infoContainer}>
-              <Text style={styles.videoTitle}>{video.title}</Text>
-              <View style={styles.actionContainer}>
-                <Button title="Remove" onPress={() => handleRemoveVideo(video)} color={Styles.MHMRBlue} />
-              </View>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -77,19 +102,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20
   },
-  setContainer: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 10
   },
-  setName: {
-    fontSize: 18,
-    fontWeight: 'bold'
+  input: {
+    flex: 1,
+    borderColor: 'gray',
+    borderWidth: 1,
+    padding: 10,
+    marginRight: 10
   },
   videoContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 15,
+    alignItems: 'center'
   },
   thumbnail: {
     width: 100,
@@ -101,16 +130,22 @@ const styles = StyleSheet.create({
     marginRight: 10
   },
   infoContainer: {
-    flex: 1
+    flex: 1,
+    justifyContent: 'space-between'
   },
   videoTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10
+    fontWeight: 'bold'
+  },
+  videoSetTitle: {
+    fontSize: 20,
+    color: 'blue',
+    padding: 10
   },
   actionContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end'
+    justifyContent: 'space-between',
+    marginTop: 10
   }
 });
 
