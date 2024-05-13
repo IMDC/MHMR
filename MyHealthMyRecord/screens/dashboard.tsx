@@ -482,17 +482,17 @@ function Dashboard() {
           </View>
 
           <View style={{flexDirection: 'row', paddingTop: 10}}>
-             <Button
-            title="Manage Video Set"
-            onPress={() => navigation.navigate('Manage Video Set')}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 10,
-              marginVertical: 10,
-            }}
-          />
+            <Button
+              title="Manage Video Set"
+              onPress={() => navigation.navigate('Manage Video Set', { videoSet: videoSets[videoSetValue] })}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{
+                width: 300,
+                marginHorizontal: 10,
+                marginVertical: 10,
+              }}
+            />
             <Button
               title="Delete all Video Sets"
               onPress={() => {
