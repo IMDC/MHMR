@@ -43,6 +43,15 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
     });
   };
 
+  const handleDeleteVideoSet = () => {
+    if (selectedVideoSet) {
+      realm.write(() => {
+        realm.delete(selectedVideoSet);
+        navigation.goBack();
+      });
+    }
+  };
+
   if (!selectedVideoSet) {
     return (
       <View style={styles.container}>
@@ -70,8 +79,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
             <View key={video._id.toString()} style={styles.videoContainer}>
               <ImageBackground
                 source={{ uri: `file://${RNFS.DocumentDirectoryPath}/MHMR/${video.filename}` }}
-                style={styles.thumbnail}
-              >
+                style={styles.thumbnail}>
                 <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
                   <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
                 </TouchableOpacity>
@@ -88,6 +96,11 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
           ) : null;
         })}
       </ScrollView>
+      <Button
+        title="Delete Video Set"
+        onPress={handleDeleteVideoSet}
+        color={Styles.MHMRBlue}
+      />
     </View>
   );
 };
