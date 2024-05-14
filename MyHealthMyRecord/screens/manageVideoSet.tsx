@@ -107,7 +107,6 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
                   title="Remove"
                   onPress={() => handleRemoveVideo(video)}
                   buttonStyle={styles.removeButton}
-                  titleStyle={styles.removeButtonTitle}
                 />
               </View>
             </View>
@@ -163,10 +162,12 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: Styles.MHMRBlue,
+    width: 100, 
     marginLeft: 10
   },
   cancelButton: {
     backgroundColor: Styles.MHMRBlue,
+    width: 100, 
     marginLeft: 10
   },
   videoContainer: {
@@ -198,9 +199,6 @@ const styles = StyleSheet.create({
     backgroundColor: Styles.MHMRBlue,
     paddingHorizontal: 15,
     paddingVertical: 8
-  },
-  removeButtonTitle: {
-    fontSize: 14
   },
   deleteButton: {
     backgroundColor: Styles.MHMRBlue,
