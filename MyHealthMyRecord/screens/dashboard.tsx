@@ -459,7 +459,7 @@ function Dashboard() {
                 //clearVideoSet();
               }}
             />
-          <View style={{flexDirection: 'row', paddingTop: 10}}>
+          <View style={{flexDirection: 'row', paddingTop: 10, justifyContent: 'space-around'}}>
             <Button
               disabled={videosSelected.length > 0 ? false : true}
               title="Save Video Set"
@@ -473,9 +473,9 @@ function Dashboard() {
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
-                marginVertical: 15,
+                width: '40%',
+                marginVertical: 10,
+                marginHorizontal: 20,  
               }}
             />
             <Button
@@ -489,23 +489,23 @@ function Dashboard() {
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
-                marginVertical: 15,
+                width: '40%',
+                marginVertical: 10,
+                marginHorizontal: 20,  
               }}
             />
           </View>
 
-          <View style={{flexDirection: 'row', paddingTop: 10}}>
+          <View style={{flexDirection: 'row', paddingTop: 10, justifyContent: 'space-around'}}>
             <Button
               title="Manage Video Set"
               onPress={() => navigation.navigate('Manage Video Set', { videoSet: videoSets[videoSetValue] })}
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 10,
+                width: '40%',
                 marginVertical: 10,
+                marginHorizontal: 20,
               }}
             />
             <Button
@@ -520,9 +520,9 @@ function Dashboard() {
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
+                width: '40%',
                 marginVertical: 10,
+                marginHorizontal: 20,
               }}
             />
           </View>
