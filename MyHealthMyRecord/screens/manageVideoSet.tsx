@@ -69,7 +69,6 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Manage Video Sets</Text>
       <View style={styles.header}>
         {isEditingTitle ? (
           <View style={styles.editTitleContainer}>
@@ -128,11 +127,6 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff'
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -156,9 +150,10 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   videoSetTitle: {
-    fontSize: 20,
-    color: Styles.MHMRBlue,
-    padding: 10
+    fontSize: 24,
+    color: 'gray',
+    padding: 10,
+    fontWeight: 'bold'
   },
   saveButton: {
     backgroundColor: Styles.MHMRBlue,
