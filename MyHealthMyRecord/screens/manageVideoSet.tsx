@@ -21,6 +21,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
   const realm = useRealm();
   const [selectedVideoSet, setSelectedVideoSet] = useState<VideoSet | null>(null);
   const [videoSetTitle, setVideoSetTitle] = useState('');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   useEffect(() => {
     if (videoSet) {
@@ -29,12 +30,18 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
     }
   }, [videoSet]);
 
-  const handleRenameVideoSet = () => {
+  const handleSaveVideoSetTitle = () => {
     if (selectedVideoSet) {
       realm.write(() => {
         selectedVideoSet.name = videoSetTitle;
       });
+      setIsEditingTitle(false);
     }
+  };
+
+  const handleCancelEditTitle = () => {
+    setVideoSetTitle(selectedVideoSet?.name || '');
+    setIsEditingTitle(false);
   };
 
   const handleRemoveVideo = (video: VideoData) => {
@@ -64,13 +71,23 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Manage Video Sets</Text>
       <View style={styles.header}>
-        <TextInput
-          style={styles.input}
-          onChangeText={setVideoSetTitle}
-          value={videoSetTitle}
-          placeholder="Enter new video set name"
-        />
-        <Button title="Rename" onPress={handleRenameVideoSet} color={Styles.MHMRBlue} />
+        {isEditingTitle ? (
+          <View style={styles.editTitleContainer}>
+            <TextInput
+              style={styles.input}
+              onChangeText={setVideoSetTitle}
+              value={videoSetTitle}
+              placeholder="Enter new video set name"
+            />
+            <Button title="Save" onPress={handleSaveVideoSetTitle} buttonStyle={styles.saveButton} />
+            <Button title="Cancel" onPress={handleCancelEditTitle} buttonStyle={styles.cancelButton} />
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.titleContainer} onPress={() => setIsEditingTitle(true)}>
+            <Text style={styles.videoSetTitle}>{videoSetTitle}</Text>
+            <Icon name="edit" type="material" size={20} color={Styles.MHMRBlue} />
+          </TouchableOpacity>
+        )}
       </View>
       <ScrollView>
         {selectedVideoSet.videoIDs.map((videoId) => {
@@ -89,7 +106,8 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
                 <Button
                   title="Remove"
                   onPress={() => handleRemoveVideo(video)}
-                  color={Styles.MHMRBlue}
+                  buttonStyle={styles.removeButton}
+                  titleStyle={styles.removeButtonTitle}
                 />
               </View>
             </View>
@@ -99,7 +117,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
       <Button
         title="Delete Video Set"
         onPress={handleDeleteVideoSet}
-        color={Styles.MHMRBlue}
+        buttonStyle={styles.deleteButton}
       />
     </View>
   );
@@ -129,6 +147,28 @@ const styles = StyleSheet.create({
     padding: 10,
     marginRight: 10
   },
+  editTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  videoSetTitle: {
+    fontSize: 20,
+    color: Styles.MHMRBlue,
+    padding: 10
+  },
+  saveButton: {
+    backgroundColor: Styles.MHMRBlue,
+    marginLeft: 10
+  },
+  cancelButton: {
+    backgroundColor: Styles.MHMRBlue,
+    marginLeft: 10
+  },
   videoContainer: {
     flexDirection: 'row',
     marginBottom: 15,
@@ -145,21 +185,28 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   videoTitle: {
     fontSize: 18,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    flex: 1
   },
-  videoSetTitle: {
-    fontSize: 20,
-    color: 'blue',
-    padding: 10
+  removeButton: {
+    backgroundColor: Styles.MHMRBlue,
+    paddingHorizontal: 15,
+    paddingVertical: 8
   },
-  actionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10
+  removeButtonTitle: {
+    fontSize: 14
+  },
+  deleteButton: {
+    backgroundColor: Styles.MHMRBlue,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginTop: 20
   }
 });
 
