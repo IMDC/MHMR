@@ -1,25 +1,22 @@
-import React, {useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
-import {useRealm, useQuery} from '../models/VideoData';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
+import { useRealm, useQuery } from '../models/VideoData';
 import RNFS from 'react-native-fs';
 
 const DataAnalysisTextSummary = () => {
-
   const [videos, setVideos] = useState([]);
-  let counter = 0;
+  const [editingID, setEditingID] = useState(null);
+  const [draftTranscript, setDraftTranscript] = useState('');
+
   const realm = useRealm();
   const videoData = useQuery('VideoData');
-  const videosByIsSelected = videoData
-    .filtered('isSelected == true')
-    .snapshot();
+  const videosByIsSelected = videoData.filtered('isSelected == true').snapshot();
 
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
         videosByIsSelected.map(async video => {
-          const filePath = `${
-            RNFS.DocumentDirectoryPath
-          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
           const fileContent = await RNFS.readFile(filePath, 'utf8');
 
           // Process keywords and locations
@@ -50,28 +47,68 @@ const DataAnalysisTextSummary = () => {
     loadTranscripts();
   }, []);
 
+  const handleEdit = (video) => {
+    setEditingID(video._id);
+    setDraftTranscript(video.transcript[0]);
+  };
+
+  const handleSave = () => {
+    const updatedVideos = videos.map(video => {
+      if (video._id === editingID) {
+        return { ...video, transcript: [draftTranscript] };
+      }
+      return video;
+    });
+
+    realm.write(() => {
+      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
+      videoToUpdate.transcript = [draftTranscript];
+    });
+
+    setVideos(updatedVideos);
+    setEditingID(null);
+  };
+
+  const handleCancel = () => {
+    setEditingID(null);
+    setDraftTranscript('');
+  };
+
   return (
     <ScrollView>
-      {videos !== null
-        ? videos.map(video => (
-            <View key={video._id} style={styles.container}>
-              <View style={{padding: 5}}>
-                <Text
-                  style={{fontWeight: 'bold', fontSize: 32, color: 'black'}}>
-                  {video.title}
-                </Text>
-                <Text style={{fontSize: 20, color: 'black'}}>
-                  <Text style={{fontWeight: 'bold'}}>Video Transcript: </Text>
+      {videos.map(video => (
+        <View key={video._id} style={styles.container}>
+          <View style={{ padding: 5 }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 32, color: 'black' }}>
+              {video.title}
+            </Text>
+            {editingID === video._id ? (
+              <>
+                <TextInput
+                  style={{ height: 100, borderColor: 'gray', borderWidth: 1, marginBottom: 10 }}
+                  onChangeText={setDraftTranscript}
+                  value={draftTranscript}
+                  multiline
+                />
+                <Button title="Save" onPress={handleSave} />
+                <Button title="Cancel" onPress={handleCancel} />
+              </>
+            ) : (
+              <>
+                <Text style={{ fontSize: 20, color: 'black' }}>
+                  <Text style={{ fontWeight: 'bold' }}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Text style={{fontSize: 20, color: 'black'}}>
-                  <Text style={{fontWeight: 'bold'}}>Output: </Text>
-                  {video.transcriptFileContent}
-                </Text>
-              </View>
-            </View>
-          ))
-        : null}
+                <Button title="Edit" onPress={() => handleEdit(video)} />
+              </>
+            )}
+            <Text style={{ fontSize: 20, color: 'black' }}>
+              <Text style={{ fontWeight: 'bold' }}>Output: </Text>
+              {video.transcriptFileContent}
+            </Text>
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
 };
