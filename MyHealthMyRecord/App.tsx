@@ -126,6 +126,7 @@ function DashboardStack() {
     <Stack.Navigator initialRouteName="Dashboard">
       <Stack.Screen name="Dashboard" component={Dashboard} />
       <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
   );
 }
