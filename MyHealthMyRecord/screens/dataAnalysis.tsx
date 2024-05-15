@@ -14,11 +14,13 @@ import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import {color} from '@rneui/base';
+import {useDropdownContext} from '../components/videoSetProvider';
 
 const DataAnalysis = () => {
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+    useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
-  const selectedVideos = route.params?.selectedVideos;
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetDropdown, setVideoSetDropdown] = useState([]);
   const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
@@ -61,8 +63,8 @@ const DataAnalysis = () => {
     } else {
       setVideos(videosByIsSelected);
     }
-    console.log('selectedVideos:', selectedVideos);
-  }, [selectedVideoSet, selectedVideos]);
+    console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
+  }, [selectedVideoSet, videoSetVideoIDs]);
 
   // get videos selected
   const videosSelected = videoData.filtered('isSelected == true');
@@ -527,9 +529,6 @@ const DataAnalysis = () => {
   //TODO: not dynamic, need to make sure when new videoset is created, this drop down reflects that
   //TODO: similar to code in dashboard.tsx, when dropdown option selected, it changes isSelected field for videos in DB
 
-  const [videoSetValue, setVideoSetValue] = useState(0);
-  let testVideoSetOptions = [];
-
   function formatVideoSetDropdown() {
     let dropdownOptions = [];
     for (let i = 0; i < videosSetsByDate.length; i++) {
@@ -549,7 +548,7 @@ const DataAnalysis = () => {
       <View
         style={{
           height: '30%',
-          width : '100%',
+          width: '100%',
         }}>
         <VideoSetDropdown
           videoSetDropdown={videoSetDropdown}
@@ -633,7 +632,9 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
-          onPress={() => navigation.navigate('Text Summary')}
+          onPress={() =>
+            navigation.navigate('Text Summary', {videoSetVideoIDs})
+          }
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: 400,

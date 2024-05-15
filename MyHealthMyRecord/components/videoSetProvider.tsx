@@ -5,18 +5,22 @@ export const VideoSetContext = createContext();
 
 export const VideoSetProvider = ({children}) => {
   const realm = useRealm();
-  const [videoSetValue, setVideoSetValue] = useState(null);
-  const [selectedVideoSet, setSelectedVideoSet] = useState('');
+  const [videoSetValue, setVideoSetValue] = useState<any[]>([]);
+  const [selectedVideoSet, setSelectedVideoSet] = useState<any[]>([]);
+  const [videoSetVideoIDs, setVideoSetVideoIDs] = useState<any[]>([]);
 
   const handleChange = (value, videoSets) => {
     setVideoSetValue(value);
     const selectedSet = videoSets.find(set => set._id.toString() === value);
     setSelectedVideoSet(selectedSet);
-    console.log('Selected VideoSet ID:', value);
-    console.log('Selected VideoSet:', selectedSet);
+    setVideoSetVideoIDs(selectedSet.videoIDs);
+    console.log('*'.repeat(40));
+    console.log('Selected Video Set:', selectedSet);
+    console.log('Selected Video Set Video IDs:', selectedSet.videoIDs);
+    console.log('*'.repeat(40));
   };
 
-  const contextValues = {handleChange, videoSetValue, setVideoSetValue};
+  const contextValues = {handleChange, videoSetVideoIDs, videoSetValue, setVideoSetValue};
 
   return (
     <VideoSetContext.Provider value={contextValues}>

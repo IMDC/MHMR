@@ -2,56 +2,86 @@ import React, {useEffect, useState} from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {useRealm, useQuery} from '../models/VideoData';
 import RNFS from 'react-native-fs';
+import {useDropdownContext} from '../components/videoSetProvider';
+import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 
-const DataAnalysisTextSummary = () => {
-
+const DataAnalysisTextSummary = ({route}) => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+    useDropdownContext();
   let counter = 0;
   const realm = useRealm();
   const videoData = useQuery('VideoData');
   const videosByIsSelected = videoData
     .filtered('isSelected == true')
     .snapshot();
+  const [videoDataVideos, setVideoDataVideos]: any = useState([]);
+
+  // const [videosByIsSelected, setVideosByIsSelected] = useState([]);
+
+  //get the videoData from the videoSet videoSetVideoIDs ID
 
   useEffect(() => {
+    const getVideoData = async () => {
+      const videoDataVideos = await Promise.all(
+        videoSetVideoIDs.map(async videoID => {
+          const objectId = new Realm.BSON.ObjectId(videoID);
+          const video = realm.objectForPrimaryKey('VideoData', objectId);
+          return video;
+        }),
+      );
+      setVideoDataVideos(videoDataVideos);
+    };
+    getVideoData();
+    console.log('*******videoDataVideos: ', videoDataVideos);
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videosByIsSelected.map(async video => {
-          const filePath = `${
-            RNFS.DocumentDirectoryPath
-          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
-          const fileContent = await RNFS.readFile(filePath, 'utf8');
+        videoDataVideos.map(
+          async (video: {
+            filename: string;
+            keywords: any[];
+            locations: any[];
+            toJSON: () => any;
+          }) => {
+            const filePath = `${
+              RNFS.DocumentDirectoryPath
+            }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+            const fileContent = await RNFS.readFile(filePath, 'utf8');
 
-          // Process keywords and locations
-          const checkedTitles = video.keywords
-            .map(key => JSON.parse(key))
-            .filter(obj => obj.checked)
-            .map(obj => obj.title)
-            .join(', ');
+            // Process keywords and locations
+            const checkedTitles = video.keywords
+              .map(key => JSON.parse(key))
+              .filter(obj => obj.checked)
+              .map(obj => obj.title)
+              .join(', ');
 
-          const checkedLocations = video.locations
-            .map(loc => JSON.parse(loc))
-            .filter(obj => obj.checked)
-            .map(obj => obj.title)
-            .join(', ');
+            const checkedLocations = video.locations
+              .map(loc => JSON.parse(loc))
+              .filter(obj => obj.checked)
+              .map(obj => obj.title)
+              .join(', ');
 
-          return {
-            ...video.toJSON(), // Convert Realm object to plain JS object
-            transcriptFileContent: fileContent,
-            checkedTitles,
-            checkedLocations,
-          };
-        }),
+            return {
+              ...video.toJSON(), // Convert Realm object to plain JS object
+              transcriptFileContent: fileContent,
+              checkedTitles,
+              checkedLocations,
+            };
+          },
+        ),
       );
 
       setVideos(videoTranscripts);
     };
 
     loadTranscripts();
-  }, []);
+  }, [route]);
 
   return (
     <ScrollView>
+      
       {videos !== null
         ? videos.map(video => (
             <View key={video._id} style={styles.container}>

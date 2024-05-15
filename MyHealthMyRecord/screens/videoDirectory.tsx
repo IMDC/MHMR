@@ -38,6 +38,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {useNetwork} from '../components/networkProvider';
 import {getAuth, getTranscript} from '../components/stt_api';
 import {sendToChatGPT} from '../components/chatgpt_api';
+import {useDropdownContext} from '../components/videoSetProvider';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const [selectedVideos, setSelectedVideos] = useState(new Set());
@@ -48,6 +49,8 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
+
+  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
 
   async function handleDeleteVideo(
     videoSelectedData: VideoData,

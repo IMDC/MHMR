@@ -18,7 +18,7 @@ const VideoSetDropdown = ({
   manageSetBtn,
   onVideoSetChange,
 }) => {
-  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
+  const {handleChange, videoSetValue, setVideoSetValue, } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();

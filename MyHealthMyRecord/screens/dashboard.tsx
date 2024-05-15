@@ -24,7 +24,7 @@ function Dashboard() {
   const realm = useRealm();
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetDropdown, setVideoSetDropdown] = useState([]);
-  const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
+  const [selectedVideoSet, setSelectedVideoSet] = useState();
   const [inputText, setInputText] = useState('');
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
@@ -35,23 +35,22 @@ function Dashboard() {
   );
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
-useEffect(() => {
-  if (selectedVideoSet && selectedVideoSet.videoIDs) {
-    const videoIDSet = new Set(selectedVideoSet.videoIDs);
-    const selectedSetVideos = videoData.filter(video => {
-      if (!video._id) {
-        console.error('Video _id is undefined:', video);
-        return false;
-      }
-      return videoIDSet.has(video._id.toString());
-    });
-    setVideos(selectedSetVideos);
-  } else {
-    setVideos(videosByIsSelected);
-  }
-  console.log('selectedVideos:', selectedVideos);
-}, [selectedVideoSet, selectedVideos]);
-  
+  useEffect(() => {
+    if (selectedVideoSet && selectedVideoSet.videoIDs) {
+      const videoIDSet = new Set(selectedVideoSet.videoIDs);
+      const selectedSetVideos = videoData.filter(video => {
+        if (!video._id) {
+          console.error('Video _id is undefined:', video);
+          return false;
+        }
+        return videoIDSet.has(video._id.toString());
+      });
+      setVideos(selectedSetVideos);
+    } else {
+      // setVideos(videosByIsSelected);
+    }
+  }, [selectedVideoSet]);
+
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
       set => set._id.toString() === selectedId,

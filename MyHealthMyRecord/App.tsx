@@ -35,8 +35,8 @@ import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
 import {getAuth} from './components/stt_api';
-import { NetworkProvider } from './components/networkProvider';
-import { VideoSetProvider } from './components/videoSetProvider';
+import {NetworkProvider} from './components/networkProvider';
+import {VideoSetProvider} from './components/videoSetProvider';
 import Video from 'react-native-video';
 
 const Stack = createNativeStackNavigator();
