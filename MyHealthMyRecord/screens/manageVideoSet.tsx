@@ -105,7 +105,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
               source={{ uri: `file://${RNFS.DocumentDirectoryPath}/MHMR/${video.filename}` }}
               style={styles.thumbnail}
             >
-              <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
+              <TouchableOpacity onPress={() => navigation.navigate('Fullscreen Video', { id: video._id })}>
                 <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
               </TouchableOpacity>
             </ImageBackground>
