@@ -5,7 +5,6 @@ import {useRealm} from '../models/VideoData';
 import {getAuth, getTranscript} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
 import {VideoData} from '../models/VideoData';
-import RNFS from 'react-native-fs';
 
 const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
   const realm = useRealm();
