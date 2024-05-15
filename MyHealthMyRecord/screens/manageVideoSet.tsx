@@ -20,15 +20,24 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const realm = useRealm();
   const [selectedVideoSet, setSelectedVideoSet] = useState<VideoSet | null>(null);
+  const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetTitle, setVideoSetTitle] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   useEffect(() => {
+    fetchVideos();
     if (videoSet) {
       setSelectedVideoSet(videoSet);
       setVideoSetTitle(videoSet.name);
     }
-  }, [videoSet]);
+  }, [videoSet, realm]);
+
+  const fetchVideos = () => {
+    const videoSet = realm.objects<VideoData>('VideoData').filtered('isSelected == true');
+    const videoArray = Array.from(videoSet);
+    setVideos(videoArray);
+  };
+
 
   const handleSaveVideoSetTitle = () => {
     if (selectedVideoSet) {
@@ -48,6 +57,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
     realm.write(() => {
       video.isSelected = false;
     });
+    fetchVideos();
   };
 
   const handleDeleteVideoSet = () => {
@@ -89,28 +99,26 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
         )}
       </View>
       <ScrollView>
-        {selectedVideoSet.videoIDs.map((videoId) => {
-          const video = realm.objectForPrimaryKey<VideoData>('VideoData', videoId);
-          return video ? (
-            <View key={video._id.toString()} style={styles.videoContainer}>
-              <ImageBackground
-                source={{ uri: `file://${RNFS.DocumentDirectoryPath}/MHMR/${video.filename}` }}
-                style={styles.thumbnail}>
-                <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
-                  <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
-                </TouchableOpacity>
-              </ImageBackground>
-              <View style={styles.infoContainer}>
-                <Text style={styles.videoTitle}>{video.title}</Text>
-                <Button
-                  title="Remove"
-                  onPress={() => handleRemoveVideo(video)}
-                  buttonStyle={styles.removeButton}
-                />
-              </View>
+        {videos.map((video, index) => (
+          <View key={video._id.toString()} style={styles.videoContainer}>
+            <ImageBackground
+              source={{ uri: `file://${RNFS.DocumentDirectoryPath}/MHMR/${video.filename}` }}
+              style={styles.thumbnail}
+            >
+              <TouchableOpacity onPress={() => navigation.navigate('VideoDetail', { videoId: video._id })}>
+                <Icon name="play-circle" type="ionicon" size={50} color="#fff" />
+              </TouchableOpacity>
+            </ImageBackground>
+            <View style={styles.infoContainer}>
+              <Text style={styles.videoTitle}>{video.title}</Text>
+              <Button
+                title="Remove"
+                onPress={() => handleRemoveVideo(video)}
+                color={Styles.MHMRBlue}
+              />
             </View>
-          ) : null;
-        })}
+          </View>
+        ))}
       </ScrollView>
       <Button
         title="Delete Video Set"
