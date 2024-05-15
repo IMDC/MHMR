@@ -275,6 +275,21 @@ function Dashboard() {
     setVideoSetIDs(getSelectedVideoIDS());
   }, []);
 
+  useEffect(() => {
+    const videoSets = realm.objects('VideoSet');
+  
+    const handleChange = () => {
+      formatVideoSetDropdown();
+    };
+  
+    videoSets.addListener(handleChange);
+    handleChange();  
+  
+    return () => {
+      videoSets.removeListener(handleChange);
+    };
+  }, [realm]);
+  
   function getSelectedVideoIDS() {
     let tempVideoSetIDs = [];
     for (let i = 0; i < videosSelected.length; i++) {
@@ -393,33 +408,31 @@ function Dashboard() {
             justifyContent: 'center',
           }}>
           <Text style={{fontSize: 20}}>Select Video Set: </Text>
-
-          <Dropdown
-            data={videoSetDropdown}
-            maxHeight={400}
-            style={{
-              height: 50,
-              width: 600,
-              paddingHorizontal: 20,
-              backgroundColor: '#DBDBDB',
-              borderRadius: 22,
-            }}
-            placeholderStyle={{fontSize: 22}}
-            selectedTextStyle={{fontSize: 22}}
-            activeColor="#FFC745"
-            labelField="label"
-            valueField="value"
-            value={videoSetValue}
-            onChange={item => {
-              setVideoSetValue(item.value);
-              setSelectedVideoSet(videoSets[item.value].name);
-              console.log(
-                '************ selected videoSet ID',
-                videoSets[item.value]._id,
-              );
-            }}
-          />
-          <View style={{flexDirection: 'row', paddingTop: 10}}>
+            <Dropdown
+              data={videoSetDropdown}
+              maxHeight={400}
+              style={{
+                height: 50,
+                width: 600,
+                paddingHorizontal: 20,
+                backgroundColor: '#DBDBDB',
+                borderRadius: 22,
+              }}
+              placeholderStyle={{fontSize: 22}}
+              selectedTextStyle={{fontSize: 22}}
+              activeColor="#FFC745"
+              //backgroundColor='#FFC745'
+              labelField="label"
+              valueField="value"
+              value={videoSetValue}
+              onChange={item => {
+                setVideoSetValue(item.value);
+                setSelectedVideoSet(videoSets[item.value].name);
+                console.log('************ selected videoSet ID', videoSets[item.value]._id);
+                //clearVideoSet();
+              }}
+            />
+          <View style={{flexDirection: 'row', paddingTop: 10, justifyContent: 'space-around'}}>
             <Button
               disabled={videosSelected.length > 0 ? false : true}
               title="Save Video Set"
@@ -432,9 +445,9 @@ function Dashboard() {
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
-                marginVertical: 15,
+                width: '40%',
+                marginVertical: 10,
+                marginHorizontal: 20,  
               }}
             />
             <Button
@@ -446,23 +459,22 @@ function Dashboard() {
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
-                marginVertical: 15,
+                width: '40%',
+                marginVertical: 10,
+                marginHorizontal: 20,  
               }}
             />
           </View>
-
-          <View style={{flexDirection: 'row', paddingTop: 10}}>
+          <View style={{flexDirection: 'row', paddingTop: 10, justifyContent: 'space-around'}}>
             <Button
               title="Manage Video Set"
-              onPress={() => navigation.navigate('Manage Video Set')}
+              onPress={() => navigation.navigate('Manage Video Set', { videoSet: videoSets[videoSetValue] })}
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 10,
+                width: '40%',
                 marginVertical: 10,
+                marginHorizontal: 20,
               }}
             />
             <Button
@@ -476,9 +488,9 @@ function Dashboard() {
               color={Styles.MHMRBlue}
               radius={50}
               containerStyle={{
-                width: 300,
-                marginHorizontal: 30,
+                width: '40%',
                 marginVertical: 10,
+                marginHorizontal: 20,
               }}
             />
           </View>

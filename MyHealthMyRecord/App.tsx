@@ -121,6 +121,23 @@ function DataAnalysisStack() {
   );
 }
 
+function DashboardStack() {
+  return (
+    <Stack.Navigator initialRouteName="Dashboard">
+      <Stack.Screen
+        name="Dashboard"
+        component={Dashboard}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
+    </Stack.Navigator>
+  );
+}
+
+
 function App() {
   return (
     <RealmProvider>
@@ -154,10 +171,10 @@ function App() {
                 ),
               }}
             />
-
+            
             <Tab.Screen
               name="Dashboard"
-              component={Dashboard}
+              component={DashboardStack}
               options={{
                 tabBarLabel: 'Dashboard',
                 headerStyle: {backgroundColor: Styles.NavBarGrey},
