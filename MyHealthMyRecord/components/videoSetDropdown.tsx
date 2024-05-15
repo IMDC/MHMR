@@ -6,6 +6,8 @@ import {useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 import {ObjectId} from 'bson';
 import {Button} from '@rneui/themed';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 const VideoSetDropdown = ({
   videoSetDropdown,
@@ -19,6 +21,7 @@ const VideoSetDropdown = ({
   const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const getSelectedVideoIDs = () => {
     const selectedVideos = realm
@@ -86,7 +89,9 @@ const VideoSetDropdown = ({
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-      <Text style={{fontSize: 20}}>Select Video Set: </Text>
+      <View style={{paddingBottom: 10}}>
+        <Text style={{fontSize: 20}}>Select Video Set: </Text>
+      </View>
       <Dropdown
         data={localDropdown}
         maxHeight={400}
@@ -109,67 +114,86 @@ const VideoSetDropdown = ({
           onVideoSetChange(item.value); // Notify parent component of the change
         }}
       />
-      <View style={{flexDirection: 'row', paddingTop: 10}}>
-        {saveVideoSetBtn && (
+      {saveVideoSetBtn === false &&
+      clearVideoSetBtn === false &&
+      manageSetBtn == false &&
+      deleteAllVideoSetsBtn == false ? (
+        <View style={{flexDirection: 'row', paddingTop: 30}}>
           <Button
-            disabled={getSelectedVideoIDs().length === 0}
-            title="Save Video Set"
-            onPress={() => {
-              createVideoSet([], getSelectedVideoIDs());
-              setVideoSetValue(videoSetDropdown.length.toString());
-            }}
+            title="View Videos in Video Set"
+            onPress={() => navigation.navigate('Dashboard')}
             color={Styles.MHMRBlue}
             radius={50}
             containerStyle={{
               width: 300,
-              marginHorizontal: 30,
-              marginVertical: 15,
             }}
           />
-        )}
-        {clearVideoSetBtn && (
-          <Button
-            disabled={getSelectedVideoIDs().length === 0}
-            title="Clear Video Set"
-            onPress={clearVideoSet}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 30,
-              marginVertical: 15,
-            }}
-          />
-        )}
-      </View>
-      <View style={{flexDirection: 'row', paddingTop: 10}}>
-        {manageSetBtn && (
-          <Button
-            title="Manage Sets"
-            onPress={() => console.log('Manage sets')}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-          />
-        )}
-        {deleteAllVideoSetsBtn && (
-          <Button
-            title="Delete all Video Sets"
-            onPress={deleteAllVideoSets}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-          />
-        )}
-      </View>
+        </View>
+      ) : (
+        <View>
+          <View style={{flexDirection: 'row', paddingTop: 10}}>
+            {saveVideoSetBtn && (
+              <Button
+                disabled={getSelectedVideoIDs().length === 0}
+                title="Save Video Set"
+                onPress={() => {
+                  createVideoSet([], getSelectedVideoIDs());
+                  setVideoSetValue(videoSetDropdown.length.toString());
+                }}
+                color={Styles.MHMRBlue}
+                radius={50}
+                containerStyle={{
+                  width: 300,
+                  marginHorizontal: 30,
+                  marginVertical: 15,
+                }}
+              />
+            )}
+            {clearVideoSetBtn && (
+              <Button
+                disabled={getSelectedVideoIDs().length === 0}
+                title="Clear Video Set"
+                onPress={clearVideoSet}
+                color={Styles.MHMRBlue}
+                radius={50}
+                containerStyle={{
+                  width: 300,
+                  marginHorizontal: 30,
+                  marginVertical: 15,
+                }}
+              />
+            )}
+          </View>
+          <View style={{flexDirection: 'row', paddingTop: 10}}>
+            {manageSetBtn && (
+              <Button
+                title="Manage Sets"
+                onPress={() => console.log('Manage sets')}
+                color={Styles.MHMRBlue}
+                radius={50}
+                containerStyle={{
+                  width: 300,
+                  marginHorizontal: 30,
+                  marginVertical: 10,
+                }}
+              />
+            )}
+            {deleteAllVideoSetsBtn && (
+              <Button
+                title="Delete all Video Sets"
+                onPress={deleteAllVideoSets}
+                color={Styles.MHMRBlue}
+                radius={50}
+                containerStyle={{
+                  width: 300,
+                  marginHorizontal: 30,
+                  marginVertical: 10,
+                }}
+              />
+            )}
+          </View>
+        </View>
+      )}
     </View>
   );
 };

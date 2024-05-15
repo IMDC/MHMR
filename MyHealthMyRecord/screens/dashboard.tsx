@@ -153,7 +153,7 @@ useEffect(() => {
   }
 
   return (
-    <View>
+    <View style={{height: '100%'}}>
       <View
         style={{
           position: 'absolute',
