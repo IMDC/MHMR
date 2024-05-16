@@ -16,12 +16,12 @@ import NetInfo from '@react-native-community/netinfo';
 import {sendToChatGPT} from '../components/chatgpt_api';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import * as Styles from '../assets/util/styles';
+import {useDropdownContext} from '../components/videoSetProvider';
 
 function Dashboard() {
   const navigation = useNavigation();
   const route = useRoute();
   const isFocused = useIsFocused();
-  const selectedVideos = route.params?.selectedVideos;
   const realm = useRealm();
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetDropdown, setVideoSetDropdown] = useState([]);
@@ -30,14 +30,24 @@ function Dashboard() {
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-  const videosByIsSelected = videosByDate.filtered('isSelected == true');
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',
   );
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
+  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
+
   useEffect(() => {
-    if (selectedVideoSet && selectedVideoSet.videoIDs) {
+    const selectedVideos = route.params?.selectedVideos || [];
+    if (selectedVideos.length > 0) {
+      const videoIDSet = new Set(
+        selectedVideos.map(video => video._id.toString()),
+      );
+      const selectedSetVideos = videoData.filter(video =>
+        videoIDSet.has(video._id.toString()),
+      );
+      setVideos(selectedSetVideos);
+    } else if (selectedVideoSet && selectedVideoSet.videoIDs) {
       const videoIDSet = new Set(selectedVideoSet.videoIDs);
       const selectedSetVideos = videoData.filter(video => {
         if (!video._id) {
@@ -47,10 +57,17 @@ function Dashboard() {
         return videoIDSet.has(video._id.toString());
       });
       setVideos(selectedSetVideos);
+    } else {
+      setVideos([]); // Clear videos if no video set is selected
     }
-  }, [selectedVideoSet, isFocused]);
+  }, [route.params?.selectedVideos, selectedVideoSet, isFocused, videoData]);
 
   const handleVideoSelectionChange = (selectedId: string) => {
+    if (!selectedId) {
+      setSelectedVideoSet(undefined);
+      setVideos([]);
+      return;
+    }
     const selectedSet = videoSets.find(
       set => set._id.toString() === selectedId,
     );
@@ -246,7 +263,10 @@ function Dashboard() {
                               type="ionicon"
                               color="black"
                               size={22}
-                              style={{alignSelf: 'flex-start', paddingLeft: 5}}
+                              style={{
+                                alignSelf: 'flex-start',
+                                paddingLeft: 5,
+                              }}
                             />
                           ) : null}
                         </Text>

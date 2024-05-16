@@ -4,7 +4,6 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {useDropdownContext} from './videoSetProvider';
 import {useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
-import {ObjectId} from 'bson';
 import {Button} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -18,7 +17,7 @@ const VideoSetDropdown = ({
   manageSetBtn,
   onVideoSetChange,
 }) => {
-  const {handleChange, videoSetValue, setVideoSetValue, } = useDropdownContext();
+  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -53,15 +52,8 @@ const VideoSetDropdown = ({
   };
 
   const clearVideoSet = () => {
-    realm.write(() => {
-      getSelectedVideoIDs().forEach(id => {
-        const video = realm.objectForPrimaryKey('VideoData', new ObjectId(id));
-        if (video) {
-          video.isSelected = false;
-        }
-      });
-    });
-    console.log('Cleared video set');
+    setVideoSetValue(null);
+    onVideoSetChange(null); // Notify parent component of the change
     refreshDropdown();
   };
 

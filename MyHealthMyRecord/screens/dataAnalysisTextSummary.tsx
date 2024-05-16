@@ -41,7 +41,14 @@ const DataAnalysisTextSummary = () => {
           const filePath = `${
             RNFS.DocumentDirectoryPath
           }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
-          const fileContent = await RNFS.readFile(filePath, 'utf8');
+          const fileExists = await RNFS.exists(filePath);
+
+          let fileContent = '';
+          if (fileExists) {
+            fileContent = await RNFS.readFile(filePath, 'utf8');
+          } else {
+            fileContent = 'Transcript not available';
+          }
 
           // Process keywords and locations
           const checkedTitles = video.keywords

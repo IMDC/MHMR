@@ -16,7 +16,6 @@ export const VideoSetProvider = ({children}) => {
     setVideoSetVideoIDs(selectedSet.videoIDs);
     console.log('*'.repeat(40));
     console.log('Selected Video Set:', selectedSet);
-    console.log('Selected Video Set Video IDs:', selectedSet.videoIDs);
     console.log('*'.repeat(40));
   };
 

@@ -580,18 +580,38 @@ const ViewRecordings = ({selected, setSelected}) => {
             // elevation: 8,
             zIndex: 100,
           }}>
-          <Button
-            style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
-            radius={50}
-            buttonStyle={[styles.btnStyle, {}]}
-            // onPress={handleSend}>
-            onPress={() => {
-              handleSendToDashboard();
-            }}>
-            <Text style={{color: 'white', fontSize: 25}}>
-              Send {selectedVideos.size} video(s) to Video Set
-            </Text>
-          </Button>
+          <View style={{flexDirection: 'row', alignContent: 'space-around'}}>
+            <Button
+              style={{
+                backgroundColor: '#1C3EAA',
+                padding: 20,
+                borderRadius: 5,
+                paddingHorizontal: 10,
+              }}
+              radius={50}
+              buttonStyle={[styles.btnStyle, {}]}
+              // onPress={handleSend}>
+              onPress={() => {
+                handleSendToDashboard();
+              }}>
+              <Text style={{color: 'white', fontSize: 25}}>
+                Send {selectedVideos.size} video(s) to Video Set
+              </Text>
+            </Button>
+            <View style={styles.space}></View>
+            <Button
+              style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+              radius={50}
+              buttonStyle={[styles.btnStyle, {}]}
+              // onPress={handleSend}>
+              onPress={() => {
+                // handleSendToDashboard();
+              }}>
+              <Text style={{color: 'white', fontSize: 25}}>
+                Add to New Video Set
+              </Text>
+            </Button>
+          </View>
         </View>
       )}
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
