@@ -34,36 +34,49 @@ function Dashboard() {
     'isConverted == false AND isSelected == true',
   );
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
-  var selectedSetVideos: React.SetStateAction<VideoData[]> = [];
+  var selectedSetVideos = [];
 
   const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
     useDropdownContext();
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
-    if (selectedVideos.length > 0) {
-      const videoIDSet = new Set(
-        selectedVideos.map(video => video._id.toString()),
-      );
-      selectedSetVideos = videoData.filter(video =>
-        videoIDSet.has(video._id.toString()),
-      );
-      // setVideos(selectedSetVideos);
-    } else if (selectedVideoSet && videoSetVideoIDs) {
+    console.log('selectedVideos:', selectedVideos);
+    console.log('selectedVideos.size:', selectedVideos.size);
+    //---------------------------------------------------------
+    if (selectedVideos.size > 0) {
+      const selectedVideosArray = Array.from(selectedVideos);
+       selectedSetVideos = videoData.filter(video => {
+        return selectedVideosArray.some(selectedVideo =>
+          video._id.equals(selectedVideo._id),
+        );
+      });
+
+      setVideos(selectedSetVideos);
+    }
+    //---------------------------------------------------------
+    else if (selectedVideoSet && videoSetVideoIDs) {
       const videoIDSet = new Set(videoSetVideoIDs);
       selectedSetVideos = videoData.filter(video => {
         if (!video._id) {
           console.error('Video _id is undefined:', video);
           return false;
         }
+        if (selectedVideos.length > 0) {
+          videoIDSet.add(selectedVideos.map(video => video._id.toString()));
+          console.log('videoIDSet after length > 0:', videoIDSet);
+        }
         return videoIDSet.has(video._id.toString());
+
+        // }
       });
-      // setVideos(selectedSetVideos);
+      
+      setVideos(selectedSetVideos);
     } else {
-      selectedSetVideos = [];
-      // setVideos([]);
-       // Clear videos if no video set is selected
+      setVideos([]);
+      // Clear videos if no video set is selected
     }
+    console.log('selectedSetVideos:', selectedSetVideos);
     if (isFocused) {
       setVideos(selectedSetVideos);
     }

@@ -982,7 +982,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     );
                                     if (!isChecked && !transcriptIsEmpty) {
                                       toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.add(video.filename);
+                                      updatedSelectedVideos.add(video._id.toHexString());
                                       setSelectedVideos(updatedSelectedVideos);
 
                                       realm.write(() => {
@@ -1010,7 +1010,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     } else if (isChecked) {
                                       toggleVideoChecked(video._id.toString());
                                       updatedSelectedVideos.delete(
-                                        video.filename,
+                                        video._id.toHexString(),
                                       );
                                       setSelectedVideos(updatedSelectedVideos);
                                       realm.write(() => {
@@ -1234,12 +1234,14 @@ const ViewRecordings = ({selected, setSelected}) => {
                               );
                               if (!isChecked) {
                                 toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.add(video.filename);
+                                updatedSelectedVideos.add(video._id.toHexString());
                                 setSelectedVideos(updatedSelectedVideos);
                                 console.log('checked');
                               } else if (isChecked) {
                                 toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.delete(video.filename);
+                                updatedSelectedVideos.delete(
+                                  video._id.toHexString(),
+                                );
                                 setSelectedVideos(updatedSelectedVideos);
                                 console.log('unchecked');
                               }
