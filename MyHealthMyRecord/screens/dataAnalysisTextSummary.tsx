@@ -2,23 +2,53 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
 import { useRealm, useQuery } from '../models/VideoData';
 import RNFS from 'react-native-fs';
+import {useDropdownContext} from '../components/videoSetProvider';
+import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 
 const DataAnalysisTextSummary = () => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
-  const [editingID, setEditingID] = useState(null);
-  const [draftTranscript, setDraftTranscript] = useState('');
-
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+    useDropdownContext();
   const realm = useRealm();
   const videoData = useQuery('VideoData');
-  const videosByIsSelected = videoData.filtered('isSelected == true').snapshot();
+  const videosByIsSelected = videoData
+    .filtered('isSelected == true')
+    .snapshot();
+  const [videoDataVideos, setVideoDataVideos] = useState([]);
+
+  useEffect(() => {
+    const getVideoData = async () => {
+      const videoDataVideos = await Promise.all(
+        videoSetVideoIDs.map(async videoID => {
+          const objectId = new Realm.BSON.ObjectId(videoID);
+          const video = realm.objectForPrimaryKey('VideoData', objectId);
+          return video;
+        }),
+      );
+      setVideoDataVideos(videoDataVideos);
+    };
+    if (isFocused) {
+      getVideoData();
+    }
+  }, [isFocused, videoSetVideoIDs, realm]);
 
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videosByIsSelected.map(async video => {
-          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
-          const fileContent = await RNFS.readFile(filePath, 'utf8');
+        videoDataVideos.map(async video => {
+          const filePath = `${
+            RNFS.DocumentDirectoryPath
+          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+          const fileExists = await RNFS.exists(filePath);
 
+          let fileContent = '';
+          if (fileExists) {
+            fileContent = await RNFS.readFile(filePath, 'utf8');
+          } else {
+            fileContent = 'Transcript not available';
+          }
           // Process keywords and locations
           const checkedTitles = video.keywords
             .map(key => JSON.parse(key))
@@ -44,8 +74,10 @@ const DataAnalysisTextSummary = () => {
       setVideos(videoTranscripts);
     };
 
-    loadTranscripts();
-  }, []);
+    if (videoDataVideos.length > 0) {
+      loadTranscripts();
+    }
+  }, [videoDataVideos]);
 
   const handleEdit = (video) => {
     setEditingID(video._id);
@@ -76,27 +108,16 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
-      {videos.map(video => (
-        <View key={video._id} style={styles.container}>
-          <View style={{ padding: 5 }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 32, color: 'black' }}>
-              {video.title}
-            </Text>
-            {editingID === video._id ? (
-              <>
-                <TextInput
-                  style={{ height: 100, borderColor: 'gray', borderWidth: 1, marginBottom: 10 }}
-                  onChangeText={setDraftTranscript}
-                  value={draftTranscript}
-                  multiline
-                />
-                <Button title="Save" onPress={handleSave} />
-                <Button title="Cancel" onPress={handleCancel} />
-              </>
-            ) : (
-              <>
-                <Text style={{ fontSize: 20, color: 'black' }}>
-                  <Text style={{ fontWeight: 'bold' }}>Video Transcript: </Text>
+      {videos.length > 0
+        ? videos.map(video => (
+            <View key={video._id} style={styles.container}>
+              <View style={{padding: 5}}>
+                <Text
+                  style={{fontWeight: 'bold', fontSize: 32, color: 'black'}}>
+                  {video.title}
+                </Text>
+                <Text style={{fontSize: 20, color: 'black'}}>
+                  <Text style={{fontWeight: 'bold'}}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
                 <Button title="Edit" onPress={() => handleEdit(video)} />

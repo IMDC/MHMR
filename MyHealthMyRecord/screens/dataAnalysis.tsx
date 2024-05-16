@@ -12,10 +12,32 @@ import {Dropdown} from 'react-native-element-dropdown';
 //import { VideoSet } from '../models/VideoSet';
 import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
+import VideoSetDropdown from '../components/videoSetDropdown';
+import {color} from '@rneui/base';
+import {useDropdownContext} from '../components/videoSetProvider';
 
 const DataAnalysis = () => {
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+    useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
+  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [videoSetDropdown, setVideoSetDropdown] = useState([]);
+  const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
+  const [inputText, setInputText] = useState('');
+  const videoData = useQuery<VideoData>('VideoData');
+  const videoSets = useQuery<any>('VideoSet');
+  const videosByDate = videoData.sorted('datetimeRecorded', true);
+  const videosByIsSelected = videosByDate.filtered('isSelected == true');
+  const videosByIsConvertedAndSelected = videosByDate.filtered(
+    'isConverted == false AND isSelected == true',
+  );
+  const handleVideoSelectionChange = (selectedId: string) => {
+    const selectedSet = videoSets.find(
+      set => set._id.toString() === selectedId,
+    );
+    setSelectedVideoSet(selectedSet);
+  };
 
   /* ======================================================================= */
 
@@ -23,30 +45,31 @@ const DataAnalysis = () => {
 
   const realm = useRealm();
   //const video: any = useObject('VideoData', id);
-  const videoData: any = useQuery('VideoData');
-  const videosByDate = videoData.sorted('datetimeRecorded', true);
 
   //console.log(videosByDate);
   console.log('**********************************************************');
 
-  const [test, setTest] = useState(null);
-
-  const [videoSetIDs, setVideoSetIDs] = useState<any>([]);
-  const [videoSetDropdown, setVideoSetDropdown] = useState<any>([]);
-
-  const [newVideoSetName, setNewVideoSetName] = useState<any | null>(null);
-
   useEffect(() => {
-    formatVideoSetDropdown();
-    //console.log("dropdown", videoSetDropdown);
-    setVideoSetIDs(getSelectedVideoIDS);
-  }, []);
+    if (selectedVideoSet && selectedVideoSet.videoIDs) {
+      const videoIDSet = new Set(selectedVideoSet.videoIDs);
+      const selectedSetVideos = videoData.filter(video => {
+        if (!video._id) {
+          console.error('Video _id is undefined:', video);
+          return false;
+        }
+        return videoIDSet.has(video._id.toString());
+      });
+      setVideos(selectedSetVideos);
+    } else {
+      setVideos(videosByIsSelected);
+    }
+    console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
+  }, [selectedVideoSet, videoSetVideoIDs]);
 
   // get videos selected
   const videosSelected = videoData.filtered('isSelected == true');
   //console.log(videosSelected);
 
-  const videoSets: any = useQuery('VideoSet');
   const videosSetsByDate = videoSets.sorted('datetime', false);
   //console.log("sets", videoSets);
 
@@ -506,9 +529,6 @@ const DataAnalysis = () => {
   //TODO: not dynamic, need to make sure when new videoset is created, this drop down reflects that
   //TODO: similar to code in dashboard.tsx, when dropdown option selected, it changes isSelected field for videos in DB
 
-  const [videoSetValue, setVideoSetValue] = useState(0);
-  let testVideoSetOptions = [];
-
   function formatVideoSetDropdown() {
     let dropdownOptions = [];
     for (let i = 0; i < videosSetsByDate.length; i++) {
@@ -524,193 +544,134 @@ const DataAnalysis = () => {
 
   /* ======================================================================= */
   return (
-    <View>
-      {/*       <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-        <Dialog.Title title="Add a new keyword:" />
-        <Input
-          inputStyle={{ fontSize: 35 }}
-          placeholder="Enter keyword here..."
-          onChangeText={value => setNewKeyword(value)}
+    <View style={{flexDirection: 'column', flex: 1}}>
+      <View
+        style={{
+          height: '30%',
+          width: '100%',
+        }}>
+        <VideoSetDropdown
+          videoSetDropdown={videoSetDropdown}
+          videoSets={realm.objects('VideoSet')}
+          saveVideoSetBtn={false}
+          clearVideoSetBtn={false}
+          deleteAllVideoSetsBtn={false}
+          manageSetBtn={false}
+          onVideoSetChange={handleVideoSelectionChange}
         />
-        <Dialog.Actions>
-          <Dialog.Button
-            title="CONFIRM"
-            onPress={() => {
-              addKeyword();
-              toggleDialog();
-              console.log(newKeyword);
-            }}
-          />
-          <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
-        </Dialog.Actions>
-      </Dialog> */}
-
-      <View style={{height: '25%', width: '100%'}}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Text style={{fontSize: 20}}>Select Video Set: </Text>
-          <Dropdown
-            data={videoSetDropdown}
-            maxHeight={400}
-            style={{
-              height: 50,
-              width: 600,
-              paddingHorizontal: 20,
-              backgroundColor: '#DBDBDB',
-              borderRadius: 22,
-            }}
-            placeholderStyle={{fontSize: 22}}
-            selectedTextStyle={{fontSize: 22}}
-            activeColor="#FFC745"
-            //backgroundColor='#FFC745'
-            labelField="label"
-            valueField="value"
-            value={videoSetValue}
-            onChange={item => {
-              setVideoSetValue(item.value);
-            }}
-          />
-          <Button
-            title="View Videos in Video Set"
-            onPress={() => navigation.navigate('Dashboard')}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 30,
-              marginVertical: 30,
-            }}
-          />
-          {/*           <Button
-            title="Save Video Set"
-            onPress={() => createVideoSet([], videoSetIDs)}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{
-              width: 300,
-              marginHorizontal: 30,
-              marginVertical: 30,
-            }}
-          /> */}
-        </View>
       </View>
 
-      <View style={{height: '70%', width: '100%'}}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Button
-            onPress={() =>
-              navigation.navigate('Bar Graph', {
-                data: barData,
-                freqMaps: routeFreqMaps,
-              })
-            }
-            titleStyle={{fontSize: 40}}
-            containerStyle={{
-              width: 400,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-            iconRight={true}
-            icon={{
-              name: 'chart-bar',
-              type: 'font-awesome-5',
-              size: 40,
-              color: 'white',
-            }}
-            color={Styles.MHMRBlue}
-            radius={50}>
-            Bar Graph
-          </Button>
-          <Button
-            onPress={() => navigation.navigate('Line Graph')}
-            titleStyle={{fontSize: 40}}
-            containerStyle={{
-              width: 400,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-            iconRight={true}
-            icon={{
-              name: 'chart-line',
-              type: 'font-awesome-5',
-              size: 40,
-              color: 'white',
-            }}
-            color={Styles.MHMRBlue}
-            radius={50}>
-            Line Graph
-          </Button>
-          <Button
-            // disabled={true}
-            onPress={() => navigation.navigate('Word Cloud', {data: barData})}
-            titleStyle={{fontSize: 40}}
-            containerStyle={{
-              width: 400,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-            iconRight={true}
-            icon={{
-              name: 'cloud',
-              type: 'font-awesome',
-              size: 40,
-              color: 'white',
-            }}
-            color={Styles.MHMRBlue}
-            radius={50}>
-            Word Cloud
-          </Button>
-          <Button
-            onPress={() => navigation.navigate('Text Summary')}
-            titleStyle={{fontSize: 40}}
-            containerStyle={{
-              width: 400,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-            iconRight={true}
-            icon={{
-              name: 'file-alt',
-              type: 'font-awesome-5',
-              size: 40,
-              color: 'white',
-            }}
-            color={Styles.MHMRBlue}
-            radius={50}>
-            Text Summary
-          </Button>
-          <Button
-            disabled={true}
-            onPress={() => navigation.navigate('Text Graph')}
-            titleStyle={{fontSize: 40}}
-            containerStyle={{
-              width: 400,
-              marginHorizontal: 30,
-              marginVertical: 10,
-            }}
-            iconRight={true}
-            icon={{
-              name: 'project-diagram',
-              type: 'font-awesome-5',
-              size: 40,
-              color: 'white',
-            }}
-            color={Styles.MHMRBlue}
-            radius={50}>
-            Text Graph
-          </Button>
-        </View>
+      <View
+        style={{
+          height: '50%',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <Button
+          onPress={() =>
+            navigation.navigate('Bar Graph', {
+              data: barData,
+              freqMaps: routeFreqMaps,
+            })
+          }
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: 400,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'chart-bar',
+            type: 'font-awesome-5',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Bar Graph
+        </Button>
+        <Button
+          onPress={() => navigation.navigate('Line Graph')}
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: 400,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'chart-line',
+            type: 'font-awesome-5',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Line Graph
+        </Button>
+        <Button
+          // disabled={true}
+          onPress={() => navigation.navigate('Word Cloud', {data: barData})}
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: 400,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'cloud',
+            type: 'font-awesome',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Word Cloud
+        </Button>
+        <Button
+          onPress={() =>
+            navigation.navigate('Text Summary', {videoSetVideoIDs})
+          }
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: 400,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'file-alt',
+            type: 'font-awesome-5',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Text Summary
+        </Button>
+        <Button
+          disabled={true}
+          onPress={() => navigation.navigate('Text Graph')}
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: 400,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'project-diagram',
+            type: 'font-awesome-5',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Text Graph
+        </Button>
       </View>
     </View>
   );
