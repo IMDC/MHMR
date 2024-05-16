@@ -7,6 +7,7 @@ import * as Styles from '../assets/util/styles';
 import {Button} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const VideoSetDropdown = ({
   videoSetDropdown,
@@ -17,7 +18,7 @@ const VideoSetDropdown = ({
   manageSetBtn,
   onVideoSetChange,
 }) => {
-  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
+  const {handleChange, handleNewSet, videoSetValue, videoSetVideoIDs, setVideoSetValue} = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -48,7 +49,20 @@ const VideoSetDropdown = ({
         videoIDs: videoIDs,
       });
     });
-    refreshDropdown();
+
+    // Refresh dropdown and update video set value
+    const updatedVideoSets = realm.objects('VideoSet');
+    const updatedDropdown = updatedVideoSets.map(set => ({
+      label: set.name,
+      value: set._id.toString(),
+      id: set._id,
+    }));
+    setLocalDropdown(updatedDropdown);
+
+    // Set the value to the newly created set
+    const newVideoSetValue = updatedDropdown[updatedDropdown.length - 1].value;
+    setVideoSetValue(newVideoSetValue);
+    onVideoSetChange(newVideoSetValue); // Notify parent component of the change
   };
 
   const clearVideoSet = () => {
@@ -130,7 +144,7 @@ const VideoSetDropdown = ({
                 title="Save Video Set"
                 onPress={() => {
                   createVideoSet([], getSelectedVideoIDs());
-                  setVideoSetValue(videoSetDropdown.length.toString());
+                  handleNewSet(getSelectedVideoIDs());
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}

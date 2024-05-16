@@ -19,7 +19,18 @@ export const VideoSetProvider = ({children}) => {
     console.log('*'.repeat(40));
   };
 
-  const contextValues = {handleChange, videoSetVideoIDs, videoSetValue, setVideoSetValue};
+  const handleNewSet = (videoIDs) => {
+    setVideoSetVideoIDs(videoIDs);
+  };
+
+  const contextValues = {
+    handleNewSet,
+    handleChange,
+    videoSetVideoIDs,
+    setVideoSetVideoIDs,
+    videoSetValue,
+    setVideoSetValue,
+  };
 
   return (
     <VideoSetContext.Provider value={contextValues}>
