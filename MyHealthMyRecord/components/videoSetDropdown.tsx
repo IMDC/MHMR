@@ -7,7 +7,7 @@ import * as Styles from '../assets/util/styles';
 import {Button} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const VideoSetDropdown = ({
   videoSetDropdown,
@@ -18,7 +18,14 @@ const VideoSetDropdown = ({
   manageSetBtn,
   onVideoSetChange,
 }) => {
-  const {handleChange, handleNewSet, videoSetValue, videoSetVideoIDs, setVideoSetValue} = useDropdownContext();
+  const {
+    handleChange,
+    handleNewSet,
+    videoSetValue,
+    videoSetVideoIDs,
+    setVideoSetVideoIDs,
+    setVideoSetValue,
+  } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -66,6 +73,7 @@ const VideoSetDropdown = ({
   };
 
   const clearVideoSet = () => {
+    setVideoSetVideoIDs([]);
     setVideoSetValue(null);
     onVideoSetChange(null); // Notify parent component of the change
     refreshDropdown();
