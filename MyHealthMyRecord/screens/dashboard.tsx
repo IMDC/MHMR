@@ -1,4 +1,4 @@
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import * as React from 'react';
 import {useState, useEffect} from 'react';
 import {
@@ -20,6 +20,7 @@ import * as Styles from '../assets/util/styles';
 function Dashboard() {
   const navigation = useNavigation();
   const route = useRoute();
+  const isFocused = useIsFocused();
   const selectedVideos = route.params?.selectedVideos;
   const realm = useRealm();
   const [videos, setVideos] = useState<VideoData[]>([]);
@@ -46,10 +47,8 @@ function Dashboard() {
         return videoIDSet.has(video._id.toString());
       });
       setVideos(selectedSetVideos);
-    } else {
-      // setVideos(videosByIsSelected);
     }
-  }, [selectedVideoSet]);
+  }, [selectedVideoSet, isFocused]);
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
