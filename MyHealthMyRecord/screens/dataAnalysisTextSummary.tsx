@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
 import { useRealm, useQuery } from '../models/VideoData';
 import RNFS from 'react-native-fs';
+import * as Styles from '../assets/util/styles';
 
 const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
@@ -90,8 +91,14 @@ const DataAnalysisTextSummary = () => {
                   value={draftTranscript}
                   multiline
                 />
-                <Button title="Save" onPress={handleSave} />
-                <Button title="Cancel" onPress={handleCancel} />
+                <View style={styles.buttonContainer}>
+                  <View style={styles.buttonWrapper}>
+                    <Button title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
+                  </View>
+                  <View style={styles.buttonWrapper}>
+                    <Button title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
+                  </View>
+                </View>
               </>
             ) : (
               <>
@@ -99,7 +106,7 @@ const DataAnalysisTextSummary = () => {
                   <Text style={{ fontWeight: 'bold' }}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Button title="Edit" onPress={() => handleEdit(video)} />
+                <Button title="Edit" onPress={() => handleEdit(video)} color={Styles.MHMRBlue} />
               </>
             )}
             <Text style={{ fontSize: 20, color: 'black' }}>
@@ -123,6 +130,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'black',
     borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  buttonWrapper: {
+    flex: 1,
+    marginHorizontal: 5,
   },
 });
 
