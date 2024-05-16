@@ -183,6 +183,7 @@ function Dashboard() {
       }
     }
   }
+
   return (
     <View style={{height: '100%'}}>
       <View
