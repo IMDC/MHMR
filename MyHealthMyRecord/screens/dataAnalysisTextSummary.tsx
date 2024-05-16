@@ -79,14 +79,12 @@ const DataAnalysisTextSummary = () => {
     <ScrollView>
       {videos.map(video => (
         <View key={video._id} style={styles.container}>
-          <View style={{ padding: 5 }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 32, color: 'black' }}>
-              {video.title}
-            </Text>
+          <View style={{ padding: 10 }}>
+            <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
                 <TextInput
-                  style={{ height: 100, borderColor: 'gray', borderWidth: 1, marginBottom: 10 }}
+                  style={styles.textInput}
                   onChangeText={setDraftTranscript}
                   value={draftTranscript}
                   multiline
@@ -102,15 +100,15 @@ const DataAnalysisTextSummary = () => {
               </>
             ) : (
               <>
-                <Text style={{ fontSize: 20, color: 'black' }}>
-                  <Text style={{ fontWeight: 'bold' }}>Video Transcript: </Text>
+                <Text style={styles.transcript}>
+                  <Text style={styles.boldText}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
                 <Button title="Edit" onPress={() => handleEdit(video)} color={Styles.MHMRBlue} />
               </>
             )}
-            <Text style={{ fontSize: 20, color: 'black' }}>
-              <Text style={{ fontWeight: 'bold' }}>Output: </Text>
+            <Text style={styles.output}>
+              <Text style={styles.boldText}>Output: </Text>
               {video.transcriptFileContent}
             </Text>
           </View>
@@ -122,14 +120,26 @@ const DataAnalysisTextSummary = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     width: '100%',
-    flexWrap: 'wrap',
-    padding: 8,
+    padding: 10,
     borderBottomColor: 'black',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'black',
     borderTopWidth: StyleSheet.hairlineWidth,
+    marginBottom: 10,
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 32,
+    color: 'black',
+    marginBottom: 10,
+  },
+  textInput: {
+    height: 100,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -139,6 +149,19 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  transcript: {
+    fontSize: 20,
+    color: 'black',
+    marginBottom: 10,
+  },
+  output: {
+    fontSize: 20,
+    color: 'black',
+    marginTop: 10,
+  },
+  boldText: {
+    fontWeight: 'bold',
   },
 });
 
