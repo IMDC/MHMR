@@ -34,8 +34,10 @@ function Dashboard() {
     'isConverted == false AND isSelected == true',
   );
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+  var selectedSetVideos: React.SetStateAction<VideoData[]> = [];
 
-  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+    useDropdownContext();
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
@@ -43,24 +45,39 @@ function Dashboard() {
       const videoIDSet = new Set(
         selectedVideos.map(video => video._id.toString()),
       );
-      const selectedSetVideos = videoData.filter(video =>
+      selectedSetVideos = videoData.filter(video =>
         videoIDSet.has(video._id.toString()),
       );
-      setVideos(selectedSetVideos);
-    } else if (selectedVideoSet && selectedVideoSet.videoIDs) {
-      const videoIDSet = new Set(selectedVideoSet.videoIDs);
-      const selectedSetVideos = videoData.filter(video => {
+      // setVideos(selectedSetVideos);
+    } else if (selectedVideoSet && videoSetVideoIDs) {
+      const videoIDSet = new Set(videoSetVideoIDs);
+      selectedSetVideos = videoData.filter(video => {
         if (!video._id) {
           console.error('Video _id is undefined:', video);
           return false;
         }
         return videoIDSet.has(video._id.toString());
       });
-      setVideos(selectedSetVideos);
+      // setVideos(selectedSetVideos);
     } else {
-      setVideos([]); // Clear videos if no video set is selected
+      selectedSetVideos = [];
+      // setVideos([]);
+       // Clear videos if no video set is selected
     }
-  }, [route.params?.selectedVideos, selectedVideoSet, isFocused, videoData]);
+    if (isFocused) {
+      setVideos(selectedSetVideos);
+    }
+    console.log('-'.repeat(40));
+    console.log('videoSetVideoIDs in Dashboard.tsx:', videoSetVideoIDs);
+    console.log('-'.repeat(40));
+  }, [
+    route.params?.selectedVideos,
+    selectedVideoSet,
+    isFocused,
+    videoData,
+    videoSetVideoIDs,
+    isFocused,
+  ]);
 
   const handleVideoSelectionChange = (selectedId: string) => {
     if (!selectedId) {
