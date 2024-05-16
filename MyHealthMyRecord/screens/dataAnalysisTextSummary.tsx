@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
-import {useRealm, useQuery} from '../models/VideoData';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
+import { useRealm, useQuery } from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
@@ -49,7 +49,6 @@ const DataAnalysisTextSummary = () => {
           } else {
             fileContent = 'Transcript not available';
           }
-
           // Process keywords and locations
           const checkedTitles = video.keywords
             .map(key => JSON.parse(key))
@@ -80,6 +79,33 @@ const DataAnalysisTextSummary = () => {
     }
   }, [videoDataVideos]);
 
+  const handleEdit = (video) => {
+    setEditingID(video._id);
+    setDraftTranscript(video.transcript[0]);
+  };
+
+  const handleSave = () => {
+    const updatedVideos = videos.map(video => {
+      if (video._id === editingID) {
+        return { ...video, transcript: [draftTranscript] };
+      }
+      return video;
+    });
+
+    realm.write(() => {
+      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
+      videoToUpdate.transcript = [draftTranscript];
+    });
+
+    setVideos(updatedVideos);
+    setEditingID(null);
+  };
+
+  const handleCancel = () => {
+    setEditingID(null);
+    setDraftTranscript('');
+  };
+
   return (
     <ScrollView>
       {videos.length > 0
@@ -94,14 +120,16 @@ const DataAnalysisTextSummary = () => {
                   <Text style={{fontWeight: 'bold'}}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Text style={{fontSize: 20, color: 'black'}}>
-                  <Text style={{fontWeight: 'bold'}}>Output: </Text>
-                  {video.transcriptFileContent}
-                </Text>
-              </View>
-            </View>
-          ))
-        : null}
+                <Button title="Edit" onPress={() => handleEdit(video)} />
+              </>
+            )}
+            <Text style={{ fontSize: 20, color: 'black' }}>
+              <Text style={{ fontWeight: 'bold' }}>Output: </Text>
+              {video.transcriptFileContent}
+            </Text>
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
 };
