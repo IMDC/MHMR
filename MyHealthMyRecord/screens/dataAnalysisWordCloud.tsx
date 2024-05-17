@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
-import { Text, View } from 'react-native';
+import { Text, View, Dimensions } from 'react-native';
 import WordCloud from 'rn-wordcloud';
 
 const DataAnalysisWordCloud = () => {
@@ -31,9 +31,10 @@ const DataAnalysisWordCloud = () => {
   return (
     <View
       style={{
-        paddingTop: '30%',
+        flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
+        alignItems: 'center'
       }}>
       <WordCloud
         options={{
