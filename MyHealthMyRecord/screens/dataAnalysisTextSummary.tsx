@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-nat
 import { useRealm, useQuery } from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import * as Styles from '../assets/util/styles';
+import Sentiment from 'sentiment';
 
 const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
@@ -12,6 +13,7 @@ const DataAnalysisTextSummary = () => {
   const realm = useRealm();
   const videoData = useQuery('VideoData');
   const videosByIsSelected = videoData.filtered('isSelected == true').snapshot();
+  const sentiment = new Sentiment();
 
   useEffect(() => {
     const loadTranscripts = async () => {
@@ -33,11 +35,20 @@ const DataAnalysisTextSummary = () => {
             .map(obj => obj.title)
             .join(', ');
 
+          const result = sentiment.analyze(fileContent);
+          const sentimentScore = result.score;
+          let sentimentLabel = 'Neutral';
+          if (sentimentScore > 0) sentimentLabel = 'Positive';
+          else if (sentimentScore < 0) sentimentLabel = 'Negative';
+
           return {
             ...video.toJSON(), // Convert Realm object to plain JS object
             transcriptFileContent: fileContent,
             checkedTitles,
             checkedLocations,
+            sentiment: sentimentLabel,
+            sentimentScore: result.score,
+            sentimentComparative: result.comparative
           };
         }),
       );
@@ -111,6 +122,10 @@ const DataAnalysisTextSummary = () => {
               <Text style={styles.boldText}>Output: </Text>
               {video.transcriptFileContent}
             </Text>
+            <Text style={styles.sentiment}>
+              <Text style={styles.boldText}>Sentiment: </Text>
+              {video.sentiment} (Score: {video.sentimentScore})
+            </Text>
           </View>
         </View>
       ))}
@@ -162,6 +177,11 @@ const styles = StyleSheet.create({
   },
   boldText: {
     fontWeight: 'bold',
+  },
+  sentiment: {
+    fontSize: 20,
+    color: 'green',
+    marginTop: 10,
   },
 });
 
