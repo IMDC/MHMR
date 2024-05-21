@@ -331,7 +331,9 @@ const EmotionTagging = () => {
 
   /* given a timestamp, jump to that time in the video */
   const seekToTimestamp = (timestamp: any) => {
-    videoPlayerRef.current.setNativeProps({ seek: timestamp - 0.5 });
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.seek(timestamp - 0.5);
+    }
     console.log('press', timestamp);
   };
 
