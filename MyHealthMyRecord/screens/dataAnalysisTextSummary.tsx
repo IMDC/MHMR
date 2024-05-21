@@ -64,21 +64,31 @@ const DataAnalysisTextSummary = () => {
     setDraftTranscript(video.transcript[0]);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const updatedTranscript = draftTranscript;
+    const result = sentiment.analyze(updatedTranscript);
+    let sentimentLabel = 'Neutral';
+    if (result.score > 0) sentimentLabel = 'Positive';
+    else if (result.score < 0) sentimentLabel = 'Negative';
+
+    realm.write(() => {
+      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
+      videoToUpdate.transcript = [updatedTranscript];
+      videoToUpdate.sentiment = sentimentLabel;
+      videoToUpdate.sentimentScore = result.score;
+      videoToUpdate.sentimentComparative = result.comparative;
+    });
+
     const updatedVideos = videos.map(video => {
       if (video._id === editingID) {
-        return { ...video, transcript: [draftTranscript] };
+        return { ...video, transcript: [updatedTranscript], sentiment: sentimentLabel, sentimentScore: result.score, sentimentComparative: result.comparative };
       }
       return video;
     });
 
-    realm.write(() => {
-      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
-      videoToUpdate.transcript = [draftTranscript];
-    });
-
     setVideos(updatedVideos);
     setEditingID(null);
+    setDraftTranscript('');
   };
 
   const handleCancel = () => {
