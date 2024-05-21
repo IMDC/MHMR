@@ -51,7 +51,7 @@ const EmotionTagging = () => {
         onStartShouldSetPanResponder: (e, gesture) => true,
         onPanResponderGrant: (e, gesture) => {
           //pause video here
-          videoPlayerRef.current.setNativeProps({ paused: true });
+          videoPlayerRef.current.pause();
           // delete below
           /* if (videoPlayerRef != null) {
             let t: number = videoPlayerRef.current.currentTime;
@@ -71,7 +71,7 @@ const EmotionTagging = () => {
         ),
         onPanResponderRelease: (e, gesture) => {
           //play video here
-          videoPlayerRef.current.setNativeProps({ paused: false });
+          videoPlayerRef.current.resume();
 
           //log emoji id
           const emojiID = this.state.id;
