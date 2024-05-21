@@ -53,7 +53,14 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
 
-  const {handleChange, videoSetValue, setVideoSetValue, sendToVideoSet, setSendToVideoSet} = useDropdownContext();
+  const {
+    handleChange,
+    videoSetValue,
+    setVideoSetValue,
+    sendToVideoSet,
+    setSendToVideoSet,
+    videoSetVideoIDs,
+  } = useDropdownContext();
 
   async function handleDeleteVideo(
     videoSelectedData: VideoData,
@@ -591,6 +598,11 @@ const ViewRecordings = ({selected, setSelected}) => {
           }}>
           <View style={{flexDirection: 'row', alignContent: 'space-around'}}>
             <Button
+              // if videoSetValue is null and videoSetVideoIDs is empty, disable the button, if videoSetVideoIDs is not empty, enable the button
+              disabled={
+                videoSetVideoIDs.length === 0 &&
+                (videoSetValue == null || videoSetValue.length === 0)
+              }
               style={{
                 backgroundColor: '#1C3EAA',
                 padding: 20,
@@ -614,7 +626,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               radius={50}
               buttonStyle={[styles.btnStyle, {}]}
               // onPress={handleSend}>
-              onPress={ async () => {
+              onPress={async () => {
                 // 2 means send to new video set
                 setSendToVideoSet(2);
                 handleSendToDashboard();
@@ -995,7 +1007,9 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     );
                                     if (!isChecked && !transcriptIsEmpty) {
                                       toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.add(video._id.toHexString());
+                                      updatedSelectedVideos.add(
+                                        video._id.toHexString(),
+                                      );
                                       setSelectedVideos(updatedSelectedVideos);
 
                                       realm.write(() => {
@@ -1247,7 +1261,9 @@ const ViewRecordings = ({selected, setSelected}) => {
                               );
                               if (!isChecked) {
                                 toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.add(video._id.toHexString());
+                                updatedSelectedVideos.add(
+                                  video._id.toHexString(),
+                                );
                                 setSelectedVideos(updatedSelectedVideos);
                                 console.log('checked');
                               } else if (isChecked) {

@@ -35,7 +35,6 @@ export const VideoSetProvider = ({children}) => {
     setVideoSetValue,
     sendToVideoSet,
     setSendToVideoSet,
-    
   };
 
   return (

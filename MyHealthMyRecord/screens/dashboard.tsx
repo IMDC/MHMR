@@ -34,6 +34,7 @@ function Dashboard() {
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',
   );
+
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   var selectedSetVideos = [];
 
@@ -46,6 +47,8 @@ function Dashboard() {
     sendToVideoSet,
     setSendToVideoSet,
   } = useDropdownContext();
+
+  // useEffect to update videoSetVideoIDs when the array is added to or removed from
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
@@ -107,32 +110,38 @@ function Dashboard() {
 
       selectedSetVideos.push(addToSelectedSetVideos[0]);
 
-      // remove duplicates
-      selectedSetVideos = selectedSetVideos.filter(
-        (video, index, self) =>
-          index ===
-          self.findIndex(
-            (t) => t._id.toHexString() === video._id.toHexString(),
-          ),
+      // remove additional videos that are already in the set from videoSetVideoIDs
+      setVideoSetVideoIDs(
+        videoSetVideoIDs.filter(
+          id => id !== addToSelectedSetVideos[0]._id.toHexString(),
+        ),
       );
 
       console.log('selected videos array:', selectedVideosArray);
       setVideos(selectedSetVideos);
 
-      // add these videos to the current video set
-      const currentSet = realm.objectForPrimaryKey(
-        'VideoSet',
-        selectedVideoSet._id,
-      );
-      console.log('+'.repeat(40));
-      console.log('currentSet:', currentSet);
-      console.log('currentSet.videoIDs:', currentSet.videoIDs);
-      console.log('selectedVideosArray:', selectedVideosArray);
-      console.log('+'.repeat(40));
-      realm.write(() => {
-        currentSet.videoIDs = [...currentSet.videoIDs, ...selectedVideosArray];
-        console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
-      });
+      if (selectedVideoSet === null || selectedVideoSet === undefined) {
+        // add selected videos to the videoSetVideoIDs array
+        setVideoSetVideoIDs([...videoSetVideoIDs, ...selectedVideosArray]);
+      } else {
+        // add these videos to the current video set if there is a selected video set
+        const currentSet = realm.objectForPrimaryKey(
+          'VideoSet',
+          selectedVideoSet._id,
+        );
+        console.log('+'.repeat(40));
+        console.log('currentSet:', currentSet);
+        console.log('currentSet.videoIDs:', currentSet.videoIDs);
+        console.log('selectedVideosArray:', selectedVideosArray);
+        console.log('+'.repeat(40));
+        realm.write(() => {
+          currentSet.videoIDs = [
+            ...currentSet.videoIDs,
+            ...selectedVideosArray,
+          ];
+          console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
+        });
+      }
     } else if (sendToVideoSet == 2) {
       // Send to new video set
       // Display the videos associated with the IDs in isSelected
@@ -151,6 +160,8 @@ function Dashboard() {
     }
 
     console.log('selectedSetVideos:', selectedSetVideos);
+    // remove duplicates from videoSetVideoIDs
+    setVideoSetVideoIDs(...Array.from(new Set(videoSetVideoIDs)));
     if (isFocused) {
       setVideos(selectedSetVideos);
     }
@@ -274,6 +285,7 @@ function Dashboard() {
 
   return (
     <View style={{height: '100%'}}>
+      {/*Badge checks the current videoSetVideoIds if they are isConverted and returns the amount*/}
       <View
         style={{
           position: 'absolute',
@@ -424,8 +436,19 @@ function Dashboard() {
                           title="Remove Video From Video Set"
                           radius={50}
                           onPress={() => {
-                            // removeFromIsSelectedAndIsConverted(video._id);
-                            console.log(video.isSelected);
+                            realm.write(() => {
+                              const currentSet = realm.objectForPrimaryKey(
+                                'VideoSet',
+                                selectedVideoSet._id,
+                              );
+                              currentSet.videoIDs = currentSet.videoIDs.filter(
+                                id => id !== video._id.toHexString(),
+                              );
+                              console.log(
+                                'currentSet.videoIDs:',
+                                currentSet.videoIDs,
+                              );
+                            });
                           }}
                         />
                       </View>
