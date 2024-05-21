@@ -16,6 +16,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {sendToChatGPT} from '../components/chatgpt_api';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import * as Styles from '../assets/util/styles';
+import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
 
 function Dashboard() {
@@ -36,46 +37,119 @@ function Dashboard() {
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   var selectedSetVideos = [];
 
-  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
-    useDropdownContext();
+  const {
+    handleChange,
+    videoSetValue,
+    videoSetVideoIDs,
+    setVideoSetVideoIDs,
+    setVideoSetValue,
+    sendToVideoSet,
+    setSendToVideoSet,
+  } = useDropdownContext();
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
     console.log('selectedVideos:', selectedVideos);
     console.log('selectedVideos.size:', selectedVideos.size);
+    console.log('sendToVideoSet number:', sendToVideoSet);
+    console.log('selectedVideoSet:', selectedVideoSet);
     //---------------------------------------------------------
-    if (selectedVideos.size > 0) {
+    // if (selectedVideos.size > 0) {
+    //   const selectedVideosArray = Array.from(selectedVideos);
+    //    selectedSetVideos = videoData.filter(video => {
+    //     return selectedVideosArray.some(selectedVideo =>
+    //       video._id.equals(selectedVideo._id),
+    //     );
+    //   });
+
+    //   setVideos(selectedSetVideos);
+    // }
+    //---------------------------------------------------------
+    // else
+    if (sendToVideoSet == 0 || sendToVideoSet == undefined) {
+      if (selectedVideoSet && videoSetVideoIDs) {
+        const videoIDSet = new Set(videoSetVideoIDs);
+        selectedSetVideos = videoData.filter(video => {
+          if (!video._id) {
+            console.error('Video _id is undefined:', video);
+            return false;
+          }
+          return videoIDSet.has(video._id.toString());
+        });
+
+        setVideos(selectedSetVideos);
+      } else {
+        setVideos([]); // Clear videos if no video set is selected
+      }
+    } else if (sendToVideoSet == 1) {
+      // Send to current video set
+
+      // Add the selected videos to the current video set using realm schema
+      // Map through videoData and match the ids in selectedVideos array to the videoData ids and add to the current video set schema
+      // then also add the selectedVideo ids to the videoSetVideoIDs array
       const selectedVideosArray = Array.from(selectedVideos);
-       selectedSetVideos = videoData.filter(video => {
+      setVideoSetVideoIDs(Array.from(selectedVideos));
+      selectedSetVideos = videoData.filter(video => {
+        const objectId = new ObjectId(video._id);
         return selectedVideosArray.some(selectedVideo =>
-          video._id.equals(selectedVideo._id),
+          objectId.equals(selectedVideo),
         );
       });
 
-      setVideos(selectedSetVideos);
-    }
-    //---------------------------------------------------------
-    else if (selectedVideoSet && videoSetVideoIDs) {
       const videoIDSet = new Set(videoSetVideoIDs);
-      selectedSetVideos = videoData.filter(video => {
+      const addToSelectedSetVideos = videoData.filter(video => {
         if (!video._id) {
           console.error('Video _id is undefined:', video);
           return false;
         }
-        if (selectedVideos.length > 0) {
-          videoIDSet.add(selectedVideos.map(video => video._id.toString()));
-          console.log('videoIDSet after length > 0:', videoIDSet);
-        }
         return videoIDSet.has(video._id.toString());
-
-        // }
       });
-      
+
+      selectedSetVideos.push(addToSelectedSetVideos[0]);
+
+      // remove duplicates
+      selectedSetVideos = selectedSetVideos.filter(
+        (video, index, self) =>
+          index ===
+          self.findIndex(
+            (t) => t._id.toHexString() === video._id.toHexString(),
+          ),
+      );
+
+      console.log('selected videos array:', selectedVideosArray);
       setVideos(selectedSetVideos);
-    } else {
-      setVideos([]);
-      // Clear videos if no video set is selected
+
+      // add these videos to the current video set
+      const currentSet = realm.objectForPrimaryKey(
+        'VideoSet',
+        selectedVideoSet._id,
+      );
+      console.log('+'.repeat(40));
+      console.log('currentSet:', currentSet);
+      console.log('currentSet.videoIDs:', currentSet.videoIDs);
+      console.log('selectedVideosArray:', selectedVideosArray);
+      console.log('+'.repeat(40));
+      realm.write(() => {
+        currentSet.videoIDs = [...currentSet.videoIDs, ...selectedVideosArray];
+        console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
+      });
+    } else if (sendToVideoSet == 2) {
+      // Send to new video set
+      // Display the videos associated with the IDs in isSelected
+
+      setVideoSetValue(null);
+      const selectedVideosArray = Array.from(selectedVideos);
+      setVideoSetVideoIDs(Array.from(selectedVideos));
+      selectedSetVideos = videoData.filter(video => {
+        const objectId = new ObjectId(video._id);
+        return selectedVideosArray.some(selectedVideo =>
+          objectId.equals(selectedVideo),
+        );
+      });
+      console.log('selected videos array:', selectedVideosArray);
+      setVideos(selectedSetVideos);
     }
+
     console.log('selectedSetVideos:', selectedSetVideos);
     if (isFocused) {
       setVideos(selectedSetVideos);
@@ -88,7 +162,8 @@ function Dashboard() {
     selectedVideoSet,
     isFocused,
     videoData,
-    videoSetVideoIDs,
+    // videoSetVideoIDs,
+    videoSetValue,
     isFocused,
   ]);
 

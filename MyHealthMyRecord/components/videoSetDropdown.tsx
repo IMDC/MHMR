@@ -30,6 +30,7 @@ const VideoSetDropdown = ({
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
+  // fix this
   const getSelectedVideoIDs = () => {
     const selectedVideos = realm
       .objects('VideoData')
@@ -44,7 +45,7 @@ const VideoSetDropdown = ({
       id: set._id,
     }));
     setLocalDropdown(formattedDropdown);
-  }, [videoSets]);
+  }, [videoSets] );
 
   const createVideoSet = (frequencyData, videoIDs) => {
     realm.write(() => {
@@ -148,11 +149,11 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {saveVideoSetBtn && (
               <Button
-                disabled={getSelectedVideoIDs().length === 0}
+                disabled={videoSetVideoIDs.length === 0}
                 title="Save Video Set"
                 onPress={() => {
-                  createVideoSet([], getSelectedVideoIDs());
-                  handleNewSet(getSelectedVideoIDs());
+                  createVideoSet([], videoSetVideoIDs);
+                  handleNewSet(videoSetVideoIDs);
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}

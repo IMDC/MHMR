@@ -46,11 +46,14 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
+
+  // 1 = send to current video set, 2 = send to new video set
+
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
 
-  const {handleChange, videoSetValue, setVideoSetValue} = useDropdownContext();
+  const {handleChange, videoSetValue, setVideoSetValue, sendToVideoSet, setSendToVideoSet} = useDropdownContext();
 
   async function handleDeleteVideo(
     videoSelectedData: VideoData,
@@ -456,12 +459,16 @@ const ViewRecordings = ({selected, setSelected}) => {
               title="NO"
               onPress={async () => {
                 console.log('NO clicked!');
-                navigation.navigate('Dashboard', {selectedVideos});
+                navigation.navigate('Dashboard', {
+                  selectedVideos,
+                });
                 Alert.alert(
                   'Your transcripts have been generated, and your videos have been added to the Video Set!',
                 );
                 toggleDialog2();
-                navigation.navigate('Dashboard', {selectedVideos});
+                navigation.navigate('Dashboard', {
+                  selectedVideos,
+                });
 
                 await handleSend();
                 Alert.alert(
@@ -475,7 +482,9 @@ const ViewRecordings = ({selected, setSelected}) => {
               onPress={async () => {
                 console.log('YES clicked!');
                 toggleDialog2();
-                navigation.navigate('Dashboard', {selectedVideos});
+                navigation.navigate('Dashboard', {
+                  selectedVideos,
+                });
 
                 await handleSend();
                 await handleYesAnalysis();
@@ -592,6 +601,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               buttonStyle={[styles.btnStyle, {}]}
               // onPress={handleSend}>
               onPress={() => {
+                setSendToVideoSet(1);
                 handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
@@ -604,7 +614,10 @@ const ViewRecordings = ({selected, setSelected}) => {
               radius={50}
               buttonStyle={[styles.btnStyle, {}]}
               // onPress={handleSend}>
-              onPress={() => {
+              onPress={ async () => {
+                // 2 means send to new video set
+                setSendToVideoSet(2);
+                handleSendToDashboard();
                 // handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
