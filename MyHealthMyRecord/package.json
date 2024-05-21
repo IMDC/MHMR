@@ -53,6 +53,7 @@
     "@types/react-native-video": "^5.0.14",
     "@types/react-native-video-player": "^0.10.3",
     "@types/react-test-renderer": "^18.0.0",
+    "@types/sentiment": "^5.0.4",
     "babel-jest": "^29.2.1",
     "buffer": "^6.0.3",
     "eslint": "^8.19.0",
