@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Button, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+import {
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import {useRealm, useQuery} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
@@ -8,6 +15,7 @@ import * as Styles from '../assets/util/styles';
 import Sentiment from 'sentiment';
 
 const DataAnalysisTextSummary = () => {
+   const sentiment = new Sentiment();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
@@ -16,13 +24,11 @@ const DataAnalysisTextSummary = () => {
   const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
     useDropdownContext();
   const realm = useRealm();
-  const videoData = useQuery('VideoData');
-  const videosByIsSelected = videoData
-    .filtered('isSelected == true')
-    .snapshot();
+
   const [videoDataVideos, setVideoDataVideos] = useState([]);
 
   useEffect(() => {
+    console.log('--------------videoSetVideoIDs', videoSetVideoIDs);
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
         videoSetVideoIDs.map(async videoID => {
@@ -31,13 +37,13 @@ const DataAnalysisTextSummary = () => {
           return video;
         }),
       );
+      console.log('--------------videoDataVideos', videoDataVideos);
       setVideoDataVideos(videoDataVideos);
     };
     if (isFocused) {
       getVideoData();
     }
   }, [isFocused, videoSetVideoIDs, realm]);
-  const sentiment = new Sentiment();
 
   useEffect(() => {
     const loadTranscripts = async () => {
@@ -90,7 +96,7 @@ const DataAnalysisTextSummary = () => {
     };
 
     loadTranscripts();
-  }, []);
+  }, [sentiment, videoDataVideos]);
 
   const handleEdit = video => {
     setEditingID(video._id);

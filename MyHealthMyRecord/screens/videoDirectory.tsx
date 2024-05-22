@@ -600,7 +600,7 @@ const ViewRecordings = ({selected, setSelected}) => {
             <Button
               // if videoSetValue is null and videoSetVideoIDs is empty, disable the button, if videoSetVideoIDs is not empty, enable the button
               disabled={
-                videoSetVideoIDs.length === 0 &&
+                videoSetVideoIDs === undefined || videoSetVideoIDs.length === 0 &&
                 (videoSetValue == null || videoSetValue.length === 0)
               }
               style={{
