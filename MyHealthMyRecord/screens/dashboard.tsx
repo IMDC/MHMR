@@ -56,6 +56,7 @@ function Dashboard() {
     console.log('selectedVideos.size:', selectedVideos.size);
     console.log('sendToVideoSet number:', sendToVideoSet);
     console.log('selectedVideoSet:', selectedVideoSet);
+    
     //---------------------------------------------------------
     // if (selectedVideos.size > 0) {
     //   const selectedVideosArray = Array.from(selectedVideos);
@@ -111,18 +112,18 @@ function Dashboard() {
       selectedSetVideos.push(addToSelectedSetVideos[0]);
 
       // remove additional videos that are already in the set from videoSetVideoIDs
-      setVideoSetVideoIDs(
-        videoSetVideoIDs.filter(
-          id => id !== addToSelectedSetVideos[0]._id.toHexString(),
-        ),
-      );
+      // setVideoSetVideoIDs(
+      //   videoSetVideoIDs.filter(
+      //     id => id !== addToSelectedSetVideos[0]._id.toHexString(),
+      //   ),
+      // );
 
       console.log('selected videos array:', selectedVideosArray);
-      setVideos(selectedSetVideos);
+      setVideos(Array.from(new Set(selectedSetVideos)));
 
       if (selectedVideoSet === null || selectedVideoSet === undefined) {
         // add selected videos to the videoSetVideoIDs array
-        setVideoSetVideoIDs([...videoSetVideoIDs, ...selectedVideosArray]);
+        setVideoSetVideoIDs(Array.from( new Set([...videoSetVideoIDs, ...selectedVideosArray])));
       } else {
         // add these videos to the current video set if there is a selected video set
         const currentSet = realm.objectForPrimaryKey(
@@ -135,10 +136,10 @@ function Dashboard() {
         console.log('selectedVideosArray:', selectedVideosArray);
         console.log('+'.repeat(40));
         realm.write(() => {
-          currentSet.videoIDs = [
+          currentSet.videoIDs = Array.from(new Set([
             ...currentSet.videoIDs,
             ...selectedVideosArray,
-          ];
+          ]));
           console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
         });
       }
@@ -336,7 +337,7 @@ function Dashboard() {
           </View>
         </View>
         {videos !== null
-          ? videos.map((video: VideoData) => {
+          ? videos.map((video) => {
               // const isTranscriptEmpty = video => {
               //   return (
               //     video.transcript === undefined || video.transcript === ''
