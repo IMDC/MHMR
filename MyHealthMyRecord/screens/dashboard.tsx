@@ -131,6 +131,7 @@ function Dashboard() {
       setVideoSetVideoIDs(Array.from(selectedVideos));
       selectedSetVideos = videoData.filter(video => {
         const objectId = new ObjectId(video._id);
+
         return selectedVideosArray.some(selectedVideo =>
           objectId.equals(selectedVideo),
         );
@@ -140,7 +141,8 @@ function Dashboard() {
     }
 
     console.log('selectedSetVideos:', selectedSetVideos);
-
+    // remove duplicates from videoSetVideoIDs
+    // setVideoSetVideoIDs(...Array.from(new Set(videoSetVideoIDs)));
     if (isFocused) {
       setVideos(selectedSetVideos);
     }
@@ -169,64 +171,63 @@ function Dashboard() {
     setSelectedVideoSet(selectedSet);
   };
 
+  // async function handleYesAnalysis() {
+  //   const selectedVideos = realm
+  //     .objects<VideoData>('VideoData')
+  //     .filtered('isConverted == false AND isSelected == true');
 
-  async function handleYesAnalysis() {
-    const selectedVideos: Realm.Results<VideoData> = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
+  //   for (const video of selectedVideos) {
+  //     const getTranscriptByFilename = (filename: string) => {
+  //       const video = videos.find(video => video.filename === filename);
+  //       return video ? video.transcript : '';
+  //     };
 
-    for (const video of selectedVideos) {
-      const getTranscriptByFilename = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video ? video.transcript : '';
-      };
+  //     const getCheckedKeywords = (filename: string) => {
+  //       const video = videos.find(video => video.filename === filename);
+  //       return video
+  //         ? video.keywords
+  //             .map(key => JSON.parse(key))
+  //             .filter(obj => obj.checked)
+  //             .map(obj => obj.title)
+  //         : [];
+  //     };
 
-      const getCheckedKeywords = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.keywords
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
+  //     const getCheckedLocations = (filename: string) => {
+  //       const video = videos.find(video => video.filename === filename);
+  //       return video
+  //         ? video.locations
+  //             .map(key => JSON.parse(key))
+  //             .filter(obj => obj.checked)
+  //             .map(obj => obj.title)
+  //         : [];
+  //     };
 
-      const getCheckedLocations = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.locations
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
+  //     const transcript = getTranscriptByFilename(video.filename);
+  //     const keywords = getCheckedKeywords(video.filename).join(', ');
+  //     const locations = getCheckedLocations(video.filename).join(', ');
 
-      const transcript = getTranscriptByFilename(video.filename);
-      const keywords = getCheckedKeywords(video.filename).join(', ');
-      const locations = getCheckedLocations(video.filename).join(', ');
-
-      try {
-        const outputText = await sendToChatGPT(
-          video.filename,
-          transcript,
-          keywords,
-          locations,
-          realm,
-          video._id.toHexString(),
-        );
-        setInputText(outputText);
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-    Alert.alert('Your transcripts have been generated and analyzed.');
-  }
+  //     try {
+  //       const outputText = await sendToChatGPT(
+  //         video.filename,
+  //         transcript,
+  //         keywords,
+  //         locations,
+  //         realm,
+  //         video._id.toHexString(),
+  //       );
+  //       setInputText(outputText);
+  //       console.log(
+  //         `Transcription successful for video ${video._id.toHexString()}`,
+  //       );
+  //     } catch (error) {
+  //       console.error(
+  //         `Failed to process video ${video._id.toHexString()}:`,
+  //         error,
+  //       );
+  //     }
+  //   }
+  //   Alert.alert('Your transcripts have been generated and analyzed.');
+  // }
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
