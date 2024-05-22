@@ -633,7 +633,7 @@ const DataAnalysis = () => {
         </Button>
         <Button
           onPress={() =>
-            navigation.navigate('Text Summary', {videoSetVideoIDs})
+            navigation.navigate('Text Summary')
           }
           titleStyle={{fontSize: 40}}
           containerStyle={{

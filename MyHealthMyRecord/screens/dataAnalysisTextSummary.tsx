@@ -28,7 +28,6 @@ const DataAnalysisTextSummary = () => {
   const [videoDataVideos, setVideoDataVideos] = useState([]);
 
   useEffect(() => {
-    console.log('--------------videoSetVideoIDs', videoSetVideoIDs);
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
         videoSetVideoIDs.map(async videoID => {
@@ -37,7 +36,6 @@ const DataAnalysisTextSummary = () => {
           return video;
         }),
       );
-      console.log('--------------videoDataVideos', videoDataVideos);
       setVideoDataVideos(videoDataVideos);
     };
     if (isFocused) {

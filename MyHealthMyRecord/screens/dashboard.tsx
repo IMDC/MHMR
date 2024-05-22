@@ -56,19 +56,6 @@ function Dashboard() {
     console.log('selectedVideos.size:', selectedVideos.size);
     console.log('sendToVideoSet number:', sendToVideoSet);
     console.log('selectedVideoSet:', selectedVideoSet);
-    //---------------------------------------------------------
-    // if (selectedVideos.size > 0) {
-    //   const selectedVideosArray = Array.from(selectedVideos);
-    //    selectedSetVideos = videoData.filter(video => {
-    //     return selectedVideosArray.some(selectedVideo =>
-    //       video._id.equals(selectedVideo._id),
-    //     );
-    //   });
-
-    //   setVideos(selectedSetVideos);
-    // }
-    //---------------------------------------------------------
-    // else
     if (sendToVideoSet == 0 || sendToVideoSet == undefined) {
       if (selectedVideoSet && videoSetVideoIDs) {
         const videoIDSet = new Set(videoSetVideoIDs);
