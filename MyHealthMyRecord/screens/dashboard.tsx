@@ -199,7 +199,7 @@ function Dashboard() {
   };
 
   async function handleYesAnalysis() {
-    const selectedVideos = realm
+    const selectedVideos: Realm.Results<VideoData> = realm
       .objects<VideoData>('VideoData')
       .filtered('isConverted == false AND isSelected == true');
 
@@ -294,6 +294,7 @@ function Dashboard() {
           right: 20,
           alignItems: 'flex-end',
           marginBottom: 10,
+          // elevation: 8,
           zIndex: 100,
         }}>
         <View style={{position: 'absolute', top: 5, right: 5, zIndex: 100}}>
@@ -482,6 +483,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     flexWrap: 'wrap',
+    // paddingLeft: 8,
     borderColor: 'black',
     borderWidth: StyleSheet.hairlineWidth,
   },
