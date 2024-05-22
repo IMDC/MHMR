@@ -45,7 +45,7 @@ const VideoSetDropdown = ({
       id: set._id,
     }));
     setLocalDropdown(formattedDropdown);
-  }, [videoSets] );
+  }, [videoSets]);
 
   const createVideoSet = (frequencyData, videoIDs) => {
     realm.write(() => {
@@ -183,7 +183,11 @@ const VideoSetDropdown = ({
             {manageSetBtn && (
               <Button
                 title="Manage Sets"
-                onPress={() => console.log('Manage sets')}
+                onPress={() =>
+                  navigation.navigate('Manage Video Set', {
+                    videoSet: videoSets[videoSetValue],
+                  })
+                }
                 color={Styles.MHMRBlue}
                 radius={50}
                 containerStyle={{

@@ -32,6 +32,7 @@ import DataAnalysisBarGraph from './screens/dataAnalysisBarGraph';
 import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
 import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
+import ManageVideoSet from './screens/manageVideoSet';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
 import {getAuth} from './components/stt_api';
@@ -103,6 +104,7 @@ function StackNav() {
       <Stack.Screen name="Text Comments" component={TextComments} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
       <Stack.Screen name="Painscale" component={Painscale} />
+      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
     </Stack.Navigator>
   );
 }
@@ -117,6 +119,22 @@ function DataAnalysisStack() {
       <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
       <Stack.Screen name="Text Summary" component={DataAnalysisTextSummary} />
       <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
+    </Stack.Navigator>
+  );
+}
+
+function DashboardStack() {
+  return (
+    <Stack.Navigator initialRouteName="Dashboard">
+      <Stack.Screen
+        name="Dashboard"
+        component={Dashboard}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
   );
 }
@@ -158,7 +176,7 @@ function App() {
 
               <Tab.Screen
                 name="Dashboard"
-                component={Dashboard}
+                component={DashboardStack}
                 options={{
                   tabBarLabel: 'Dashboard',
                   headerStyle: {backgroundColor: Styles.NavBarGrey},

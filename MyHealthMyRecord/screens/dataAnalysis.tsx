@@ -50,7 +50,7 @@ const DataAnalysis = () => {
   console.log('**********************************************************');
 
   useEffect(() => {
-    if (selectedVideoSet && selectedVideoSet.videoIDs) {
+    if (selectedVideoSet && selectedVideoSet.videoIDs && videoData) {
       const videoIDSet = new Set(selectedVideoSet.videoIDs);
       const selectedSetVideos = videoData.filter(video => {
         if (!video._id) {
@@ -633,7 +633,7 @@ const DataAnalysis = () => {
         </Button>
         <Button
           onPress={() =>
-            navigation.navigate('Text Summary', {videoSetVideoIDs})
+            navigation.navigate('Text Summary')
           }
           titleStyle={{fontSize: 40}}
           containerStyle={{
