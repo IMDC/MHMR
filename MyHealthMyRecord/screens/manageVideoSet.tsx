@@ -17,15 +17,8 @@ import * as Styles from '../assets/util/styles';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
-interface ManageVideoSetRouteParams {
-  videoSet: VideoSet;
-}
 
-interface ManageVideoSetProps {
-  route: RouteProp<{params: ManageVideoSetRouteParams}, 'params'>;
-}
-
-const ManageVideoSet: React.FC<ManageVideoSetProps> = ({route}) => {
+const ManageVideoSet = () => {
   const {videoSetVideoIDs, selectedVideoSet} = useDropdownContext();
   const isFocused = useIsFocused();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();

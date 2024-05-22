@@ -56,6 +56,19 @@ function Dashboard() {
     console.log('selectedVideos.size:', selectedVideos.size);
     console.log('sendToVideoSet number:', sendToVideoSet);
     console.log('selectedVideoSet:', selectedVideoSet);
+    //---------------------------------------------------------
+    // if (selectedVideos.size > 0) {
+    //   const selectedVideosArray = Array.from(selectedVideos);
+    //    selectedSetVideos = videoData.filter(video => {
+    //     return selectedVideosArray.some(selectedVideo =>
+    //       video._id.equals(selectedVideo._id),
+    //     );
+    //   });
+
+    //   setVideos(selectedSetVideos);
+    // }
+    //---------------------------------------------------------
+    // else
     if (sendToVideoSet == 0 || sendToVideoSet == undefined) {
       if (selectedVideoSet && videoSetVideoIDs) {
         const videoIDSet = new Set(videoSetVideoIDs);
@@ -96,6 +109,13 @@ function Dashboard() {
       });
 
       selectedSetVideos.push(addToSelectedSetVideos[0]);
+
+      // remove additional videos that are already in the set from videoSetVideoIDs
+      setVideoSetVideoIDs(
+        videoSetVideoIDs.filter(
+          id => id !== addToSelectedSetVideos[0]._id.toHexString(),
+        ),
+      );
 
       console.log('selected videos array:', selectedVideosArray);
       setVideos(selectedSetVideos);
@@ -169,6 +189,14 @@ function Dashboard() {
       set => set._id.toString() === selectedId,
     );
     setSelectedVideoSet(selectedSet);
+  };
+
+  const handleDeleteAllVideoSets = () => {
+    realm.write(() => {
+      const allVideoSets = realm.objects('VideoSet');
+      realm.delete(allVideoSets);
+      setVideoSetDropdown([]);
+    });
   };
 
   // async function handleYesAnalysis() {
@@ -267,7 +295,6 @@ function Dashboard() {
           right: 20,
           alignItems: 'flex-end',
           marginBottom: 10,
-          // elevation: 8,
           zIndex: 100,
         }}>
         <View style={{position: 'absolute', top: 5, right: 5, zIndex: 100}}>
@@ -310,23 +337,23 @@ function Dashboard() {
         </View>
         {videos !== null
           ? videos.map((video: VideoData) => {
-              const isTranscriptEmpty = video => {
-                return (
-                  video.transcript === undefined || video.transcript === ''
-                );
-              };
+              // const isTranscriptEmpty = video => {
+              //   return (
+              //     video.transcript === undefined || video.transcript === ''
+              //   );
+              // };
 
-              const checkedTitles = video.keywords
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
+              // const checkedTitles = video.keywords
+              //   .map(key => JSON.parse(key))
+              //   .filter(obj => obj.checked)
+              //   .map(obj => obj.title)
+              //   .join(', ');
 
-              const checkedLocations = video.locations
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
+              // const checkedLocations = video.locations
+              //   .map(key => JSON.parse(key))
+              //   .filter(obj => obj.checked)
+              //   .map(obj => obj.title)
+              //   .join(', ');
               return (
                 <View key={video._id.toString()}>
                   <View style={styles.container}>
@@ -404,7 +431,7 @@ function Dashboard() {
                         </View>
                       </View>
                       <View>
-                        {/* <Button
+                        <Button
                           buttonStyle={{height: 50, alignSelf: 'center'}}
                           color={Styles.MHMRBlue}
                           title="Remove Video From Video Set"
@@ -424,7 +451,7 @@ function Dashboard() {
                               );
                             });
                           }}
-                        /> */}
+                        />
                       </View>
                       <View style={styles.buttonContainer}>
                         <View style={styles.space} />
@@ -456,7 +483,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     flexWrap: 'wrap',
-    // paddingLeft: 8,
     borderColor: 'black',
     borderWidth: StyleSheet.hairlineWidth,
   },
