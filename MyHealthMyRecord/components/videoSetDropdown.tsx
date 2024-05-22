@@ -45,7 +45,7 @@ const VideoSetDropdown = ({
       id: set._id,
     }));
     setLocalDropdown(formattedDropdown);
-  }, [videoSets] );
+  }, [videoSets]);
 
   const createVideoSet = (frequencyData, videoIDs) => {
     realm.write(() => {
@@ -149,9 +149,9 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {saveVideoSetBtn && (
               <Button
-                disabled={
-                  videoSetVideoIDs == null || videoSetVideoIDs.length === 0
-                }
+                // disabled={
+                //   videoSetVideoIDs == null || videoSetVideoIDs.length === 0
+                // }
                 title="Save Video Set"
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);

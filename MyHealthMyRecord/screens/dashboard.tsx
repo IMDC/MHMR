@@ -110,13 +110,6 @@ function Dashboard() {
 
       selectedSetVideos.push(addToSelectedSetVideos[0]);
 
-      // remove additional videos that are already in the set from videoSetVideoIDs
-      setVideoSetVideoIDs(
-        videoSetVideoIDs.filter(
-          id => id !== addToSelectedSetVideos[0]._id.toHexString(),
-        ),
-      );
-
       console.log('selected videos array:', selectedVideosArray);
       setVideos(selectedSetVideos);
 
@@ -160,8 +153,7 @@ function Dashboard() {
     }
 
     console.log('selectedSetVideos:', selectedSetVideos);
-    // remove duplicates from videoSetVideoIDs
-    setVideoSetVideoIDs(...Array.from(new Set(videoSetVideoIDs)));
+
     if (isFocused) {
       setVideos(selectedSetVideos);
     }
@@ -190,13 +182,6 @@ function Dashboard() {
     setSelectedVideoSet(selectedSet);
   };
 
-  const handleDeleteAllVideoSets = () => {
-    realm.write(() => {
-      const allVideoSets = realm.objects('VideoSet');
-      realm.delete(allVideoSets);
-      setVideoSetDropdown([]);
-    });
-  };
 
   async function handleYesAnalysis() {
     const selectedVideos: Realm.Results<VideoData> = realm
@@ -431,7 +416,7 @@ function Dashboard() {
                         </View>
                       </View>
                       <View>
-                        <Button
+                        {/* <Button
                           buttonStyle={{height: 50, alignSelf: 'center'}}
                           color={Styles.MHMRBlue}
                           title="Remove Video From Video Set"
@@ -451,7 +436,7 @@ function Dashboard() {
                               );
                             });
                           }}
-                        />
+                        /> */}
                       </View>
                       <View style={styles.buttonContainer}>
                         <View style={styles.space} />
