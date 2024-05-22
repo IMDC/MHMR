@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
 import { useRealm, useQuery } from '../models/VideoData';
 import RNFS from 'react-native-fs';
+import * as Styles from '../assets/util/styles';
+import Sentiment from 'sentiment';
 
 const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
@@ -11,6 +13,7 @@ const DataAnalysisTextSummary = () => {
   const realm = useRealm();
   const videoData = useQuery('VideoData');
   const videosByIsSelected = videoData.filtered('isSelected == true').snapshot();
+  const sentiment = new Sentiment();
 
   useEffect(() => {
     const loadTranscripts = async () => {
@@ -32,11 +35,20 @@ const DataAnalysisTextSummary = () => {
             .map(obj => obj.title)
             .join(', ');
 
+          const result = sentiment.analyze(fileContent);
+          const sentimentScore = result.score;
+          let sentimentLabel = 'Neutral';
+          if (sentimentScore > 0) sentimentLabel = 'Positive';
+          else if (sentimentScore < 0) sentimentLabel = 'Negative';
+
           return {
             ...video.toJSON(), // Convert Realm object to plain JS object
             transcriptFileContent: fileContent,
             checkedTitles,
             checkedLocations,
+            sentiment: sentimentLabel,
+            sentimentScore: result.score,
+            sentimentComparative: result.comparative
           };
         }),
       );
@@ -52,21 +64,31 @@ const DataAnalysisTextSummary = () => {
     setDraftTranscript(video.transcript[0]);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const updatedTranscript = draftTranscript;
+    const result = sentiment.analyze(updatedTranscript);
+    let sentimentLabel = 'Neutral';
+    if (result.score > 0) sentimentLabel = 'Positive';
+    else if (result.score < 0) sentimentLabel = 'Negative';
+
+    realm.write(() => {
+      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
+      videoToUpdate.transcript = [updatedTranscript];
+      videoToUpdate.sentiment = sentimentLabel;
+      videoToUpdate.sentimentScore = result.score;
+      videoToUpdate.sentimentComparative = result.comparative;
+    });
+
     const updatedVideos = videos.map(video => {
       if (video._id === editingID) {
-        return { ...video, transcript: [draftTranscript] };
+        return { ...video, transcript: [updatedTranscript], sentiment: sentimentLabel, sentimentScore: result.score, sentimentComparative: result.comparative };
       }
       return video;
     });
 
-    realm.write(() => {
-      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
-      videoToUpdate.transcript = [draftTranscript];
-    });
-
     setVideos(updatedVideos);
     setEditingID(null);
+    setDraftTranscript('');
   };
 
   const handleCancel = () => {
@@ -78,33 +100,41 @@ const DataAnalysisTextSummary = () => {
     <ScrollView>
       {videos.map(video => (
         <View key={video._id} style={styles.container}>
-          <View style={{ padding: 5 }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 32, color: 'black' }}>
-              {video.title}
-            </Text>
+          <View style={{ padding: 10 }}>
+            <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
                 <TextInput
-                  style={{ height: 100, borderColor: 'gray', borderWidth: 1, marginBottom: 10 }}
+                  style={styles.textInput}
                   onChangeText={setDraftTranscript}
                   value={draftTranscript}
                   multiline
                 />
-                <Button title="Save" onPress={handleSave} />
-                <Button title="Cancel" onPress={handleCancel} />
+                <View style={styles.buttonContainer}>
+                  <View style={styles.buttonWrapper}>
+                    <Button title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
+                  </View>
+                  <View style={styles.buttonWrapper}>
+                    <Button title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
+                  </View>
+                </View>
               </>
             ) : (
               <>
-                <Text style={{ fontSize: 20, color: 'black' }}>
-                  <Text style={{ fontWeight: 'bold' }}>Video Transcript: </Text>
+                <Text style={styles.transcript}>
+                  <Text style={styles.boldText}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Button title="Edit" onPress={() => handleEdit(video)} />
+                <Button title="Edit" onPress={() => handleEdit(video)} color={Styles.MHMRBlue} />
               </>
             )}
-            <Text style={{ fontSize: 20, color: 'black' }}>
-              <Text style={{ fontWeight: 'bold' }}>Output: </Text>
+            <Text style={styles.output}>
+              <Text style={styles.boldText}>Output: </Text>
               {video.transcriptFileContent}
+            </Text>
+            <Text style={styles.sentiment}>
+              <Text style={styles.boldText}>Sentiment: </Text>
+              {video.sentiment} (Score: {video.sentimentScore})
             </Text>
           </View>
         </View>
@@ -115,14 +145,53 @@ const DataAnalysisTextSummary = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     width: '100%',
-    flexWrap: 'wrap',
-    padding: 8,
+    padding: 10,
     borderBottomColor: 'black',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'black',
     borderTopWidth: StyleSheet.hairlineWidth,
+    marginBottom: 10,
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 32,
+    color: 'black',
+    marginBottom: 10,
+  },
+  textInput: {
+    height: 100,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  buttonWrapper: {
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  transcript: {
+    fontSize: 20,
+    color: 'black',
+    marginBottom: 10,
+  },
+  output: {
+    fontSize: 20,
+    color: 'black',
+    marginTop: 10,
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  sentiment: {
+    fontSize: 20,
+    color: 'green',
+    marginTop: 10,
   },
 });
 

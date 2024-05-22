@@ -23,6 +23,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetTitle, setVideoSetTitle] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [lastRemovedVideo, setLastRemovedVideo] = useState<VideoData | null>(null);
 
   useEffect(() => {
     fetchVideos();
@@ -37,7 +38,6 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
     const videoArray = Array.from(videoSet);
     setVideos(videoArray);
   };
-
 
   const handleSaveVideoSetTitle = () => {
     if (selectedVideoSet) {
@@ -54,10 +54,21 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
   };
 
   const handleRemoveVideo = (video: VideoData) => {
+    setLastRemovedVideo(video);
     realm.write(() => {
       video.isSelected = false;
     });
     fetchVideos();
+  };
+
+  const handleUndoRemoveVideo = () => {
+    if (lastRemovedVideo) {
+      realm.write(() => {
+        lastRemovedVideo.isSelected = true;
+      });
+      setVideos([...videos, lastRemovedVideo]);
+      setLastRemovedVideo(null);
+    }
   };
 
   const handleDeleteVideoSet = () => {
@@ -120,6 +131,13 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({ route }) => {
           </View>
         ))}
       </ScrollView>
+      {lastRemovedVideo && (
+        <Button
+          title="Undo Remove"
+          onPress={handleUndoRemoveVideo}
+          buttonStyle={styles.deleteButton}
+        />
+      )}
       <Button
         title="Delete Video Set"
         onPress={handleDeleteVideoSet}
