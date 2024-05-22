@@ -46,6 +46,7 @@ const Tab: any = createBottomTabNavigator();
 function StackNav() {
   const [selected, setSelected] = useState(true);
   const [auth, setAuth] = useState('');
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   // useEffect(() => {
   //   console.log('View Recordings component mounted');
@@ -104,7 +105,18 @@ function StackNav() {
       <Stack.Screen name="Text Comments" component={TextComments} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
       <Stack.Screen name="Painscale" component={Painscale} />
-      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
+      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} options={{
+        headerLeft: () => (
+          
+          <Button
+            onPress={() => {
+              navigation.navigate('Dashboard');
+            }}
+    
+            title={"Back"}
+          />
+        ),
+      }}  />
       
     </Stack.Navigator>
   );
