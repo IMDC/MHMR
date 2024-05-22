@@ -1,26 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View, Button } from 'react-native';
-import { useRealm, useQuery } from '../models/VideoData';
+import React, {useEffect, useState} from 'react';
+import {Button, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+import {useRealm, useQuery} from '../models/VideoData';
 import RNFS from 'react-native-fs';
+import {useDropdownContext} from '../components/videoSetProvider';
+import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
 import Sentiment from 'sentiment';
 
 const DataAnalysisTextSummary = () => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+    useDropdownContext();
   const realm = useRealm();
   const videoData = useQuery('VideoData');
-  const videosByIsSelected = videoData.filtered('isSelected == true').snapshot();
+  const videosByIsSelected = videoData
+    .filtered('isSelected == true')
+    .snapshot();
+  const [videoDataVideos, setVideoDataVideos] = useState([]);
+
+  useEffect(() => {
+    const getVideoData = async () => {
+      const videoDataVideos = await Promise.all(
+        videoSetVideoIDs.map(async videoID => {
+          const objectId = new Realm.BSON.ObjectId(videoID);
+          const video = realm.objectForPrimaryKey('VideoData', objectId);
+          return video;
+        }),
+      );
+      setVideoDataVideos(videoDataVideos);
+    };
+    if (isFocused) {
+      getVideoData();
+    }
+  }, [isFocused, videoSetVideoIDs, realm]);
   const sentiment = new Sentiment();
 
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videosByIsSelected.map(async video => {
-          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
-          const fileContent = await RNFS.readFile(filePath, 'utf8');
+        videoDataVideos.map(async video => {
+          const filePath = `${
+            RNFS.DocumentDirectoryPath
+          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+          const fileExists = await RNFS.exists(filePath);
+
+          let fileContent = '';
+          if (fileExists) {
+            fileContent = await RNFS.readFile(filePath, 'utf8');
+          } else {
+            fileContent = 'Transcript not available';
+          }
 
           // Process keywords and locations
           const checkedTitles = video.keywords
@@ -48,7 +81,7 @@ const DataAnalysisTextSummary = () => {
             checkedLocations,
             sentiment: sentimentLabel,
             sentimentScore: result.score,
-            sentimentComparative: result.comparative
+            sentimentComparative: result.comparative,
           };
         }),
       );
@@ -59,7 +92,7 @@ const DataAnalysisTextSummary = () => {
     loadTranscripts();
   }, []);
 
-  const handleEdit = (video) => {
+  const handleEdit = video => {
     setEditingID(video._id);
     setDraftTranscript(video.transcript[0]);
   };
@@ -81,7 +114,13 @@ const DataAnalysisTextSummary = () => {
 
     const updatedVideos = videos.map(video => {
       if (video._id === editingID) {
-        return { ...video, transcript: [updatedTranscript], sentiment: sentimentLabel, sentimentScore: result.score, sentimentComparative: result.comparative };
+        return {
+          ...video,
+          transcript: [updatedTranscript],
+          sentiment: sentimentLabel,
+          sentimentScore: result.score,
+          sentimentComparative: result.comparative,
+        };
       }
       return video;
     });
@@ -100,7 +139,7 @@ const DataAnalysisTextSummary = () => {
     <ScrollView>
       {videos.map(video => (
         <View key={video._id} style={styles.container}>
-          <View style={{ padding: 10 }}>
+          <View style={{padding: 10}}>
             <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
@@ -112,10 +151,18 @@ const DataAnalysisTextSummary = () => {
                 />
                 <View style={styles.buttonContainer}>
                   <View style={styles.buttonWrapper}>
-                    <Button title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
+                    <Button
+                      title="Save"
+                      onPress={handleSave}
+                      color={Styles.MHMRBlue}
+                    />
                   </View>
                   <View style={styles.buttonWrapper}>
-                    <Button title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
+                    <Button
+                      title="Cancel"
+                      onPress={handleCancel}
+                      color={Styles.MHMRBlue}
+                    />
                   </View>
                 </View>
               </>
@@ -125,7 +172,11 @@ const DataAnalysisTextSummary = () => {
                   <Text style={styles.boldText}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Button title="Edit" onPress={() => handleEdit(video)} color={Styles.MHMRBlue} />
+                <Button
+                  title="Edit"
+                  onPress={() => handleEdit(video)}
+                  color={Styles.MHMRBlue}
+                />
               </>
             )}
             <Text style={styles.output}>

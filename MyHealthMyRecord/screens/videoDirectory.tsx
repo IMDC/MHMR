@@ -38,6 +38,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {useNetwork} from '../components/networkProvider';
 import {getAuth, getTranscript} from '../components/stt_api';
 import {sendToChatGPT} from '../components/chatgpt_api';
+import {useDropdownContext} from '../components/videoSetProvider';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const [selectedVideos, setSelectedVideos] = useState(new Set());
@@ -45,9 +46,21 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
+
+  // 1 = send to current video set, 2 = send to new video set
+
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
+
+  const {
+    handleChange,
+    videoSetValue,
+    setVideoSetValue,
+    sendToVideoSet,
+    setSendToVideoSet,
+    videoSetVideoIDs,
+  } = useDropdownContext();
 
   async function handleDeleteVideo(
     videoSelectedData: VideoData,
@@ -453,12 +466,16 @@ const ViewRecordings = ({selected, setSelected}) => {
               title="NO"
               onPress={async () => {
                 console.log('NO clicked!');
-                navigation.navigate('Dashboard', {selectedVideos});
+                navigation.navigate('Dashboard', {
+                  selectedVideos,
+                });
                 Alert.alert(
                   'Your transcripts have been generated, and your videos have been added to the Video Set!',
                 );
                 toggleDialog2();
-                navigation.navigate('Dashboard', {selectedVideos});
+                navigation.navigate('Dashboard', {
+                  selectedVideos,
+                });
 
                 await handleSend();
                 Alert.alert(
@@ -472,7 +489,9 @@ const ViewRecordings = ({selected, setSelected}) => {
               onPress={async () => {
                 console.log('YES clicked!');
                 toggleDialog2();
-                navigation.navigate('Dashboard', {selectedVideos});
+                navigation.navigate('Dashboard', {
+                  selectedVideos,
+                });
 
                 await handleSend();
                 await handleYesAnalysis();
@@ -577,18 +596,47 @@ const ViewRecordings = ({selected, setSelected}) => {
             // elevation: 8,
             zIndex: 100,
           }}>
-          <Button
-            style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
-            radius={50}
-            buttonStyle={[styles.btnStyle, {}]}
-            // onPress={handleSend}>
-            onPress={() => {
-              handleSendToDashboard();
-            }}>
-            <Text style={{color: 'white', fontSize: 25}}>
-              Send {selectedVideos.size} video(s) to Video Set
-            </Text>
-          </Button>
+          <View style={{flexDirection: 'row', alignContent: 'space-around'}}>
+            <Button
+              // if videoSetValue is null and videoSetVideoIDs is empty, disable the button, if videoSetVideoIDs is not empty, enable the button
+              disabled={
+                videoSetVideoIDs.length === 0 &&
+                (videoSetValue == null || videoSetValue.length === 0)
+              }
+              style={{
+                backgroundColor: '#1C3EAA',
+                padding: 20,
+                borderRadius: 5,
+                paddingHorizontal: 10,
+              }}
+              radius={50}
+              buttonStyle={[styles.btnStyle, {}]}
+              // onPress={handleSend}>
+              onPress={() => {
+                setSendToVideoSet(1);
+                handleSendToDashboard();
+              }}>
+              <Text style={{color: 'white', fontSize: 25}}>
+                Send {selectedVideos.size} video(s) to Video Set
+              </Text>
+            </Button>
+            <View style={styles.space}></View>
+            <Button
+              style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+              radius={50}
+              buttonStyle={[styles.btnStyle, {}]}
+              // onPress={handleSend}>
+              onPress={async () => {
+                // 2 means send to new video set
+                setSendToVideoSet(2);
+                handleSendToDashboard();
+                // handleSendToDashboard();
+              }}>
+              <Text style={{color: 'white', fontSize: 25}}>
+                Add to New Video Set
+              </Text>
+            </Button>
+          </View>
         </View>
       )}
       <ScrollView style={{marginTop: 5}} ref={scrollRef}>
@@ -959,7 +1007,9 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     );
                                     if (!isChecked && !transcriptIsEmpty) {
                                       toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.add(video.filename);
+                                      updatedSelectedVideos.add(
+                                        video._id.toHexString(),
+                                      );
                                       setSelectedVideos(updatedSelectedVideos);
 
                                       realm.write(() => {
@@ -987,7 +1037,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     } else if (isChecked) {
                                       toggleVideoChecked(video._id.toString());
                                       updatedSelectedVideos.delete(
-                                        video.filename,
+                                        video._id.toHexString(),
                                       );
                                       setSelectedVideos(updatedSelectedVideos);
                                       realm.write(() => {
@@ -1211,12 +1261,16 @@ const ViewRecordings = ({selected, setSelected}) => {
                               );
                               if (!isChecked) {
                                 toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.add(video.filename);
+                                updatedSelectedVideos.add(
+                                  video._id.toHexString(),
+                                );
                                 setSelectedVideos(updatedSelectedVideos);
                                 console.log('checked');
                               } else if (isChecked) {
                                 toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.delete(video.filename);
+                                updatedSelectedVideos.delete(
+                                  video._id.toHexString(),
+                                );
                                 setSelectedVideos(updatedSelectedVideos);
                                 console.log('unchecked');
                               }

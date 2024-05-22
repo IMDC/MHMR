@@ -32,11 +32,12 @@ import DataAnalysisBarGraph from './screens/dataAnalysisBarGraph';
 import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
 import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
-import ManageVideoSet from './screens/manageVideoSet';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
 import {getAuth} from './components/stt_api';
 import {NetworkProvider} from './components/networkProvider';
+import {VideoSetProvider} from './components/videoSetProvider';
+import Video from 'react-native-video';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
@@ -102,7 +103,6 @@ function StackNav() {
       <Stack.Screen name="Text Comments" component={TextComments} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
       <Stack.Screen name="Painscale" component={Painscale} />
-      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
     </Stack.Navigator>
   );
 }
@@ -121,111 +121,96 @@ function DataAnalysisStack() {
   );
 }
 
-function DashboardStack() {
-  return (
-    <Stack.Navigator initialRouteName="Dashboard">
-      <Stack.Screen
-        name="Dashboard"
-        component={Dashboard}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
-      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
-    </Stack.Navigator>
-  );
-}
-
-
 function App() {
   return (
     <RealmProvider>
       <NetworkProvider>
-        <NavigationContainer>
-          <Tab.Navigator
-            initialRouteName="MyHealthMyRecord"
-            screenOptions={{
-              tabBarShowLabel: false,
-              tabBarStyle: {
-                height: Styles.bottomNavBarHeight,
-                backgroundColor: Styles.NavBarGrey,
-              },
-            }}>
-            <Tab.Screen
-              name="Analysis"
-              component={DataAnalysisStack}
-              tabBarShowLabel={false}
-              options={{
-                headerShown: false,
-                tabBarLabel: 'Analysis',
-                headerStyle: {backgroundColor: Styles.NavBarGrey},
-                tabBarIcon: () => (
-                  <Icon
-                    name="bar-chart-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{width: Styles.bottomNavIconSize}}
-                  />
-                ),
-              }}
-            />
-            
-            <Tab.Screen
-              name="Dashboard"
-              component={DashboardStack}
-              options={{
-                tabBarLabel: 'Dashboard',
-                headerStyle: {backgroundColor: Styles.NavBarGrey},
-                tabBarIcon: () => (
-                  <Icon
-                    name="analytics-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{width: Styles.bottomNavIconSize}}
-                  />
-                ),
-              }}
-            />
-            <Tab.Screen
-              name="MyHealthMyRecord"
-              component={StackNav}
-              tabBarShowLabel={false}
-              options={{
-                headerShown: false,
-                tabBarLabel: 'MyHealthMyRecord',
-                tabBarIcon: () => (
-                  <Icon
-                    name="home-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{width: Styles.bottomNavIconSize}}
-                  />
-                ),
-              }}
-            />
-            <Tab.Screen
-              name="Help"
-              component={Help}
-              options={{
-                tabBarLabel: 'Help',
-                headerStyle: {backgroundColor: Styles.NavBarGrey},
-                tabBarIcon: () => (
-                  <Icon
-                    name="information-circle-outline"
-                    size={Styles.bottomNavIconSize}
-                    type="ionicon"
-                    color={Styles.MHMRBlue}
-                    style={{width: Styles.bottomNavIconSize}}
-                  />
-                ),
-              }}
-            />
-          </Tab.Navigator>
-        </NavigationContainer>
+        <VideoSetProvider>
+          <NavigationContainer>
+            <Tab.Navigator
+              initialRouteName="MyHealthMyRecord"
+              screenOptions={{
+                tabBarShowLabel: false,
+                tabBarStyle: {
+                  height: Styles.bottomNavBarHeight,
+                  backgroundColor: Styles.NavBarGrey,
+                },
+              }}>
+              <Tab.Screen
+                name="Analysis"
+                component={DataAnalysisStack}
+                tabBarShowLabel={false}
+                options={{
+                  headerShown: false,
+                  tabBarLabel: 'Analysis',
+                  headerStyle: {backgroundColor: Styles.NavBarGrey},
+                  tabBarIcon: () => (
+                    <Icon
+                      name="bar-chart-outline"
+                      size={Styles.bottomNavIconSize}
+                      type="ionicon"
+                      color={Styles.MHMRBlue}
+                      style={{width: Styles.bottomNavIconSize}}
+                    />
+                  ),
+                }}
+              />
+
+              <Tab.Screen
+                name="Dashboard"
+                component={Dashboard}
+                options={{
+                  tabBarLabel: 'Dashboard',
+                  headerStyle: {backgroundColor: Styles.NavBarGrey},
+                  tabBarIcon: () => (
+                    <Icon
+                      name="analytics-outline"
+                      size={Styles.bottomNavIconSize}
+                      type="ionicon"
+                      color={Styles.MHMRBlue}
+                      style={{width: Styles.bottomNavIconSize}}
+                    />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="MyHealthMyRecord"
+                component={StackNav}
+                tabBarShowLabel={false}
+                options={{
+                  headerShown: false,
+                  tabBarLabel: 'MyHealthMyRecord',
+                  tabBarIcon: () => (
+                    <Icon
+                      name="home-outline"
+                      size={Styles.bottomNavIconSize}
+                      type="ionicon"
+                      color={Styles.MHMRBlue}
+                      style={{width: Styles.bottomNavIconSize}}
+                    />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="Help"
+                component={Help}
+                options={{
+                  tabBarLabel: 'Help',
+                  headerStyle: {backgroundColor: Styles.NavBarGrey},
+                  tabBarIcon: () => (
+                    <Icon
+                      name="information-circle-outline"
+                      size={Styles.bottomNavIconSize}
+                      type="ionicon"
+                      color={Styles.MHMRBlue}
+                      style={{width: Styles.bottomNavIconSize}}
+                    />
+                  ),
+                }}
+              />
+            </Tab.Navigator>
+          </NavigationContainer>
+        </VideoSetProvider>
       </NetworkProvider>
     </RealmProvider>
   );
