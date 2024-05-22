@@ -149,7 +149,9 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {saveVideoSetBtn && (
               <Button
-                disabled={ videoSetVideoIDs == null || videoSetVideoIDs.length === 0}
+                disabled={
+                  videoSetVideoIDs == null || videoSetVideoIDs.length === 0
+                }
                 title="Save Video Set"
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
@@ -183,7 +185,11 @@ const VideoSetDropdown = ({
             {manageSetBtn && (
               <Button
                 title="Manage Sets"
-                onPress={() => console.log('Manage sets')}
+                onPress={() =>
+                  navigation.navigate('Manage Video Set', {
+                    videoSet: videoSets[videoSetValue],
+                  })
+                }
                 color={Styles.MHMRBlue}
                 radius={50}
                 containerStyle={{
