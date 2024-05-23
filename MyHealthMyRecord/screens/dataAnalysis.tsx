@@ -73,15 +73,6 @@ const DataAnalysis = () => {
   const videosSetsByDate = videoSets.sorted('datetime', false);
   //console.log("sets", videoSets);
 
-  function getSelectedVideoIDS() {
-    let tempVideoSetIDs = [];
-    for (let i = 0; i < videosSelected.length; i++) {
-      tempVideoSetIDs.push(videosSelected[i]._id);
-    }
-    console.log(tempVideoSetIDs);
-    return tempVideoSetIDs;
-  }
-
   //const [freqMaps, setFreqMaps] = useState<any>([]);
   const [freqMapsWithInfo, setFreqMapsWithInfo] = useState<any>([]);
   const [routeFreqMaps, setRouteFreqMaps] = useState<any>([]);
@@ -632,9 +623,7 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
-          onPress={() =>
-            navigation.navigate('Text Summary')
-          }
+          onPress={() => navigation.navigate('Text Summary')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: 400,

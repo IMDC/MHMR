@@ -56,6 +56,20 @@ function Dashboard() {
     console.log('selectedVideos.size:', selectedVideos.size);
     console.log('sendToVideoSet number:', sendToVideoSet);
     console.log('selectedVideoSet:', selectedVideoSet);
+
+    //---------------------------------------------------------
+    // if (selectedVideos.size > 0) {
+    //   const selectedVideosArray = Array.from(selectedVideos);
+    //    selectedSetVideos = videoData.filter(video => {
+    //     return selectedVideosArray.some(selectedVideo =>
+    //       video._id.equals(selectedVideo._id),
+    //     );
+    //   });
+
+    //   setVideos(selectedSetVideos);
+    // }
+    //---------------------------------------------------------
+    // else
     if (sendToVideoSet == 0 || sendToVideoSet == undefined) {
       if (selectedVideoSet && videoSetVideoIDs) {
         const videoIDSet = new Set(videoSetVideoIDs);
@@ -77,8 +91,11 @@ function Dashboard() {
       // Add the selected videos to the current video set using realm schema
       // Map through videoData and match the ids in selectedVideos array to the videoData ids and add to the current video set schema
       // then also add the selectedVideo ids to the videoSetVideoIDs array
+      
       const selectedVideosArray = Array.from(selectedVideos);
-      setVideoSetVideoIDs(Array.from(selectedVideos));
+      setVideoSetVideoIDs(
+        Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
+      );
       selectedSetVideos = videoData.filter(video => {
         const objectId = new ObjectId(video._id);
         return selectedVideosArray.some(selectedVideo =>
@@ -97,12 +114,21 @@ function Dashboard() {
 
       selectedSetVideos.push(addToSelectedSetVideos[0]);
 
+      // remove additional videos that are already in the set from videoSetVideoIDs
+      // setVideoSetVideoIDs(
+      //   videoSetVideoIDs.filter(
+      //     id => id !== addToSelectedSetVideos[0]._id.toHexString(),
+      //   ),
+      // );
+
       console.log('selected videos array:', selectedVideosArray);
-      setVideos(selectedSetVideos);
+      setVideos(Array.from(new Set(selectedSetVideos)));
 
       if (selectedVideoSet === null || selectedVideoSet === undefined) {
         // add selected videos to the videoSetVideoIDs array
-        setVideoSetVideoIDs([...videoSetVideoIDs, ...selectedVideosArray]);
+        setVideoSetVideoIDs(
+          Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
+        );
       } else {
         // add these videos to the current video set if there is a selected video set
         const currentSet = realm.objectForPrimaryKey(
@@ -115,13 +141,13 @@ function Dashboard() {
         console.log('selectedVideosArray:', selectedVideosArray);
         console.log('+'.repeat(40));
         realm.write(() => {
-          currentSet.videoIDs = [
-            ...currentSet.videoIDs,
-            ...selectedVideosArray,
-          ];
+          currentSet.videoIDs = Array.from(
+            new Set([...currentSet.videoIDs, ...selectedVideosArray]),
+          );
           console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
         });
       }
+      setSendToVideoSet(0);
     } else if (sendToVideoSet == 2) {
       // Send to new video set
       // Display the videos associated with the IDs in isSelected
@@ -131,16 +157,19 @@ function Dashboard() {
       setVideoSetVideoIDs(Array.from(selectedVideos));
       selectedSetVideos = videoData.filter(video => {
         const objectId = new ObjectId(video._id);
+
         return selectedVideosArray.some(selectedVideo =>
           objectId.equals(selectedVideo),
         );
       });
       console.log('selected videos array:', selectedVideosArray);
       setVideos(selectedSetVideos);
+      setSendToVideoSet(0);
     }
 
     console.log('selectedSetVideos:', selectedSetVideos);
-
+    // remove duplicates from videoSetVideoIDs
+    // setVideoSetVideoIDs(...Array.from(new Set(videoSetVideoIDs)));
     if (isFocused) {
       setVideos(selectedSetVideos);
     }
@@ -169,64 +198,71 @@ function Dashboard() {
     setSelectedVideoSet(selectedSet);
   };
 
+  const handleDeleteAllVideoSets = () => {
+    realm.write(() => {
+      const allVideoSets = realm.objects('VideoSet');
+      realm.delete(allVideoSets);
+      setVideoSetDropdown([]);
+    });
+  };
 
-  async function handleYesAnalysis() {
-    const selectedVideos: Realm.Results<VideoData> = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
+  // async function handleYesAnalysis() {
+  //   const selectedVideos = realm
+  //     .objects<VideoData>('VideoData')
+  //     .filtered('isConverted == false AND isSelected == true');
 
-    for (const video of selectedVideos) {
-      const getTranscriptByFilename = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video ? video.transcript : '';
-      };
+  //   for (const video of selectedVideos) {
+  //     const getTranscriptByFilename = (filename: string) => {
+  //       const video = videos.find(video => video.filename === filename);
+  //       return video ? video.transcript : '';
+  //     };
 
-      const getCheckedKeywords = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.keywords
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
+  //     const getCheckedKeywords = (filename: string) => {
+  //       const video = videos.find(video => video.filename === filename);
+  //       return video
+  //         ? video.keywords
+  //             .map(key => JSON.parse(key))
+  //             .filter(obj => obj.checked)
+  //             .map(obj => obj.title)
+  //         : [];
+  //     };
 
-      const getCheckedLocations = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.locations
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
+  //     const getCheckedLocations = (filename: string) => {
+  //       const video = videos.find(video => video.filename === filename);
+  //       return video
+  //         ? video.locations
+  //             .map(key => JSON.parse(key))
+  //             .filter(obj => obj.checked)
+  //             .map(obj => obj.title)
+  //         : [];
+  //     };
 
-      const transcript = getTranscriptByFilename(video.filename);
-      const keywords = getCheckedKeywords(video.filename).join(', ');
-      const locations = getCheckedLocations(video.filename).join(', ');
+  //     const transcript = getTranscriptByFilename(video.filename);
+  //     const keywords = getCheckedKeywords(video.filename).join(', ');
+  //     const locations = getCheckedLocations(video.filename).join(', ');
 
-      try {
-        const outputText = await sendToChatGPT(
-          video.filename,
-          transcript,
-          keywords,
-          locations,
-          realm,
-          video._id.toHexString(),
-        );
-        setInputText(outputText);
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-    Alert.alert('Your transcripts have been generated and analyzed.');
-  }
+  //     try {
+  //       const outputText = await sendToChatGPT(
+  //         video.filename,
+  //         transcript,
+  //         keywords,
+  //         locations,
+  //         realm,
+  //         video._id.toHexString(),
+  //       );
+  //       setInputText(outputText);
+  //       console.log(
+  //         `Transcription successful for video ${video._id.toHexString()}`,
+  //       );
+  //     } catch (error) {
+  //       console.error(
+  //         `Failed to process video ${video._id.toHexString()}:`,
+  //         error,
+  //       );
+  //     }
+  //   }
+  //   Alert.alert('Your transcripts have been generated and analyzed.');
+  // }
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
@@ -266,7 +302,6 @@ function Dashboard() {
           right: 20,
           alignItems: 'flex-end',
           marginBottom: 10,
-          // elevation: 8,
           zIndex: 100,
         }}>
         <View style={{position: 'absolute', top: 5, right: 5, zIndex: 100}}>
@@ -307,25 +342,25 @@ function Dashboard() {
             />
           </View>
         </View>
-        {videos !== null
-          ? videos.map((video: VideoData) => {
-              const isTranscriptEmpty = video => {
-                return (
-                  video.transcript === undefined || video.transcript === ''
-                );
-              };
+        {videos !== null || videos !== undefined
+          ? videos.map(video => {
+              // const isTranscriptEmpty = video => {
+              //   return (
+              //     video.transcript === undefined || video.transcript === ''
+              //   );
+              // };
 
-              const checkedTitles = video.keywords
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
+              // const checkedTitles = video.keywords
+              //   .map(key => JSON.parse(key))
+              //   .filter(obj => obj.checked)
+              //   .map(obj => obj.title)
+              //   .join(', ');
 
-              const checkedLocations = video.locations
-                .map(key => JSON.parse(key))
-                .filter(obj => obj.checked)
-                .map(obj => obj.title)
-                .join(', ');
+              // const checkedLocations = video.locations
+              //   .map(key => JSON.parse(key))
+              //   .filter(obj => obj.checked)
+              //   .map(obj => obj.title)
+              //   .join(', ');
               return (
                 <View key={video._id.toString()}>
                   <View style={styles.container}>
@@ -403,7 +438,7 @@ function Dashboard() {
                         </View>
                       </View>
                       <View>
-                        {/* <Button
+                        <Button
                           buttonStyle={{height: 50, alignSelf: 'center'}}
                           color={Styles.MHMRBlue}
                           title="Remove Video From Video Set"
@@ -423,7 +458,7 @@ function Dashboard() {
                               );
                             });
                           }}
-                        /> */}
+                        />
                       </View>
                       <View style={styles.buttonContainer}>
                         <View style={styles.space} />
@@ -455,7 +490,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     flexWrap: 'wrap',
-    // paddingLeft: 8,
     borderColor: 'black',
     borderWidth: StyleSheet.hairlineWidth,
   },

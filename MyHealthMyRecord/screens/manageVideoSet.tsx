@@ -17,15 +17,8 @@ import * as Styles from '../assets/util/styles';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
-interface ManageVideoSetRouteParams {
-  videoSet: VideoSet;
-}
 
-interface ManageVideoSetProps {
-  route: RouteProp<{params: ManageVideoSetRouteParams}, 'params'>;
-}
-
-const ManageVideoSet: React.FC<ManageVideoSetProps> = ({route}) => {
+const ManageVideoSet = () => {
   const {videoSetVideoIDs, selectedVideoSet} = useDropdownContext();
   const isFocused = useIsFocused();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -44,7 +37,7 @@ const ManageVideoSet: React.FC<ManageVideoSetProps> = ({route}) => {
       selectedVideoSet,
     );
     const getVideoData = async () => {
-      const videoSetData = selectedVideoSet?.videoIDs.map(videoID => {
+      const videoSetData = videoSetVideoIDs?.map(videoID => {
         const objectId = new Realm.BSON.ObjectId(videoID);
         return realm.objectForPrimaryKey('VideoData', objectId);
       });

@@ -600,8 +600,9 @@ const ViewRecordings = ({selected, setSelected}) => {
             <Button
               // if videoSetValue is null and videoSetVideoIDs is empty, disable the button, if videoSetVideoIDs is not empty, enable the button
               disabled={
-                videoSetVideoIDs === undefined || videoSetVideoIDs.length === 0 &&
-                (videoSetValue == null || videoSetValue.length === 0)
+                videoSetVideoIDs === undefined ||
+                (videoSetVideoIDs.length === 0 &&
+                  (videoSetValue == null || videoSetValue.length === 0))
               }
               style={{
                 backgroundColor: '#1C3EAA',
@@ -617,7 +618,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
-                Send {selectedVideos.size} video(s) to Video Set
+                Add {selectedVideos.size} video(s) to Current Video Set
               </Text>
             </Button>
             <View style={styles.space}></View>
@@ -630,7 +631,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                 // 2 means send to new video set
                 setSendToVideoSet(2);
                 handleSendToDashboard();
-                // handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
                 Add to New Video Set

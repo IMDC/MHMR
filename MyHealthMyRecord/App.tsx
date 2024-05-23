@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Text, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import {Button} from '@rneui/themed';
 import 'react-native-get-random-values';
 import {RealmProvider} from './models/VideoData';
@@ -32,12 +32,12 @@ import DataAnalysisBarGraph from './screens/dataAnalysisBarGraph';
 import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
 import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
 import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
-import ManageVideoSet from './screens/manageVideoSet';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
 import {getAuth} from './components/stt_api';
 import {NetworkProvider} from './components/networkProvider';
 import {VideoSetProvider} from './components/videoSetProvider';
+import ManageVideoSet from './screens/manageVideoSet';
 import Video from 'react-native-video';
 
 const Stack = createNativeStackNavigator();
@@ -46,6 +46,7 @@ const Tab: any = createBottomTabNavigator();
 function StackNav() {
   const [selected, setSelected] = useState(true);
   const [auth, setAuth] = useState('');
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   // useEffect(() => {
   //   console.log('View Recordings component mounted');
@@ -104,7 +105,7 @@ function StackNav() {
       <Stack.Screen name="Text Comments" component={TextComments} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
       <Stack.Screen name="Painscale" component={Painscale} />
-      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
+      
     </Stack.Navigator>
   );
 }
@@ -125,18 +126,14 @@ function DataAnalysisStack() {
 
 function DashboardStack() {
   return (
-    <Stack.Navigator initialRouteName="Dashboard">
-      <Stack.Screen
-        name="Dashboard"
-        component={Dashboard}
-        options={{
-          headerShown: false,
-        }}
-      />
+    <Stack.Navigator
+      initialRouteName="Video Set Dashboard"
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
+      <Stack.Screen name="Dashboard" component={Dashboard} />
       <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
-      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
   );
+
 }
 
 function App() {
@@ -175,10 +172,11 @@ function App() {
               />
 
               <Tab.Screen
-                name="Dashboard"
+                name="Video Set Dashboard"
                 component={DashboardStack}
                 options={{
-                  tabBarLabel: 'Dashboard',
+                  headerShown: false,
+                  tabBarLabel: 'Video Set Dashboard',
                   headerStyle: {backgroundColor: Styles.NavBarGrey},
                   tabBarIcon: () => (
                     <Icon
