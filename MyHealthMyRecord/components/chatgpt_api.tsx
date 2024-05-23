@@ -23,7 +23,7 @@ export const sendToChatGPT = async (
         Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o',
         messages: [{role: 'user', content: inputText}],
         max_tokens: 150,
       }),
