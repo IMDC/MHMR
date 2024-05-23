@@ -56,7 +56,7 @@ function Dashboard() {
     console.log('selectedVideos.size:', selectedVideos.size);
     console.log('sendToVideoSet number:', sendToVideoSet);
     console.log('selectedVideoSet:', selectedVideoSet);
-    
+
     //---------------------------------------------------------
     // if (selectedVideos.size > 0) {
     //   const selectedVideosArray = Array.from(selectedVideos);
@@ -123,7 +123,9 @@ function Dashboard() {
 
       if (selectedVideoSet === null || selectedVideoSet === undefined) {
         // add selected videos to the videoSetVideoIDs array
-        setVideoSetVideoIDs(Array.from( new Set([...videoSetVideoIDs, ...selectedVideosArray])));
+        setVideoSetVideoIDs(
+          Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
+        );
       } else {
         // add these videos to the current video set if there is a selected video set
         const currentSet = realm.objectForPrimaryKey(
@@ -136,10 +138,9 @@ function Dashboard() {
         console.log('selectedVideosArray:', selectedVideosArray);
         console.log('+'.repeat(40));
         realm.write(() => {
-          currentSet.videoIDs = Array.from(new Set([
-            ...currentSet.videoIDs,
-            ...selectedVideosArray,
-          ]));
+          currentSet.videoIDs = Array.from(
+            new Set([...currentSet.videoIDs, ...selectedVideosArray]),
+          );
           console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
         });
       }
@@ -336,8 +337,8 @@ function Dashboard() {
             />
           </View>
         </View>
-        {videos !== null
-          ? videos.map((video) => {
+        {videos !== null || videos !== undefined
+          ? videos.map(video => {
               // const isTranscriptEmpty = video => {
               //   return (
               //     video.transcript === undefined || video.transcript === ''
