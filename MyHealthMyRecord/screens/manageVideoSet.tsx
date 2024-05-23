@@ -37,7 +37,7 @@ const ManageVideoSet = () => {
       selectedVideoSet,
     );
     const getVideoData = async () => {
-      const videoSetData = selectedVideoSet?.videoIDs.map(videoID => {
+      const videoSetData = videoSetVideoIDs?.map(videoID => {
         const objectId = new Realm.BSON.ObjectId(videoID);
         return realm.objectForPrimaryKey('VideoData', objectId);
       });

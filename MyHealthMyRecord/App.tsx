@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Text, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import {Button} from '@rneui/themed';
 import 'react-native-get-random-values';
 import {RealmProvider} from './models/VideoData';
@@ -105,18 +105,6 @@ function StackNav() {
       <Stack.Screen name="Text Comments" component={TextComments} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
       <Stack.Screen name="Painscale" component={Painscale} />
-      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} options={{
-        headerLeft: () => (
-          
-          <Button
-            onPress={() => {
-              navigation.navigate('Dashboard');
-            }}
-    
-            title={"Back"}
-          />
-        ),
-      }}  />
       
     </Stack.Navigator>
   );
@@ -134,6 +122,18 @@ function DataAnalysisStack() {
       <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
     </Stack.Navigator>
   );
+}
+
+function DashboardStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Video Set Dashboard"
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
+      <Stack.Screen name="Dashboard" component={Dashboard} />
+      <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
+    </Stack.Navigator>
+  );
+
 }
 
 function App() {
@@ -172,10 +172,11 @@ function App() {
               />
 
               <Tab.Screen
-                name="Dashboard"
-                component={Dashboard}
+                name="Video Set Dashboard"
+                component={DashboardStack}
                 options={{
-                  tabBarLabel: 'Dashboard',
+                  headerShown: false,
+                  tabBarLabel: 'Video Set Dashboard',
                   headerStyle: {backgroundColor: Styles.NavBarGrey},
                   tabBarIcon: () => (
                     <Icon

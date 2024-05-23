@@ -618,7 +618,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
-                Send {selectedVideos.size} video(s) to Video Set
+                Add {selectedVideos.size} video(s) to Current Video Set
               </Text>
             </Button>
             <View style={styles.space}></View>
@@ -631,7 +631,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                 // 2 means send to new video set
                 setSendToVideoSet(2);
                 handleSendToDashboard();
-                // handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
                 Add to New Video Set

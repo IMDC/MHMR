@@ -25,6 +25,8 @@ const VideoSetDropdown = ({
     videoSetVideoIDs,
     setVideoSetVideoIDs,
     setVideoSetValue,
+    setSelectedVideoSet,
+    selectedVideoSet,
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
@@ -65,6 +67,8 @@ const VideoSetDropdown = ({
       value: set._id.toString(),
       id: set._id,
     }));
+
+    
     setLocalDropdown(updatedDropdown);
 
     // Set the value to the newly created set

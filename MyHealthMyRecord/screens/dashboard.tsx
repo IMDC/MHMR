@@ -91,8 +91,11 @@ function Dashboard() {
       // Add the selected videos to the current video set using realm schema
       // Map through videoData and match the ids in selectedVideos array to the videoData ids and add to the current video set schema
       // then also add the selectedVideo ids to the videoSetVideoIDs array
+      
       const selectedVideosArray = Array.from(selectedVideos);
-      setVideoSetVideoIDs(Array.from(selectedVideos));
+      setVideoSetVideoIDs(
+        Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
+      );
       selectedSetVideos = videoData.filter(video => {
         const objectId = new ObjectId(video._id);
         return selectedVideosArray.some(selectedVideo =>
@@ -144,6 +147,7 @@ function Dashboard() {
           console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
         });
       }
+      setSendToVideoSet(0);
     } else if (sendToVideoSet == 2) {
       // Send to new video set
       // Display the videos associated with the IDs in isSelected
@@ -160,6 +164,7 @@ function Dashboard() {
       });
       console.log('selected videos array:', selectedVideosArray);
       setVideos(selectedSetVideos);
+      setSendToVideoSet(0);
     }
 
     console.log('selectedSetVideos:', selectedSetVideos);
