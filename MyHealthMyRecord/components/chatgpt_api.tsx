@@ -75,6 +75,7 @@ export const sendToChatGPT = async (
 export const sendVideoSetToChatGPT = async (
   realm,
   videoSetVideoIDs,
+  selectedVideoSet
 ) => {
   const videoTranscripts = videoSetVideoIDs.map(videoID => {
     const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
@@ -90,6 +91,15 @@ export const sendVideoSetToChatGPT = async (
     if (data.choices && data.choices.length > 0) {
       const outputText = data.choices[0].message.content;
       console.log('Output Text:', outputText);
+
+      realm.write(() => {
+        selectedVideoSet.summaryAnalysis = outputText;
+        selectedVideoSet.isSummaryGenerated = true;
+      });
+
+      console.log('+++++++++++++++++++++Summary Analysis:', selectedVideoSet.summaryAnalysis);
+      console.log('+++++++++++++++++++++isSummaryGenerated:', selectedVideoSet.isSummaryGenerated);
+
       return outputText;
     } else {
       throw new Error('Invalid response from ChatGPT API');

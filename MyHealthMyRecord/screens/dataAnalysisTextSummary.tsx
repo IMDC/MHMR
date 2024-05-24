@@ -15,7 +15,7 @@ import * as Styles from '../assets/util/styles';
 import Sentiment from 'sentiment';
 
 const DataAnalysisTextSummary = () => {
-   const sentiment = new Sentiment();
+  const sentiment = new Sentiment();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
