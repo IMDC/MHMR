@@ -24,8 +24,10 @@ export const VideoSetProvider = ({children}) => {
     console.log('*'.repeat(40));
   };
 
-  const handleNewSet = videoIDs => {
+  const handleNewSet = (videoIDs, videoSets) => {
     setVideoSetVideoIDs(videoIDs);
+    const selectedSet = videoSets.find(set => set._id.toString() === videoSetValue);
+    setSelectedVideoSet(selectedSet);
   };
 
   const contextValues = {

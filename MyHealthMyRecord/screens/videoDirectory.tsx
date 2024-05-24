@@ -120,7 +120,10 @@ const ViewRecordings = ({selected, setSelected}) => {
     if (state.isConnected) {
       toggleDialog2();
     } else {
-      navigation.navigate('Dashboard', {selectedVideos});
+       navigation.navigate('Video Set Dashboard', {
+         screen: 'Dashboard',
+         params: {selectedVideos},
+       });
       Alert.alert(
         'Added to Video Set',
         'Your videos have been added to the Video Set!',
@@ -466,16 +469,15 @@ const ViewRecordings = ({selected, setSelected}) => {
               title="NO"
               onPress={async () => {
                 console.log('NO clicked!');
-                navigation.navigate('Dashboard', {
-                  selectedVideos,
-                });
+                navigation.navigate('Video Set Dashboard', { screen:'Dashboard', params: {selectedVideos}});
                 Alert.alert(
                   'Your transcripts have been generated, and your videos have been added to the Video Set!',
                 );
                 toggleDialog2();
-                navigation.navigate('Dashboard', {
-                  selectedVideos,
-                });
+                 navigation.navigate('Video Set Dashboard', {
+                   screen: 'Dashboard',
+                   params: {selectedVideos},
+                 });
 
                 await handleSend();
                 Alert.alert(
@@ -489,9 +491,10 @@ const ViewRecordings = ({selected, setSelected}) => {
               onPress={async () => {
                 console.log('YES clicked!');
                 toggleDialog2();
-                navigation.navigate('Dashboard', {
-                  selectedVideos,
-                });
+                 navigation.navigate('Video Set Dashboard', {
+                   screen: 'Dashboard',
+                   params: {selectedVideos},
+                 });
 
                 await handleSend();
                 await handleYesAnalysis();
