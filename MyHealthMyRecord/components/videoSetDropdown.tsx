@@ -8,6 +8,7 @@ import {Button} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { sendVideoSetToChatGPT } from './chatgpt_api';
 
 const VideoSetDropdown = ({
   videoSetDropdown,
@@ -158,6 +159,7 @@ const VideoSetDropdown = ({
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
                   handleNewSet(videoSetVideoIDs);
+                  sendVideoSetToChatGPT(realm, videoSetVideoIDs);
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}

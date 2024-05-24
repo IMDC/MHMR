@@ -77,22 +77,23 @@ export const sendVideoSetToChatGPT = async (
   videoSetVideoIDs,
 ) => {
   const videoTranscripts = videoSetVideoIDs.map(videoID => {
-    const video = realm.objectForPrimaryKey('VideoData', videoID);
+    const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
     return video ? video.transcript.join(' ') : '';
   });
-  console.log('Video Transcripts:', videoTranscripts);
+  console.log('!!!!!!!!!!!!!!!!!!Video Transcripts:', videoTranscripts);
   try {
-    // const inputText = `Summarize the selected video transcripts in this video set: ${videoTranscripts.join(
-    //   ' ',
-    // )}`;
-    // const data = await connectToChatGPT(inputText);
-    // if (data.choices && data.choices.length > 0) {
-    //   const outputText = data.choices[0].message.content;
-    //   console.log('Output Text:', outputText);
-    //   return outputText;
-    // } else {
-    //   throw new Error('Invalid response from ChatGPT API');
-    // }
+    const inputText = `Summarize the selected video transcripts in this video set: ${videoTranscripts.join(
+      ' ',
+    )}`;
+    const data = await connectToChatGPT(inputText);
+    if (data.choices && data.choices.length > 0) {
+      const outputText = data.choices[0].message.content;
+      console.log('Output Text:', outputText);
+      return outputText;
+    } else {
+      throw new Error('Invalid response from ChatGPT API');
+    }
   }
   catch (error) {
     console.error('Error:', error);
