@@ -8,6 +8,7 @@ import {Button} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {sendVideoSetToChatGPT} from './chatgpt_api';
 
 const VideoSetDropdown = ({
   videoSetDropdown,
@@ -57,8 +58,11 @@ const VideoSetDropdown = ({
         name: new Date().toString().split(' GMT-')[0],
         frequencyData: frequencyData,
         videoIDs: videoIDs,
+        summaryAnalysis: '',
+        isSummaryGenerated: false,
       });
     });
+    
 
     // Refresh dropdown and update video set value
     const updatedVideoSets = realm.objects('VideoSet');
@@ -68,13 +72,13 @@ const VideoSetDropdown = ({
       id: set._id,
     }));
 
-    
     setLocalDropdown(updatedDropdown);
 
     // Set the value to the newly created set
     const newVideoSetValue = updatedDropdown[updatedDropdown.length - 1].value;
     setVideoSetValue(newVideoSetValue);
     onVideoSetChange(newVideoSetValue); // Notify parent component of the change
+  
   };
 
   const clearVideoSet = () => {
@@ -157,7 +161,12 @@ const VideoSetDropdown = ({
                 title="Save Video Set"
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
-                  handleNewSet(videoSetVideoIDs);
+                  handleNewSet(videoSetVideoIDs, videoSets);
+                  sendVideoSetToChatGPT(
+                    realm,
+                    videoSetVideoIDs,
+                    selectedVideoSet,
+                  );
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}

@@ -1,6 +1,28 @@
 import Config from 'react-native-config';
 import RNFS from 'react-native-fs';
 
+async function connectToChatGPT(inputText) {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{role: 'user', content: inputText}],
+        max_tokens: 150,
+      }),
+    });
+    const data = await response.json();
+    console.log('Response from ChatGPT API:', data); // Log the response
+    return data;
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
 export const sendToChatGPT = async (
   textFileName,
   transcript,
@@ -16,21 +38,7 @@ export const sendToChatGPT = async (
     await RNFS.mkdir(directoryPath, {recursive: true} as RNFS.MkdirOptions);
 
     // Send the input text to ChatGPT API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{role: 'user', content: inputText}],
-        max_tokens: 150,
-      }),
-    });
-
-    const data = await response.json();
-    console.log('Response from ChatGPT API:', data); // Log the response
+    const data = await connectToChatGPT(inputText);
 
     // Check if data.choices is defined and contains at least one item
     if (data.choices && data.choices.length > 0) {
@@ -60,6 +68,44 @@ export const sendToChatGPT = async (
       throw new Error('Invalid response from ChatGPT API');
     }
   } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+export const sendVideoSetToChatGPT = async (
+  realm,
+  videoSetVideoIDs,
+  selectedVideoSet
+) => {
+  const videoTranscripts = videoSetVideoIDs.map(videoID => {
+    const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    return video ? video.transcript.join(' ') : '';
+  });
+  console.log('!!!!!!!!!!!!!!!!!!Video Transcripts:', videoTranscripts);
+  try {
+    const inputText = `Summarize the selected video transcripts in this video set: ${videoTranscripts.join(
+      ' ',
+    )}`;
+    const data = await connectToChatGPT(inputText);
+    if (data.choices && data.choices.length > 0) {
+      const outputText = data.choices[0].message.content;
+      console.log('Output Text:', outputText);
+
+      realm.write(() => {
+        selectedVideoSet.summaryAnalysis = outputText;
+        selectedVideoSet.isSummaryGenerated = true;
+      });
+
+      console.log('+++++++++++++++++++++Summary Analysis:', selectedVideoSet.summaryAnalysis);
+      console.log('+++++++++++++++++++++isSummaryGenerated:', selectedVideoSet.isSummaryGenerated);
+
+      return outputText;
+    } else {
+      throw new Error('Invalid response from ChatGPT API');
+    }
+  }
+  catch (error) {
     console.error('Error:', error);
   }
 };
