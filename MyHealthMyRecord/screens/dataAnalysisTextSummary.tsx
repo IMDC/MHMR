@@ -19,10 +19,17 @@ const DataAnalysisTextSummary = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
+
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
-    useDropdownContext();
+  const {
+    handleChange,
+    videoSetValue,
+    videoSetVideoIDs,
+    setVideoSetValue,
+    selectedVideoSet,
+  } = useDropdownContext();
+  const [videoSet, setVideoSet] = useState(selectedVideoSet);
   const realm = useRealm();
 
   const [videoDataVideos, setVideoDataVideos] = useState([]);
@@ -141,6 +148,12 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
+      <View style={{padding: 10}}>
+        <Text style={[styles.title, {textAlign: 'center'}]}>
+          {videoSet.name} - Video Set Summary
+        </Text>
+        <Text style={styles.output}>{videoSet.summaryAnalysis}</Text>
+      </View>
       {videos.map(video => (
         <View key={video._id} style={styles.container}>
           <View style={{padding: 10}}>
