@@ -12,7 +12,7 @@ import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
-import { getSentimentFromChatGPT, sendToChatGPT } from '../components/chatgpt_api';
+import { getSentimentFromChatGPT, sendToChatGPT, sendVideoSetToChatGPT } from '../components/chatgpt_api';
 
 const DataAnalysisTextSummary = () => {
   const navigation = useNavigation();
@@ -20,10 +20,11 @@ const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
+  const [videoSetSummary, setVideoSetSummary] = useState('');
   const { videoSetVideoIDs, selectedVideoSet } = useDropdownContext();
   const realm = useRealm();
 
-
+  
   useEffect(() => {
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
@@ -87,6 +88,17 @@ const DataAnalysisTextSummary = () => {
     }
   }, [videos]);
 
+  useEffect(() => {
+    const updateVideoSetSummary = async () => {
+      if (videos.length > 0) {
+        const summary = await sendVideoSetToChatGPT(realm, videoSetVideoIDs, selectedVideoSet);
+        setVideoSetSummary(summary);
+      }
+    };
+
+    updateVideoSetSummary();
+  }, [videos]);
+
   const handleEdit = (video) => {
     setEditingID(video._id);
     setDraftTranscript(video.transcript[0] || '');
@@ -134,7 +146,7 @@ const DataAnalysisTextSummary = () => {
     <ScrollView>
       <View style={{ padding: 10 }}>
         <Text style={[styles.title, { textAlign: 'center' }]}>{selectedVideoSet.name} - Video Set Summary</Text>
-        <Text style={styles.output}>{selectedVideoSet.summaryAnalysis}</Text>
+        <Text style={styles.output}>{videoSetSummary}</Text>
       </View>
       {videos.map((video) => (
         <View key={video._id} style={styles.container}>
