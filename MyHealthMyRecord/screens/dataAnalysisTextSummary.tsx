@@ -164,7 +164,7 @@ const DataAnalysisTextSummary = () => {
               {video.transcriptFileContent}
             </Text>
             <Text style={styles.sentiment}>
-              <Text style={styles.boldText}>Sentiment: </Text>
+              <Text style={styles.boldText}>Overall Feeling: </Text>
               {video.sentiment}
             </Text>
           </View>
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   sentiment: {
     fontSize: 20,
-    color: 'green',
+    color: 'black',
     marginTop: 10,
   },
 });
