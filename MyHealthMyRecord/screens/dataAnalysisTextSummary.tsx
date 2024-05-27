@@ -12,7 +12,7 @@ import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
-import { getSentimentFromChatGPT } from '../components/chatgpt_api';
+import { getSentimentFromChatGPT, sendToChatGPT } from '../components/chatgpt_api';
 
 const DataAnalysisTextSummary = () => {
   const navigation = useNavigation();
@@ -96,10 +96,16 @@ const DataAnalysisTextSummary = () => {
     const updatedTranscript = draftTranscript;
     const sentimentLabel = await getSentimentFromChatGPT(updatedTranscript);
 
+    const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
+    const keywords = videoToUpdate.keywords.map(key => JSON.parse(key)).map(obj => obj.title).join(', ');
+    const locations = videoToUpdate.locations.map(loc => JSON.parse(loc)).map(obj => obj.title).join(', ');
+
+    const summary = await sendToChatGPT(videoToUpdate.filename, updatedTranscript, keywords, locations, realm, editingID);
+
     realm.write(() => {
-      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
       videoToUpdate.transcript = [updatedTranscript];
       videoToUpdate.sentiment = sentimentLabel;
+      videoToUpdate.transcriptFileContent = summary;
     });
 
     const updatedVideos = videos.map((video) => {
@@ -108,6 +114,7 @@ const DataAnalysisTextSummary = () => {
           ...video,
           transcript: [updatedTranscript],
           sentiment: sentimentLabel,
+          transcriptFileContent: summary,
         };
       }
       return video;
