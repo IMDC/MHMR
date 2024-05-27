@@ -21,7 +21,7 @@ async function connectToChatGPT(inputText) {
   } catch (error) {
     console.error('Error:', error);
   }
-}
+};
 
 export const sendToChatGPT = async (
   textFileName,
@@ -55,7 +55,9 @@ export const sendToChatGPT = async (
         if (video) {
           video.isConverted = true; // Mark the video as converted
           console.log('isConverted:', video.isConverted);
-          console.log('Marked as converted');
+          console.log(
+            'Marked as converted',
+          );
         } else {
           console.log('No video found with ID:', _id);
         }
@@ -73,13 +75,14 @@ export const sendToChatGPT = async (
 export const sendVideoSetToChatGPT = async (
   realm,
   videoSetVideoIDs,
-  selectedVideoSet,
+  selectedVideoSet
 ) => {
   const videoTranscripts = videoSetVideoIDs.map(videoID => {
     const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
     const video = realm.objectForPrimaryKey('VideoData', objectId);
     return video ? video.transcript.join(' ') : '';
   });
+  console.log('!!!!!!!!!!!!!!!!!!Video Transcripts:', videoTranscripts);
   try {
     const inputText = `Summarize the selected video transcripts in this video set: ${videoTranscripts.join(
       ' ',
@@ -87,28 +90,26 @@ export const sendVideoSetToChatGPT = async (
     const data = await connectToChatGPT(inputText);
     if (data.choices && data.choices.length > 0) {
       const outputText = data.choices[0].message.content;
-      console.log('Output Summary Analysis Text:', outputText);
+      console.log('Output Text:', outputText);
 
       realm.write(() => {
         selectedVideoSet.summaryAnalysis = outputText;
         selectedVideoSet.isSummaryGenerated = true;
       });
 
-      console.log(
-        selectedVideoSet.summaryAnalysis,
-      );
-      console.log(
-        selectedVideoSet.isSummaryGenerated,
-      );
+      console.log('+++++++++++++++++++++Summary Analysis:', selectedVideoSet.summaryAnalysis);
+      console.log('+++++++++++++++++++++isSummaryGenerated:', selectedVideoSet.isSummaryGenerated);
 
       return outputText;
     } else {
       throw new Error('Invalid response from ChatGPT API');
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error:', error);
   }
 };
+
 export const getSentimentFromChatGPT = async (transcript) => {
   const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
   const data = await connectToChatGPT(inputText);
