@@ -23,16 +23,11 @@ const DataAnalysisTextSummary = () => {
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
   const {
-    handleChange,
-    videoSetValue,
     videoSetVideoIDs,
-    setVideoSetValue,
     selectedVideoSet,
   } = useDropdownContext();
-  const [videoSet, setVideoSet] = useState(selectedVideoSet);
   const realm = useRealm();
 
-  const [videoDataVideos, setVideoDataVideos] = useState([]);
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -43,7 +38,7 @@ const DataAnalysisTextSummary = () => {
           return video;
         }),
       );
-      setVideoDataVideos(videoDataVideos);
+      setVideos(videoDataVideos);
     };
     if (isFocused) {
       getVideoData();
@@ -53,7 +48,7 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videoDataVideos.map(async video => {
+        videos.map(async video => {
           const filePath = `${
             RNFS.DocumentDirectoryPath
           }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
@@ -100,12 +95,14 @@ const DataAnalysisTextSummary = () => {
       setVideos(videoTranscripts);
     };
 
-    loadTranscripts();
-  }, [sentiment, videoDataVideos]);
+    if (videos.length) {
+      loadTranscripts();
+    }
+  }, [sentiment, videos]);
 
   const handleEdit = video => {
     setEditingID(video._id);
-    setDraftTranscript(video.transcript[0]);
+    setDraftTranscript(video.transcript[0] || '');
   };
 
   const handleSave = async () => {
@@ -150,9 +147,9 @@ const DataAnalysisTextSummary = () => {
     <ScrollView>
       <View style={{padding: 10}}>
         <Text style={[styles.title, {textAlign: 'center'}]}>
-          {videoSet.name} - Video Set Summary
+          {selectedVideoSet.name} - Video Set Summary
         </Text>
-        <Text style={styles.output}>{videoSet.summaryAnalysis}</Text>
+        <Text style={styles.output}>{selectedVideoSet.summaryAnalysis}</Text>
       </View>
       {videos.map(video => (
         <View key={video._id} style={styles.container}>
