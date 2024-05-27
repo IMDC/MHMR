@@ -62,6 +62,7 @@ const VideoSetDropdown = ({
         isSummaryGenerated: false,
       });
     });
+    
 
     // Refresh dropdown and update video set value
     const updatedVideoSets = realm.objects('VideoSet');
@@ -77,6 +78,7 @@ const VideoSetDropdown = ({
     const newVideoSetValue = updatedDropdown[updatedDropdown.length - 1].value;
     setVideoSetValue(newVideoSetValue);
     onVideoSetChange(newVideoSetValue); // Notify parent component of the change
+  
   };
 
   const clearVideoSet = () => {
