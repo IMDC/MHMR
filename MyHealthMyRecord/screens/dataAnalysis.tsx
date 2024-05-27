@@ -623,6 +623,7 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
+          disabled={videoSetVideoIDs.length === 0}
           onPress={() => navigation.navigate('Text Summary')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
