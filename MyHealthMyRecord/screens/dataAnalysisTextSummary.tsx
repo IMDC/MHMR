@@ -7,10 +7,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {useRealm, useQuery} from '../models/VideoData';
+import {useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
-import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
 import { getSentimentFromChatGPT, sendToChatGPT, sendVideoSetToChatGPT } from '../components/chatgpt_api';
 
@@ -20,11 +20,19 @@ const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
+  const {videoSetVideoIDs, selectedVideoSet} = useDropdownContext();
+  const realm = useRealm();
+  const [videoSet, setVideoSet] = useState(null); 
+  const [videoDataVideos, setVideoDataVideos] = useState([]);
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const { videoSetVideoIDs, selectedVideoSet } = useDropdownContext();
   const realm = useRealm();
+  useEffect(() => {
+    if (selectedVideoSet) {
+      setVideoSet(selectedVideoSet);
+    }
+  }, [selectedVideoSet]);
 
-  
   useEffect(() => {
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
@@ -55,7 +63,6 @@ const DataAnalysisTextSummary = () => {
             fileContent = 'Transcript not available';
           }
 
-          // Process keywords and locations
           const checkedTitles = video.keywords
             .map(key => JSON.parse(key))
             .filter(obj => obj.checked)
@@ -82,7 +89,6 @@ const DataAnalysisTextSummary = () => {
 
       setVideos(videoTranscripts);
     };
-
     if (videos.length) {
       loadTranscripts();
     }
@@ -133,6 +139,33 @@ const DataAnalysisTextSummary = () => {
     });
 
     setVideos(updatedVideos);
+
+    // Run sendToChatGPT and update the output
+    const videoToUpdate = updatedVideos.find(video => video._id === editingID);
+    if (videoToUpdate) {
+      const outputText = await sendToChatGPT(
+        videoToUpdate.filename,
+        updatedTranscript,
+        videoToUpdate.checkedTitles,
+        videoToUpdate.checkedLocations,
+        realm,
+        editingID,
+      );
+
+      // Update the video with the new outputText
+      const finalUpdatedVideos = updatedVideos.map(video => {
+        if (video._id === editingID) {
+          return {
+            ...video,
+            transcriptFileContent: outputText,
+          };
+        }
+        return video;
+      });
+
+      setVideos(finalUpdatedVideos);
+    }
+
     setEditingID(null);
     setDraftTranscript('');
   };
@@ -142,11 +175,17 @@ const DataAnalysisTextSummary = () => {
     setDraftTranscript('');
   };
 
+  useEffect(() => {
+    console.log('Video Set:', videoSet);
+    console.log('Videos:', videos);
+  }, [videoSet, videos]);
+
   return (
     <ScrollView>
       <View style={{ padding: 10 }}>
-        <Text style={[styles.title, { textAlign: 'center' }]}>{selectedVideoSet.name} - Video Set Summary</Text>
+        <Text style={[styles.title, { textAlign: 'center' }]}>{videoSet?.summaryAnalysis} - Video Set Summary</Text>
         <Text style={styles.output}>{videoSetSummary}</Text>
+
       </View>
       {videos.map((video) => (
         <View key={video._id} style={styles.container}>

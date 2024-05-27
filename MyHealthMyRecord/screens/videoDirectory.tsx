@@ -120,10 +120,10 @@ const ViewRecordings = ({selected, setSelected}) => {
     if (state.isConnected) {
       toggleDialog2();
     } else {
-       navigation.navigate('Video Set Dashboard', {
-         screen: 'Dashboard',
-         params: {selectedVideos},
-       });
+      navigation.navigate('Video Set Dashboard', {
+        screen: 'Dashboard',
+        params: {selectedVideos},
+      });
       Alert.alert(
         'Added to Video Set',
         'Your videos have been added to the Video Set!',
@@ -456,152 +456,22 @@ const ViewRecordings = ({selected, setSelected}) => {
   };
 
   return (
-    <View>
-      <Dialog isVisible={visible2} onBackdropPress={toggleDialog2}>
-        <Dialog.Title title="You are about to send your videos to the video set." />
-        <Text style={{fontSize: 18}}>
-          Would you like to analyze these videos? If you click NO you will still
-          have the option to analyze it later.
-        </Text>
-        <View style={{paddingHorizontal: 20}}>
-          <Dialog.Actions>
-            <Dialog.Button
-              title="NO"
-              onPress={async () => {
-                console.log('NO clicked!');
-                navigation.navigate('Video Set Dashboard', { screen:'Dashboard', params: {selectedVideos}});
-                Alert.alert(
-                  'Your transcripts have been generated, and your videos have been added to the Video Set!',
-                );
-                toggleDialog2();
-                 navigation.navigate('Video Set Dashboard', {
-                   screen: 'Dashboard',
-                   params: {selectedVideos},
-                 });
-
-                await handleSend();
-                Alert.alert(
-                  'Video Transcripts Generated',
-                  'Your transcripts have been generated, and your videos have been added to the Video Set!',
-                );
-              }}
-            />
-            <Dialog.Button
-              title="YES"
-              onPress={async () => {
-                console.log('YES clicked!');
-                toggleDialog2();
-                 navigation.navigate('Video Set Dashboard', {
-                   screen: 'Dashboard',
-                   params: {selectedVideos},
-                 });
-
-                await handleSend();
-                await handleYesAnalysis();
-                Alert.alert(
-                  'Video Transcripts Generated and Analyzed',
-                  'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
-                );
-              }}
-            />
-          </Dialog.Actions>
-        </View>
-      </Dialog>
-      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-        <Dialog.Title title="Are you sure you want to delete all videos?" />
-        <Text style={{fontSize: 20}}>
-          These videos will be deleted immediately. You can't undo this action.
-        </Text>
-        <Dialog.Actions>
-          <Dialog.Button
-            title="Delete"
-            onPress={() => {
-              deleteAllVideoDataObjects();
-              console.log('delete all videos');
-            }}
-          />
-          <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
-        </Dialog.Actions>
-      </Dialog>
-
-      <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
-        <Dialog.Title title="Are you sure you want to delete this video?" />
-        <Text style={{fontSize: 20}}>
-          This item will be deleted immediately. You can't undo this action.
-        </Text>
-        <Dialog.Actions>
-          <Dialog.Button
-            title="Delete"
-            onPress={() => {
-              handleDeleteVideo(videoSelectedData, videoSelectedFilename);
-            }}
-          />
-          <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
-        </Dialog.Actions>
-      </Dialog>
-      <View>
-        {/* <Button
-          onPress={() => {
-            console.log('Clicked');
-            toggleOnlineDialog();
-          }}>
-          Test
-        </Button> */}
-      </View>
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          alignItems: 'center',
-          marginBottom: 10,
-          zIndex: 100,
-        }}>
-        {/* <Dialog
-          isVisible={onlineDialogVisible}
-          onBackdropPress={toggleOnlineDialog}>
-          <Dialog.Title title="Connected!"></Dialog.Title>
-          <Text>
-            You are now connected to the internet! Would you like to analyze
-            Video Set videos?
-          </Text>
-          <View style={{paddingHorizontal: 20}}>
-            <Dialog.Actions>
-              <Dialog.Button
-                title="NO"
-                onPress={() => {
-                  console.log('NO clicked!');
-                  toggleOnlineDialog();
-                }}
-              />
-              <Dialog.Button
-                title="YES"
-                onPress={() => {
-                  console.log('YES clicked!');
-                }}
-              />
-            </Dialog.Actions>
-          </View>
-        </Dialog> */}
-      </View>
+    <View style={{flex: 1}}>
       {selected ? (
         <View></View>
       ) : (
         <View
           style={{
             position: 'absolute',
-            bottom: 30,
+            bottom: 0,
             left: 0,
             right: 0,
             alignItems: 'center',
             marginBottom: 10,
-            // elevation: 8,
             zIndex: 100,
           }}>
-          <View style={{flexDirection: 'row', alignContent: 'space-around'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
             <Button
-              // if videoSetValue is null and videoSetVideoIDs is empty, disable the button, if videoSetVideoIDs is not empty, enable the button
               disabled={
                 videoSetVideoIDs === undefined ||
                 (videoSetVideoIDs.length === 0 &&
@@ -624,7 +494,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 Add {selectedVideos.size} video(s) to Current Video Set
               </Text>
             </Button>
-            <View style={styles.space}></View>
+            <View style={{width: 10}}></View>
             <Button
               style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
               radius={50}
@@ -642,9 +512,115 @@ const ViewRecordings = ({selected, setSelected}) => {
           </View>
         </View>
       )}
-      <ScrollView style={{marginTop: 5}} ref={scrollRef}>
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={toggleDialog}>
-          {/* <Text
+      <View>
+        <Dialog isVisible={visible2} onBackdropPress={toggleDialog2}>
+          <Dialog.Title title="You are about to send your videos to the video set." />
+          <Text style={{fontSize: 18}}>
+            Would you like to analyze these videos? If you click NO you will
+            still have the option to analyze it later.
+          </Text>
+          <View style={{paddingHorizontal: 20}}>
+            <Dialog.Actions>
+              <Dialog.Button
+                title="NO"
+                onPress={async () => {
+                  console.log('NO clicked!');
+                  navigation.navigate('Video Set Dashboard', {
+                    screen: 'Dashboard',
+                    params: {selectedVideos},
+                  });
+                  Alert.alert(
+                    'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                  );
+                  toggleDialog2();
+                  navigation.navigate('Video Set Dashboard', {
+                    screen: 'Dashboard',
+                    params: {selectedVideos},
+                  });
+
+                  await handleSend();
+                  Alert.alert(
+                    'Video Transcripts Generated',
+                    'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                  );
+                }}
+              />
+              <Dialog.Button
+                title="YES"
+                onPress={async () => {
+                  console.log('YES clicked!');
+                  toggleDialog2();
+                  navigation.navigate('Video Set Dashboard', {
+                    screen: 'Dashboard',
+                    params: {selectedVideos},
+                  });
+
+                  await handleSend();
+                  await handleYesAnalysis();
+                  Alert.alert(
+                    'Video Transcripts Generated and Analyzed',
+                    'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                  );
+                }}
+              />
+            </Dialog.Actions>
+          </View>
+        </Dialog>
+        <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+          <Dialog.Title title="Are you sure you want to delete all videos?" />
+          <Text style={{fontSize: 20}}>
+            These videos will be deleted immediately. You can't undo this
+            action.
+          </Text>
+          <Dialog.Actions>
+            <Dialog.Button
+              title="Delete"
+              onPress={() => {
+                deleteAllVideoDataObjects();
+                console.log('delete all videos');
+              }}
+            />
+            <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
+          </Dialog.Actions>
+        </Dialog>
+        <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+          <Dialog.Title title="Are you sure you want to delete all videos?" />
+          <Text style={{fontSize: 20}}>
+            These videos will be deleted immediately. You can't undo this
+            action.
+          </Text>
+          <Dialog.Actions>
+            <Dialog.Button
+              title="Delete"
+              onPress={() => {
+                deleteAllVideoDataObjects();
+              }}
+            />
+            <Dialog.Button title="Cancel" onPress={() => toggleDialog()} />
+          </Dialog.Actions>
+        </Dialog>
+
+        <Dialog isVisible={visible1} onBackdropPress={toggleDialog1}>
+          <Dialog.Title title="Are you sure you want to delete this video?" />
+          <Text style={{fontSize: 20}}>
+            This item will be deleted immediately. You can't undo this action.
+          </Text>
+          <Dialog.Actions>
+            <Dialog.Button
+              title="Delete"
+              onPress={() => {
+                handleDeleteVideo(videoSelectedData, videoSelectedFilename);
+              }}
+            />
+            <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
+          </Dialog.Actions>
+        </Dialog>
+
+        <ScrollView style={{marginTop: 5}} ref={scrollRef}>
+          <TouchableOpacity
+            style={{alignItems: 'center'}}
+            onPress={toggleDialog}>
+            {/* <Text
             style={{
               fontSize: 16,
               // paddingRight: 20,
@@ -652,287 +628,291 @@ const ViewRecordings = ({selected, setSelected}) => {
             }}>
             Delete All Videos
           </Text> */}
-        </TouchableOpacity>
-        <View
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-          }}>
-          <Dropdown
-            data={viewData}
-            maxHeight={300}
+          </TouchableOpacity>
+          <View
             style={{
-              width: windowWidth / 5,
-            }}
-            placeholderStyle={styles.dropdownText}
-            selectedTextStyle={styles.dropdownText}
-            itemTextStyle={{textAlign: 'center'}}
-            labelField="label"
-            valueField="value"
-            value={viewValue}
-            onChange={item => {
-              setViewValue(item.value);
-              console.log(item.value);
-            }}
-          />
-          <Dropdown
-            data={sortData}
-            maxHeight={300}
-            style={{width: windowWidth / 2.5}}
-            placeholderStyle={styles.dropdownText}
-            selectedTextStyle={styles.dropdownText}
-            itemTextStyle={{textAlign: 'center'}}
-            labelField="label"
-            valueField="value"
-            value={sortValue}
-            onChange={item => {
-              setSortValue(item.value);
-              console.log(item.value);
-            }}
-          />
-          {/* Sorts by date */}
-          {sortValue == 1 && (
-            <MultiSelect
-              data={weekdayData}
-              maxHeight={1000}
-              style={{width: windowWidth / 2.5}}
-              placeholderStyle={styles.dropdownText}
-              selectedTextStyle={styles.dropdownText}
-              itemTextStyle={{textAlign: 'center'}}
-              labelField="label"
-              valueField="value"
-              value={weekdayValue}
-              onChange={selectedItems => {
-                console.log('selectedItems', selectedItems);
-                setWeekdayValue(selectedItems);
-
-                if (selectedItems.length === 0) {
-                  setVideos(videosByDate);
-                } else {
-                  // Map selected item label
-                  const selectedWeekdayLabels = selectedItems.map(item => {
-                    const selectedWeekday = weekdayData.find(
-                      item => item.value === selectedItems[0],
-                    );
-                    return selectedWeekday ? selectedWeekday.value : '';
-                  });
-                  console.log(
-                    'Selected Weekday Labels:',
-                    selectedWeekdayLabels,
-                  );
-
-                  // Filter videos based on selected weekday values
-                  const filteredVideos = videoData.filter(
-                    (video: {weekday: string}) => {
-                      return selectedWeekdayLabels.includes(video.weekday);
-                    },
-                  );
-
-                  console.log('Filtered Videos:', filteredVideos);
-                  setVideos(filteredVideos);
-                }
-              }}
-              renderSelectedItem={renderSelectedItem}
-            />
-          )}
-          {sortValue == 2 && (
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+            }}>
             <Dropdown
-              data={nameData}
-              maxHeight={1000}
-              style={{width: windowWidth / 2.5}}
+              data={viewData}
+              maxHeight={300}
+              style={{
+                width: windowWidth / 5,
+              }}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              value={nameValue}
+              value={viewValue}
               onChange={item => {
-                setNameValue(item.value);
-                if (item.value === 1) {
-                  setVideos(videoData.sorted('title', false));
-                } else {
-                  setVideos(videoData.sorted('title', true));
-                }
+                setViewValue(item.value);
+                console.log(item.value);
               }}
             />
-          )}
-          {}
-          {sortValue == 3 && (
-            <MultiSelect
-              data={keywordData}
-              maxHeight={1000}
+            <Dropdown
+              data={sortData}
+              maxHeight={300}
               style={{width: windowWidth / 2.5}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
               labelField="label"
               valueField="value"
-              value={keywordValue}
-              onChange={selectedItems => {
-                console.log('selectedItems', selectedItems);
-                setKeywordValue(selectedItems);
-
-                if (selectedItems.length === 0) {
-                  setVideos(videosByDate);
-                } else if (
-                  selectedItems.length === 1 &&
-                  selectedItems[0] == 1
-                ) {
-                  console.log('None selected');
-
-                  // Filter videos that have at least one keyword annotated
-                  const filteredVideos = videoData.filter(
-                    (video: {keywords: any[]}) => {
-                      return !video.keywords.some((key: string) => {
-                        return JSON.parse(key).checked;
-                      });
-                    },
-                  );
-
-                  setVideos(filteredVideos);
-                } else {
-                  // Create an array of selected keyword values
-                  const selectedKeywordValues = selectedItems.map(item => item);
-                  console.log(
-                    'Selected Keyword Values:',
-                    selectedKeywordValues,
-                  );
-
-                  // Filter videos based on selected keyword values and labels
-                  const filteredVideos = videoData.filter(
-                    (video: {keywords: any[]}) => {
-                      // Check if any of the selected keyword values match the video's keyword values
-                      return selectedKeywordValues.some(value => {
-                        return video.keywords.some((keyword: string) => {
-                          const parsedKeyword = JSON.parse(keyword);
-                          return (
-                            parsedKeyword.value === value &&
-                            parsedKeyword.checked === true
-                          );
-                        });
-                      });
-                    },
-                  );
-
-                  console.log('Filtered Videos:', filteredVideos);
-
-                  setVideos(filteredVideos);
-                }
+              value={sortValue}
+              onChange={item => {
+                setSortValue(item.value);
+                console.log(item.value);
               }}
-              renderSelectedItem={renderSelectedItem}
             />
-          )}
-          {sortValue == 4 && (
-            <MultiSelect
-              data={locationData}
-              maxHeight={1000}
-              style={{width: windowWidth / 2.5}}
-              placeholderStyle={styles.dropdownText}
-              selectedTextStyle={styles.dropdownText}
-              itemTextStyle={{textAlign: 'center'}}
-              labelField="label"
-              valueField="value"
-              value={locationValue}
-              onChange={selectedItems => {
-                console.log('selectedItems', selectedItems);
-                setLocationValue(selectedItems);
+            {/* Sorts by date */}
+            {sortValue == 1 && (
+              <MultiSelect
+                data={weekdayData}
+                maxHeight={1000}
+                style={{width: windowWidth / 2.5}}
+                placeholderStyle={styles.dropdownText}
+                selectedTextStyle={styles.dropdownText}
+                itemTextStyle={{textAlign: 'center'}}
+                labelField="label"
+                valueField="value"
+                value={weekdayValue}
+                onChange={selectedItems => {
+                  console.log('selectedItems', selectedItems);
+                  setWeekdayValue(selectedItems);
 
-                if (selectedItems.length === 0) {
-                  setVideos(videosByDate);
-                } else {
-                  const selectedLocationValues = selectedItems.map(
-                    item => item,
-                  );
-                  console.log(
-                    'Selected Location Values:',
-                    selectedLocationValues,
-                  );
-
-                  const filteredVideos = videoData.filter(
-                    (video: {locations: any[]}) => {
-                      return selectedLocationValues.some(value => {
-                        return video.locations.some((location: string) => {
-                          const parsedLocation = JSON.parse(location);
-                          return (
-                            parsedLocation.value === value &&
-                            parsedLocation.checked === true
-                          );
-                        });
-                      });
-                    },
-                  );
-                  setVideos(filteredVideos);
-                }
-              }}
-              renderSelectedItem={renderSelectedItem}
-            />
-          )}
-          {sortValue == 5 && (
-            <MultiSelect
-              data={emotionData}
-              maxHeight={1000}
-              style={{width: windowWidth / 2.5}}
-              placeholderStyle={styles.dropdownText}
-              selectedTextStyle={styles.dropdownText}
-              itemTextStyle={{textAlign: 'center'}}
-              labelField="label"
-              valueField="value"
-              value={emotionValue}
-              onChange={selectedItems => {
-                console.log('selectedItems', selectedItems);
-                setEmotionValue(selectedItems);
-
-                if (selectedItems.length === 0) {
-                  setVideos(videosByDate);
-                } else {
-                  // Map selected item values to labels
-                  const selectedEmotionLabels = selectedItems.map(value => {
-                    const selectedEmotion = emotionData.find(
-                      item => item.value === value,
+                  if (selectedItems.length === 0) {
+                    setVideos(videosByDate);
+                  } else {
+                    // Map selected item label
+                    const selectedWeekdayLabels = selectedItems.map(item => {
+                      const selectedWeekday = weekdayData.find(
+                        item => item.value === selectedItems[0],
+                      );
+                      return selectedWeekday ? selectedWeekday.value : '';
+                    });
+                    console.log(
+                      'Selected Weekday Labels:',
+                      selectedWeekdayLabels,
                     );
-                    return selectedEmotion ? selectedEmotion.label : '';
-                  });
-                  console.log(
-                    'Selected Emotion Labels:',
-                    selectedEmotionLabels,
-                  );
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'flex-end',
-                      flexDirection: 'row',
-                    }}></View>;
 
-                  const filteredVideos = videoData.filter(
-                    (video: {emotionStickers: any[]}) => {
-                      return selectedEmotionLabels.some(label => {
-                        return video.emotionStickers.some((emotion: string) => {
-                          const parsedEmotion = JSON.parse(emotion);
-                          console.log(
-                            'test:',
-                            parsedEmotion.sentiment === label,
-                          );
-                          return (
-                            parsedEmotion.sentiment.toLowerCase() ===
-                            label.toLowerCase()
+                    // Filter videos based on selected weekday values
+                    const filteredVideos = videoData.filter(
+                      (video: {weekday: string}) => {
+                        return selectedWeekdayLabels.includes(video.weekday);
+                      },
+                    );
+
+                    console.log('Filtered Videos:', filteredVideos);
+                    setVideos(filteredVideos);
+                  }
+                }}
+                renderSelectedItem={renderSelectedItem}
+              />
+            )}
+            {sortValue == 2 && (
+              <Dropdown
+                data={nameData}
+                maxHeight={1000}
+                style={{width: windowWidth / 2.5}}
+                placeholderStyle={styles.dropdownText}
+                selectedTextStyle={styles.dropdownText}
+                itemTextStyle={{textAlign: 'center'}}
+                labelField="label"
+                valueField="value"
+                value={nameValue}
+                onChange={item => {
+                  setNameValue(item.value);
+                  if (item.value === 1) {
+                    setVideos(videoData.sorted('title', false));
+                  } else {
+                    setVideos(videoData.sorted('title', true));
+                  }
+                }}
+              />
+            )}
+            {}
+            {sortValue == 3 && (
+              <MultiSelect
+                data={keywordData}
+                maxHeight={1000}
+                style={{width: windowWidth / 2.5}}
+                placeholderStyle={styles.dropdownText}
+                selectedTextStyle={styles.dropdownText}
+                itemTextStyle={{textAlign: 'center'}}
+                labelField="label"
+                valueField="value"
+                value={keywordValue}
+                onChange={selectedItems => {
+                  console.log('selectedItems', selectedItems);
+                  setKeywordValue(selectedItems);
+
+                  if (selectedItems.length === 0) {
+                    setVideos(videosByDate);
+                  } else if (
+                    selectedItems.length === 1 &&
+                    selectedItems[0] == 1
+                  ) {
+                    console.log('None selected');
+
+                    // Filter videos that have at least one keyword annotated
+                    const filteredVideos = videoData.filter(
+                      (video: {keywords: any[]}) => {
+                        return !video.keywords.some((key: string) => {
+                          return JSON.parse(key).checked;
+                        });
+                      },
+                    );
+
+                    setVideos(filteredVideos);
+                  } else {
+                    // Create an array of selected keyword values
+                    const selectedKeywordValues = selectedItems.map(
+                      item => item,
+                    );
+                    console.log(
+                      'Selected Keyword Values:',
+                      selectedKeywordValues,
+                    );
+
+                    // Filter videos based on selected keyword values and labels
+                    const filteredVideos = videoData.filter(
+                      (video: {keywords: any[]}) => {
+                        // Check if any of the selected keyword values match the video's keyword values
+                        return selectedKeywordValues.some(value => {
+                          return video.keywords.some((keyword: string) => {
+                            const parsedKeyword = JSON.parse(keyword);
+                            return (
+                              parsedKeyword.value === value &&
+                              parsedKeyword.checked === true
+                            );
+                          });
+                        });
+                      },
+                    );
+
+                    console.log('Filtered Videos:', filteredVideos);
+
+                    setVideos(filteredVideos);
+                  }
+                }}
+                renderSelectedItem={renderSelectedItem}
+              />
+            )}
+            {sortValue == 4 && (
+              <MultiSelect
+                data={locationData}
+                maxHeight={1000}
+                style={{width: windowWidth / 2.5}}
+                placeholderStyle={styles.dropdownText}
+                selectedTextStyle={styles.dropdownText}
+                itemTextStyle={{textAlign: 'center'}}
+                labelField="label"
+                valueField="value"
+                value={locationValue}
+                onChange={selectedItems => {
+                  console.log('selectedItems', selectedItems);
+                  setLocationValue(selectedItems);
+
+                  if (selectedItems.length === 0) {
+                    setVideos(videosByDate);
+                  } else {
+                    const selectedLocationValues = selectedItems.map(
+                      item => item,
+                    );
+                    console.log(
+                      'Selected Location Values:',
+                      selectedLocationValues,
+                    );
+
+                    const filteredVideos = videoData.filter(
+                      (video: {locations: any[]}) => {
+                        return selectedLocationValues.some(value => {
+                          return video.locations.some((location: string) => {
+                            const parsedLocation = JSON.parse(location);
+                            return (
+                              parsedLocation.value === value &&
+                              parsedLocation.checked === true
+                            );
+                          });
+                        });
+                      },
+                    );
+                    setVideos(filteredVideos);
+                  }
+                }}
+                renderSelectedItem={renderSelectedItem}
+              />
+            )}
+            {sortValue == 5 && (
+              <MultiSelect
+                data={emotionData}
+                maxHeight={1000}
+                style={{width: windowWidth / 2.5}}
+                placeholderStyle={styles.dropdownText}
+                selectedTextStyle={styles.dropdownText}
+                itemTextStyle={{textAlign: 'center'}}
+                labelField="label"
+                valueField="value"
+                value={emotionValue}
+                onChange={selectedItems => {
+                  console.log('selectedItems', selectedItems);
+                  setEmotionValue(selectedItems);
+
+                  if (selectedItems.length === 0) {
+                    setVideos(videosByDate);
+                  } else {
+                    // Map selected item values to labels
+                    const selectedEmotionLabels = selectedItems.map(value => {
+                      const selectedEmotion = emotionData.find(
+                        item => item.value === value,
+                      );
+                      return selectedEmotion ? selectedEmotion.label : '';
+                    });
+                    console.log(
+                      'Selected Emotion Labels:',
+                      selectedEmotionLabels,
+                    );
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'flex-end',
+                        flexDirection: 'row',
+                      }}></View>;
+
+                    const filteredVideos = videoData.filter(
+                      (video: {emotionStickers: any[]}) => {
+                        return selectedEmotionLabels.some(label => {
+                          return video.emotionStickers.some(
+                            (emotion: string) => {
+                              const parsedEmotion = JSON.parse(emotion);
+                              console.log(
+                                'test:',
+                                parsedEmotion.sentiment === label,
+                              );
+                              return (
+                                parsedEmotion.sentiment.toLowerCase() ===
+                                label.toLowerCase()
+                              );
+                            },
                           );
                         });
-                      });
-                    },
-                  );
-                  setVideos(filteredVideos);
-                }
-              }}
-              alwaysRenderSelectedItem={renderSelectedItem}
-            />
-          )}
-          {/* <View
+                      },
+                    );
+                    setVideos(filteredVideos);
+                  }
+                }}
+                alwaysRenderSelectedItem={renderSelectedItem}
+              />
+            )}
+            {/* <View
             style={{
               flex: 1,
               justifyContent: 'flex-start',
               alignItems: 'flex-end',
             }}></View> */}
-          {/* <Dropdown
+            {/* <Dropdown
             data={viewData}
             maxHeight={300}
             style={{width: windowWidth / 6}}
@@ -947,349 +927,368 @@ const ViewRecordings = ({selected, setSelected}) => {
               console.log(item.value);
             }}
           /> */}
-        </View>
+          </View>
 
-        {viewValue == 1 && (
-          <View>
-            {videos !== null
-              ? videos.map((video: VideoData) => {
-                  const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
-                  const sentimentCounts = {}; // Create an object to keep track of sentiment counts
-                  const isChecked = checkedVideos.has(video._id.toString());
-                  video.emotionStickers.forEach((key: string) => {
-                    const sentiment = JSON.parse(key).sentiment;
+          {viewValue == 1 && (
+            <View>
+              {videos !== null
+                ? videos.map((video: VideoData) => {
+                    const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
+                    const sentimentCounts = {}; // Create an object to keep track of sentiment counts
+                    const isChecked = checkedVideos.has(video._id.toString());
+                    video.emotionStickers.forEach((key: string) => {
+                      const sentiment = JSON.parse(key).sentiment;
 
-                    if (!sentimentCounts[sentiment]) {
-                      sentimentCounts[sentiment] = 1; // Initialize the count if not found
-                    } else {
-                      sentimentCounts[sentiment]++; // Increment the count
-                    }
-                  });
+                      if (!sentimentCounts[sentiment]) {
+                        sentimentCounts[sentiment] = 1; // Initialize the count if not found
+                      } else {
+                        sentimentCounts[sentiment]++; // Increment the count
+                      }
+                    });
 
-                  const isTranscriptEmpty = (video: VideoData) => {
+                    const isTranscriptEmpty = (video: VideoData) => {
+                      return (
+                        video.transcript === undefined ||
+                        video.transcript === ''
+                      );
+                    };
+
+                    const transcriptIsEmpty = isTranscriptEmpty(video);
+
                     return (
-                      video.transcript === undefined || video.transcript === ''
-                    );
-                  };
-
-                  const transcriptIsEmpty = isTranscriptEmpty(video);
-
-                  return (
-                    <View key={video._id.toString()}>
-                      <View style={styles.container}>
-                        <View style={styles.thumbnail}>
-                          <ImageBackground
-                            style={{height: '100%', width: '100%'}}
-                            source={{
-                              uri:
-                                'file://' +
-                                MHMRfolderPath +
-                                '/' +
-                                video.filename,
-                            }}>
-                            {selected ? (
-                              <View></View>
-                            ) : (
-                              <View
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'flex-start',
-                                }}>
-                                <CheckBox
-                                  uncheckedColor="white"
-                                  checked={isChecked}
-                                  size={25}
-                                  onPress={() => {
-                                    const updatedSelectedVideos = new Set(
-                                      selectedVideos,
-                                    );
-                                    if (!isChecked && !transcriptIsEmpty) {
-                                      toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.add(
-                                        video._id.toHexString(),
+                      <View key={video._id.toString()}>
+                        <View style={styles.container}>
+                          <View style={styles.thumbnail}>
+                            <ImageBackground
+                              style={{height: '100%', width: '100%'}}
+                              source={{
+                                uri:
+                                  'file://' +
+                                  MHMRfolderPath +
+                                  '/' +
+                                  video.filename,
+                              }}>
+                              {selected ? (
+                                <View></View>
+                              ) : (
+                                <View
+                                  style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'flex-start',
+                                  }}>
+                                  <CheckBox
+                                    uncheckedColor="white"
+                                    checked={isChecked}
+                                    size={25}
+                                    onPress={() => {
+                                      const updatedSelectedVideos = new Set(
+                                        selectedVideos,
                                       );
-                                      setSelectedVideos(updatedSelectedVideos);
+                                      if (!isChecked && !transcriptIsEmpty) {
+                                        toggleVideoChecked(
+                                          video._id.toString(),
+                                        );
+                                        updatedSelectedVideos.add(
+                                          video._id.toHexString(),
+                                        );
+                                        setSelectedVideos(
+                                          updatedSelectedVideos,
+                                        );
 
-                                      realm.write(() => {
-                                        video.isSelected = true;
-                                      });
-                                      // convertToAudio(video);
-                                      // realm.write(() => {
-                                      //   video.isConverted = true;
-                                      // });
-                                      // getAuth();
-                                      // getTranscript(
-                                      //   video.filename.replace('.mp4', '') +
-                                      //     '.wav',
-                                      //   video._id.toString(),
-                                      // );
+                                        realm.write(() => {
+                                          video.isSelected = true;
+                                        });
+                                        // convertToAudio(video);
+                                        // realm.write(() => {
+                                        //   video.isConverted = true;
+                                        // });
+                                        // getAuth();
+                                        // getTranscript(
+                                        //   video.filename.replace('.mp4', '') +
+                                        //     '.wav',
+                                        //   video._id.toString(),
+                                        // );
 
-                                      console.log('checked');
-                                      console.log(video.isSelected);
-                                    } else if (
-                                      !isChecked &&
-                                      transcriptIsEmpty
-                                    ) {
-                                      toggleVideoChecked(video._id.toString());
-                                      console.log('else if checked');
-                                    } else if (isChecked) {
-                                      toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.delete(
-                                        video._id.toHexString(),
-                                      );
-                                      setSelectedVideos(updatedSelectedVideos);
-                                      realm.write(() => {
-                                        video.isSelected = false;
-                                      });
-                                      console.log(video.isSelected);
-                                      console.log('unchecked');
-                                    }
-                                  }}
-                                  wrapperStyle={{
-                                    backgroundColor: 'transparent',
-                                  }}
-                                  containerStyle={{
-                                    backgroundColor: 'rgba(52, 52, 52, 0.4)',
-                                    // opacity: 1,
-                                    borderRadius: 15,
-                                    marginLeft: 6,
-                                  }}
-                                />
-                              </View>
-                            )}
-                            <TouchableOpacity
-                              onPress={() =>
-                                navigation.navigate('Fullscreen Video', {
-                                  id: video._id,
-                                })
-                              }>
-                              {/* <Icon
+                                        console.log('checked');
+                                        console.log(video.isSelected);
+                                      } else if (
+                                        !isChecked &&
+                                        transcriptIsEmpty
+                                      ) {
+                                        toggleVideoChecked(
+                                          video._id.toString(),
+                                        );
+                                        console.log('else if checked');
+                                      } else if (isChecked) {
+                                        toggleVideoChecked(
+                                          video._id.toString(),
+                                        );
+                                        updatedSelectedVideos.delete(
+                                          video._id.toHexString(),
+                                        );
+                                        setSelectedVideos(
+                                          updatedSelectedVideos,
+                                        );
+                                        realm.write(() => {
+                                          video.isSelected = false;
+                                        });
+                                        console.log(video.isSelected);
+                                        console.log('unchecked');
+                                      }
+                                    }}
+                                    wrapperStyle={{
+                                      backgroundColor: 'transparent',
+                                    }}
+                                    containerStyle={{
+                                      backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                                      // opacity: 1,
+                                      borderRadius: 15,
+                                      marginLeft: 6,
+                                    }}
+                                  />
+                                </View>
+                              )}
+                              <TouchableOpacity
+                                onPress={() =>
+                                  navigation.navigate('Fullscreen Video', {
+                                    id: video._id,
+                                  })
+                                }>
+                                {/* <Icon
                               style={{height: 240, justifyContent: 'center'}}
                               name="play-sharp"
                               type="ionicon"
                               color="black"
                               size={40}
                             /> */}
-                            </TouchableOpacity>
-                          </ImageBackground>
-                        </View>
-                        <View style={styles.rightContainer}>
-                          <View>
-                            <Text
-                              style={{
-                                fontSize: 24,
-                                color: 'black',
-                                fontWeight: 'bold',
-                              }}>
-                              {video.title}
-
-                              {video.textComments.length !== 0 ? (
-                                <Icon
-                                  name="chatbox-ellipses"
-                                  type="ionicon"
-                                  color="black"
-                                  size={22}
-                                  style={{
-                                    alignSelf: 'flex-start',
-                                    paddingLeft: 5,
-                                  }}
-                                />
-                              ) : null}
-                            </Text>
-                            <Text style={{fontSize: 20}}>
-                              {video.datetimeRecorded?.toLocaleString()}
-                            </Text>
-                            {/* <Text>{video.filename}</Text> */}
-
-                            <View
-                              style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                              {video.keywords.map((key: string) => {
-                                if (JSON.parse(key).checked) {
-                                  return (
-                                    <Chip
-                                      key={JSON.parse(key).title}
-                                      style={{
-                                        margin: 2,
-                                        backgroundColor: '#E1BE6A',
-                                      }}
-                                      textStyle={{fontSize: 16}}
-                                      mode="outlined"
-                                      compact={true}
-                                      icon={'tag'}>
-                                      {JSON.parse(key).title}
-                                    </Chip>
-                                  );
-                                }
-                              })}
-                              {video.locations.map((key: string) => {
-                                if (JSON.parse(key).checked) {
-                                  return (
-                                    <Chip
-                                      key={JSON.parse(key).title}
-                                      textStyle={{fontSize: 16}}
-                                      style={{
-                                        margin: 2,
-                                        backgroundColor: '#40B0A6',
-                                      }}
-                                      mode="outlined"
-                                      compact={true}
-                                      icon={'map-marker'}>
-                                      {JSON.parse(key).title}
-                                    </Chip>
-                                  );
-                                }
-                              })}
-                            </View>
-                            <View
-                              style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                              {video.emotionStickers.map(key => {
-                                const sentiment = JSON.parse(key).sentiment;
-                                const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
-
-                                if (!displayedSentiments.has(sentiment)) {
-                                  displayedSentiments.add(sentiment);
-                                  return (
-                                    <View>
-                                      <Tooltip
-                                        title={`${sentiment} (${sentimentCounts[sentiment]})`}>
-                                        {imageSource && (
-                                          <Image
-                                            style={{height: 60, width: 60}}
-                                            source={imageSource}
-                                          />
-                                        )}
-                                      </Tooltip>
-                                      <Text style={{fontWeight: 'bold'}}>
-                                        {sentimentCounts[sentiment]}
-                                      </Text>
-                                    </View>
-                                  );
-                                }
-                                return null; // If sentiment has already been displayed, return null
-                              })}
-                            </View>
+                              </TouchableOpacity>
+                            </ImageBackground>
                           </View>
+                          <View style={styles.rightContainer}>
+                            <View>
+                              <Text
+                                style={{
+                                  fontSize: 24,
+                                  color: 'black',
+                                  fontWeight: 'bold',
+                                }}>
+                                {video.title}
 
-                          {selected ? (
-                            <View style={styles.buttonContainer}>
-                              <Button
-                                buttonStyle={styles.btnStyle}
-                                title="Review"
-                                radius={50}
-                                onPress={() =>
-                                  navigation.navigate('Review Annotations', {
-                                    id: video._id,
-                                  })
-                                }
-                              />
-                              <View style={styles.space} />
-                              <Button
-                                buttonStyle={styles.btnStyle}
-                                radius={50}
-                                title="Add/Edit Markups"
-                                onPress={() =>
-                                  navigation.navigate('Annotation Menu', {
-                                    id: video._id,
-                                  })
-                                }
-                              />
-                              <View style={styles.space} />
-                              <Button
-                                buttonStyle={styles.btnStyle}
-                                radius={50}
-                                title="Delete Video"
-                                onPress={() =>
-                                  handleDeleteVideo(video, video.filename)
-                                }
-                                // onPress={() => {
-                                //   setVideoSelectedData(video);
-                                //   setvideoSelectedFilename(video.filename);
-                                //   toggleDialog1();
-                                // }}
-                              />
+                                {video.textComments.length !== 0 ? (
+                                  <Icon
+                                    name="chatbox-ellipses"
+                                    type="ionicon"
+                                    color="black"
+                                    size={22}
+                                    style={{
+                                      alignSelf: 'flex-start',
+                                      paddingLeft: 5,
+                                    }}
+                                  />
+                                ) : null}
+                              </Text>
+                              <Text style={{fontSize: 20}}>
+                                {video.datetimeRecorded?.toLocaleString()}
+                              </Text>
+                              {/* <Text>{video.filename}</Text> */}
+
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  flexWrap: 'wrap',
+                                }}>
+                                {video.keywords.map((key: string) => {
+                                  if (JSON.parse(key).checked) {
+                                    return (
+                                      <Chip
+                                        key={JSON.parse(key).title}
+                                        style={{
+                                          margin: 2,
+                                          backgroundColor: '#E1BE6A',
+                                        }}
+                                        textStyle={{fontSize: 16}}
+                                        mode="outlined"
+                                        compact={true}
+                                        icon={'tag'}>
+                                        {JSON.parse(key).title}
+                                      </Chip>
+                                    );
+                                  }
+                                })}
+                                {video.locations.map((key: string) => {
+                                  if (JSON.parse(key).checked) {
+                                    return (
+                                      <Chip
+                                        key={JSON.parse(key).title}
+                                        textStyle={{fontSize: 16}}
+                                        style={{
+                                          margin: 2,
+                                          backgroundColor: '#40B0A6',
+                                        }}
+                                        mode="outlined"
+                                        compact={true}
+                                        icon={'map-marker'}>
+                                        {JSON.parse(key).title}
+                                      </Chip>
+                                    );
+                                  }
+                                })}
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  flexWrap: 'wrap',
+                                }}>
+                                {video.emotionStickers.map(key => {
+                                  const sentiment = JSON.parse(key).sentiment;
+                                  const imageSource =
+                                    sentimentImages[sentiment]; // Get the image source based on sentiment
+
+                                  if (!displayedSentiments.has(sentiment)) {
+                                    displayedSentiments.add(sentiment);
+                                    return (
+                                      <View>
+                                        <Tooltip
+                                          title={`${sentiment} (${sentimentCounts[sentiment]})`}>
+                                          {imageSource && (
+                                            <Image
+                                              style={{height: 60, width: 60}}
+                                              source={imageSource}
+                                            />
+                                          )}
+                                        </Tooltip>
+                                        <Text style={{fontWeight: 'bold'}}>
+                                          {sentimentCounts[sentiment]}
+                                        </Text>
+                                      </View>
+                                    );
+                                  }
+                                  return null; // If sentiment has already been displayed, return null
+                                })}
+                              </View>
                             </View>
-                          ) : (
-                            <View></View>
-                          )}
+
+                            {selected ? (
+                              <View style={styles.buttonContainer}>
+                                <Button
+                                  buttonStyle={styles.btnStyle}
+                                  title="Review"
+                                  radius={50}
+                                  onPress={() =>
+                                    navigation.navigate('Review Annotations', {
+                                      id: video._id,
+                                    })
+                                  }
+                                />
+                                <View style={styles.space} />
+                                <Button
+                                  buttonStyle={styles.btnStyle}
+                                  radius={50}
+                                  title="Add/Edit Markups"
+                                  onPress={() =>
+                                    navigation.navigate('Annotation Menu', {
+                                      id: video._id,
+                                    })
+                                  }
+                                />
+                                <View style={styles.space} />
+                                <Button
+                                  buttonStyle={styles.btnStyle}
+                                  radius={50}
+                                  title="Delete Video"
+                                  onPress={() =>
+                                    handleDeleteVideo(video, video.filename)
+                                  }
+                                  // onPress={() => {
+                                  //   setVideoSelectedData(video);
+                                  //   setvideoSelectedFilename(video.filename);
+                                  //   toggleDialog1();
+                                  // }}
+                                />
+                              </View>
+                            ) : (
+                              <View></View>
+                            )}
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  );
-                })
-              : null}
-          </View>
-        )}
+                    );
+                  })
+                : null}
+            </View>
+          )}
 
-        {/* grid view */}
-        {viewValue == 2 && (
-          <View style={styles.gridContainer}>
-            {videos.map((video: VideoData) => {
-              const isChecked = checkedVideos.has(video._id.toString());
+          {/* grid view */}
+          {viewValue == 2 && (
+            <View style={styles.gridContainer}>
+              {videos.map((video: VideoData) => {
+                const isChecked = checkedVideos.has(video._id.toString());
 
-              return (
-                <View style={styles.gridItem} key={video._id.toString()}>
-                  {!selected ? <View></View> : <View></View>}
+                return (
+                  <View style={styles.gridItem} key={video._id.toString()}>
+                    {!selected ? <View></View> : <View></View>}
 
-                  <View style={styles.gridThumbnail}>
-                    <ImageBackground
-                      style={{height: '100%', width: '100%'}}
-                      source={{
-                        uri: 'file://' + MHMRfolderPath + '/' + video.filename,
-                      }}>
-                      {selected ? (
-                        <View></View>
-                      ) : (
-                        <View
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            justifyContent: 'flex-start',
-                            alignItems: 'flex-start',
-                          }}>
-                          <CheckBox
-                            uncheckedColor="white"
-                            checked={isChecked}
-                            size={25}
-                            onPress={() => {
-                              const updatedSelectedVideos = new Set(
-                                selectedVideos,
-                              );
-                              if (!isChecked) {
-                                toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.add(
-                                  video._id.toHexString(),
+                    <View style={styles.gridThumbnail}>
+                      <ImageBackground
+                        style={{height: '100%', width: '100%'}}
+                        source={{
+                          uri:
+                            'file://' + MHMRfolderPath + '/' + video.filename,
+                        }}>
+                        {selected ? (
+                          <View></View>
+                        ) : (
+                          <View
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              justifyContent: 'flex-start',
+                              alignItems: 'flex-start',
+                            }}>
+                            <CheckBox
+                              uncheckedColor="white"
+                              checked={isChecked}
+                              size={25}
+                              onPress={() => {
+                                const updatedSelectedVideos = new Set(
+                                  selectedVideos,
                                 );
-                                setSelectedVideos(updatedSelectedVideos);
-                                console.log('checked');
-                              } else if (isChecked) {
-                                toggleVideoChecked(video._id.toString());
-                                updatedSelectedVideos.delete(
-                                  video._id.toHexString(),
-                                );
-                                setSelectedVideos(updatedSelectedVideos);
-                                console.log('unchecked');
-                              }
-                            }}
-                            wrapperStyle={{backgroundColor: 'transparent'}}
-                            containerStyle={{
-                              backgroundColor: 'rgba(52, 52, 52, 0.4)',
-                              // opacity: 1,
-                              borderRadius: 15,
-                              marginLeft: 6,
-                            }}
-                          />
-                        </View>
-                      )}
+                                if (!isChecked) {
+                                  toggleVideoChecked(video._id.toString());
+                                  updatedSelectedVideos.add(
+                                    video._id.toHexString(),
+                                  );
+                                  setSelectedVideos(updatedSelectedVideos);
+                                  console.log('checked');
+                                } else if (isChecked) {
+                                  toggleVideoChecked(video._id.toString());
+                                  updatedSelectedVideos.delete(
+                                    video._id.toHexString(),
+                                  );
+                                  setSelectedVideos(updatedSelectedVideos);
+                                  console.log('unchecked');
+                                }
+                              }}
+                              wrapperStyle={{backgroundColor: 'transparent'}}
+                              containerStyle={{
+                                backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                                // opacity: 1,
+                                borderRadius: 15,
+                                marginLeft: 6,
+                              }}
+                            />
+                          </View>
+                        )}
 
-                      {/* <TouchableOpacity
+                        {/* <TouchableOpacity
                         onPress={() =>
                           navigation.navigate('Fullscreen Video', {
                             id: video._id,
@@ -1303,97 +1302,100 @@ const ViewRecordings = ({selected, setSelected}) => {
                           size={40}
                         />
                       </TouchableOpacity> */}
-                    </ImageBackground>
-                  </View>
-
-                  {/* bottom container */}
-                  <View style={{paddingLeft: 2}}>
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        color: 'black',
-                        fontWeight: 'bold',
-                      }}>
-                      {video.title}
-                      {video.textComments.length !== 0 ? (
-                        <Icon
-                          name="chatbox-ellipses"
-                          type="ionicon"
-                          color="black"
-                          size={22}
-                          style={{
-                            alignSelf: 'flex-start',
-                            paddingLeft: 5,
-                          }}
-                        />
-                      ) : null}
-                      {video.emotionStickers.length !== 0 ? (
-                        <Icon
-                          name="happy"
-                          type="ionicon"
-                          color="black"
-                          size={22}
-                          style={{
-                            alignSelf: 'flex-start',
-                            paddingLeft: 5,
-                          }}
-                        />
-                      ) : null}
-                    </Text>
-                    <Text style={{fontSize: 20}}>
-                      {video.datetimeRecorded?.toLocaleString()}
-                    </Text>
-                  </View>
-                  {selected ? (
-                    <View style={[styles.buttonContainer, {padding: 5}]}>
-                      <Button
-                        buttonStyle={styles.btnStyle}
-                        title="Review"
-                        radius={50}
-                        onPress={() =>
-                          navigation.navigate('Review Annotations', {
-                            id: video._id,
-                          })
-                        }
-                      />
-                      <View style={{width: 15}} />
-                      <Button
-                        buttonStyle={styles.btnStyle}
-                        title="Add/Edit Markups"
-                        radius={50}
-                        onPress={() =>
-                          navigation.navigate('Annotation Menu', {
-                            id: video._id,
-                          })
-                        }
-                      />
-                      <View style={{width: 15}} />
-                      <Button
-                        buttonStyle={styles.btnStyle}
-                        title="Delete Video"
-                        radius={50}
-                        onPress={() => deleteVideo(video, video.filename)}
-                        // onPress={() => {
-                        //   setVideoSelectedData(video);
-                        //   setvideoSelectedFilename(video.filename);
-                        //   toggleDialog1();
-                        // }}
-                      />
+                      </ImageBackground>
                     </View>
-                  ) : (
-                    <View></View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        )}
-        <TouchableOpacity style={{alignItems: 'center'}} onPress={onPressTouch}>
-          <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
-            Scroll to Top
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+
+                    {/* bottom container */}
+                    <View style={{paddingLeft: 2}}>
+                      <Text
+                        style={{
+                          fontSize: 24,
+                          color: 'black',
+                          fontWeight: 'bold',
+                        }}>
+                        {video.title}
+                        {video.textComments.length !== 0 ? (
+                          <Icon
+                            name="chatbox-ellipses"
+                            type="ionicon"
+                            color="black"
+                            size={22}
+                            style={{
+                              alignSelf: 'flex-start',
+                              paddingLeft: 5,
+                            }}
+                          />
+                        ) : null}
+                        {video.emotionStickers.length !== 0 ? (
+                          <Icon
+                            name="happy"
+                            type="ionicon"
+                            color="black"
+                            size={22}
+                            style={{
+                              alignSelf: 'flex-start',
+                              paddingLeft: 5,
+                            }}
+                          />
+                        ) : null}
+                      </Text>
+                      <Text style={{fontSize: 20}}>
+                        {video.datetimeRecorded?.toLocaleString()}
+                      </Text>
+                    </View>
+                    {selected ? (
+                      <View style={[styles.buttonContainer, {padding: 5}]}>
+                        <Button
+                          buttonStyle={styles.btnStyle}
+                          title="Review"
+                          radius={50}
+                          onPress={() =>
+                            navigation.navigate('Review Annotations', {
+                              id: video._id,
+                            })
+                          }
+                        />
+                        <View style={{width: 15}} />
+                        <Button
+                          buttonStyle={styles.btnStyle}
+                          title="Add/Edit Markups"
+                          radius={50}
+                          onPress={() =>
+                            navigation.navigate('Annotation Menu', {
+                              id: video._id,
+                            })
+                          }
+                        />
+                        <View style={{width: 15}} />
+                        <Button
+                          buttonStyle={styles.btnStyle}
+                          title="Delete Video"
+                          radius={50}
+                          onPress={() => deleteVideo(video, video.filename)}
+                          // onPress={() => {
+                          //   setVideoSelectedData(video);
+                          //   setvideoSelectedFilename(video.filename);
+                          //   toggleDialog1();
+                          // }}
+                        />
+                      </View>
+                    ) : (
+                      <View></View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          )}
+          <TouchableOpacity
+            style={{alignItems: 'center'}}
+            onPress={onPressTouch}>
+            <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
+              Scroll to Top
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
     </View>
   );
 };
