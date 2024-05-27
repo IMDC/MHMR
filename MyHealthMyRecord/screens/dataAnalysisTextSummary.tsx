@@ -12,27 +12,22 @@ import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
-import Sentiment from 'sentiment';
+import { getSentimentFromChatGPT } from '../components/chatgpt_api';
 
 const DataAnalysisTextSummary = () => {
-  const sentiment = new Sentiment();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
-
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-  const {
-    videoSetVideoIDs,
-    selectedVideoSet,
-  } = useDropdownContext();
+  const { videoSetVideoIDs, selectedVideoSet } = useDropdownContext();
   const realm = useRealm();
 
 
   useEffect(() => {
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
-        videoSetVideoIDs.map(async videoID => {
+        videoSetVideoIDs.map(async (videoID) => {
           const objectId = new Realm.BSON.ObjectId(videoID);
           const video = realm.objectForPrimaryKey('VideoData', objectId);
           return video;
@@ -48,10 +43,8 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videos.map(async video => {
-          const filePath = `${
-            RNFS.DocumentDirectoryPath
-          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+        videos.map(async (video) => {
+          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
           const fileExists = await RNFS.exists(filePath);
 
           let fileContent = '';
@@ -74,11 +67,7 @@ const DataAnalysisTextSummary = () => {
             .map(obj => obj.title)
             .join(', ');
 
-          const result = sentiment.analyze(fileContent);
-          const sentimentScore = result.score;
-          let sentimentLabel = 'Neutral';
-          if (sentimentScore > 0) sentimentLabel = 'Positive';
-          else if (sentimentScore < 0) sentimentLabel = 'Negative';
+          const sentimentLabel = await getSentimentFromChatGPT(fileContent);
 
           return {
             ...video.toJSON(), // Convert Realm object to plain JS object
@@ -86,8 +75,6 @@ const DataAnalysisTextSummary = () => {
             checkedTitles,
             checkedLocations,
             sentiment: sentimentLabel,
-            sentimentScore: result.score,
-            sentimentComparative: result.comparative,
           };
         }),
       );
@@ -98,36 +85,29 @@ const DataAnalysisTextSummary = () => {
     if (videos.length) {
       loadTranscripts();
     }
-  }, [sentiment, videos]);
+  }, [videos]);
 
-  const handleEdit = video => {
+  const handleEdit = (video) => {
     setEditingID(video._id);
     setDraftTranscript(video.transcript[0] || '');
   };
 
   const handleSave = async () => {
     const updatedTranscript = draftTranscript;
-    const result = sentiment.analyze(updatedTranscript);
-    let sentimentLabel = 'Neutral';
-    if (result.score > 0) sentimentLabel = 'Positive';
-    else if (result.score < 0) sentimentLabel = 'Negative';
+    const sentimentLabel = await getSentimentFromChatGPT(updatedTranscript);
 
     realm.write(() => {
       const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
       videoToUpdate.transcript = [updatedTranscript];
       videoToUpdate.sentiment = sentimentLabel;
-      videoToUpdate.sentimentScore = result.score;
-      videoToUpdate.sentimentComparative = result.comparative;
     });
 
-    const updatedVideos = videos.map(video => {
+    const updatedVideos = videos.map((video) => {
       if (video._id === editingID) {
         return {
           ...video,
           transcript: [updatedTranscript],
           sentiment: sentimentLabel,
-          sentimentScore: result.score,
-          sentimentComparative: result.comparative,
         };
       }
       return video;
@@ -145,15 +125,13 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
-      <View style={{padding: 10}}>
-        <Text style={[styles.title, {textAlign: 'center'}]}>
-          {selectedVideoSet.name} - Video Set Summary
-        </Text>
+      <View style={{ padding: 10 }}>
+        <Text style={[styles.title, { textAlign: 'center' }]}>{selectedVideoSet.name} - Video Set Summary</Text>
         <Text style={styles.output}>{selectedVideoSet.summaryAnalysis}</Text>
       </View>
-      {videos.map(video => (
+      {videos.map((video) => (
         <View key={video._id} style={styles.container}>
-          <View style={{padding: 10}}>
+          <View style={{ padding: 10 }}>
             <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
@@ -165,18 +143,10 @@ const DataAnalysisTextSummary = () => {
                 />
                 <View style={styles.buttonContainer}>
                   <View style={styles.buttonWrapper}>
-                    <Button
-                      title="Save"
-                      onPress={handleSave}
-                      color={Styles.MHMRBlue}
-                    />
+                    <Button title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
                   </View>
                   <View style={styles.buttonWrapper}>
-                    <Button
-                      title="Cancel"
-                      onPress={handleCancel}
-                      color={Styles.MHMRBlue}
-                    />
+                    <Button title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
                   </View>
                 </View>
               </>
@@ -186,11 +156,7 @@ const DataAnalysisTextSummary = () => {
                   <Text style={styles.boldText}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Button
-                  title="Edit"
-                  onPress={() => handleEdit(video)}
-                  color={Styles.MHMRBlue}
-                />
+                <Button title="Edit" onPress={() => handleEdit(video)} color={Styles.MHMRBlue} />
               </>
             )}
             <Text style={styles.output}>
@@ -199,7 +165,7 @@ const DataAnalysisTextSummary = () => {
             </Text>
             <Text style={styles.sentiment}>
               <Text style={styles.boldText}>Sentiment: </Text>
-              {video.sentiment} (Score: {video.sentimentScore})
+              {video.sentiment}
             </Text>
           </View>
         </View>
