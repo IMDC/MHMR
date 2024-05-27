@@ -12,10 +12,10 @@ import RNFS from 'react-native-fs';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useIsFocused} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
-import Sentiment from 'sentiment';
-import {sendToChatGPT} from '../components/chatgpt_api';
+import { getSentimentFromChatGPT, sendToChatGPT, sendVideoSetToChatGPT } from '../components/chatgpt_api';
+
 const DataAnalysisTextSummary = () => {
-  const sentiment = new Sentiment();
+  const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
@@ -24,7 +24,9 @@ const DataAnalysisTextSummary = () => {
   const realm = useRealm();
   const [videoSet, setVideoSet] = useState(null); 
   const [videoDataVideos, setVideoDataVideos] = useState([]);
-
+  const [videoSetSummary, setVideoSetSummary] = useState('');
+  const { videoSetVideoIDs, selectedVideoSet } = useDropdownContext();
+  const realm = useRealm();
   useEffect(() => {
     if (selectedVideoSet) {
       setVideoSet(selectedVideoSet);
@@ -34,13 +36,13 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
-        videoSetVideoIDs.map(async videoID => {
+        videoSetVideoIDs.map(async (videoID) => {
           const objectId = new Realm.BSON.ObjectId(videoID);
           const video = realm.objectForPrimaryKey('VideoData', objectId);
           return video;
         }),
       );
-      setVideoDataVideos(videoDataVideos);
+      setVideos(videoDataVideos);
     };
     if (isFocused) {
       getVideoData();
@@ -50,10 +52,8 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videoDataVideos.map(async video => {
-          const filePath = `${
-            RNFS.DocumentDirectoryPath
-          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+        videos.map(async (video) => {
+          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
           const fileExists = await RNFS.exists(filePath);
 
           let fileContent = '';
@@ -75,11 +75,7 @@ const DataAnalysisTextSummary = () => {
             .map(obj => obj.title)
             .join(', ');
 
-          const result = sentiment.analyze(fileContent);
-          const sentimentScore = result.score;
-          let sentimentLabel = 'Neutral';
-          if (sentimentScore > 0) sentimentLabel = 'Positive';
-          else if (sentimentScore < 0) sentimentLabel = 'Negative';
+          const sentimentLabel = await getSentimentFromChatGPT(fileContent);
 
           return {
             ...video.toJSON(), // Convert Realm object to plain JS object
@@ -87,46 +83,56 @@ const DataAnalysisTextSummary = () => {
             checkedTitles,
             checkedLocations,
             sentiment: sentimentLabel,
-            sentimentScore: result.score,
-            sentimentComparative: result.comparative,
           };
         }),
       );
 
       setVideos(videoTranscripts);
     };
+    if (videos.length) {
+      loadTranscripts();
+    }
+  }, [videos]);
 
-    loadTranscripts();
-  }, [videoDataVideos]);
+  useEffect(() => {
+    const updateVideoSetSummary = async () => {
+      if (videos.length > 0) {
+        const summary = await sendVideoSetToChatGPT(realm, videoSetVideoIDs, selectedVideoSet);
+        setVideoSetSummary(summary);
+      }
+    };
 
-  const handleEdit = video => {
+    updateVideoSetSummary();
+  }, [videos]);
+
+  const handleEdit = (video) => {
     setEditingID(video._id);
-    setDraftTranscript(video.transcript[0]);
+    setDraftTranscript(video.transcript[0] || '');
   };
 
   const handleSave = async () => {
     const updatedTranscript = draftTranscript;
-    const result = sentiment.analyze(updatedTranscript);
-    let sentimentLabel = 'Neutral';
-    if (result.score > 0) sentimentLabel = 'Positive';
-    else if (result.score < 0) sentimentLabel = 'Negative';
+    const sentimentLabel = await getSentimentFromChatGPT(updatedTranscript);
+
+    const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
+    const keywords = videoToUpdate.keywords.map(key => JSON.parse(key)).map(obj => obj.title).join(', ');
+    const locations = videoToUpdate.locations.map(loc => JSON.parse(loc)).map(obj => obj.title).join(', ');
+
+    const summary = await sendToChatGPT(videoToUpdate.filename, updatedTranscript, keywords, locations, realm, editingID);
 
     realm.write(() => {
-      const videoToUpdate = realm.objectForPrimaryKey('VideoData', editingID);
       videoToUpdate.transcript = [updatedTranscript];
       videoToUpdate.sentiment = sentimentLabel;
-      videoToUpdate.sentimentScore = result.score;
-      videoToUpdate.sentimentComparative = result.comparative;
+      videoToUpdate.transcriptFileContent = summary;
     });
 
-    const updatedVideos = videos.map(video => {
+    const updatedVideos = videos.map((video) => {
       if (video._id === editingID) {
         return {
           ...video,
           transcript: [updatedTranscript],
           sentiment: sentimentLabel,
-          sentimentScore: result.score,
-          sentimentComparative: result.comparative,
+          transcriptFileContent: summary,
         };
       }
       return video;
@@ -176,15 +182,14 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
-      <View style={{padding: 10}}>
-        <Text style={[styles.title, {textAlign: 'center'}]}>
-          {videoSet?.name} - Video Set Summary
-        </Text>
-        <Text style={styles.output}>{videoSet?.summaryAnalysis}</Text>
+      <View style={{ padding: 10 }}>
+        <Text style={[styles.title, { textAlign: 'center' }]}>{videoSet?.summaryAnalysis} - Video Set Summary</Text>
+        <Text style={styles.output}>{videoSetSummary}</Text>
+
       </View>
-      {videos.map(video => (
+      {videos.map((video) => (
         <View key={video._id} style={styles.container}>
-          <View style={{padding: 10}}>
+          <View style={{ padding: 10 }}>
             <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
@@ -196,18 +201,10 @@ const DataAnalysisTextSummary = () => {
                 />
                 <View style={styles.buttonContainer}>
                   <View style={styles.buttonWrapper}>
-                    <Button
-                      title="Save"
-                      onPress={handleSave}
-                      color={Styles.MHMRBlue}
-                    />
+                    <Button title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
                   </View>
                   <View style={styles.buttonWrapper}>
-                    <Button
-                      title="Cancel"
-                      onPress={handleCancel}
-                      color={Styles.MHMRBlue}
-                    />
+                    <Button title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
                   </View>
                 </View>
               </>
@@ -217,11 +214,7 @@ const DataAnalysisTextSummary = () => {
                   <Text style={styles.boldText}>Video Transcript: </Text>
                   {video.transcript[0]}
                 </Text>
-                <Button
-                  title="Edit"
-                  onPress={() => handleEdit(video)}
-                  color={Styles.MHMRBlue}
-                />
+                <Button title="Edit" onPress={() => handleEdit(video)} color={Styles.MHMRBlue} />
               </>
             )}
             <Text style={styles.output}>
@@ -229,8 +222,8 @@ const DataAnalysisTextSummary = () => {
               {video.transcriptFileContent}
             </Text>
             <Text style={styles.sentiment}>
-              <Text style={styles.boldText}>Sentiment: </Text>
-              {video.sentiment} (Score: {video.sentimentScore})
+              <Text style={styles.boldText}>Overall Feeling: </Text>
+              {video.sentiment}
             </Text>
           </View>
         </View>
@@ -286,7 +279,7 @@ const styles = StyleSheet.create({
   },
   sentiment: {
     fontSize: 20,
-    color: 'green',
+    color: 'black',
     marginTop: 10,
   },
 });

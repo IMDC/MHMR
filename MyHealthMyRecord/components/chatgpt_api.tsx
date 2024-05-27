@@ -109,3 +109,12 @@ export const sendVideoSetToChatGPT = async (
     console.error('Error:', error);
   }
 };
+export const getSentimentFromChatGPT = async (transcript) => {
+  const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
+  const data = await connectToChatGPT(inputText);
+  if (data.choices && data.choices.length > 0) {
+    const sentiment = data.choices[0].message.content.trim();
+    return sentiment;
+  }
+  return 'Neutral';
+};
