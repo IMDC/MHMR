@@ -120,6 +120,7 @@ function DataAnalysisStack() {
       <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
       <Stack.Screen name="Text Summary" component={DataAnalysisTextSummary} />
       <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
   );
 }
