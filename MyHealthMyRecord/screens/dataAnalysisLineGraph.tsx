@@ -177,6 +177,7 @@ const DataAnalysisLineGraph = () => {
               style={{marginBottom: xAxisHeight}}
               contentInset={verticalContentInset}
               svg={axesSvg}
+              numberOfTicks={Math.max(...freqDayArray[date]?.map(item => item.value))}
             />
 
             <ScrollView horizontal={true}>
