@@ -1,150 +1,40 @@
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
-import {Alert, Dimensions, ScrollView, Text, View} from 'react-native';
+import {
+  Alert,
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+} from 'react-native';
 import {Button} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import Svg, {Circle, G, Line, Rect} from 'react-native-svg';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
 import * as Styles from '../assets/util/styles';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { useRealm } from '../models/VideoData';
 
 const DataAnalysisLineGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
   const route: any = useRoute();
   const wordLabel = route.params?.word;
   const lineData = route.params?.data;
+  const realm = useRealm();
 
-  //const freqDayArray = lineData.byHour;
-  //const dateOptions = lineData.dates;
-
-  // base template for how to format each day
-  let freqDayTemplate = [
-    {
-      label: 0,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 1,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 2,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 3,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 4,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 5,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 6,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 7,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 8,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 9,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 10,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 11,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 12,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 13,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 14,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 15,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 16,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 17,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 18,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 19,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 20,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 21,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 22,
-      value: 0,
-      videoIDs: [],
-    },
-    {
-      label: 23,
-      value: 0,
-      videoIDs: [],
-    },
-  ];
-
-  const [freqDayArray, setFreqDayArray] = useState([freqDayTemplate]);
+  const [freqDayArray, setFreqDayArray] = useState([[]]);
   const [dateOptions, setDateOptions] = useState([]);
+  const [periodValue, setPeriodValue] = useState('1');
+  const [segementDay, setSegementDayValue] = useState('12');
+  const [segementWeek, setSegementWeekValue] = useState('1');
+  const [segementMonth, setSegementMonthValue] = useState('1');
+  const [date, setDateValue] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [videoIDs, setVideoIDs] = useState([]);
 
   useEffect(() => {
     if (wordLabel == undefined) {
@@ -159,406 +49,12 @@ const DataAnalysisLineGraph = () => {
     }
   }, []);
 
-  /* ======================================================================= */
-  // Line graph stuff below
-  /* ======================================================================= */
-
   const windowWidth = Dimensions.get('window').width;
 
   const axesSvg = {fontSize: 20, fill: 'grey'};
   const verticalContentInset = {top: 10, bottom: 10};
   const xAxisHeight = 30;
 
-  // can delete commented stuff below
-  /*     const freqMonth = [
-            {
-                label: new Date(2023, 0, 1),
-                value: 3,
-            },
-            {
-                label: new Date(2023, 1, 1),
-                value: 7,
-            },
-            {
-                label: new Date(2023, 2, 1),
-                value: 3,
-            },
-            {
-                label: new Date(2023, 3, 1),
-                value: 15,
-            },
-            {
-                label: new Date(2023, 4, 1),
-                value: 6,
-            },
-            {
-                label: new Date(2023, 5, 1),
-                value: 8,
-            },
-            {
-                label: new Date(2023, 6, 1),
-                value: 12,
-            },
-            {
-                label: new Date(2023, 7, 1),
-                value: 8,
-            },
-            {
-                label: new Date(2023, 8, 1),
-                value: 1,
-            },
-            {
-                label: new Date(2023, 9, 1),
-                value: 7,
-            },
-            {
-                label: new Date(2023, 10, 1),
-                value: 14,
-            },
-            {
-                label: new Date(2023, 11, 1),
-                value: 9,
-            },
-        ]
-    
-        const timestamp1 = new Date('2023-10-25T04:55:30');
-        const timestamp2 = new Date('2023-10-25T12:55:30');
-        const timestamp3 = new Date('2023-10-25T15:55:30');
-    
-        const timestamp4 = new Date('2023-10-26T15:55:30');
-        const timestamp5 = new Date('2023-10-28T15:55:30');
-    
-        const freqDay = [
-            {
-                label: 0,
-                value: 0,
-            },
-            {
-                label: 1,
-                value: 0,
-            },
-            {
-                label: 2,
-                value: 0,
-            },
-            {
-                label: 3,
-                value: 0,
-            },
-            {
-                label: timestamp1.getHours(),
-                value: 1,
-            },
-            {
-                label: 5,
-                value: 0,
-            },
-            {
-                label: 6,
-                value: 0,
-            },
-            {
-                label: 7,
-                value: 0,
-            },
-            {
-                label: 8,
-                value: 0,
-            },
-            {
-                label: 9,
-                value: 0,
-            },
-            {
-                label: 10,
-                value: 0,
-            },
-            {
-                label: 11,
-                value: 0,
-            },
-            {
-                label: timestamp2.getHours(),
-                value: 6,
-            },
-            {
-                label: 13,
-                value: 0,
-            },
-            {
-                label: 14,
-                value: 0,
-            },
-            {
-                label: timestamp3.getHours(),
-                value: 3,
-            },
-            {
-                label: 16,
-                value: 0,
-            },
-            {
-                label: 17,
-                value: 0,
-            },
-            {
-                label: 18,
-                value: 0,
-            },
-            {
-                label: 19,
-                value: 0,
-            },
-            {
-                label: 20,
-                value: 0,
-            },
-            {
-                label: 21,
-                value: 0,
-            },
-            {
-                label: 22,
-                value: 0,
-            },
-            {
-                label: 23,
-                value: 0,
-            },
-        ]
-    
-        const freqDay26 = [
-            {
-                label: 0,
-                value: 0,
-            },
-            {
-                label: 1,
-                value: 0,
-            },
-            {
-                label: 2,
-                value: 0,
-            },
-            {
-                label: 3,
-                value: 0,
-            },
-            {
-                label: 4,
-                value: 0,
-            },
-            {
-                label: 5,
-                value: 0,
-            },
-            {
-                label: 6,
-                value: 7,
-            },
-            {
-                label: 7,
-                value: 0,
-            },
-            {
-                label: 8,
-                value: 0,
-            },
-            {
-                label: 9,
-                value: 0,
-            },
-            {
-                label: 10,
-                value: 0,
-            },
-            {
-                label: 11,
-                value: 0,
-            },
-            {
-                label: 12,
-                value: 6,
-            },
-            {
-                label: 13,
-                value: 0,
-            },
-            {
-                label: 14,
-                value: 0,
-            },
-            {
-                label: 15,
-                value: 0,
-            },
-            {
-                label: 16,
-                value: 2,
-            },
-            {
-                label: 17,
-                value: 5,
-            },
-            {
-                label: 18,
-                value: 0,
-            },
-            {
-                label: 19,
-                value: 0,
-            },
-            {
-                label: 20,
-                value: 0,
-            },
-            {
-                label: 21,
-                value: 0,
-            },
-            {
-                label: 22,
-                value: 0,
-            },
-            {
-                label: 23,
-                value: 0,
-            },
-        ]
-    
-        const freqDay27 = [
-            {
-                label: 0,
-                value: 2,
-            },
-            {
-                label: 1,
-                value: 4,
-            },
-            {
-                label: 2,
-                value: 6,
-            },
-            {
-                label: 3,
-                value: 0,
-            },
-            {
-                label: 4,
-                value: 0,
-            },
-            {
-                label: 5,
-                value: 0,
-            },
-            {
-                label: 6,
-                value: 0,
-            },
-            {
-                label: 7,
-                value: 0,
-            },
-            {
-                label: 8,
-                value: 0,
-            },
-            {
-                label: 9,
-                value: 0,
-            },
-            {
-                label: 10,
-                value: 0,
-            },
-            {
-                label: 11,
-                value: 0,
-            },
-            {
-                label: 12,
-                value: 0,
-            },
-            {
-                label: 13,
-                value: 0,
-            },
-            {
-                label: 14,
-                value: 0,
-            },
-            {
-                label: 15,
-                value: 4,
-            },
-            {
-                label: 16,
-                value: 2,
-            },
-            {
-                label: 17,
-                value: 1,
-            },
-            {
-                label: 18,
-                value: 4,
-            },
-            {
-                label: 19),
-                value: 0,
-            },
-            {
-                label: 20,
-                value: 0,
-            },
-            {
-                label: 21,
-                value: 0,
-            },
-            {
-                label: 22,
-                value: 0,
-            },
-            {
-                label: 23,
-                value: 0,
-            },
-        ] */
-
-  //const freqDayArray = [freqDay, freqDay26, freqDay27];
-
-  // can be used for monthly x - axis labels
-  const month = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  const monthAbrev = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  //console.log(month[(new Date(2023, 0, 1)).getMonth()]);
-
-  // used for line chart x axis labels
   const hours = [
     '12AM',
     '1AM',
@@ -586,16 +82,6 @@ const DataAnalysisLineGraph = () => {
     '11PM',
   ];
 
-  /* ======================================================================= */
-  // DROP DOWN STUFF
-  /* ======================================================================= */
-
-  const [periodValue, setPeriodValue] = useState('1');
-  const [segementDay, setSegementDayValue] = useState('12');
-  const [segementWeek, setSegementWeekValue] = useState('1');
-  const [segementMonth, setSegementMonthValue] = useState('1');
-  const [date, setDateValue] = useState(0);
-
   const periodOptions = [
     {label: 'Daily', value: '1'},
     {label: 'Weekly', value: '2'},
@@ -604,16 +90,8 @@ const DataAnalysisLineGraph = () => {
 
   const segementDayOptions = [
     {label: '1 hour', value: '1'},
-    //{ label: '2 hour', value: '2' },
     {label: '3 hour', value: '3'},
-    //{ label: '4 hour', value: '4' },
-    //{ label: '5 hour', value: '5' },
     {label: '6 hour', value: '6'},
-    //{ label: '7 hour', value: '7' },
-    //{ label: '8 hour', value: '8' },
-    //{ label: '9 hour', value: '9' },
-    //{ label: '10 hour', value: '10' },
-    //{ label: '11 hour', value: '11' },
     {label: '12 hour', value: '12'},
   ];
 
@@ -627,27 +105,41 @@ const DataAnalysisLineGraph = () => {
     {label: 'Every 2 Months', value: '2'},
     {label: 'Quarters', value: '3'},
     {label: 'Thirds', value: '4'},
-    /* { label: '5 month', value: '5' }, */
     {label: 'Half Year', value: '6'},
   ];
 
-  /* const dateOptions = [
-        { label: timestamp1.toDateString(), value: 0 },
-        { label: new Date('2023-10-26T23:59:59').toDateString(), value: 1 },
-        { label: new Date('2023-10-27T23:59:59').toDateString(), value: 2 },
-    ]; */
-
-  /* ======================================================================= */
-  // DOT STUFF
-  /* ======================================================================= */
-
-  interface DecoratorProps {
-    x: (arg: number) => number;
-    y: (arg: number) => number;
-    data: number[];
+const handlePressIn = async value => {
+  try {
+    const videoDataArray = await Promise.all(
+      value.videoIDs.map(async videoID => {
+        try {
+          const objectId = new Realm.BSON.ObjectId(videoID);
+          const videoData = realm.objectForPrimaryKey('VideoData', objectId);
+          if (videoData) {
+            return videoData;
+          } else {
+            console.error(`Video with ID ${videoID} not found`);
+            return null;
+          }
+        } catch (error) {
+          console.error(`Error retrieving video with ID ${videoID}:`, error);
+          return null;
+        }
+      }),
+    );
+    const filteredVideoDataArray = videoDataArray.filter(
+      video => video !== null,
+    );
+    console.log(filteredVideoDataArray);
+    setVideoIDs(filteredVideoDataArray);
+    setModalVisible(true);
+  } catch (error) {
+    console.error('Error in handlePressIn:', error);
   }
+};
 
-  // Dots on the peaks/points of line graph data
+
+
   const Dots = (props: Partial<DecoratorProps>) => {
     const {x, y, data} = props;
     return (
@@ -661,32 +153,11 @@ const DataAnalysisLineGraph = () => {
             stroke={'rgb(0, 0, 0)'}
             fill={'white'}
             onPressIn={() => {
-              // redirect to videos associated with timestamp
-              console.log('start');
-              Alert.alert(
-                'View video(s) with this data',
-
-                // Iterate through videoIDs
-                // Display the videoID title in a TouchableOpacity
-                // OnPress, navigate to the video
-                value.videoIDs.toString(),
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => console.log('go to video function here'),
-                  },
-                
-                  {
-                    text: 'CLOSE',
-                    onPress: () => console.log('CLOSE pressed'),
-                  },
-                ],
-              );
-            }}
-            onPressOut={() => {
-              // reference state change during onPressOut from barGraph page
-              console.log('end');
-            }}
+              handlePressIn(value);
+              console.log(value);
+             }}
+            
+            onPressOut={() => console.log('end')}
           />
         ))}
       </>
@@ -730,7 +201,6 @@ const DataAnalysisLineGraph = () => {
                     strokeWidth: 5,
                   }}>
                   <Svg belowChart={true}>
-                    {/* day/night - 12 hour */}
                     {segementDay == '12' && (
                       <Rect
                         x="0%"
@@ -740,7 +210,6 @@ const DataAnalysisLineGraph = () => {
                         fill="rgb(194, 200, 209)"
                       />
                     )}
-                    {/* 6 hour */}
                     {segementDay == '6' && (
                       <>
                         <Rect
@@ -759,7 +228,6 @@ const DataAnalysisLineGraph = () => {
                         />
                       </>
                     )}
-                    {/* 3 hour */}
                     {segementDay == '3' && (
                       <>
                         <Rect
@@ -792,7 +260,6 @@ const DataAnalysisLineGraph = () => {
                         />
                       </>
                     )}
-                    {/* 1 hour */}
                     {segementDay == '1' && (
                       <>
                         <Rect
@@ -912,7 +379,6 @@ const DataAnalysisLineGraph = () => {
                 title="Previous"
                 color={Styles.MHMRBlue}
                 radius={50}
-                //style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
                 icon={{
                   name: 'arrow-left',
                   type: 'font-awesome',
@@ -949,7 +415,6 @@ const DataAnalysisLineGraph = () => {
                 title="Next"
                 color={Styles.MHMRBlue}
                 radius={50}
-                //style={{ marginLeft: 20, marginRight: 20, paddingLeft: 20, paddingRight: 20 }}
                 iconPosition="right"
                 icon={{
                   name: 'arrow-right',
@@ -1004,7 +469,6 @@ const DataAnalysisLineGraph = () => {
                   <Text style={{fontSize: 20}}>Select Segment Option: </Text>
                   <Dropdown
                     data={segementDayOptions}
-                    //maxHeight={300}
                     style={{
                       width: 300,
                       paddingHorizontal: 20,
@@ -1025,7 +489,6 @@ const DataAnalysisLineGraph = () => {
                   <Text style={{fontSize: 20}}>Select Segment Option: </Text>
                   <Dropdown
                     data={segementWeekOptions}
-                    //maxHeight={300}
                     style={{
                       width: 300,
                       paddingHorizontal: 20,
@@ -1046,7 +509,6 @@ const DataAnalysisLineGraph = () => {
                   <Text style={{fontSize: 20}}>Select Segment Option: </Text>
                   <Dropdown
                     data={segementMonthOptions}
-                    //maxHeight={300}
                     style={{
                       width: 300,
                       paddingHorizontal: 20,
@@ -1066,7 +528,64 @@ const DataAnalysisLineGraph = () => {
           </View>
         </View>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>View video(s) with this data</Text>
+          {videoIDs.map((video, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() =>
+                navigation.navigate('Fullscreen Video', {
+                  id: video?._id,
+                })
+              }>
+              <Text style={styles.videoIDText}>{video?.title}</Text>
+            </TouchableOpacity>
+          ))}
+          <Button
+            title="Close"
+            color={Styles.MHMRBlue}
+            radius={50}
+            onPress={() => setModalVisible(false)}
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  videoIDText: {
+    marginVertical: 10,
+    fontSize: 16,
+    color: 'blue',
+  },
+});
+
 export default DataAnalysisLineGraph;
