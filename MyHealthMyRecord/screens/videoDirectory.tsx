@@ -505,7 +505,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
-                Add to New Video Set
+                Create New Video Set
               </Text>
             </Button>
           </View>
