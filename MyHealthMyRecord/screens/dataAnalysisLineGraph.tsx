@@ -17,7 +17,7 @@ import * as scale from 'd3-scale';
 import * as Styles from '../assets/util/styles';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import { useRealm } from '../models/VideoData';
+import {useRealm} from '../models/VideoData';
 
 const DataAnalysisLineGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -108,37 +108,35 @@ const DataAnalysisLineGraph = () => {
     {label: 'Half Year', value: '6'},
   ];
 
-const handlePressIn = async value => {
-  try {
-    const videoDataArray = await Promise.all(
-      value.videoIDs.map(async videoID => {
-        try {
-          const objectId = new Realm.BSON.ObjectId(videoID);
-          const videoData = realm.objectForPrimaryKey('VideoData', objectId);
-          if (videoData) {
-            return videoData;
-          } else {
-            console.error(`Video with ID ${videoID} not found`);
+  const handlePressIn = async value => {
+    try {
+      const videoDataArray = await Promise.all(
+        value.videoIDs.map(async videoID => {
+          try {
+            const objectId = new Realm.BSON.ObjectId(videoID);
+            const videoData = realm.objectForPrimaryKey('VideoData', objectId);
+            if (videoData) {
+              return videoData;
+            } else {
+              console.error(`Video with ID ${videoID} not found`);
+              return null;
+            }
+          } catch (error) {
+            console.error(`Error retrieving video with ID ${videoID}:`, error);
             return null;
           }
-        } catch (error) {
-          console.error(`Error retrieving video with ID ${videoID}:`, error);
-          return null;
-        }
-      }),
-    );
-    const filteredVideoDataArray = videoDataArray.filter(
-      video => video !== null,
-    );
-    console.log(filteredVideoDataArray);
-    setVideoIDs(filteredVideoDataArray);
-    setModalVisible(true);
-  } catch (error) {
-    console.error('Error in handlePressIn:', error);
-  }
-};
-
-
+        }),
+      );
+      const filteredVideoDataArray = videoDataArray.filter(
+        video => video !== null,
+      );
+      console.log(filteredVideoDataArray);
+      setVideoIDs(filteredVideoDataArray);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Error in handlePressIn:', error);
+    }
+  };
 
   const Dots = (props: Partial<DecoratorProps>) => {
     const {x, y, data} = props;
@@ -155,8 +153,7 @@ const handlePressIn = async value => {
             onPressIn={() => {
               handlePressIn(value);
               console.log(value);
-             }}
-            
+            }}
             onPressOut={() => console.log('end')}
           />
         ))}
@@ -539,11 +536,12 @@ const handlePressIn = async value => {
           {videoIDs.map((video, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() =>
+              onPress={() => {
                 navigation.navigate('Fullscreen Video', {
                   id: video?._id,
-                })
-              }>
+                });
+                setModalVisible(false);
+              }}>
               <Text style={styles.videoIDText}>{video?.title}</Text>
             </TouchableOpacity>
           ))}
