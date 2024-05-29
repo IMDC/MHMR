@@ -19,7 +19,7 @@ import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 
 const ManageVideoSet = () => {
-  const {videoSetVideoIDs, selectedVideoSet} = useDropdownContext();
+  const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
   const isFocused = useIsFocused();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const realm = useRealm();
@@ -34,7 +34,7 @@ const ManageVideoSet = () => {
   useEffect(() => {
     console.log(
       '{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{Selected Video Set in Manage:',
-      selectedVideoSet,
+      currentVideoSet,
     );
     const getVideoData = async () => {
       const videoSetData = videoSetVideoIDs?.map(videoID => {
@@ -42,25 +42,25 @@ const ManageVideoSet = () => {
         return realm.objectForPrimaryKey('VideoData', objectId);
       });
       setVideos(videoSetData);
-      setVideoSetTitle(selectedVideoSet?.name || '');
+      setVideoSetTitle(currentVideoSet?.name || '');
     };
 
     if (isFocused) {
       getVideoData();
     }
-  }, [isFocused, selectedVideoSet, realm]);
+  }, [isFocused, currentVideoSet, realm]);
 
   const handleSaveVideoSetTitle = () => {
-    if (selectedVideoSet) {
+    if (currentVideoSet) {
       realm.write(() => {
-        selectedVideoSet.name = videoSetTitle;
+        currentVideoSet.name = videoSetTitle;
       });
       setIsEditingTitle(false);
     }
   };
 
   const handleCancelEditTitle = () => {
-    setVideoSetTitle(selectedVideoSet?.name || '');
+    setVideoSetTitle(currentVideoSet?.name || '');
     setIsEditingTitle(false);
   };
 
@@ -68,7 +68,7 @@ const ManageVideoSet = () => {
     setLastRemovedVideo(video);
     realm.write(() => {
       // remove video id from from video set
-      selectedVideoSet.videoIDs = selectedVideoSet.videoIDs.filter(
+      currentVideoSet.videoIDs = currentVideoSet.videoIDs.filter(
         id => id !== video._id.toString(),
       );
     });
@@ -78,7 +78,7 @@ const ManageVideoSet = () => {
   const handleUndoRemoveVideo = () => {
     if (lastRemovedVideo) {
       realm.write(() => {
-        selectedVideoSet.videoIDs.push(lastRemovedVideo._id.toString());
+        currentVideoSet.videoIDs.push(lastRemovedVideo._id.toString());
       });
       setVideos([...videos, lastRemovedVideo]);
       setLastRemovedVideo(null);
@@ -86,15 +86,15 @@ const ManageVideoSet = () => {
   };
 
   const handleDeleteVideoSet = () => {
-    if (selectedVideoSet) {
+    if (currentVideoSet) {
       realm.write(() => {
-        realm.delete(selectedVideoSet);
+        realm.delete(currentVideoSet);
         navigation.goBack();
       });
     }
   };
 
-  if (!selectedVideoSet) {
+  if (!currentVideoSet) {
     return (
       <View style={styles.container}>
         <Text>No video set selected.</Text>

@@ -26,8 +26,8 @@ const VideoSetDropdown = ({
     videoSetVideoIDs,
     setVideoSetVideoIDs,
     setVideoSetValue,
-    setSelectedVideoSet,
-    selectedVideoSet,
+    setCurrentVideoSet,
+    currentVideoSet,
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
@@ -165,7 +165,7 @@ const VideoSetDropdown = ({
                   sendVideoSetToChatGPT(
                     realm,
                     videoSetVideoIDs,
-                    selectedVideoSet,
+                    currentVideoSet,
                   );
                 }}
                 color={Styles.MHMRBlue}

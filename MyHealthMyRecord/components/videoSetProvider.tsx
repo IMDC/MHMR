@@ -5,29 +5,39 @@ export const VideoSetContext = createContext();
 
 export const VideoSetProvider = ({children}) => {
   const realm = useRealm();
+  // videoSetValue is the value of the selected video set in the dropdown
   const [videoSetValue, setVideoSetValue] = useState<any[]>([]);
-  // selected video set is the selected video set accoring to the dropdown
-  const [selectedVideoSet, setSelectedVideoSet] = useState<any[]>([]);
+
+  // selected video set is the selected video set according to the dropdown
+  const [currentVideoSet, setCurrentVideoSet] = useState<any[]>([]);
+
+  // videoSetVideoIDs is the array of videoIDs in the selected video set
   const [videoSetVideoIDs, setVideoSetVideoIDs] = useState<any[]>([]);
+
+  const [currentVideos, setCurrentVideos] = useState<any[]>([]);
+
   const [sendToVideoSet, setSendToVideoSet] = useState(0);
+
 
   const handleChange = (value, videoSets) => {
     setSendToVideoSet(0);
     setVideoSetValue(value);
     const selectedSet = videoSets.find(set => set._id.toString() === value);
-    setSelectedVideoSet(selectedSet);
+    setCurrentVideoSet(selectedSet);
     setVideoSetVideoIDs(selectedSet.videoIDs);
+    setCurrentVideos(selectedSet.videoIDs.map(id => realm.objects('VideoData').find(video => video._id.toString() === id)));
+    console.log('>>>>>>>>>>>>>>>>>>currentVideos:', currentVideos); 
     console.log('*'.repeat(40));
     console.log('Selected Set:', selectedSet);
-    console.log('Selected Video Set:', selectedVideoSet);
-    console.log('------------------Selected Video Set Name:', selectedVideoSet.name);
+    console.log('Selected Video Set:', currentVideoSet);
+    console.log('------------------Selected Video Set Name:', currentVideoSet.name);
     console.log('*'.repeat(40));
   };
 
   const handleNewSet = (videoIDs, videoSets) => {
     setVideoSetVideoIDs(videoIDs);
     const selectedSet = videoSets.find(set => set._id.toString() === videoSetValue);
-    setSelectedVideoSet(selectedSet);
+    setCurrentVideoSet(selectedSet);
   };
 
   const contextValues = {
@@ -39,7 +49,8 @@ export const VideoSetProvider = ({children}) => {
     setVideoSetValue,
     sendToVideoSet,
     setSendToVideoSet,
-    selectedVideoSet,
+    currentVideoSet,
+    currentVideos,
   };
 
   return (
