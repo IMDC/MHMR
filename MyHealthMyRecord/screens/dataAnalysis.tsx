@@ -509,22 +509,6 @@ const DataAnalysis = () => {
 
   /* ------------------------------ DROP DOWN MENU ------------------------------ */
 
-  //TODO: not dynamic, need to make sure when new videoset is created, this drop down reflects that
-  //TODO: similar to code in dashboard.tsx, when dropdown option selected, it changes isSelected field for videos in DB
-
-  function formatVideoSetDropdown() {
-    let dropdownOptions = [];
-    for (let i = 0; i < videosSetsByDate.length; i++) {
-      dropdownOptions.push({
-        label: videosSetsByDate[i].name,
-        value: i,
-        id: videosSetsByDate[i]._id,
-      });
-      console.log(dropdownOptions[i]);
-    }
-    setVideoSetDropdown(dropdownOptions);
-  }
-
   /* ======================================================================= */
   return (
     <View style={{flexDirection: 'column', flex: 1}}>
@@ -552,6 +536,7 @@ const DataAnalysis = () => {
           alignItems: 'center',
         }}>
         <Button
+          disabled={currentVideoSet.length === 0}
           onPress={() =>
             navigation.navigate('Bar Graph', {
               data: barData,
@@ -576,6 +561,7 @@ const DataAnalysis = () => {
           Bar Graph
         </Button>
         <Button
+          disabled={currentVideoSet.length === 0}
           onPress={() => navigation.navigate('Line Graph')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -595,7 +581,7 @@ const DataAnalysis = () => {
           Line Graph
         </Button>
         <Button
-          // disabled={true}
+          disabled={currentVideoSet.length === 0}
           onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -615,6 +601,7 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
+          disabled={currentVideoSet.length === 0}
           onPress={() => navigation.navigate('Text Summary')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -633,7 +620,7 @@ const DataAnalysis = () => {
           radius={50}>
           Text Summary
         </Button>
-        <Button
+        {/* <Button
           disabled={true}
           onPress={() => navigation.navigate('Text Graph')}
           titleStyle={{fontSize: 40}}
@@ -652,7 +639,7 @@ const DataAnalysis = () => {
           color={Styles.MHMRBlue}
           radius={50}>
           Text Graph
-        </Button>
+        </Button> */}
       </View>
     </View>
   );

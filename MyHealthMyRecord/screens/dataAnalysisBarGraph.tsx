@@ -571,16 +571,16 @@ const DataAnalysisBarGraph = () => {
               <XAxis
                 style={{height: 100, marginTop: 0, marginBottom: 20}}
                 //xAccessor={({ index }) => index}
-                contentInset={{left: 20, right: 20}}
+                // contentInset={{left: 20, right: 20}}
                 data={wordFreqBarGraphData}
                 scale={scale.scaleBand}
                 svg={{
-                  fontSize: 20,
-                  rotation: 25,
+                  fontSize: 22,
+                  rotation: 450,
                   fill: 'black',
                   originY: 35,
-                  translateY: 15,
-                  translateX: 0,
+                  translateY: 0,
+                  translateX: -5,
                 }}
                 formatLabel={(value: any, index: string | number) =>
                   wordFreqBarGraphData[index].text
@@ -596,7 +596,7 @@ const DataAnalysisBarGraph = () => {
               <View
                 style={{
                   flexDirection: 'row',
-                  height: 400,
+                  height: 800,
                   paddingVertical: 16,
                 }}>
                 <YAxis
@@ -677,33 +677,32 @@ const DataAnalysisBarGraph = () => {
                 }}
               />
             </View>
-          </View>
-        </View>
-
-        <View style={{height: '10%', width: '100%'}}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text>Include Stop Words</Text>
-            <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitchStopWords}
-              value={isEnabledStopWords}
-            />
-            <Text>Include Medical Words</Text>
-            <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitchMedWords}
-              value={isEnabledMedWords}
-            />
+            <View style={{height: '20%', width: '100%'}}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text>Include Stop Words</Text>
+                <Switch
+                  trackColor={{false: '#767577', true: '#81b0ff'}}
+                  thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={toggleSwitchStopWords}
+                  value={isEnabledStopWords}
+                />
+                <Text>Include Medical Words</Text>
+                <Switch
+                  trackColor={{false: '#767577', true: '#81b0ff'}}
+                  thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={toggleSwitchMedWords}
+                  value={isEnabledMedWords}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>

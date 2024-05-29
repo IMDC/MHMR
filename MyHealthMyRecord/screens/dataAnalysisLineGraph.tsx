@@ -180,6 +180,7 @@ const DataAnalysisLineGraph = () => {
             />
 
             <ScrollView horizontal={true}>
+              {periodValue == '1'}
               <View
                 style={{
                   flex: 1,
