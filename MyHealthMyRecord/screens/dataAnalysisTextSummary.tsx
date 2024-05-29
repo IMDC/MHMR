@@ -24,17 +24,17 @@ const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-  const {videoSetVideoIDs, selectedVideoSet} = useDropdownContext();
+  const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
   const realm = useRealm();
   const [videoSet, setVideoSet] = useState(null);
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [transcriptsLoaded, setTranscriptsLoaded] = useState(false);
 
   useEffect(() => {
-    if (selectedVideoSet) {
-      setVideoSet(selectedVideoSet);
+    if (currentVideoSet) {
+      setVideoSet(currentVideoSet);
     }
-  }, [selectedVideoSet]);
+  }, [currentVideoSet]);
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -111,7 +111,7 @@ const DataAnalysisTextSummary = () => {
         const summary = await sendVideoSetToChatGPT(
           realm,
           videoSetVideoIDs,
-          selectedVideoSet,
+          currentVideoSet,
         );
         setVideoSetSummary(summary);
       }

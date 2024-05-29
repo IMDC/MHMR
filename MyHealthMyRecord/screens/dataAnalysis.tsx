@@ -17,7 +17,7 @@ import {color} from '@rneui/base';
 import {useDropdownContext} from '../components/videoSetProvider';
 
 const DataAnalysis = () => {
-  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue} =
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue, currentVideos, currentVideoSet} =
     useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
@@ -28,10 +28,8 @@ const DataAnalysis = () => {
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
-  const videosByIsSelected = videosByDate.filtered('isSelected == true');
-  const videosByIsConvertedAndSelected = videosByDate.filtered(
-    'isConverted == false AND isSelected == true',
-  );
+  const videosByIsSelected = currentVideos;
+
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
       set => set._id.toString() === selectedId,
@@ -67,7 +65,7 @@ const DataAnalysis = () => {
   }, [selectedVideoSet, videoSetVideoIDs]);
 
   // get videos selected
-  const videosSelected = videoData.filtered('isSelected == true');
+  const videosSelected = currentVideos;
   //console.log(videosSelected);
 
   const videosSetsByDate = videoSets.sorted('datetime', false);
@@ -285,12 +283,6 @@ const DataAnalysis = () => {
 
   const [barData, setBarData] = useState<any>([]);
 
-  /*   function addFreqMap(freqMap: any) {
-      let temp = freqMaps;
-      temp.push(freqMap);
-      setFreqMaps(temp);
-    } */
-
   function addFreqMapWithInfo(freqMapWithInfo: any) {
     let temp = freqMapsWithInfo;
     temp.push(freqMapWithInfo);
@@ -311,7 +303,8 @@ const DataAnalysis = () => {
     for (let i = 0; i < videosSelected.length; i++) {
       let transcript = videosSelected[i].transcript;
       let datetime = videosSelected[i].datetimeRecorded;
-      console.log(transcript);
+      console.log('transcript:'
+      , transcript);
       if (transcript.length > 0) {
         let temp = getFreq(transcript[0], datetime);
         let freqWithInfo = {
@@ -328,12 +321,11 @@ const DataAnalysis = () => {
   }
 
   useEffect(() => {
-    // no analysis if no videos currently selected because it breaks/error at combineFreqMaps()
-    if (videosSelected.length != 0) {
+    if (videosSelected.length > 0) {
       getFreqMaps();
       combineFreqMaps();
     }
-  }, []);
+  }, [currentVideos]);
 
   function getFreq(transcript: string, datetime: any) {
     let M = new Map();
