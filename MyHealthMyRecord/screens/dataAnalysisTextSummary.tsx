@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
   Button,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,6 +18,12 @@ import {
   sendToChatGPT,
   sendVideoSetToChatGPT,
 } from '../components/chatgpt_api';
+
+const neutral = require('../assets/images/emojis/neutral.png');
+const sad = require('../assets/images/emojis/sad.png');
+const smile = require('../assets/images/emojis/smile.png');
+const worried = require('../assets/images/emojis/worried.png');
+const happy = require('../assets/images/emojis/happy.png');
 
 const DataAnalysisTextSummary = () => {
   const navigation = useNavigation();
@@ -204,6 +211,24 @@ const DataAnalysisTextSummary = () => {
     setDraftTranscript('');
   };
 
+  const getEmojiForSentiment = sentiment => {
+    switch (sentiment) {
+      case 'Very Negative':
+        return sad;
+      case 'Negative':
+        return worried;
+      case 'Neutral':
+        return neutral;
+      case 'Positive':
+        return smile;
+      case 'Very Positive':
+        return happy;
+      default:
+        return neutral;
+    }
+  };
+  
+
   useEffect(() => {
     console.log('Video Set:', videoSet);
     console.log('Videos:', videos);
@@ -265,7 +290,8 @@ const DataAnalysisTextSummary = () => {
             </Text>
             <Text style={styles.sentiment}>
               <Text style={styles.boldText}>Overall Feeling: </Text>
-              {video.sentiment}
+              {video.sentiment}{' '}
+              <Image source={getEmojiForSentiment(video.sentiment)} style={styles.emoji} />
             </Text>
           </View>
         </View>
@@ -323,6 +349,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: 'black',
     marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emoji: {
+    width: 20,
+    height: 20,
+    marginLeft: 5,
   },
 });
 
