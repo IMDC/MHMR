@@ -190,7 +190,7 @@ const VideoSetDropdown = ({
             {manageSetBtn && (
               <Button
                 disabled={videoSetValue == null}
-                title="Manage Sets"
+                title="Manage Video Set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
                     videoSet: videoSets[videoSetValue],
