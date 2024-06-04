@@ -27,7 +27,11 @@ const DataAnalysisLineGraph = () => {
   const realm = useRealm();
 
   const [freqDayArray, setFreqDayArray] = useState([[]]);
-  const [dateOptions, setDateOptions] = useState([]);
+  const [freqWeekArray, setFreqWeekArray] = useState([[]]);
+  const [freqMonthArray, setFreqMonthArray] = useState([[]]);
+  const [dateOptionsForHours, setDateOptionsForHours] = useState([]);
+  const [dateOptionsForWeeks, setDateOptionsForWeeks] = useState([]);
+  const [dateOptionsForMonths, setDateOptionsForMonths] = useState([]);
   const [periodValue, setPeriodValue] = useState('1');
   const [segementDay, setSegementDayValue] = useState('12');
   const [segementWeek, setSegementWeekValue] = useState('1');
@@ -45,7 +49,11 @@ const DataAnalysisLineGraph = () => {
       );
     } else {
       setFreqDayArray(lineData.byHour);
-      setDateOptions(lineData.dates);
+      setDateOptionsForHours(lineData.datesForHours);
+      setFreqWeekArray(lineData.byWeek);
+      setDateOptionsForWeeks(lineData.datesForWeeks);
+      setFreqMonthArray(lineData.byMonth);
+      setDateOptionsForMonths(lineData.datesForMonths);
     }
   }, [periodValue]);
 
@@ -97,7 +105,15 @@ const DataAnalysisLineGraph = () => {
     'December',
   ];
 
-  const weeks = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const weeks = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
@@ -194,7 +210,9 @@ const DataAnalysisLineGraph = () => {
               style={{marginBottom: xAxisHeight}}
               contentInset={verticalContentInset}
               svg={axesSvg}
-              numberOfTicks={Math.max(...freqDayArray[date]?.map(item => item.value))}
+              numberOfTicks={Math.max(
+                ...freqDayArray[date]?.map(item => item.value),
+              )}
             />
 
             <ScrollView horizontal={true}>
@@ -391,7 +409,7 @@ const DataAnalysisLineGraph = () => {
                   }}>
                   <LineChart
                     style={{flex: 1}}
-                    data={freqDayArray[date]}
+                    data={freqWeekArray[date]}
                     yAccessor={({item}) => item.value}
                     xScale={scale.scaleTime}
                     contentInset={verticalContentInset}
@@ -553,10 +571,10 @@ const DataAnalysisLineGraph = () => {
                   </LineChart>
                   <XAxis
                     style={{marginHorizontal: -40, height: xAxisHeight}}
-                    data={freqDayArray[0]}
+                    data={freqWeekArray[0]}
                     scale={scale.scaleTime}
                     formatLabel={(value, index) =>
-                      hours[freqDayArray[0][index].label]
+                      weeks[freqWeekArray[0][index].label]
                     }
                     labelStyle={{margin: 5}}
                     contentInset={{left: 50, right: 50}}
@@ -574,7 +592,7 @@ const DataAnalysisLineGraph = () => {
                   }}>
                   <LineChart
                     style={{flex: 1}}
-                    data={freqDayArray[date]}
+                    data={freqMonthArray[date]}
                     yAccessor={({item}) => item.value}
                     xScale={scale.scaleTime}
                     contentInset={verticalContentInset}
@@ -736,10 +754,10 @@ const DataAnalysisLineGraph = () => {
                   </LineChart>
                   <XAxis
                     style={{marginHorizontal: -40, height: xAxisHeight}}
-                    data={freqDayArray[0]}
+                    data={freqMonthArray[0]}
                     scale={scale.scaleTime}
                     formatLabel={(value, index) =>
-                      hours[freqDayArray[0][index].label]
+                      months[freqMonthArray[0][index].label]
                     }
                     labelStyle={{margin: 5}}
                     contentInset={{left: 50, right: 50}}
@@ -776,9 +794,9 @@ const DataAnalysisLineGraph = () => {
                   }
                 }}
               />
-
+              {periodValue == '1' && (
                 <Dropdown
-                  data={dateOptions}
+                  data={dateOptionsForHours}
                   maxHeight={300}
                   style={{
                     width: 400,
@@ -795,7 +813,28 @@ const DataAnalysisLineGraph = () => {
                     setDateValue(item.value);
                   }}
                 />
-            
+              )}
+
+              {periodValue == '3' && (
+                <Dropdown
+                  data={dateOptionsForMonths}
+                  maxHeight={300}
+                  style={{
+                    width: 400,
+                    paddingHorizontal: 20,
+                    backgroundColor: '#DBDBDB',
+                    borderRadius: 22,
+                  }}
+                  placeholderStyle={{fontSize: 20}}
+                  selectedTextStyle={{fontSize: 20}}
+                  labelField="label"
+                  valueField="value"
+                  value={date}
+                  onChange={item => {
+                    setDateValue(item.value);
+                  }}
+                />
+              )}
 
               <Button
                 title="Next"
@@ -809,7 +848,7 @@ const DataAnalysisLineGraph = () => {
                   color: 'white',
                 }}
                 onPress={() => {
-                  if (date < dateOptions.length - 1) {
+                  if (date < dateOptionsForHours.length - 1) {
                     setDateValue(date + 1);
                   } else {
                     console.log('There is no next date');
@@ -852,6 +891,7 @@ const DataAnalysisLineGraph = () => {
                   }}
                 />
               </View>
+              {/* daily */}
               {periodValue == '1' && (
                 <View id="segmentDay-dropdown">
                   <Text style={{fontSize: 20}}>Select Segment Option: </Text>
