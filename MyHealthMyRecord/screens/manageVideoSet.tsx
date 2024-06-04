@@ -114,11 +114,13 @@ const ManageVideoSet = () => {
               placeholder="Enter new video set name"
             />
             <Button
+              radius={50}
               title="Save"
               onPress={handleSaveVideoSetTitle}
               buttonStyle={styles.saveButton}
             />
             <Button
+              radius={50}
               title="Cancel"
               onPress={handleCancelEditTitle}
               buttonStyle={styles.cancelButton}
@@ -161,6 +163,7 @@ const ManageVideoSet = () => {
             <View style={styles.infoContainer}>
               <Text style={styles.videoTitle}>{video.title}</Text>
               <Button
+                radius={50}
                 title="Remove"
                 onPress={() => handleRemoveVideo(video)}
                 color={Styles.MHMRBlue}
@@ -171,12 +174,14 @@ const ManageVideoSet = () => {
       </ScrollView>
       {lastRemovedVideo && (
         <Button
+          radius={50}
           title="Undo Remove"
           onPress={handleUndoRemoveVideo}
           buttonStyle={styles.deleteButton}
         />
       )}
       <Button
+        radius={50}
         title="Delete Video Set"
         onPress={handleDeleteVideoSet}
         buttonStyle={styles.deleteButton}

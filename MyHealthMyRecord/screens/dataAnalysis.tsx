@@ -8,16 +8,17 @@ import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
 import {Rect} from 'react-native-svg';
-import {Dropdown} from 'react-native-element-dropdown';
+import {Dropdown} from 'react-natcive-element-dropdown';
 //import { VideoSet } from '../models/VideoSet';
 import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import {color} from '@rneui/base';
-import {useDropdownContext} from '../components/videoSetProvider';
+import { useDropdownContext } from '../components/videoSetProvider';
+import { stopWords, medWords } from '../assets/util/words';
 
 const DataAnalysis = () => {
-  const {handleChange, videoSetValue, videoSetVideoIDs, setVideoSetValue, currentVideos, currentVideoSet} =
+  const {handleChange, videoSetValue, videoSetVideoIDs, setVidmeoSetValue, currentVideos, currentVideoSet} =
     useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
@@ -75,211 +76,6 @@ const DataAnalysis = () => {
   const [freqMapsWithInfo, setFreqMapsWithInfo] = useState<any>([]);
   const [routeFreqMaps, setRouteFreqMaps] = useState<any>([]);
 
-  const stopWords = [
-    "it's",
-    "don't",
-    'HESITATION',
-    'I',
-    'i',
-    'ive',
-    'im',
-    'id',
-    'me',
-    'my',
-    'myself',
-    'we',
-    'our',
-    'ours',
-    'ourselves',
-    'you',
-    'your',
-    'yours',
-    'yourself',
-    'yourselves',
-    'he',
-    'him',
-    'his',
-    'himself',
-    'she',
-    'her',
-    'hers',
-    'herself',
-    'it',
-    'its',
-    'itself',
-    'they',
-    'them',
-    'their',
-    'theirs',
-    'themselves',
-    'what',
-    'which',
-    'who',
-    'whom',
-    'this',
-    'that',
-    'these',
-    'those',
-    'am',
-    'is',
-    'are',
-    'was',
-    'were',
-    'be',
-    'been',
-    'being',
-    'have',
-    'has',
-    'had',
-    'having',
-    'do',
-    'does',
-    'did',
-    'doing',
-    'a',
-    'an',
-    'the',
-    'and',
-    'but',
-    'if',
-    'or',
-    'because',
-    'as',
-    'until',
-    'while',
-    'of',
-    'at',
-    'by',
-    'for',
-    'with',
-    'about',
-    'against',
-    'between',
-    'into',
-    'through',
-    'during',
-    'before',
-    'after',
-    'above',
-    'below',
-    'to',
-    'from',
-    'up',
-    'down',
-    'in',
-    'out',
-    'on',
-    'off',
-    'over',
-    'under',
-    'again',
-    'further',
-    'then',
-    'once',
-    'here',
-    'there',
-    'when',
-    'where',
-    'why',
-    'how',
-    'all',
-    'any',
-    'both',
-    'each',
-    'few',
-    'more',
-    'most',
-    'other',
-    'some',
-    'such',
-    'no',
-    'nor',
-    'not',
-    'only',
-    'own',
-    'same',
-    'so',
-    'than',
-    'too',
-    'very',
-    'can',
-    'will',
-    'just',
-    'dont',
-    'should',
-    'now',
-  ];
-  const medWords = [
-    'hurt',
-    'hurts',
-    'hurting',
-    'sore',
-    'soreness',
-    'dizzy',
-    'dizziness',
-    'vertigo',
-    'light-headed',
-    'chill',
-    'chills',
-    'diarrhea',
-    'stiff',
-    'stiffness',
-    'pain',
-    'painful',
-    'nausea',
-    'nauseous',
-    'nauseate',
-    'nauseated',
-    'insomnia',
-    'sick',
-    'fever',
-    'ache',
-    'aches',
-    'ached',
-    'aching',
-    'pains',
-    'flu',
-    'vomit',
-    'vomiting',
-    'cough',
-    'coughing',
-    'coughs',
-    'coughed',
-    'tired',
-    'exhausted',
-    'numb',
-    'numbness',
-    'numbed',
-    'weak',
-    'weakness',
-    'tingle',
-    'tingling',
-    'tingles',
-    'tingled',
-    'fever',
-    'shiver',
-    'shivering',
-    'shivered',
-    'rash',
-    'swell',
-    'swollen',
-    'sweat',
-    'sweaty',
-    'sweats',
-    'fatigue',
-    'fatigued',
-    'heartburn',
-    'headache',
-    'headaches',
-    'constipation',
-    'constipated',
-    'bloated',
-    'bloating',
-    'cramp',
-    'cramps',
-    'cramped',
-    'cramping',
-  ];
 
   const [barData, setBarData] = useState<any>([]);
 
@@ -509,22 +305,6 @@ const DataAnalysis = () => {
 
   /* ------------------------------ DROP DOWN MENU ------------------------------ */
 
-  //TODO: not dynamic, need to make sure when new videoset is created, this drop down reflects that
-  //TODO: similar to code in dashboard.tsx, when dropdown option selected, it changes isSelected field for videos in DB
-
-  function formatVideoSetDropdown() {
-    let dropdownOptions = [];
-    for (let i = 0; i < videosSetsByDate.length; i++) {
-      dropdownOptions.push({
-        label: videosSetsByDate[i].name,
-        value: i,
-        id: videosSetsByDate[i]._id,
-      });
-      console.log(dropdownOptions[i]);
-    }
-    setVideoSetDropdown(dropdownOptions);
-  }
-
   /* ======================================================================= */
   return (
     <View style={{flexDirection: 'column', flex: 1}}>
@@ -552,6 +332,7 @@ const DataAnalysis = () => {
           alignItems: 'center',
         }}>
         <Button
+          disabled={currentVideoSet?.length === 0}
           onPress={() =>
             navigation.navigate('Bar Graph', {
               data: barData,
@@ -576,6 +357,7 @@ const DataAnalysis = () => {
           Bar Graph
         </Button>
         <Button
+          disabled={currentVideoSet?.length === 0}
           onPress={() => navigation.navigate('Line Graph')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -595,7 +377,7 @@ const DataAnalysis = () => {
           Line Graph
         </Button>
         <Button
-          // disabled={true}
+          disabled={currentVideoSet?.length === 0}
           onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -615,6 +397,7 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
+          disabled={currentVideoSet?.length === 0}
           onPress={() => navigation.navigate('Text Summary')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -633,7 +416,7 @@ const DataAnalysis = () => {
           radius={50}>
           Text Summary
         </Button>
-        <Button
+        {/* <Button
           disabled={true}
           onPress={() => navigation.navigate('Text Graph')}
           titleStyle={{fontSize: 40}}
@@ -652,7 +435,7 @@ const DataAnalysis = () => {
           color={Styles.MHMRBlue}
           radius={50}>
           Text Graph
-        </Button>
+        </Button> */}
       </View>
     </View>
   );
