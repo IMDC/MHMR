@@ -91,7 +91,7 @@ function Dashboard() {
       // Add the selected videos to the current video set using realm schema
       // Map through videoData and match the ids in selectedVideos array to the videoData ids and add to the current video set schema
       // then also add the selectedVideo ids to the videoSetVideoIDs array
-      
+
       const selectedVideosArray = Array.from(selectedVideos);
       setVideoSetVideoIDs(
         Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
@@ -437,29 +437,7 @@ function Dashboard() {
                           })}
                         </View>
                       </View>
-                      <View>
-                        <Button
-                          buttonStyle={{height: 50, alignSelf: 'center'}}
-                          color={Styles.MHMRBlue}
-                          title="Remove Video From Video Set"
-                          radius={50}
-                          onPress={() => {
-                            realm.write(() => {
-                              const currentSet = realm.objectForPrimaryKey(
-                                'VideoSet',
-                                selectedVideoSet._id,
-                              );
-                              currentSet.videoIDs = currentSet.videoIDs.filter(
-                                id => id !== video._id.toHexString(),
-                              );
-                              console.log(
-                                'currentSet.videoIDs:',
-                                currentSet.videoIDs,
-                              );
-                            });
-                          }}
-                        />
-                      </View>
+                      <View></View>
                       <View style={styles.buttonContainer}>
                         <View style={styles.space} />
                         <View style={styles.space} />

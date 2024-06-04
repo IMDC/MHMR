@@ -47,7 +47,7 @@ const DataAnalysisLineGraph = () => {
       setFreqDayArray(lineData.byHour);
       setDateOptions(lineData.dates);
     }
-  }, []);
+  }, [periodValue]);
 
   const windowWidth = Dimensions.get('window').width;
 
@@ -81,6 +81,23 @@ const DataAnalysisLineGraph = () => {
     '10PM',
     '11PM',
   ];
+
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const weeks = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
@@ -180,187 +197,555 @@ const DataAnalysisLineGraph = () => {
             />
 
             <ScrollView horizontal={true}>
-              <View
-                style={{
-                  flex: 1,
-                  marginLeft: 10,
-                  marginRight: 10,
-                  width: windowWidth * 1.5,
-                }}>
-                <LineChart
-                  style={{flex: 1}}
-                  data={freqDayArray[date]}
-                  yAccessor={({item}) => item.value}
-                  xScale={scale.scaleTime}
-                  contentInset={verticalContentInset}
-                  svg={{
-                    stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                    strokeWidth: 5,
+              {periodValue == '1' && (
+                <View
+                  style={{
+                    flex: 1,
+                    marginLeft: 10,
+                    marginRight: 10,
+                    width: windowWidth * 1.5,
                   }}>
-                  <Svg belowChart={true}>
-                    {segementDay == '12' && (
-                      <Rect
-                        x="0%"
-                        y="0"
-                        width="52%"
-                        height="100%"
-                        fill="rgb(194, 200, 209)"
-                      />
-                    )}
-                    {segementDay == '6' && (
-                      <>
+                  <LineChart
+                    style={{flex: 1}}
+                    data={freqDayArray[date]}
+                    yAccessor={({item}) => item.value}
+                    xScale={scale.scaleTime}
+                    contentInset={verticalContentInset}
+                    svg={{
+                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                      strokeWidth: 5,
+                    }}>
+                    <Svg belowChart={true}>
+                      {segementDay == '12' && (
                         <Rect
                           x="0%"
                           y="0"
-                          width="26%"
+                          width="52%"
                           height="100%"
                           fill="rgb(194, 200, 209)"
                         />
-                        <Rect
-                          x="52%"
-                          y="0"
-                          width="26%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                      </>
-                    )}
-                    {segementDay == '3' && (
-                      <>
+                      )}
+                      {segementDay == '6' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="26%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="26%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                      {segementDay == '3' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="26%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="77%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                      {segementDay == '1' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="5.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="9.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="18%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="26.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="35%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="43.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="60.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="69%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="77.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="86%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="94.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                    </Svg>
+                    <Grid />
+                    <Dots />
+                  </LineChart>
+                  <XAxis
+                    style={{marginHorizontal: -40, height: xAxisHeight}}
+                    data={freqDayArray[0]}
+                    scale={scale.scaleTime}
+                    formatLabel={(value, index) =>
+                      hours[freqDayArray[0][index].label]
+                    }
+                    labelStyle={{margin: 5}}
+                    contentInset={{left: 50, right: 50}}
+                    svg={axesSvg}
+                  />
+                </View>
+              )}
+              {periodValue == '2' && (
+                <View
+                  style={{
+                    flex: 1,
+                    marginLeft: 10,
+                    marginRight: 10,
+                    width: windowWidth * 1.5,
+                  }}>
+                  <LineChart
+                    style={{flex: 1}}
+                    data={freqDayArray[date]}
+                    yAccessor={({item}) => item.value}
+                    xScale={scale.scaleTime}
+                    contentInset={verticalContentInset}
+                    svg={{
+                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                      strokeWidth: 5,
+                    }}>
+                    <Svg belowChart={true}>
+                      {segementDay == '12' && (
                         <Rect
                           x="0%"
                           y="0"
-                          width="13%"
+                          width="52%"
                           height="100%"
                           fill="rgb(194, 200, 209)"
                         />
-                        <Rect
-                          x="26%"
-                          y="0"
-                          width="13%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="52%"
-                          y="0"
-                          width="13%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="77%"
-                          y="0"
-                          width="13%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                      </>
-                    )}
-                    {segementDay == '1' && (
-                      <>
+                      )}
+                      {segementDay == '6' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="26%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="26%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                      {segementDay == '3' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="26%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="77%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                      {segementDay == '1' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="5.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="9.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="18%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="26.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="35%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="43.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="60.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="69%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="77.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="86%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="94.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                    </Svg>
+                    <Grid />
+                    <Dots />
+                  </LineChart>
+                  <XAxis
+                    style={{marginHorizontal: -40, height: xAxisHeight}}
+                    data={freqDayArray[0]}
+                    scale={scale.scaleTime}
+                    formatLabel={(value, index) =>
+                      hours[freqDayArray[0][index].label]
+                    }
+                    labelStyle={{margin: 5}}
+                    contentInset={{left: 50, right: 50}}
+                    svg={axesSvg}
+                  />
+                </View>
+              )}
+              {periodValue == '3' && (
+                <View
+                  style={{
+                    flex: 1,
+                    marginLeft: 10,
+                    marginRight: 10,
+                    width: windowWidth * 1.5,
+                  }}>
+                  <LineChart
+                    style={{flex: 1}}
+                    data={freqDayArray[date]}
+                    yAccessor={({item}) => item.value}
+                    xScale={scale.scaleTime}
+                    contentInset={verticalContentInset}
+                    svg={{
+                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                      strokeWidth: 5,
+                    }}>
+                    <Svg belowChart={true}>
+                      {segementDay == '12' && (
                         <Rect
                           x="0%"
                           y="0"
-                          width="5.25%"
+                          width="52%"
                           height="100%"
                           fill="rgb(194, 200, 209)"
                         />
-                        <Rect
-                          x="9.5%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="18%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="26.5%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="35%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="43.5%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="52%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="60.5%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="69%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="77.5%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="86%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                        <Rect
-                          x="94.5%"
-                          y="0"
-                          width="4.25%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                      </>
-                    )}
-                  </Svg>
-                  <Grid />
-                  <Dots />
-                </LineChart>
-                <XAxis
-                  style={{marginHorizontal: -40, height: xAxisHeight}}
-                  data={freqDayArray[0]}
-                  scale={scale.scaleTime}
-                  formatLabel={(value, index) =>
-                    hours[freqDayArray[0][index].label]
-                  }
-                  labelStyle={{margin: 5}}
-                  contentInset={{left: 50, right: 50}}
-                  svg={axesSvg}
-                />
-              </View>
+                      )}
+                      {segementDay == '6' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="26%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="26%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                      {segementDay == '3' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="26%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="77%"
+                            y="0"
+                            width="13%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                      {segementDay == '1' && (
+                        <>
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="5.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="9.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="18%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="26.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="35%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="43.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="52%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="60.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="69%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="77.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="86%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                          <Rect
+                            x="94.5%"
+                            y="0"
+                            width="4.25%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        </>
+                      )}
+                    </Svg>
+                    <Grid />
+                    <Dots />
+                  </LineChart>
+                  <XAxis
+                    style={{marginHorizontal: -40, height: xAxisHeight}}
+                    data={freqDayArray[0]}
+                    scale={scale.scaleTime}
+                    formatLabel={(value, index) =>
+                      hours[freqDayArray[0][index].label]
+                    }
+                    labelStyle={{margin: 5}}
+                    contentInset={{left: 50, right: 50}}
+                    svg={axesSvg}
+                  />
+                </View>
+              )}
             </ScrollView>
           </View>
 
@@ -390,24 +775,27 @@ const DataAnalysisLineGraph = () => {
                   }
                 }}
               />
-              <Dropdown
-                data={dateOptions}
-                maxHeight={300}
-                style={{
-                  width: 400,
-                  paddingHorizontal: 20,
-                  backgroundColor: '#DBDBDB',
-                  borderRadius: 22,
-                }}
-                placeholderStyle={{fontSize: 20}}
-                selectedTextStyle={{fontSize: 20}}
-                labelField="label"
-                valueField="value"
-                value={date}
-                onChange={item => {
-                  setDateValue(item.value);
-                }}
-              />
+
+                <Dropdown
+                  data={dateOptions}
+                  maxHeight={300}
+                  style={{
+                    width: 400,
+                    paddingHorizontal: 20,
+                    backgroundColor: '#DBDBDB',
+                    borderRadius: 22,
+                  }}
+                  placeholderStyle={{fontSize: 20}}
+                  selectedTextStyle={{fontSize: 20}}
+                  labelField="label"
+                  valueField="value"
+                  value={date}
+                  onChange={item => {
+                    setDateValue(item.value);
+                  }}
+                />
+            
+
               <Button
                 title="Next"
                 color={Styles.MHMRBlue}
@@ -458,6 +846,8 @@ const DataAnalysisLineGraph = () => {
                   value={periodValue}
                   onChange={item => {
                     setPeriodValue(item.value);
+                    console.log('item.label', item.label);
+                    console.log('item.value', item.value);
                   }}
                 />
               </View>

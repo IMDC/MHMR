@@ -33,14 +33,6 @@ const VideoSetDropdown = ({
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  // fix this
-  const getSelectedVideoIDs = () => {
-    const selectedVideos = realm
-      .objects('VideoData')
-      .filtered('isSelected == true');
-    return selectedVideos.map(video => video._id.toString());
-  };
-
   useEffect(() => {
     const formattedDropdown = videoSets.map(set => ({
       label: set.name,
@@ -62,7 +54,6 @@ const VideoSetDropdown = ({
         isSummaryGenerated: false,
       });
     });
-    
 
     // Refresh dropdown and update video set value
     const updatedVideoSets = realm.objects('VideoSet');
@@ -78,7 +69,6 @@ const VideoSetDropdown = ({
     const newVideoSetValue = updatedDropdown[updatedDropdown.length - 1].value;
     setVideoSetValue(newVideoSetValue);
     onVideoSetChange(newVideoSetValue); // Notify parent component of the change
-  
   };
 
   const clearVideoSet = () => {
@@ -157,7 +147,9 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {saveVideoSetBtn && (
               <Button
-                // disabled={ videoSetVideoIDs == null || videoSetVideoIDs.length === 0}
+                disabled={
+                  videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
+                }
                 title="Save Video Set"
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
@@ -179,7 +171,9 @@ const VideoSetDropdown = ({
             )}
             {clearVideoSetBtn && (
               <Button
-                disabled={getSelectedVideoIDs().length === 0}
+                disabled={
+                  videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
+                }
                 title="Clear Video Set"
                 onPress={clearVideoSet}
                 color={Styles.MHMRBlue}
@@ -195,6 +189,7 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {manageSetBtn && (
               <Button
+                disabled={videoSetValue == null}
                 title="Manage Sets"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
