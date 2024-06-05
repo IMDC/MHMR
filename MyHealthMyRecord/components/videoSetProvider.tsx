@@ -43,8 +43,12 @@ export const VideoSetProvider = ({children}) => {
     if (selectedSet) {
       setCurrentVideoSet(selectedSet);
     } else {
-      setCurrentVideoSet(null);
+      setCurrentVideoSet([]);
     }
+    console.log(
+      '-----------------------------------------------New selectedSet:',
+      selectedSet,
+    );
   };
 
   const contextValues = {
