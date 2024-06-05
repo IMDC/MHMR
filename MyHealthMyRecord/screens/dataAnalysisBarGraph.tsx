@@ -548,35 +548,41 @@ const DataAnalysisBarGraph = () => {
                     max={wordFreqBarGraphData[0]?.value}
                     numberOfTicks={wordFreqBarGraphData[0]?.value}
                   />
-                  <BarChart
-                    style={{flex: 1, marginLeft: 8}}
-                    data={wordFreq}
-                    yAccessor={({item}) => item.y.value}
-                    svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
-                    contentInset={{top: 10, bottom: 10}}
-                    spacing={0.2}
-                    gridMin={0}
-                    numberOfTicks={wordFreqBarGraphData[0]?.value}>
-                    <Grid direction={Grid.Direction.HORIZONTAL} />
-                    <LabelsVertical />
-                  </BarChart>
+                  <ScrollView horizontal={true}>
+                    <View style={{flexDirection: 'row'}}>
+                      <BarChart
+                        style={{height: 400, width: wordFreqBarGraphData.length * 50}}
+                        data={wordFreq}
+                        yAccessor={({item}) => item.y.value}
+                        svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                        contentInset={{top: 10, bottom: 10}}
+                        spacing={0.2}
+                        gridMin={0}
+                        numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                        <Grid direction={Grid.Direction.HORIZONTAL} />
+                        <LabelsVertical />
+                      </BarChart>
+                    </View>
+                  </ScrollView>
                 </View>
-                <XAxis
-                  style={{height: 100, marginTop: 0, marginBottom: 20}}
-                  data={wordFreqBarGraphData}
-                  scale={scale.scaleBand}
-                  svg={{
-                    fontSize: 22,
-                    rotation: 450,
-                    fill: 'black',
-                    originY: 35,
-                    translateY: 0,
-                    translateX: -5,
-                  }}
-                  formatLabel={(value: any, index: string | number) =>
-                    wordFreqBarGraphData[index].text
-                  }
-                />
+                <ScrollView horizontal={true}>
+                  <XAxis
+                    style={{height: 100, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50}}
+                    data={wordFreqBarGraphData}
+                    scale={scale.scaleBand}
+                    svg={{
+                      fontSize: 22,
+                      rotation: 450,
+                      fill: 'black',
+                      originY: 35,
+                      translateY: 0,
+                      translateX: -5,
+                    }}
+                    formatLabel={(value: any, index: string | number) =>
+                      wordFreqBarGraphData[index].text
+                    }
+                  />
+                </ScrollView>
                 <Text style={{textAlign: 'center'}}>Word</Text>
               </View>
             ) : (
@@ -601,28 +607,34 @@ const DataAnalysisBarGraph = () => {
                     min={0}
                     max={wordFreqBarGraphData[0]?.value}
                   />
-                  <BarChart
-                    style={{flex: 1, marginLeft: 8}}
-                    data={wordFreq}
-                    horizontal={true}
-                    yAccessor={({item}) => item.y.value}
-                    svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
-                    contentInset={{top: 10, bottom: 10}}
-                    spacing={0.2}
-                    gridMin={0}>
-                    <Grid direction={Grid.Direction.VERTICAL} />
-                    <LabelsHorizontal />
-                  </BarChart>
+                  <ScrollView horizontal={true}>
+                    <View style={{flexDirection: 'row'}}>
+                      <BarChart
+                        style={{height: 400, width: wordFreqBarGraphData.length * 50}}
+                        data={wordFreq}
+                        horizontal={true}
+                        yAccessor={({item}) => item.y.value}
+                        svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                        contentInset={{top: 10, bottom: 10}}
+                        spacing={0.2}
+                        gridMin={0}>
+                        <Grid direction={Grid.Direction.VERTICAL} />
+                        <LabelsHorizontal />
+                      </BarChart>
+                    </View>
+                  </ScrollView>
                 </View>
-                <XAxis
-                  data={yTest}
-                  yAccessor={({index}) => index}
-                  scale={scale.scaleBand}
-                  contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
-                  spacing={0.2}
-                  formatLabel={value => value}
-                  style={{marginLeft: 65}}
-                />
+                <ScrollView horizontal={true}>
+                  <XAxis
+                    data={yTest}
+                    yAccessor={({index}) => index}
+                    scale={scale.scaleBand}
+                    contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
+                    spacing={0.2}
+                    formatLabel={value => value}
+                    style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
+                  />
+                </ScrollView>
                 <Text style={{textAlign: 'center'}}>Frequency</Text>
               </View>
             )}
