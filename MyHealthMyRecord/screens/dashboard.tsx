@@ -46,6 +46,10 @@ function Dashboard() {
     setVideoSetValue,
     sendToVideoSet,
     setSendToVideoSet,
+    currentVideos,
+    setCurrentVideos,
+    setCurrentVideoSet,
+    currentVideoSet,
   } = useDropdownContext();
 
   // useEffect to update videoSetVideoIDs when the array is added to or removed from
@@ -98,40 +102,17 @@ function Dashboard() {
       });
 
       selectedSetVideos.push(addToSelectedSetVideos[0]);
-
-      // remove additional videos that are already in the set from videoSetVideoIDs
-      // setVideoSetVideoIDs(
-      //   videoSetVideoIDs.filter(
-      //     id => id !== addToSelectedSetVideos[0]._id.toHexString(),
-      //   ),
-      // );
-
       console.log('selected videos array:', selectedVideosArray);
       setVideos(Array.from(new Set(selectedSetVideos)));
 
-      if (selectedVideoSet === null || selectedVideoSet === undefined) {
-        // add selected videos to the videoSetVideoIDs array
-        setVideoSetVideoIDs(
-          Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
+      // add these videos to the current video set if there is a selected video set
+      realm.write(() => {
+        currentVideoSet.videoIDs = Array.from(
+          new Set([...currentVideoSet.videoIDs, ...selectedVideosArray]),
         );
-      } else {
-        // add these videos to the current video set if there is a selected video set
-        const currentSet = realm.objectForPrimaryKey(
-          'VideoSet',
-          selectedVideoSet._id,
-        );
-        console.log('+'.repeat(40));
-        console.log('currentSet:', currentSet);
-        console.log('currentSet.videoIDs:', currentSet.videoIDs);
-        console.log('selectedVideosArray:', selectedVideosArray);
-        console.log('+'.repeat(40));
-        realm.write(() => {
-          currentSet.videoIDs = Array.from(
-            new Set([...currentSet.videoIDs, ...selectedVideosArray]),
-          );
-          console.log('NEW currentSet.videoIDs:', currentSet.videoIDs);
-        });
-      }
+        console.log('NEW currentSet.videoIDs:', currentVideoSet.videoIDs);
+      });
+
       setSendToVideoSet(0);
     } else if (sendToVideoSet == 2) {
       // Send to new video set
@@ -163,7 +144,7 @@ function Dashboard() {
     console.log('-'.repeat(40));
   }, [
     route.params?.selectedVideos,
-    selectedVideoSet,
+    currentVideoSet,
     isFocused,
     videoData,
     // videoSetVideoIDs,
