@@ -37,11 +37,7 @@ const DataAnalysisTextSummary = () => {
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [transcriptsLoaded, setTranscriptsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (currentVideoSet) {
-      setVideoSet(currentVideoSet);
-    }
-  }, [currentVideoSet]);
+  useEffect(() => {}, [currentVideoSet]);
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -56,8 +52,11 @@ const DataAnalysisTextSummary = () => {
     };
     if (isFocused) {
       getVideoData();
+      if (currentVideoSet) {
+        setVideoSet(currentVideoSet);
+      }
     }
-  }, [isFocused, videoSetVideoIDs, realm]);
+  }, [isFocused, videoSetVideoIDs, realm, currentVideoSet]);
 
   useEffect(() => {
     const loadTranscripts = async () => {
@@ -227,7 +226,6 @@ const DataAnalysisTextSummary = () => {
         return neutral;
     }
   };
-  
 
   useEffect(() => {
     console.log('Video Set:', videoSet);
@@ -291,7 +289,10 @@ const DataAnalysisTextSummary = () => {
             <Text style={styles.sentiment}>
               <Text style={styles.boldText}>Overall Feeling: </Text>
               {video.sentiment}{' '}
-              <Image source={getEmojiForSentiment(video.sentiment)} style={styles.emoji} />
+              <Image
+                source={getEmojiForSentiment(video.sentiment)}
+                style={styles.emoji}
+              />
             </Text>
           </View>
         </View>
