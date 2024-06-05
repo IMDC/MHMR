@@ -175,21 +175,38 @@ const DataAnalysisLineGraph = () => {
     const {x, y, data} = props;
     return (
       <>
-        {freqDayArray[date]?.map((value, index) => (
-          <Circle
-            key={index}
-            cx={x(index)}
-            cy={y(value.value)}
-            r={8}
-            stroke={'rgb(0, 0, 0)'}
-            fill={'white'}
-            onPressIn={() => {
-              handlePressIn(value);
-              console.log(value);
-            }}
-            onPressOut={() => console.log('end')}
-          />
-        ))}
+        {periodValue == '1' &&
+          freqDayArray[date]?.map((value, index) => (
+            <Circle
+              key={index}
+              cx={x(index)}
+              cy={y(value.value)}
+              r={8}
+              stroke={'rgb(0, 0, 0)'}
+              fill={'white'}
+              onPressIn={() => {
+                handlePressIn(value);
+                console.log(value);
+              }}
+              onPressOut={() => console.log('end')}
+            />
+          ))}
+        {periodValue == '3' &&
+          freqMonthArray[date]?.map((value, index) => (
+            <Circle
+              key={index}
+              cx={x(index)}
+              cy={y(value.value)}
+              r={8}
+              stroke={'rgb(0, 0, 0)'}
+              fill={'white'}
+              onPressIn={() => {
+                handlePressIn(value);
+                console.log(value);
+              }}
+              onPressOut={() => console.log('end')}
+            />
+          ))}
       </>
     );
   };

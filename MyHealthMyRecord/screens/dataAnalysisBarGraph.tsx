@@ -394,11 +394,13 @@ const DataAnalysisBarGraph = () => {
 
     let saveDate = '';
     let date = '';
-    let monthDate = '';
     let weekDate = '';
+    let monthDate = '';
+    let yearDate = '';
     let hour = 0;
     let week = 0;
     let month = 0;
+    let year = 0;
 
     let resultsDatesForHours = [];
     let resultByHour = [];
@@ -406,6 +408,8 @@ const DataAnalysisBarGraph = () => {
     let resultByWeek = [];
     let resultsDatesForMonths = [];
     let resultByMonth = [];
+    let resultsDatesForYears = [];
+    let resultByYear = [];
 
     for (let i = 0; i < freqMaps.length; i++) {
       saveDate = freqMaps[i].datetime.toString().split(' ');
@@ -415,12 +419,18 @@ const DataAnalysisBarGraph = () => {
       // result of above: "Mon Apr 29 2024"
       monthDate = saveDate[1] + ' ' + saveDate[3];
       // result of above: "Apr 2024"
+
+      yearDate = saveDate[3];
+      // result of above: "2024"
+
       hour = freqMaps[i].datetime.getHours();
       // result of above: 13
       week = freqMaps[i].datetime.getWeek();
       // result of above: 18
       month = freqMaps[i].datetime.getMonth();
       // result of above: 3
+      year = freqMaps[i].datetime.getFullYear();
+      // result of above: 2024
 
       // if word is in the map, then...
       if (freqMaps[i].map.has(word)) {
@@ -654,8 +664,8 @@ const DataAnalysisBarGraph = () => {
           }
         }
 
-        if (!trackedDatesForMonths.has(monthDate)) {
-          trackedDatesForMonths.set(monthDate, 1);
+        if (!trackedDatesForMonths.has(yearDate)) {
+          trackedDatesForMonths.set(yearDate, 1);
           // refresh tracked hours for a new day
           [...trackedMonths.keys()].forEach(key => {
             trackedMonths.set(key, 0);
@@ -730,19 +740,19 @@ const DataAnalysisBarGraph = () => {
           resultByMonth.push(freqMonthTemplate);
           // add a date for the drop down
           resultsDatesForMonths.push({
-            label: monthDate,
-            value: trackedDatesForWeeks.size - 1,
+            label: yearDate,
+            value: trackedDatesForMonths.size - 1,
           });
           console.log(
             'ooooooooo new tracked month',
-            monthDate,
+            yearDate,
             trackedDatesForMonths,
-           month,
+            month,
             trackedMonths,
           );
         } else {
           trackedDatesForMonths.set(
-            monthDate,
+            yearDate,
             trackedDatesForMonths.get(month) + 1,
           );
           if (!trackedMonths.has(month)) {
@@ -766,9 +776,8 @@ const DataAnalysisBarGraph = () => {
         // resultByWeek[trackedDatesForWeeks.size - 1][week].videoIDs.push(
         //   freqMaps[i].videoID,
         // );
-        resultByMonth[trackedDatesForMonths.size - 1][month].value += maps[i].get(
-          word,
-        );
+        resultByMonth[trackedDatesForMonths.size - 1][month].value +=
+          maps[i].get(word);
         resultByMonth[trackedDatesForMonths.size - 1][month].videoIDs.push(
           freqMaps[i].videoID,
         );
@@ -778,7 +787,8 @@ const DataAnalysisBarGraph = () => {
         // resultByWeek[trackedDatesForWeeks.size - 1][week].videoIDs.push(
         //   freqMaps[i].videoID,
         // );
-        resultByHour[trackedDatesForHours.size - 1][hour].value += maps[i].get(word);
+        resultByHour[trackedDatesForHours.size - 1][hour].value +=
+          maps[i].get(word);
         resultByHour[trackedDatesForHours.size - 1][hour].videoIDs.push(
           freqMaps[i].videoID,
         );
@@ -804,6 +814,8 @@ const DataAnalysisBarGraph = () => {
       byWeek: resultByWeek,
       datesForMonths: resultsDatesForMonths,
       byMonth: resultByMonth,
+      // datesForYears: resultsDatesForYears,
+      // byYear: resultByYear,
     };
   }
 
