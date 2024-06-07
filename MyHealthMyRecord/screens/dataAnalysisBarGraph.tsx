@@ -846,43 +846,44 @@ const DataAnalysisBarGraph = () => {
                     numberOfTicks={wordFreqBarGraphData[0]?.value}
                   />
                   <ScrollView horizontal={true}>
-                    <View style={{flexDirection: 'row'}}>
-                      <BarChart
-                        style={{height: 400, width: wordFreqBarGraphData.length * 50}}
-                        data={wordFreq}
-                        yAccessor={({item}) => item.y.value}
-                        svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
-                        contentInset={{top: 10, bottom: 10}}
-                        spacing={0.2}
-                        gridMin={0}
-                        numberOfTicks={wordFreqBarGraphData[0]?.value}>
-                        <Grid direction={Grid.Direction.HORIZONTAL} />
-                        <LabelsVertical />
-                      </BarChart>
+                    <View>
+                      <ScrollView horizontal={true}>
+                        <BarChart
+                          style={{ height: 400, width: wordFreqBarGraphData.length * 50 }}
+                          data={wordFreq}
+                          yAccessor={({ item }) => item.y.value}
+                          svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
+                          contentInset={{ top: 10, bottom: 10 }}
+                          spacing={0.2}
+                          gridMin={0}
+                          numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                          <Grid direction={Grid.Direction.HORIZONTAL} />
+                          <LabelsVertical />
+                        </BarChart>
+                      </ScrollView>
+                      <XAxis
+                        style={{ height: 100, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50 }}
+                        data={wordFreqBarGraphData}
+                        scale={scale.scaleBand}
+                        svg={{
+                          fontSize: 22,
+                          rotation: 25,
+                          fill: 'black',
+                          originY: 35,
+                          translateY: 15,
+                          translateX: 0,
+                          y: 5
+                        }}
+                        formatLabel={(value: any, index: string | number) =>
+                          wordFreqBarGraphData[index].text
+                        }
+                      />
                     </View>
                   </ScrollView>
                 </View>
-                <ScrollView horizontal={true}>
-                  <XAxis
-                    style={{height: 100, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50}}
-                    data={wordFreqBarGraphData}
-                    scale={scale.scaleBand}
-                    svg={{
-                      fontSize: 22,
-                      rotation: 25,
-                      fill: 'black',
-                      originY: 35,
-                      translateY: 15,
-                      translateX: 0,
-                    }}
-                    formatLabel={(value: any, index: string | number) =>
-                      wordFreqBarGraphData[index].text
-                    }
-                  />
-                </ScrollView>
-                <Text style={{textAlign: 'center'}}>Word</Text>
+                <Text style={{ textAlign: 'center' }}>Word</Text>
               </View>
-            ) : (
+            ) : (              
               // <View id="bargraph-horizontal">
               //   <Text>Count of words mentioned in selected video</Text>
               //   <View
@@ -965,7 +966,7 @@ const DataAnalysisBarGraph = () => {
                   }}
                 /> */}
               </View>
-              <View style={{height: '20%', width: '100%'}}>
+              <View style={{ height: '20%', width: '100%' }}>
                 <View
                   style={{
                     flex: 1,
@@ -975,7 +976,7 @@ const DataAnalysisBarGraph = () => {
                   }}>
                   <Text>Include Stop Words</Text>
                   <Switch
-                    trackColor={{false: '#767577', true: '#81b0ff'}}
+                    trackColor={{ false: '#767577', true: '#81b0ff' }}
                     thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitchStopWords}
@@ -983,7 +984,7 @@ const DataAnalysisBarGraph = () => {
                   />
                   <Text>Include Medical Words</Text>
                   <Switch
-                    trackColor={{false: '#767577', true: '#81b0ff'}}
+                    trackColor={{ false: '#767577', true: '#81b0ff' }}
                     thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitchMedWords}
