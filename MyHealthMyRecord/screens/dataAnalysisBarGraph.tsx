@@ -828,7 +828,7 @@ const DataAnalysisBarGraph = () => {
           <View id="bargraph" style={{height: '100%', width: '100%'}}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical">
-                <Text>Frequency of Words mentioned in Selected Video</Text>
+                <Text>Count of words mentioned in selected video</Text>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -884,7 +884,7 @@ const DataAnalysisBarGraph = () => {
               </View>
             ) : (
               <View id="bargraph-horizontal">
-                <Text>Frequency of Words mentioned in Selected Video</Text>
+                <Text>Count of words mentioned in selected video</Text>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -932,7 +932,7 @@ const DataAnalysisBarGraph = () => {
                     style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
                   />
                 </ScrollView>
-                <Text style={{textAlign: 'center'}}>Frequency</Text>
+                <Text style={{textAlign: 'center'}}>Count</Text>
               </View>
             )}
             <View style={{height: '20%', width: '100%'}}>

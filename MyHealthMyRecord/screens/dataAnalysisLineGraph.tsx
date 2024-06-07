@@ -216,7 +216,7 @@ const DataAnalysisLineGraph = () => {
       <View style={{height: '87%'}}>
         <View>
           <Text style={{padding: 20, fontSize: 20}}>
-            Word Count of "{wordLabel}" over time
+            Word count of "{wordLabel}" over time
           </Text>
           <View
             id="linegraph"
