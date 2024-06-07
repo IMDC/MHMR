@@ -869,11 +869,11 @@ const DataAnalysisBarGraph = () => {
                     scale={scale.scaleBand}
                     svg={{
                       fontSize: 22,
-                      rotation: 450,
+                      rotation: 25,
                       fill: 'black',
                       originY: 35,
-                      translateY: 0,
-                      translateX: -5,
+                      translateY: 15,
+                      translateX: 0,
                     }}
                     formatLabel={(value: any, index: string | number) =>
                       wordFreqBarGraphData[index].text
