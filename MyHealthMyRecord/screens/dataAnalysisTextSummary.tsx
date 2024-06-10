@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {
-  Button,
   Image,
   ScrollView,
   StyleSheet,
@@ -18,6 +17,7 @@ import {
   sendToChatGPT,
   sendVideoSetToChatGPT,
 } from '../components/chatgpt_api';
+import {Button, Icon, Dialog} from '@rneui/themed';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -246,40 +246,54 @@ const DataAnalysisTextSummary = () => {
             <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
-                <TextInput
-                  style={styles.textInput}
-                  onChangeText={setDraftTranscript}
-                  value={draftTranscript}
-                  multiline
-                />
-                <View style={styles.buttonContainer}>
-                  <View style={styles.buttonWrapper}>
-                    <Button
-                      title="Save"
-                      onPress={handleSave}
-                      color={Styles.MHMRBlue}
-                    />
-                  </View>
-                  <View style={styles.buttonWrapper}>
-                    <Button
-                      title="Cancel"
-                      onPress={handleCancel}
-                      color={Styles.MHMRBlue}
-                    />
+                <View style={{flexDirection: 'row'}}>
+                  <TextInput
+                    style={styles.textInput}
+                    onChangeText={setDraftTranscript}
+                    value={draftTranscript}
+                    multiline
+                  />
+                  <View style={styles.buttonContainer}>
+                    <View style={styles.buttonWrapper}>
+                      <Button
+                        radius={20}
+                        title="Save"
+                        onPress={handleSave}
+                        color={Styles.MHMRBlue}
+                      />
+                    </View>
+                    <View style={styles.buttonWrapper}>
+                      <Button
+                        radius={20}
+                        title="Cancel"
+                        onPress={handleCancel}
+                        color={Styles.MHMRBlue}
+                      />
+                    </View>
                   </View>
                 </View>
               </>
             ) : (
               <>
-                <Text style={styles.transcript}>
-                  <Text style={styles.boldText}>Video Transcript: </Text>
-                  {video.transcript[0]}
-                </Text>
-                <Button
-                  title="Edit"
-                  onPress={() => handleEdit(video)}
-                  color={Styles.MHMRBlue}
-                />
+                <View style={{flexDirection: 'row'}}>
+                  <View style={{flex: 1, justifyContent: 'flex-start'}}>
+                    <Text style={styles.transcript}>
+                      <Text style={styles.boldText}>Video Transcript: </Text>
+                      {video.transcript[0]}
+                    </Text>
+                  </View>
+
+                  <View style={{alignSelf: 'flex-end'}}>
+                    <Button
+                      radius={50}
+                      title="Edit Transcript"
+                      onPress={() => {
+                        handleEdit(video), console.log('Edit button pressed');
+                      }}
+                      color={Styles.MHMRBlue}
+                    />
+                  </View>
+                </View>
               </>
             )}
             <Text style={styles.output}>
@@ -318,14 +332,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   textInput: {
+    flex: 1,
     height: 100,
     borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 10,
     padding: 10,
+    fontSize: 20,
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     marginTop: 10,
   },

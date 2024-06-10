@@ -68,7 +68,7 @@ const Home = () => {
             Record a Video
           </Text>
         </View>
-        <View>
+        {/* <View>
           <Icon
             reverse
             name="image-outline"
@@ -86,7 +86,7 @@ const Home = () => {
             }}>
             View Recordings
           </Text>
-        </View>
+        </View> */}
       </View>
     </>
   );

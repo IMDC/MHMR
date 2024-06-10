@@ -7,6 +7,7 @@ import {
   ImageBackground,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import {RouteProp, useIsFocused, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -64,6 +65,22 @@ const ManageVideoSet = () => {
     setIsEditingTitle(false);
   };
 
+  const RemoveVideoAlert = (video: VideoData) => {
+    Alert.alert(
+      'Remove Video',
+      'Are you sure you want to remove this video from the set?',
+      [
+        {text: 'OK', onPress: () => handleRemoveVideo(video)},
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+      ],
+    );
+  }
+
+
   const handleRemoveVideo = (video: VideoData) => {
     setLastRemovedVideo(video);
     realm.write(() => {
@@ -84,6 +101,21 @@ const ManageVideoSet = () => {
       setLastRemovedVideo(null);
     }
   };
+
+  const DeleteVideoSetAlert = () => {
+    Alert.alert(
+      'Delete Video Set',
+      'Are you sure you want to delete this video set?',
+      [
+        {text: 'OK', onPress: () => handleDeleteVideoSet()},
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+      ],
+    );
+  }
 
   const handleDeleteVideoSet = () => {
     if (currentVideoSet) {
@@ -127,17 +159,37 @@ const ManageVideoSet = () => {
             />
           </View>
         ) : (
-          <TouchableOpacity
-            style={styles.titleContainer}
-            onPress={() => setIsEditingTitle(true)}>
-            <Text style={styles.videoSetTitle}>{videoSetTitle}</Text>
-            <Icon
-              name="edit"
-              type="material"
-              size={20}
-              color={Styles.MHMRBlue}
-            />
-          </TouchableOpacity>
+          <>
+            <View>
+              <TouchableOpacity
+                style={styles.titleContainer}
+                onPress={() => setIsEditingTitle(true)}>
+                <Text style={styles.videoSetTitle}>{videoSetTitle}</Text>
+                <Icon
+                  name="edit"
+                  type="material"
+                  size={20}
+                  color={Styles.MHMRBlue}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              {lastRemovedVideo && (
+                <Button
+                  radius={50}
+                  title="Undo Last Removed Video"
+                  onPress={handleUndoRemoveVideo}
+                  buttonStyle={styles.deleteButton}
+                />
+              )}
+              <Button
+                radius={50}
+                title="Delete Video Set"
+                onPress={DeleteVideoSetAlert}
+                buttonStyle={styles.deleteButton}
+              />
+            </View>
+          </>
         )}
       </View>
       <ScrollView>
@@ -165,27 +217,27 @@ const ManageVideoSet = () => {
               <Button
                 radius={50}
                 title="Remove"
-                onPress={() => handleRemoveVideo(video)}
+                onPress={() => RemoveVideoAlert(video)}
                 color={Styles.MHMRBlue}
               />
             </View>
           </View>
         ))}
       </ScrollView>
-      {lastRemovedVideo && (
+      {/* {lastRemovedVideo && (
         <Button
           radius={50}
           title="Undo Remove"
           onPress={handleUndoRemoveVideo}
           buttonStyle={styles.deleteButton}
         />
-      )}
-      <Button
-        radius={50}
+      )} */}
+      {/* <Button
+        radius={80}
         title="Delete Video Set"
         onPress={handleDeleteVideoSet}
         buttonStyle={styles.deleteButton}
-      />
+      /> */}
     </View>
   );
 };
@@ -265,10 +317,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   deleteButton: {
+    marginLeft: 10,
     backgroundColor: Styles.MHMRBlue,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginTop: 20,
+
   },
 });
 
