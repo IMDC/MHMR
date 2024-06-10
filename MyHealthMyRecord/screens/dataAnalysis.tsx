@@ -414,7 +414,7 @@ const DataAnalysis = () => {
           }}
           color={Styles.MHMRBlue}
           radius={50}>
-          Text Summary
+          Text Insights
         </Button>
         {/* <Button
           disabled={true}

@@ -44,68 +44,12 @@ const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
 
 function StackNav() {
-  const [selected, setSelected] = useState(true);
-  const [auth, setAuth] = useState('');
-  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
-  // useEffect(() => {
-  //   console.log('View Recordings component mounted');
-  //   setSelected(true);
-  //   console.log('selected after reset:', selected);
-  // }, []);
-
-  const [lastAuthTime, setLastAuthTime] = useState(0);
-
-  const handleAuth = async () => {
-    const currentTime = Date.now();
-    if (currentTime - lastAuthTime >= 60000) {
-      // Check if 1 minute has passed since the last auth
-      setSelected(!selected);
-      console.log('selected:', selected);
-      // Call the getAuth function and store the return in a variable
-      setAuth(await getAuth());
-      setLastAuthTime(currentTime); // Update lastAuthTime
-    } else {
-      console.log('Auth already performed within the last minute.');
-    }
-  };
-
   return (
     <Stack.Navigator
       initialRouteName="Home"
       screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Record Video" component={RecordVideo} />
-      <Stack.Screen
-        name="View Recordings"
-        // component={ViewRecordings}
-        options={{
-          headerRight: () => (
-            <Button
-              buttonStyle={{backgroundColor: Styles.MHMRBlue}}
-              radius={50}
-              onPress={() => {
-                setSelected(!selected);
-                console.log('selected:', selected);
-                // handleAuth();
-              }}
-              // if selected = false, then change the button to say "Done"
-              // if selected = true, then change the button to say "Select Videos"
-              title={selected ? 'Select Videos' : 'Done'}
-            />
-          ),
-        }}>
-        {() => <ViewRecordings selected={selected} setSelected={setSelected} />}
-      </Stack.Screen>
-      <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
-      <Stack.Screen name="Review Annotations" component={ReviewAnnotations} />
-      <Stack.Screen name="Keywords" component={KeywordTagging} />
-      <Stack.Screen name="Location" component={LocationTagging} />
-      <Stack.Screen name="Emotion Tagging" component={EmotionTagging} />
-      <Stack.Screen name="Text Comments" component={TextComments} />
-      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
-      <Stack.Screen name="Painscale" component={Painscale} />
-      
     </Stack.Navigator>
   );
 }
@@ -134,9 +78,89 @@ function DashboardStack() {
       <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
     </Stack.Navigator>
   );
-
 }
 
+function ManageVideosStack() {
+  const [selected, setSelected] = useState(true);
+  const [auth, setAuth] = useState('');
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+  // useEffect(() => {
+  //   console.log('View Recordings component mounted');
+  //   setSelected(true);
+  //   console.log('selected after reset:', selected);
+  // }, []);
+
+  const [lastAuthTime, setLastAuthTime] = useState(0);
+
+  const handleAuth = async () => {
+    const currentTime = Date.now();
+    if (currentTime - lastAuthTime >= 60000) {
+      // Check if 1 minute has passed since the last auth
+      setSelected(!selected);
+      console.log('selected:', selected);
+      // Call the getAuth function and store the return in a variable
+      setAuth(await getAuth());
+      setLastAuthTime(currentTime); // Update lastAuthTime
+    } else {
+      console.log('Auth already performed within the last minute.');
+    }
+  };
+  return (
+    <Stack.Navigator
+      initialRouteName="Manage Videos"
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
+      <Stack.Screen
+        name="View Recordings"
+        // component={ViewRecordings}
+        options={{
+          headerRight: () => (
+            <View style={{flexDirection: 'row', alignContent: 'flex-start'}}>
+              <View style={{marginRight: 20}}>
+                <Button
+                  buttonStyle={{
+                    backgroundColor: Styles.MHMRBlue,
+                  }}
+                  style={{}}
+                  radius={50}
+                  title="Go To Video Set Dashboard"
+                  onPress={() =>
+                    navigation.navigate('Video Set Dashboard', {
+                      screen: 'Dashboard',
+                    })
+                  }
+                />
+              </View>
+              <View>
+                <Button
+                  buttonStyle={{backgroundColor: Styles.MHMRBlue}}
+                  radius={50}
+                  onPress={() => {
+                    setSelected(!selected);
+                    console.log('selected:', selected);
+                    // handleAuth();
+                  }}
+                  // if selected = false, then change the button to say "Done"
+                  // if selected = true, then change the button to say "Select Videos"
+                  title={selected ? 'Select Videos' : 'Done'}
+                />
+              </View>
+            </View>
+          ),
+        }}>
+        {() => <ViewRecordings selected={selected} setSelected={setSelected} />}
+      </Stack.Screen>
+      <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
+      <Stack.Screen name="Review Annotations" component={ReviewAnnotations} />
+      <Stack.Screen name="Keywords" component={KeywordTagging} />
+      <Stack.Screen name="Location" component={LocationTagging} />
+      <Stack.Screen name="Emotion Tagging" component={EmotionTagging} />
+      <Stack.Screen name="Text Comments" component={TextComments} />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
+      <Stack.Screen name="Painscale" component={Painscale} />
+    </Stack.Navigator>
+  );
+}
 function App() {
   return (
     <RealmProvider>
@@ -181,7 +205,7 @@ function App() {
                   headerStyle: {backgroundColor: Styles.NavBarGrey},
                   tabBarIcon: () => (
                     <Icon
-                      name="analytics-outline"
+                      name="albums-outline"
                       size={Styles.bottomNavIconSize}
                       type="ionicon"
                       color={Styles.MHMRBlue}
@@ -200,6 +224,24 @@ function App() {
                   tabBarIcon: () => (
                     <Icon
                       name="home-outline"
+                      size={Styles.bottomNavIconSize}
+                      type="ionicon"
+                      color={Styles.MHMRBlue}
+                      style={{width: Styles.bottomNavIconSize}}
+                    />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="Manage Videos"
+                component={ManageVideosStack}
+                options={{
+                  headerShown: false,
+                  tabBarLabel: 'Manage Videos',
+                  headerStyle: {backgroundColor: Styles.NavBarGrey},
+                  tabBarIcon: () => (
+                    <Icon
+                      name="image-outline"
                       size={Styles.bottomNavIconSize}
                       type="ionicon"
                       color={Styles.MHMRBlue}

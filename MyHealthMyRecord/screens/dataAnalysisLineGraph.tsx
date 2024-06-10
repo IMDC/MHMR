@@ -794,7 +794,7 @@ const DataAnalysisLineGraph = () => {
                 justifyContent: 'space-evenly',
               }}>
               <Button
-                title="Previous"
+                title="Previous Period"
                 color={Styles.MHMRBlue}
                 radius={50}
                 icon={{
@@ -854,7 +854,7 @@ const DataAnalysisLineGraph = () => {
               )}
 
               <Button
-                title="Next"
+                title="Next Period"
                 color={Styles.MHMRBlue}
                 radius={50}
                 iconPosition="right"
