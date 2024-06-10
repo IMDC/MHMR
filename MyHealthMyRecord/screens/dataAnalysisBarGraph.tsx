@@ -822,47 +822,41 @@ const DataAnalysisBarGraph = () => {
   /* ======================================================================= */
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <ScrollView contentContainerStyle={{flexGrow: 1}}>
-        <View style={{height: '87%', padding: 20}}>
-          <View id="bargraph" style={{height: '100%', width: '100%'}}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={{ flex: 1, padding: 20 }}>
+          <View id="bargraph" style={{ flex: 1 }}>
             {barGraphVertical == true ? (
-              <View id="bargraph-vertical">
+              <View id="bargraph-vertical" style={{ flex: 1 }}>
                 <Text>Count of words mentioned in selected video</Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    height: 400,
-                    paddingVertical: 16,
-                  }}>
+                <View style={{ flexDirection: 'row', flex: 1 }}>
                   <YAxis
                     data={yTest}
-                    yAccessor={({index}) => index}
-                    contentInset={{top: 10, bottom: 10}}
+                    yAccessor={({ index }) => index}
+                    contentInset={{ top: 10, bottom: 10 }}
                     spacing={0.2}
                     formatLabel={value => value}
                     min={0}
                     max={wordFreqBarGraphData[0]?.value}
                     numberOfTicks={wordFreqBarGraphData[0]?.value}
+                    style={{ height: 400 }}
                   />
                   <ScrollView horizontal={true}>
                     <View>
-                      <ScrollView horizontal={true}>
-                        <BarChart
-                          style={{ height: 400, width: wordFreqBarGraphData.length * 50 }}
-                          data={wordFreq}
-                          yAccessor={({ item }) => item.y.value}
-                          svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-                          contentInset={{ top: 10, bottom: 10 }}
-                          spacing={0.2}
-                          gridMin={0}
-                          numberOfTicks={wordFreqBarGraphData[0]?.value}>
-                          <Grid direction={Grid.Direction.HORIZONTAL} />
-                          <LabelsVertical />
-                        </BarChart>
-                      </ScrollView>
+                      <BarChart
+                        style={{ height: 400, width: wordFreqBarGraphData.length * 50 }}
+                        data={wordFreq}
+                        yAccessor={({ item }) => item.y.value}
+                        svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
+                        contentInset={{ top: 10, bottom: 10 }}
+                        spacing={0.2}
+                        gridMin={0}
+                        numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                        <Grid direction={Grid.Direction.HORIZONTAL} />
+                        <LabelsVertical />
+                      </BarChart>
                       <XAxis
-                        style={{ height: 100, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50 }}
+                        style={{ height: 60, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50 }}
                         data={wordFreqBarGraphData}
                         scale={scale.scaleBand}
                         svg={{
@@ -883,7 +877,7 @@ const DataAnalysisBarGraph = () => {
                 </View>
                 <Text style={{ textAlign: 'center' }}>Word</Text>
               </View>
-            ) : (              
+            ) : (
               // <View id="bargraph-horizontal">
               //   <Text>Count of words mentioned in selected video</Text>
               //   <View
@@ -937,7 +931,7 @@ const DataAnalysisBarGraph = () => {
               // </View>
               null
             )}
-            <View style={{height: '20%', width: '100%'}}>
+            <View style={{ height: '20%', width: '100%' }}>
               <View
                 style={{
                   flex: 1,
