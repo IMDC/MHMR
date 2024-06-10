@@ -39,29 +39,29 @@ const AnnotationMenu = () => {
   const [title, setTitle] = React.useState(video.title);
 
   const [keywordButtonColour, setKeywordButtonColour] = React.useState(
-    Styles.buttonGrey,
+    Styles.MHMRLightBlue,
   );
   const [keywordButtonType, setKeywordButtonType] =
     React.useState('add-outline');
   const [locationButtonColour, setLocationButtonColour] = React.useState(
-    Styles.buttonGrey,
+    Styles.MHMRLightBlue,
   );
   const [locationButtonType, setLocationButtonType] =
     React.useState('add-outline');
   const [commentButtonColour, setCommentButtonColour] = React.useState(
-    Styles.buttonGrey,
+    Styles.MHMRLightBlue,
   );
   const [commentButtonType, setCommentButtonType] =
     React.useState('add-outline');
   const [emotionButtonColour, setEmotionButtonColour] = React.useState(
-    Styles.buttonGrey,
+    Styles.MHMRLightBlue,
   );
   const [emotionButtonType, setEmotionButtonType] =
     React.useState('add-outline');
   const [painButtonType, setPainButtonType] = 
   React.useState('add-outline');
   const [painButtonColour, setPainButtonColour] = React.useState(
-    Styles.buttonGrey,
+    Styles.MHMRLightBlue,
   );
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -125,35 +125,35 @@ const AnnotationMenu = () => {
         setKeywordButtonColour(Styles.MHMRBlue);
         setKeywordButtonType('checkmark-outline');
       } else {
-        setKeywordButtonColour(Styles.buttonGrey);
+        setKeywordButtonColour(Styles.MHMRLightBlue);
         setKeywordButtonType('add-outline');
       }
       if (checkIfLocationsAnnotated()) {
         setLocationButtonColour(Styles.MHMRBlue);
         setLocationButtonType('checkmark-outline');
       } else {
-        setLocationButtonColour(Styles.buttonGrey);
+        setLocationButtonColour(Styles.MHMRLightBlue);
         setLocationButtonType('add-outline');
       }
       if (checkIfCommentsAnnotated()) {
         setCommentButtonColour(Styles.MHMRBlue);
         setCommentButtonType('checkmark-outline');
       } else {
-        setCommentButtonColour(Styles.buttonGrey);
+        setCommentButtonColour(Styles.MHMRLightBlue);
         setCommentButtonType('add-outline');
       }
       if (checkIfEmotionsAnnotated()) {
         setEmotionButtonColour(Styles.MHMRBlue);
         setEmotionButtonType('checkmark-outline');
       } else {
-        setEmotionButtonColour(Styles.buttonGrey);
+        setEmotionButtonColour(Styles.MHMRLightBlue);
         setEmotionButtonType('add-outline');
       }
       if (checkIfPainscaleAnnotated()) {
         setPainButtonColour(Styles.MHMRBlue);
         setPainButtonType('checkmark-outline');
       } else {
-        setPainButtonColour(Styles.buttonGrey);
+        setPainButtonColour(Styles.MHMRLightBlue);
         setPainButtonType('add-outline');
       }
     }
