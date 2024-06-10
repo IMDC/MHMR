@@ -824,7 +824,7 @@ const DataAnalysisBarGraph = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ flex: 1, padding: 20 }}>
+        <View style={{ height: '70%', padding: 20 }}>
           <View id="bargraph" style={{ flex: 1 }}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{ flex: 1 }}>
