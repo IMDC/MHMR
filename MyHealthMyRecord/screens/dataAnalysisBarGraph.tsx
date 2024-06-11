@@ -830,50 +830,55 @@ const DataAnalysisBarGraph = () => {
               <View id="bargraph-vertical" style={{ flex: 1 }}>
                 <Text>Count of words mentioned in selected video</Text>
                 <View style={{ flexDirection: 'row', flex: 1 }}>
-                  <YAxis
-                    data={yTest}
-                    yAccessor={({ index }) => index}
-                    contentInset={{ top: 10, bottom: 10 }}
-                    spacing={0.2}
-                    formatLabel={value => value}
-                    min={0}
-                    max={wordFreqBarGraphData[0]?.value}
-                    numberOfTicks={wordFreqBarGraphData[0]?.value}
-                    style={{ height: 400 }}
-                  />
-                  <ScrollView horizontal={true}>
-                    <View>
-                      <BarChart
-                        style={{ height: 400, width: wordFreqBarGraphData.length * 50 }}
-                        data={wordFreq}
-                        yAccessor={({ item }) => item.y.value}
-                        svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-                        contentInset={{ top: 10, bottom: 10 }}
-                        spacing={0.2}
-                        gridMin={0}
-                        numberOfTicks={wordFreqBarGraphData[0]?.value}>
-                        <Grid direction={Grid.Direction.HORIZONTAL} />
-                        <LabelsVertical />
-                      </BarChart>
-                      <XAxis
-                        style={{ height: 60, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50 }}
-                        data={wordFreqBarGraphData}
-                        scale={scale.scaleBand}
-                        svg={{
-                          fontSize: 22,
-                          rotation: 25,
-                          fill: 'black',
-                          originY: 35,
-                          translateY: 15,
-                          translateX: 0,
-                          y: 5
-                        }}
-                        formatLabel={(value: any, index: string | number) =>
-                          wordFreqBarGraphData[index].text
-                        }
-                      />
-                    </View>
-                  </ScrollView>
+                  <View style={{ width: 50, justifyContent: 'center' }}>
+                    <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center' }}>Count</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', flex: 1 }}>
+                    <YAxis
+                      data={yTest}
+                      yAccessor={({ index }) => index}
+                      contentInset={{ top: 10, bottom: 10 }}
+                      spacing={0.2}
+                      formatLabel={value => value}
+                      min={0}
+                      max={wordFreqBarGraphData[0]?.value}
+                      numberOfTicks={wordFreqBarGraphData[0]?.value}
+                      style={{ height: 400 }}
+                    />
+                    <ScrollView horizontal={true}>
+                      <View>
+                        <BarChart
+                          style={{ height: 400, width: wordFreqBarGraphData.length * 50 }}
+                          data={wordFreq}
+                          yAccessor={({ item }) => item.y.value}
+                          svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
+                          contentInset={{ top: 10, bottom: 10 }}
+                          spacing={0.2}
+                          gridMin={0}
+                          numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                          <Grid direction={Grid.Direction.HORIZONTAL} />
+                          <LabelsVertical />
+                        </BarChart>
+                        <XAxis
+                          style={{ height: 60, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50 }}
+                          data={wordFreqBarGraphData}
+                          scale={scale.scaleBand}
+                          svg={{
+                            fontSize: 22,
+                            rotation: 25,
+                            fill: 'black',
+                            originY: 35,
+                            translateY: 15,
+                            translateX: 0,
+                            y: 5
+                          }}
+                          formatLabel={(value: any, index: string | number) =>
+                            wordFreqBarGraphData[index].text
+                          }
+                        />
+                      </View>
+                    </ScrollView>
+                  </View>
                 </View>
                 <Text style={{ textAlign: 'center' }}>Word</Text>
               </View>
