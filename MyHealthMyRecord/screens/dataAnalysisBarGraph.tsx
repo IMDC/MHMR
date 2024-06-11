@@ -824,7 +824,7 @@ const DataAnalysisBarGraph = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ height: '70%', padding: 20 }}>
+        <View style={{ height: '85%', padding: 20 }}>
           <View id="bargraph" style={{ flex: 1 }}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{ flex: 1 }}>
@@ -843,12 +843,12 @@ const DataAnalysisBarGraph = () => {
                       min={0}
                       max={wordFreqBarGraphData[0]?.value}
                       numberOfTicks={wordFreqBarGraphData[0]?.value}
-                      style={{ height: 400 }}
+                      style={{ flex: 1 }}
                     />
                     <ScrollView horizontal={true}>
                       <View>
                         <BarChart
-                          style={{ height: 400, width: wordFreqBarGraphData.length * 50 }}
+                          style={{ flex: 1, width: wordFreqBarGraphData.length * 50 }}
                           data={wordFreq}
                           yAccessor={({ item }) => item.y.value}
                           svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
@@ -936,7 +936,7 @@ const DataAnalysisBarGraph = () => {
               // </View>
               null
             )}
-            <View style={{ height: '20%', width: '100%' }}>
+            <View style={{ height: '15%', width: '100%' }}>
               <View
                 style={{
                   flex: 1,
