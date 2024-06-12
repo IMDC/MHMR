@@ -877,10 +877,10 @@ const DataAnalysisBarGraph = () => {
                           data={wordFreqBarGraphData}
                           scale={scale.scaleBand}
                           svg={{
-                            fontSize: 22,
-                            rotation: 25,
+                            fontSize: 18,
+                            rotation: 45,
                             fill: 'black',
-                            originY: 35,
+                            originY: 20,
                             translateY: 15,
                             translateX: 0,
                             y: 5
