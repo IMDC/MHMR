@@ -1,6 +1,6 @@
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {VideoData, useRealm, useObject} from '../models/VideoData';
 import {
   SafeAreaView,
@@ -9,8 +9,9 @@ import {
   ScrollView,
   Dimensions,
   Switch,
+  TouchableOpacity,
 } from 'react-native';
-import {Button} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
@@ -44,6 +45,7 @@ const DataAnalysisBarGraph = () => {
   /* ======================================================================= */
 
   const [barGraphVertical, setBarGraphVertical] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // array of length of max value in data (first index value) for yAxis
   const yTest = Array.from(
@@ -821,6 +823,14 @@ const DataAnalysisBarGraph = () => {
 
   /* ======================================================================= */
 
+  const scrollLeft = () => {
+    scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+  };
+
+  const scrollRight = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -845,7 +855,10 @@ const DataAnalysisBarGraph = () => {
                       numberOfTicks={wordFreqBarGraphData[0]?.value}
                       style={{ flex: 1 }}
                     />
-                    <ScrollView horizontal={true}>
+                    <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
+                      <Icon name="arrow-left" size={30} color="black" />
+                    </TouchableOpacity>
+                    <ScrollView horizontal={true} ref={scrollViewRef}>
                       <View>
                         <BarChart
                           style={{ flex: 1, width: wordFreqBarGraphData.length * 50 }}
@@ -878,6 +891,9 @@ const DataAnalysisBarGraph = () => {
                         />
                       </View>
                     </ScrollView>
+                    <TouchableOpacity onPress={scrollRight} style={{ justifyContent: 'center' }}>
+                      <Icon name="arrow-right" size={30} color="black" />
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <Text style={{ textAlign: 'center' }}>Word</Text>
