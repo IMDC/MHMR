@@ -241,7 +241,7 @@ function App() {
                   headerStyle: {backgroundColor: Styles.NavBarGrey},
                   tabBarIcon: () => (
                     <Icon
-                      name="image-outline"
+                      name="film-outline"
                       size={Styles.bottomNavIconSize}
                       type="ionicon"
                       color={Styles.MHMRBlue}
