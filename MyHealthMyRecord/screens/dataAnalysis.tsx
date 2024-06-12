@@ -2,26 +2,46 @@ import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
 import {VideoData, useRealm, useObject, useQuery} from '../models/VideoData';
-import {SafeAreaView, View, Text, ScrollView, Dimensions} from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  ScrollView,
+  Dimensions,
+  Modal,
+  StyleSheet,
+} from 'react-native';
 import {Button} from '@rneui/themed';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
 import {Rect} from 'react-native-svg';
-import {Dropdown} from 'react-natcive-element-dropdown';
+import {Dropdown} from 'react-native-element-dropdown';
 //import { VideoSet } from '../models/VideoSet';
 import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import {color} from '@rneui/base';
-import { useDropdownContext } from '../components/videoSetProvider';
-import { stopWords, medWords } from '../assets/util/words';
+import {useDropdownContext} from '../components/videoSetProvider';
+import {stopWords, medWords} from '../assets/util/words';
+import {useSetLineGraphData} from '../components/lineGraphData';
 
 const DataAnalysis = () => {
-  const {handleChange, videoSetValue, videoSetVideoIDs, setVidmeoSetValue, currentVideos, currentVideoSet} =
-    useDropdownContext();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [lineGraphNavigationVisible, setLineGraphNavigationVisible] =
+    useState(false);
+  const {
+    handleChange,
+    videoSetValue,
+    videoSetVideoIDs,
+    setVideoSetValue,
+    currentVideos,
+    currentVideoSet,
+  } = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
+  const setLineGraphData = useSetLineGraphData();
+  const [wordLabel, setWordLabel] = useState('');
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetDropdown, setVideoSetDropdown] = useState([]);
   const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
@@ -30,6 +50,8 @@ const DataAnalysis = () => {
   const videoSets = useQuery<any>('VideoSet');
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsSelected = currentVideos;
+  const [viewValue, setViewValue] = useState(1);
+  const [data, setData] = useState([]);
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
@@ -76,7 +98,6 @@ const DataAnalysis = () => {
   const [freqMapsWithInfo, setFreqMapsWithInfo] = useState<any>([]);
   const [routeFreqMaps, setRouteFreqMaps] = useState<any>([]);
 
-
   const [barData, setBarData] = useState<any>([]);
 
   function addFreqMapWithInfo(freqMapWithInfo: any) {
@@ -99,8 +120,7 @@ const DataAnalysis = () => {
     for (let i = 0; i < videosSelected.length; i++) {
       let transcript = videosSelected[i].transcript;
       let datetime = videosSelected[i].datetimeRecorded;
-      console.log('transcript:'
-      , transcript);
+      console.log('transcript:', transcript);
       if (transcript.length > 0) {
         let temp = getFreq(transcript[0], datetime);
         let freqWithInfo = {
@@ -230,11 +250,14 @@ const DataAnalysis = () => {
     let barNoStop = [];
     let barNoMed = [];
     let barNone = [];
+    let counter = 0;
 
     // barData formatting
     for (let [key, value] of result) {
       //console.log(`${key} - ${value}`);
       bar.push({text: `${key}`, value: parseInt(`${value}`)});
+      // data.push({label: `${key}`, value: `${counter}`});
+      setData(data => [...data, {label: `${key}`, value: `${counter}`}]);
     }
     for (let [key, value] of mapNoStop) {
       //console.log(`${key} - ${value}`);
@@ -358,7 +381,10 @@ const DataAnalysis = () => {
         </Button>
         <Button
           disabled={currentVideoSet?.length === 0}
-          onPress={() => navigation.navigate('Line Graph')}
+          onPress={() => {
+            setModalVisible(true);
+            console.log('-------------------------data', data);
+          }}
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: 400,
@@ -437,8 +463,130 @@ const DataAnalysis = () => {
           Text Graph
         </Button> */}
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>
+            Select a word to view in line graph:
+          </Text>
+          <Dropdown
+            //display the text from barData
+            data={data}
+            maxHeight={400}
+            style={{
+              height: 50,
+              width: 600,
+              paddingHorizontal: 20,
+              backgroundColor: '#DBDBDB',
+              borderRadius: 22,
+            }}
+            // placeholderStyle={styles.placeholderStyle}
+            // selectedTextStyle={styles.selectedTextStyle}
+            // activeColor={Styles.MHMRBlue}
+            itemTextStyle={{textAlign: 'center'}}
+            labelField="label"
+            valueField="value"
+            onChange={item => {
+              setViewValue(item.label);
+              setLineGraphNavigationVisible(true);
+              console.log('item:', item.label);
+            }}
+          />
+          <View style={{flexDirection: 'row'}}>
+            <Button
+              containerStyle={{marginTop: 20}}
+              title="Close"
+              color={Styles.MHMRBlue}
+              radius={50}
+              onPress={() => setModalVisible(false)}
+            />
+            {lineGraphNavigationVisible && (
+              <Button
+                containerStyle={{marginTop: 20, marginLeft: 10}}
+                title="View Line Graph"
+                color={Styles.MHMRBlue}
+                radius={50}
+                onPress={() => {
+                  const wordLabel = viewValue;
+                  const result = setLineGraphData(wordLabel, routeFreqMaps);
+                  console.log('routeFreqMaps:', routeFreqMaps);
+                  navigation.navigate('Line Graph', {
+                    word: wordLabel,
+                    data: result,
+                  });
+                }}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  container: {
+    backgroundColor: 'white',
+    padding: 16,
+  },
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+  },
+  icon: {
+    marginRight: 5,
+  },
+  label: {
+    position: 'absolute',
+    backgroundColor: 'white',
+    left: 22,
+    top: 8,
+    zIndex: 999,
+    paddingHorizontal: 8,
+    fontSize: 14,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+});
 
 export default DataAnalysis;
