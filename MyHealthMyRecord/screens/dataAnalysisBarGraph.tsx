@@ -861,7 +861,7 @@ const DataAnalysisBarGraph = () => {
                     <ScrollView horizontal={true} ref={scrollViewRef}>
                       <View>
                         <BarChart
-                          style={{ flex: 1, width: wordFreqBarGraphData.length * 50 }}
+                          style={{ height: 720, width: wordFreqBarGraphData.length * 50 }}
                           data={wordFreq}
                           yAccessor={({ item }) => item.y.value}
                           svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
