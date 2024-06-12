@@ -258,10 +258,10 @@ const DataAnalysis = () => {
       //console.log(`${key} - ${value}`);
       bar.push({text: `${key}`, value: parseInt(`${value}`)});
       if (data.length <= bar.length) {
-      // data.push({label: `${key}`, value: `${counter}`});
-      setData(data => [...data, {label: `${key}`, value: `${counter}`}]);
+        // data.push({label: `${key}`, value: `${counter}`});
+        setData(data => [...data, {label: `${key}`, value: `${counter}`}]);
+      }
     }
-  }
     for (let [key, value] of mapNoStop) {
       //console.log(`${key} - ${value}`);
       barNoStop.push({text: `${key}`, value: parseInt(`${value}`)});
@@ -517,13 +517,14 @@ const DataAnalysis = () => {
                 radius={50}
                 onPress={() => {
                   const wordLabel = selectedWord;
-                  const result = setLineGraphData(wordLabel, routeFreqMaps);
+                  const result = setLineGraphData(routeFreqMaps, wordLabel);
                   console.log('routeFreqMaps:', routeFreqMaps);
                   console.log('result:', result);
-                  // navigation.navigate('Line Graph', {
-                  //   word: wordLabel,
-                  //   data: result,
-                  // });
+                  setModalVisible(false);
+                  navigation.navigate('Line Graph', {
+                    word: wordLabel,
+                    data: result,
+                  });
                 }}
               />
             )}

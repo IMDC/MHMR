@@ -276,7 +276,7 @@ export function useSetLineGraphData() {
 
       hour = freqMaps[i].datetime.getHours();
       // result of above: 13
-      week = freqMaps[i].datetime.getWeek();
+      // week = freqMaps[i].datetime.getWeek();
       // result of above: 18
       month = freqMaps[i].datetime.getMonth();
       // result of above: 3
