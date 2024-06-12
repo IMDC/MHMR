@@ -853,7 +853,7 @@ const DataAnalysisBarGraph = () => {
                       min={0}
                       max={wordFreqBarGraphData[0]?.value}
                       numberOfTicks={wordFreqBarGraphData[0]?.value}
-                      style={{ height: 720 }}
+                      style={{ height: 600 }}
                     />
                     <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
                       <Icon name="arrow-left" size={30} color="black" />
@@ -861,7 +861,7 @@ const DataAnalysisBarGraph = () => {
                     <ScrollView horizontal={true} ref={scrollViewRef}>
                       <View>
                         <BarChart
-                          style={{ height: 720, width: wordFreqBarGraphData.length * 50 }}
+                          style={{ height: 600, width: wordFreqBarGraphData.length * 50 }}
                           data={wordFreq}
                           yAccessor={({ item }) => item.y.value}
                           svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
