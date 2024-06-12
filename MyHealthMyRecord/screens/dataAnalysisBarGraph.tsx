@@ -853,7 +853,7 @@ const DataAnalysisBarGraph = () => {
                       min={0}
                       max={wordFreqBarGraphData[0]?.value}
                       numberOfTicks={wordFreqBarGraphData[0]?.value}
-                      style={{ flex: 1 }}
+                      style={{ height: 720 }}
                     />
                     <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
                       <Icon name="arrow-left" size={30} color="black" />
