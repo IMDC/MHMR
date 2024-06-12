@@ -51,7 +51,8 @@ const DataAnalysis = () => {
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsSelected = currentVideos;
   const [viewValue, setViewValue] = useState(1);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any>([]);
+  const [selectedWord, setSelectedWord] = useState('');
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
@@ -256,9 +257,11 @@ const DataAnalysis = () => {
     for (let [key, value] of result) {
       //console.log(`${key} - ${value}`);
       bar.push({text: `${key}`, value: parseInt(`${value}`)});
+      if (data.length <= bar.length) {
       // data.push({label: `${key}`, value: `${counter}`});
       setData(data => [...data, {label: `${key}`, value: `${counter}`}]);
     }
+  }
     for (let [key, value] of mapNoStop) {
       //console.log(`${key} - ${value}`);
       barNoStop.push({text: `${key}`, value: parseInt(`${value}`)});
@@ -490,7 +493,10 @@ const DataAnalysis = () => {
             labelField="label"
             valueField="value"
             onChange={item => {
-              setViewValue(item.label);
+              setViewValue(item.value);
+              setSelectedWord(item.label);
+              console.log('routeFreqMaps:', routeFreqMaps);
+              console.log('viewValue:', viewValue);
               setLineGraphNavigationVisible(true);
               console.log('item:', item.label);
             }}
@@ -510,13 +516,14 @@ const DataAnalysis = () => {
                 color={Styles.MHMRBlue}
                 radius={50}
                 onPress={() => {
-                  const wordLabel = viewValue;
+                  const wordLabel = selectedWord;
                   const result = setLineGraphData(wordLabel, routeFreqMaps);
                   console.log('routeFreqMaps:', routeFreqMaps);
-                  navigation.navigate('Line Graph', {
-                    word: wordLabel,
-                    data: result,
-                  });
+                  console.log('result:', result);
+                  // navigation.navigate('Line Graph', {
+                  //   word: wordLabel,
+                  //   data: result,
+                  // });
                 }}
               />
             )}
