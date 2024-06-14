@@ -167,7 +167,7 @@ const DataAnalysisBarGraph = () => {
                           scale={scale.scaleBand}
                           svg={{
                             fontSize: 18,
-                            rotation: 45,
+                            rotation: -45,
                             fill: 'black',
                             originY: 20,
                             translateY: 15,
