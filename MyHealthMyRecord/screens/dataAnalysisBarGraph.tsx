@@ -128,12 +128,12 @@ const DataAnalysisBarGraph = () => {
           <View id="bargraph" style={{ flex: 1 }}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{ flex: 1 }}>
-                <Text style={{ padding: 20, fontSize: 20 }}>
+                <Text style={{ padding: 20, fontSize: 20, color: 'black' }}>
                   Count of words mentioned in selected video
                 </Text>
                 <View style={{ flexDirection: 'row', flex: 1 }}>
                   <View style={{ width: 50, justifyContent: 'center' }}>
-                    <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18 }}>
+                    <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18, color: 'black' }}>
                       Count
                     </Text>
                   </View>
@@ -151,7 +151,7 @@ const DataAnalysisBarGraph = () => {
                       svg={{ fontSize: 20 }}
                     />
                     <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
-                      <Icon name="arrow-left" size={30} color="black" />
+                      <Icon name="arrow-left" size={60} color="black" />
                     </TouchableOpacity>
                     <ScrollView horizontal={true} ref={scrollViewRef}>
                       <View>
@@ -187,11 +187,11 @@ const DataAnalysisBarGraph = () => {
                       </View>
                     </ScrollView>
                     <TouchableOpacity onPress={scrollRight} style={{ justifyContent: 'center' }}>
-                      <Icon name="arrow-right" size={30} color="black" />
+                      <Icon name="arrow-right" size={60} color="black" />
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Text style={{ textAlign: 'center', fontSize: 20 }}>Word</Text>
+                <Text style={{ textAlign: 'center', fontSize: 20, color: 'black' }}>Word</Text>
               </View>
             ) : (
               // <View id="bargraph-horizontal">
