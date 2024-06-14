@@ -794,7 +794,7 @@ const DataAnalysisLineGraph = () => {
                 justifyContent: 'space-evenly',
               }}>
               <Button
-                title="Previous Period"
+                title="Previous period"
                 color={Styles.MHMRBlue}
                 radius={50}
                 icon={{
@@ -854,7 +854,7 @@ const DataAnalysisLineGraph = () => {
               )}
 
               <Button
-                title="Next Period"
+                title="Next period"
                 color={Styles.MHMRBlue}
                 radius={50}
                 iconPosition="right"
@@ -876,7 +876,7 @@ const DataAnalysisLineGraph = () => {
           </View>
 
           <Text style={{fontSize: 25, marginLeft: 20, marginTop: 20}}>
-            Filter and Sort
+            Filter and sort
           </Text>
 
           <View style={{height: '10%', width: '100%'}}>
@@ -888,7 +888,7 @@ const DataAnalysisLineGraph = () => {
                 justifyContent: 'space-evenly',
               }}>
               <View id="period-dropdown">
-                <Text style={{fontSize: 20}}>Select Period: </Text>
+                <Text style={{fontSize: 20}}>Select period: </Text>
                 <Dropdown
                   data={periodOptions}
                   maxHeight={300}
@@ -911,7 +911,7 @@ const DataAnalysisLineGraph = () => {
               {/* daily */}
               {periodValue == '1' && (
                 <View id="segmentDay-dropdown">
-                  <Text style={{fontSize: 20}}>Select Segment Option: </Text>
+                  <Text style={{fontSize: 20}}>Select segment option: </Text>
                   <Dropdown
                     data={segementDayOptions}
                     style={{
@@ -931,7 +931,7 @@ const DataAnalysisLineGraph = () => {
               )}
               {periodValue == '2' && (
                 <View id="segmentWeek-dropdown">
-                  <Text style={{fontSize: 20}}>Select Segment Option: </Text>
+                  <Text style={{fontSize: 20}}>Select segment option: </Text>
                   <Dropdown
                     data={segementWeekOptions}
                     style={{
@@ -951,7 +951,7 @@ const DataAnalysisLineGraph = () => {
               )}
               {periodValue == '3' && (
                 <View id="segmentMonth-dropdown">
-                  <Text style={{fontSize: 20}}>Select Segment Option: </Text>
+                  <Text style={{fontSize: 20}}>Select segment option: </Text>
                   <Dropdown
                     data={segementMonthOptions}
                     style={{

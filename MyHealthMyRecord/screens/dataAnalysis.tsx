@@ -443,7 +443,7 @@ const DataAnalysis = () => {
           }}
           color={Styles.MHMRBlue}
           radius={50}>
-          Text Insights
+          Text Report
         </Button>
         {/* <Button
           disabled={true}
@@ -512,7 +512,7 @@ const DataAnalysis = () => {
             {lineGraphNavigationVisible && (
               <Button
                 containerStyle={{marginTop: 20, marginLeft: 10}}
-                title="View Line Graph"
+                title="View line graph"
                 color={Styles.MHMRBlue}
                 radius={50}
                 onPress={() => {

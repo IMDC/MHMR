@@ -278,7 +278,7 @@ const DataAnalysisBarGraph = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                  <Text>Include Stop Words</Text>
+                  <Text>Include stop words</Text>
                   <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
                     thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
@@ -286,7 +286,7 @@ const DataAnalysisBarGraph = () => {
                     onValueChange={toggleSwitchStopWords}
                     value={isEnabledStopWords}
                   />
-                  <Text>Include Medical Words</Text>
+                  <Text>Include medical words</Text>
                   <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
                     thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}

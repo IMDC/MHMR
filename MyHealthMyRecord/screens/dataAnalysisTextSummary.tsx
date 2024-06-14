@@ -236,7 +236,7 @@ const DataAnalysisTextSummary = () => {
     <ScrollView>
       <View style={{padding: 10}}>
         <Text style={[styles.title, {textAlign: 'center'}]}>
-          {videoSet?.name} - Video Set Summary
+          {videoSet?.name} - Video set summary
         </Text>
         <Text style={styles.output}>{videoSetSummary}</Text>
       </View>
@@ -278,7 +278,7 @@ const DataAnalysisTextSummary = () => {
                 <View style={{flexDirection: 'row'}}>
                   <View style={{flex: 1, justifyContent: 'flex-start'}}>
                     <Text style={styles.transcript}>
-                      <Text style={styles.boldText}>Video Transcript: </Text>
+                      <Text style={styles.boldText}>Video transcript: </Text>
                       {video.transcript[0]}
                     </Text>
                   </View>
@@ -286,7 +286,7 @@ const DataAnalysisTextSummary = () => {
                   <View style={{alignSelf: 'flex-end'}}>
                     <Button
                       radius={50}
-                      title="Edit Transcript"
+                      title="Edit transcript"
                       onPress={() => {
                         handleEdit(video), console.log('Edit button pressed');
                       }}
@@ -301,7 +301,7 @@ const DataAnalysisTextSummary = () => {
               {video.transcriptFileContent}
             </Text>
             <Text style={styles.sentiment}>
-              <Text style={styles.boldText}>Overall Feeling: </Text>
+              <Text style={styles.boldText}>Overall feeling: </Text>
               {video.sentiment}{' '}
               <Image
                 source={getEmojiForSentiment(video.sentiment)}

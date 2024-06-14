@@ -168,7 +168,7 @@ export default function Painscale() {
     <ScrollView style={[styles.container]}>
       <View style={{alignSelf: 'center'}}>
         <Text style={{fontSize: 36, color: 'black'}}>
-          McGill Pain Questionnaire
+          McGill pain questionnaire
         </Text>
       </View>
       <FlatList
@@ -181,7 +181,7 @@ export default function Painscale() {
       />
       <View style={{alignSelf: 'center', paddingTop: 30}}>
         <Text style={{fontSize: 36, color: 'black'}}>
-          Numeric Pain Rating Scale
+          Numeric pain rating scale
         </Text>
       </View>
       <View style={{marginHorizontal: 40, paddingBottom: 50}}>

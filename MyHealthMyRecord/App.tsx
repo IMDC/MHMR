@@ -123,7 +123,7 @@ function ManageVideosStack() {
                   }}
                   style={{}}
                   radius={50}
-                  title="Go To Video Set Dashboard"
+                  title="Go to video set dashboard"
                   onPress={() =>
                     navigation.navigate('Video Set Dashboard', {
                       screen: 'Dashboard',
@@ -142,7 +142,7 @@ function ManageVideosStack() {
                   }}
                   // if selected = false, then change the button to say "Done"
                   // if selected = true, then change the button to say "Select Videos"
-                  title={selected ? 'Select Videos' : 'Done'}
+                  title={selected ? 'Select videos' : 'Done'}
                 />
               </View>
             </View>

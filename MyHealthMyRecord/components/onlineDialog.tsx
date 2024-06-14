@@ -142,7 +142,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
         {selectedVideoCount === 0 ? null : (
           <Text style={{fontSize: 18}}>
             You are now connected to the internet! You have {selectedVideoCount}{' '}
-            videos ready to be analyzed. Would you like to analyze Video Set
+            videos ready to be analyzed. Would you like to analyze video set
             videos? If you click NO you will still have the option to analyze it
             later.
           </Text>
