@@ -19,6 +19,7 @@ import {Rect} from 'react-native-svg';
 import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import { useSetLineGraphData } from '../components/lineGraphData';
+
 const setLineGraphData = useSetLineGraphData();
 
 const DataAnalysisBarGraph = () => {
@@ -123,14 +124,18 @@ const DataAnalysisBarGraph = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ height: '85%', padding: 20 }}>
+        <View style={{ height: '85%' }}>
           <View id="bargraph" style={{ flex: 1 }}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{ flex: 1 }}>
-                <Text>Count of words mentioned in selected video</Text>
+                <Text style={{ padding: 20, fontSize: 20 }}>
+                  Count of words mentioned in selected video
+                </Text>
                 <View style={{ flexDirection: 'row', flex: 1 }}>
                   <View style={{ width: 50, justifyContent: 'center' }}>
-                    <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center' }}>Count</Text>
+                    <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18 }}>
+                      Count
+                    </Text>
                   </View>
                   <View style={{ flexDirection: 'row', flex: 1 }}>
                     <YAxis
@@ -143,6 +148,7 @@ const DataAnalysisBarGraph = () => {
                       max={wordFreqBarGraphData[0]?.value}
                       numberOfTicks={wordFreqBarGraphData[0]?.value}
                       style={{ height: 600 }}
+                      svg={{ fontSize: 20 }}
                     />
                     <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
                       <Icon name="arrow-left" size={30} color="black" />
@@ -185,7 +191,7 @@ const DataAnalysisBarGraph = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Text style={{ textAlign: 'center' }}>Word</Text>
+                <Text style={{ textAlign: 'center', fontSize: 20 }}>Word</Text>
               </View>
             ) : (
               // <View id="bargraph-horizontal">
@@ -278,7 +284,9 @@ const DataAnalysisBarGraph = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                  <Text>Include stop words</Text>
+                  <Text style={{ fontSize: 20 }}>
+                    Include stop words
+                  </Text>
                   <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
                     thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
@@ -286,7 +294,9 @@ const DataAnalysisBarGraph = () => {
                     onValueChange={toggleSwitchStopWords}
                     value={isEnabledStopWords}
                   />
-                  <Text>Include medical words</Text>
+                  <Text style={{ fontSize: 20 }}>
+                    Include medical words
+                  </Text>
                   <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
                     thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
