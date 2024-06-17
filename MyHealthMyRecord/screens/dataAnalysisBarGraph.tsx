@@ -285,16 +285,6 @@ const DataAnalysisBarGraph = () => {
                     justifyContent: 'center',
                   }}>
                   <Text style={{ fontSize: 20 }}>
-                    Include stop words
-                  </Text>
-                  <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitchStopWords}
-                    value={isEnabledStopWords}
-                  />
-                  <Text style={{ fontSize: 20 }}>
                     Include medical words
                   </Text>
                   <Switch
