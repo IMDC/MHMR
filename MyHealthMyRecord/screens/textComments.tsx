@@ -118,7 +118,7 @@ const TextComments = () => {
     newComment[0] = '';
     input.current.clear();
     Keyboard.dismiss();
-    videoPlayerRef.current.setNativeProps({paused: false});
+    videoPlayerRef.current.resume();
   };
 
   const editComment = (commentID: any) => {
@@ -218,7 +218,7 @@ const TextComments = () => {
 
   /* given a timestamp, jump to that time-0.5s in the video */
   const seekToTimestamp = (timestamp: any) => {
-    videoPlayerRef.current.setNativeProps({seek: timestamp - 0.5});
+    videoPlayerRef.current.seek(timestamp - 0.5);
     console.log('press', timestamp);
   };
 
@@ -273,7 +273,7 @@ const TextComments = () => {
           console.log('pause at change', currentTime[0]);
         }}
         onFocus={() => {
-          videoPlayerRef.current.setNativeProps({paused: true});
+          videoPlayerRef.current.pause();
         }}
       />
       <ScrollView>
