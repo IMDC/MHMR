@@ -77,7 +77,7 @@ const DataAnalysisBarGraph = () => {
    * Labels on each bar with the frequency value for the vertical view
    */
   const CUT_OFF_VER = wordFreqBarGraphData[0]?.value - 1;
-  const LabelsVertical = ({x, y, bandwidth, data}) =>
+  const LabelsVertical = ({ x, y, bandwidth, data }) =>
     wordFreqBarGraphData.map((value, index) => (
       <svg.Text
         key={index}
@@ -92,9 +92,7 @@ const DataAnalysisBarGraph = () => {
       </svg.Text>
     ));
 
-  const [isEnabledStopWords, setIsEnabledStopWords] = useState(true);
-  const toggleSwitchStopWords = () =>
-    setIsEnabledStopWords(previousState => !previousState);
+  const isEnabledStopWords = false;
   const [isEnabledMedWords, setIsEnabledMedWords] = useState(true);
   const toggleSwitchMedWords = () =>
     setIsEnabledMedWords(previousState => !previousState);
@@ -111,7 +109,7 @@ const DataAnalysisBarGraph = () => {
   }
   useEffect(() => {
     updateData();
-  }, [isEnabledStopWords, isEnabledMedWords]);
+  }, [isEnabledMedWords]);
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({ x: 0, animated: true });
@@ -284,16 +282,6 @@ const DataAnalysisBarGraph = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                  <Text style={{ fontSize: 20 }}>
-                    Include stop words
-                  </Text>
-                  <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isEnabledStopWords ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitchStopWords}
-                    value={isEnabledStopWords}
-                  />
                   <Text style={{ fontSize: 20 }}>
                     Include medical words
                   </Text>
