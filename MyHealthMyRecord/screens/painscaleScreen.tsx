@@ -42,6 +42,10 @@ export default function Painscale() {
   );
 
   const [category, setCategory] = useState(parsedPainscaleWords);
+  
+  const numericPainRatingScale = [
+    {id: 1, name: 'Pain', severity_level: 'none'},
+  ];
 
   const onPress = (index: any, value: any, severity_level: any) => {
     const existing: any = {...category};
@@ -166,6 +170,21 @@ export default function Painscale() {
 
   return (
     <ScrollView style={[styles.container]}>
+      <View style={{alignSelf: 'center', paddingTop: 30, flex: 1}}>
+        <Text style={{fontSize: 36, color: 'black'}}>
+          Numeric Pain Rating Scale
+        </Text>
+      </View>
+      <View style={{paddingBottom: 30}}>
+        <FlatList
+          style={styles.container}
+          // data={data}
+          extraData={refreshFlatlist}
+          data={category.find((item: any) => item.id === 1)}
+          keyExtractor={(item: any, index) => index.toString()}
+          renderItem={renderItem}
+        />
+      </View>
       <View style={{alignSelf: 'center'}}>
         <Text style={{fontSize: 36, color: 'black'}}>
           McGill Pain Questionnaire
@@ -179,12 +198,8 @@ export default function Painscale() {
         keyExtractor={(item: any, index) => index.toString()}
         renderItem={renderItem}
       />
-      <View style={{alignSelf: 'center', paddingTop: 30}}>
-        <Text style={{fontSize: 36, color: 'black'}}>
-          Numeric Pain Rating Scale
-        </Text>
-      </View>
-      <View style={{marginHorizontal: 40, paddingBottom: 50}}>
+
+      {/* <View style={{marginHorizontal: 40, paddingBottom: 50}}>
         <Text style={{paddingTop: 20}}>Value: {sliderValue}</Text>
         <Slider
           value={sliderValue}
@@ -208,7 +223,7 @@ export default function Painscale() {
             ),
           }}
         />
-      </View>
+      </View> */}
       <Button
         buttonStyle={{
           width: 220,
