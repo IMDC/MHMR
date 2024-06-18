@@ -2,26 +2,18 @@ import React, {useEffect, useState} from 'react';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {Text, View, Dimensions} from 'react-native';
 import WordCloud from 'rn-wordcloud';
+import {Dropdown} from 'react-native-element-dropdown';
 
 const DataAnalysisWordCloud = () => {
   const route = useRoute();
   const barData = route.params?.data;
   const [wordFrequency, setWordFrequency] = useState(barData.data);
-  const data = [
-    {text: 'happy', value: 30},
-    {text: 'joyful', value: 24},
-    {text: 'sad', value: 12},
-    {text: 'exciting', value: 28},
-    {text: 'angry', value: 16},
-    {text: 'hopeful', value: 32},
-    {text: 'inspiring', value: 36},
-    {text: 'dismal', value: 12},
-    {text: 'gloomy', value: 16},
-    {text: 'boring', value: 16},
-    {text: 'ordinary', value: 20},
-    {text: 'satisfied', value: 28},
-    {text: 'pleasing', value: 32},
-    // Add more words as needed
+  const [updatedData, setUpdatedData] = useState(barData.dataNoStop);
+  const [dropdownValue, setDropdownValue] = useState(0);
+  const dropdownData = [
+    {label: 'IBM', value: 'IBM'},
+    {label: 'Wong', value: 'Wong'},
+    {label: 'Tol', value: 'Tol'},
   ];
 
   const IBM_palette = [
@@ -59,35 +51,87 @@ const DataAnalysisWordCloud = () => {
     for (let i = 0; i < data.length; i++) {
       data[i].color = palette[Math.floor(Math.random() * palette.length)].color;
     }
+    return data;
+  };
+  useEffect(() => {
+    addPalette(updatedData, IBM_palette);
+  }, [updatedData]);
+
+  const renderWordCloud = data => {
+    return (
+      <View
+        style={{
+          paddingTop: '7.5%',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <WordCloud
+          options={{
+            words: data,
+            verticalEnabled: true,
+            rotateRatio: 0.5,
+            minFont: 40,
+            maxFont: 120,
+            fontOffset: 5,
+            width: 700,
+            height: 800,
+            fontFamily: 'Arial',
+          }}
+        />
+      </View>
+    );
   };
 
-  useEffect(() => {
-    console.log('barData', barData.data);
-    addPalette(data, IBM_palette);
-    console.log('data', data);
-  }, [barData.data, data]);
-
   return (
-    <View
-      style={{
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      <WordCloud
-        options={{
-          words: data,
-          verticalEnabled: true,
-          rotateRatio: 0.5,
-          minFont: 40,
-          maxFont: 120,
-          fontOffset: 5,
-          width: 700,
-          height: 800,
-          fontFamily: 'Arial',
-        }}
-      />
+    <View style={{flexDirection: 'column'}}>
+      <View>
+        {renderWordCloud(updatedData)}
+        <Text
+          style={{
+            textAlign: 'center',
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: 'black',
+            paddingVertical: 10,
+          }}>
+          Select Color Palette:
+        </Text>
+        <View style={{justifyContent: 'center', alignItems: 'center'}}>
+          <Dropdown
+            data={dropdownData}
+            maxHeight={400}
+            style={{
+              height: 50,
+
+              width: 600,
+              paddingHorizontal: 20,
+              backgroundColor: '#DBDBDB',
+              borderRadius: 22,
+            }}
+            itemTextStyle={{textAlign: 'center'}}
+            labelField="label"
+            valueField="value"
+            value={dropdownData[dropdownValue]}
+            onChange={item => {
+              console.log('item', item);
+              if (item.value === 'IBM') {
+                setUpdatedData(addPalette(barData.dataNoStop, IBM_palette));
+                setDropdownValue(0);
+                console.log('IBM_palette', updatedData);
+              } else if (item.value === 'Wong') {
+                setUpdatedData(addPalette(barData.dataNoStop, wong_palette));
+                addPalette(barData.dataNoStop, wong_palette);
+                setDropdownValue(1);
+                console.log('wong_palette', updatedData);
+              } else if (item.value === 'Tol') {
+                setUpdatedData(addPalette(barData.dataNoStop, tol_palette));
+                setDropdownValue(2);
+                console.log('tol_palette', updatedData);
+              }
+            }}
+          />
+        </View>
+      </View>
     </View>
   );
 };

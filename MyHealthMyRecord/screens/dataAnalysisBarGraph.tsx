@@ -27,7 +27,7 @@ const DataAnalysisBarGraph = () => {
   const [freqMaps, setFreqMaps] = useState(route.params?.freqMaps);
 
   const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(
-    barData.data,
+    barData.dataNoStop,
   );
   //const wordFreqBarGraphData = data.data;
 
