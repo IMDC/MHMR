@@ -36,8 +36,7 @@ const DataAnalysisTextSummary = () => {
   const [videoSet, setVideoSet] = useState(null);
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [transcriptsLoaded, setTranscriptsLoaded] = useState(false);
-
-  useEffect(() => {}, [currentVideoSet]);
+  const [transcriptEdited, setTranscriptEdited] = useState(false);
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -54,6 +53,7 @@ const DataAnalysisTextSummary = () => {
       getVideoData();
       if (currentVideoSet) {
         setVideoSet(currentVideoSet);
+        setVideoSetSummary(currentVideoSet.summaryAnalysis);
       }
     }
   }, [isFocused, videoSetVideoIDs, realm, currentVideoSet]);
@@ -113,18 +113,25 @@ const DataAnalysisTextSummary = () => {
 
   useEffect(() => {
     const updateVideoSetSummary = async () => {
-      if (transcriptsLoaded) {
+      if (transcriptsLoaded && transcriptEdited) {
         const summary = await sendVideoSetToChatGPT(
           realm,
           videoSetVideoIDs,
           currentVideoSet,
         );
+
+        realm.write(() => {
+          const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+          videoSetToUpdate.summaryAnalysis = summary;
+        });
+
         setVideoSetSummary(summary);
+        setTranscriptEdited(false);
       }
     };
 
     updateVideoSetSummary();
-  }, [transcriptsLoaded]);
+  }, [transcriptsLoaded, transcriptEdited]);
 
   const handleEdit = video => {
     setEditingID(video._id);
@@ -203,6 +210,7 @@ const DataAnalysisTextSummary = () => {
 
     setEditingID(null);
     setDraftTranscript('');
+    setTranscriptEdited(true);
   };
 
   const handleCancel = () => {
