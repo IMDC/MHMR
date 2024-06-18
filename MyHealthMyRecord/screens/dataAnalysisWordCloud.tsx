@@ -8,7 +8,7 @@ const DataAnalysisWordCloud = () => {
   const route = useRoute();
   const barData = route.params?.data;
   const [wordFrequency, setWordFrequency] = useState(barData.data);
-  const [updatedData, setUpdatedData] = useState(barData.dataNoStop);
+  let [updatedData, setUpdatedData] = useState(barData.dataNoStop);
   const [dropdownValue, setDropdownValue] = useState(0);
   const dropdownData = [
     {label: 'IBM', value: 'IBM'},
@@ -53,21 +53,27 @@ const DataAnalysisWordCloud = () => {
     }
     return data;
   };
-  useEffect(() => {
-    addPalette(updatedData, IBM_palette);
-  }, [updatedData]);
+  // useEffect(() => {
+  //   addPalette(updatedData, IBM_palette);
+  // }, [updatedData]);
 
-  const renderWordCloud = data => {
-    return (
-      <View
+  // const renderWordCloud = data => {
+  //   return (
+      
+  //   );
+  // };
+
+  return (
+    <View style={{flexDirection: 'column'}}>
+      <View>
+        <View
         style={{
-          paddingTop: '7.5%',
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <WordCloud
           options={{
-            words: data,
+            words: updatedData,
             verticalEnabled: true,
             rotateRatio: 0.5,
             minFont: 40,
@@ -79,13 +85,6 @@ const DataAnalysisWordCloud = () => {
           }}
         />
       </View>
-    );
-  };
-
-  return (
-    <View style={{flexDirection: 'column'}}>
-      <View>
-        {renderWordCloud(updatedData)}
         <Text
           style={{
             textAlign: 'center',
