@@ -3,7 +3,7 @@ import Realm from 'realm';
 
 export class VideoData extends Realm.Object<VideoData> {
   _id!: Realm.BSON.ObjectId;
-  //userId!: number;
+  // userId!: number;
   title!: string;
   filename!: string;
   datetimeRecorded!: Date;
@@ -18,31 +18,30 @@ export class VideoData extends Realm.Object<VideoData> {
   isTranscribed!: boolean;
   transcript!: Realm.List<string>;
   weekday!: Date;
+  sentiment!: string;
   //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
   static schema = {
     name: 'VideoData',
     primaryKey: '_id',
     properties: {
-      _id: {type: 'objectId', default: new Realm.BSON.ObjectID()},
-      //userId: 'int',
-      title: {type: 'string', default: new Date().toLocaleString()},
+      _id: { type: 'objectId', default: new Realm.BSON.ObjectID() },
+      // userId: 'int',
+      title: { type: 'string', default: new Date().toLocaleString() },
       filename: 'string',
-      datetimeRecorded: {type: 'date', default: new Date()},
+      datetimeRecorded: { type: 'date', default: new Date() },
       duration: 'double',
-      textComments: {type: 'mixed[]', default: []},
-      locations: {type: 'mixed[]', default: []},
-      emotionStickers: {type: 'string[]', default: []},
-      keywords: {type: 'mixed[]', default: []},
-      painScale: {type: 'string[]', default: []},
+      textComments: { type: 'mixed[]', default: [] },
+      locations: { type: 'mixed[]', default: [] },
+      emotionStickers: { type: 'string[]', default: [] },
+      keywords: { type: 'mixed[]', default: [] },
+      painScale: { type: 'string[]', default: [] },
       isConverted: { type: 'bool', default: false },
       isSelected: { type: 'bool', default: false },
-      isTranscribed: {type: 'bool', default: false},
-      transcript: {type: 'string[]', default: []},
-      weekday: {
-        type: 'string',
-        default: new Date().toString().split(' ')[0],
-      },
+      isTranscribed: { type: 'bool', default: false },
+      transcript: { type: 'string[]', default: [] },
+      weekday: { type: 'string', default: new Date().toString().split(' ')[0] },
+      sentiment: { type: 'string', default: 'Neutral' },
     },
   };
 }
