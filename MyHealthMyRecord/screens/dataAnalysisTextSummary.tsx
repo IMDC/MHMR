@@ -115,7 +115,7 @@ const DataAnalysisTextSummary = () => {
 
   useEffect(() => {
     const updateVideoSetSummary = async () => {
-      if (transcriptsLoaded && transcriptEdited) {
+      if (currentVideoSet && transcriptsLoaded && (transcriptEdited || videoSetSummary === '')) {
         const summary = await sendVideoSetToChatGPT(
           realm,
           videoSetVideoIDs,
@@ -133,7 +133,7 @@ const DataAnalysisTextSummary = () => {
     };
 
     updateVideoSetSummary();
-  }, [transcriptsLoaded, transcriptEdited]);
+  }, [transcriptsLoaded, transcriptEdited, videoSetSummary, currentVideoSet, videoSetVideoIDs, realm]);
 
   const handleEdit = video => {
     setEditingID(video._id);
@@ -297,9 +297,7 @@ const DataAnalysisTextSummary = () => {
                     <Button
                       radius={50}
                       title="Edit transcript"
-                      onPress={() => {
-                        handleEdit(video), console.log('Edit button pressed');
-                      }}
+                      onPress={() => handleEdit(video)}
                       color={Styles.MHMRBlue}
                     />
                   </View>
