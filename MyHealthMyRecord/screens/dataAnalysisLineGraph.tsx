@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Alert,
   Modal,
@@ -9,7 +9,7 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
-import {Button} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import Svg, {Circle, G, Line, Rect} from 'react-native-svg';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
@@ -39,6 +39,7 @@ const DataAnalysisLineGraph = () => {
   const [date, setDateValue] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (wordLabel == undefined) {
@@ -211,6 +212,14 @@ const DataAnalysisLineGraph = () => {
     );
   };
 
+  const scrollLeft = () => {
+    scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+  };
+
+  const scrollRight = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
+
   return (
     <View>
       <View style={{height: '87%'}}>
@@ -232,7 +241,10 @@ const DataAnalysisLineGraph = () => {
               )}
             />
 
-            <ScrollView horizontal={true}>
+            <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
+              <Icon name="arrow-left" size={60} color="black" />
+            </TouchableOpacity>
+            <ScrollView horizontal={true} ref={scrollViewRef}>
               {periodValue == '1' && (
                 <View
                   style={{
@@ -783,6 +795,9 @@ const DataAnalysisLineGraph = () => {
                 </View>
               )}
             </ScrollView>
+            <TouchableOpacity onPress={scrollRight} style={{ justifyContent: 'center' }}>
+              <Icon name="arrow-right" size={60} color="black" />
+            </TouchableOpacity>
           </View>
 
           <View style={{height: '10%', width: '100%'}}>
