@@ -308,6 +308,10 @@ const RecordVideo = () => {
     {id: new Realm.BSON.ObjectID(), value: 7, title: 'Other', checked: false},
   ];
 
+  const numericScaleRef = [
+    { id: new Realm.BSON.ObjectID(), name: 'Pain', severity_level: 'none' },
+  ];
+
   const painscaleRef = [
     { id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none' },
     { id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none' },
@@ -337,11 +341,13 @@ const RecordVideo = () => {
   let keywordInit: string[] = [];
   let locationInit: string[] = [];
   let painscaleInit: string[] = [];
+  let numericScaleInit: string[] = [];
   let weekdayInit: string[] = [];
 
   keywordRef.map(key => keywordInit.push(JSON.stringify(key)));
   locationRef.map(loc => locationInit.push(JSON.stringify(loc)));
   painscaleRef.map(pain => painscaleInit.push(JSON.stringify(pain)));
+  numericScaleRef.map(num => numericScaleInit.push(JSON.stringify(num)));
   weekdayRef.map(day => weekdayInit.push(JSON.stringify(day)));
 
   const createVideoData = (
@@ -361,6 +367,7 @@ const RecordVideo = () => {
         keywords: keywordInit,
         locations: locationInit,
         painScale: painscaleInit,
+        numericScale: numericScaleInit,
         isSelected: false,
         isConverted: false,
         transcript:[],

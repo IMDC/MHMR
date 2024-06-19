@@ -123,6 +123,7 @@ const VideoSetDropdown = ({
         value={videoSetValue}
         onChange={item => {
           setVideoSetValue(item.value);
+          console.log('videoSetValue', item.value);
           handleChange(item.value, videoSets);
           onVideoSetChange(item.value); // Notify parent component of the change
         }}

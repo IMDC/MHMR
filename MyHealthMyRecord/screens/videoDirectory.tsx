@@ -1151,7 +1151,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   if (!displayedSentiments.has(sentiment)) {
                                     displayedSentiments.add(sentiment);
                                     return (
-                                      <View>
+                                      <View style={{flexDirection: 'row'}}>
                                         <Tooltip
                                           title={`${sentiment} (${sentimentCounts[sentiment]})`}>
                                           {imageSource && (
@@ -1227,7 +1227,17 @@ const ViewRecordings = ({selected, setSelected}) => {
             <View style={styles.gridContainer}>
               {videos.map((video: VideoData) => {
                 const isChecked = checkedVideos.has(video._id.toString());
+                const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
+                const sentimentCounts = {}; // Create an object to keep track of sentiment counts
+                video.emotionStickers.forEach((key: string) => {
+                  const sentiment = JSON.parse(key).sentiment;
 
+                  if (!sentimentCounts[sentiment]) {
+                    sentimentCounts[sentiment] = 1; // Initialize the count if not found
+                  } else {
+                    sentimentCounts[sentiment]++; // Increment the count
+                  }
+                });
                 return (
                   <View style={styles.gridItem} key={video._id.toString()}>
                     {!selected ? <View></View> : <View></View>}
@@ -1305,42 +1315,75 @@ const ViewRecordings = ({selected, setSelected}) => {
                     </View>
 
                     {/* bottom container */}
-                    <View style={{paddingLeft: 2}}>
-                      <Text
-                        style={{
-                          fontSize: 24,
-                          color: 'black',
-                          fontWeight: 'bold',
-                        }}>
-                        {video.title}
-                        {video.textComments.length !== 0 ? (
-                          <Icon
-                            name="chatbox-ellipses"
-                            type="ionicon"
-                            color="black"
-                            size={22}
-                            style={{
-                              alignSelf: 'flex-start',
-                              paddingLeft: 5,
-                            }}
-                          />
-                        ) : null}
-                        {video.emotionStickers.length !== 0 ? (
-                          <Icon
-                            name="happy"
-                            type="ionicon"
-                            color="black"
-                            size={22}
-                            style={{
-                              alignSelf: 'flex-start',
-                              paddingLeft: 5,
-                            }}
-                          />
-                        ) : null}
-                      </Text>
-                      <Text style={{fontSize: 20}}>
-                        {video.datetimeRecorded?.toLocaleString()}
-                      </Text>
+                    <View
+                      style={{
+                        paddingLeft: 2,
+                        justifyContent: 'space-between',
+                        flex: 1,
+                      }}>
+                      <View>
+                        <Text
+                          style={{
+                            fontSize: 24,
+                            color: 'black',
+                            fontWeight: 'bold',
+                          }}>
+                          {video.title}
+                          {video.textComments.length !== 0 ? (
+                            <Icon
+                              name="chatbox-ellipses"
+                              type="ionicon"
+                              color="black"
+                              size={22}
+                              style={{
+                                alignSelf: 'flex-start',
+                                paddingLeft: 5,
+                              }}
+                            />
+                          ) : null}
+                          {video.emotionStickers.length !== 0 ? (
+                            <Icon
+                              name="happy"
+                              type="ionicon"
+                              color="black"
+                              size={22}
+                              style={{
+                                alignSelf: 'flex-start',
+                                paddingLeft: 5,
+                              }}
+                            />
+                          ) : null}
+                        </Text>
+                        <Text style={{fontSize: 20}}>
+                          {video.datetimeRecorded?.toLocaleString()}
+                        </Text>
+                      </View>
+
+                      {video.emotionStickers.map(key => {
+                        const sentiment = JSON.parse(key).sentiment;
+                        const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
+
+                        if (!displayedSentiments.has(sentiment)) {
+                          displayedSentiments.add(sentiment);
+                          return (
+                            <View style={{flexDirection: 'row'}}>
+                              <Tooltip
+                                title={`${sentiment} (${sentimentCounts[sentiment]})`}>
+                                {imageSource && (
+                                  <Image
+                                    style={{height: 60, width: 60}}
+                                    source={imageSource}
+                                  />
+                                )}
+                              </Tooltip>
+                              <Text style={{fontWeight: 'bold'}}>
+                                {sentimentCounts[sentiment]}
+                              </Text>
+                            </View>
+                          );
+                        }
+                        return null; // If sentiment has already been displayed, return null
+                      })}
                     </View>
                     {selected ? (
                       <View style={[styles.buttonContainer, {padding: 5}]}>
@@ -1453,6 +1496,7 @@ const styles = StyleSheet.create({
   gridItem: {
     padding: 1,
     width: '50%',
+    // height: 410,
     borderColor: 'black',
     borderWidth: StyleSheet.hairlineWidth,
   },

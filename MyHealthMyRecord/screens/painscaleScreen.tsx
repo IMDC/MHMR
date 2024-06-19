@@ -1,164 +1,109 @@
-import {
-  ParamListBase,
-  useNavigation,
-  NavigationContainer,
-  useRoute,
-} from '@react-navigation/native';
-import {
-  NativeStackNavigationProp,
-  createNativeStackNavigator,
-} from '@react-navigation/native-stack';
-import React, {useState, useMemo, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import {
   FlatList,
   LogBox,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import {ButtonGroup, Icon, Slider, Button} from '@rneui/themed';
-import {Card, TextInput, RadioButton} from 'react-native-paper';
+import {Button} from '@rneui/themed';
+import {RadioButton} from 'react-native-paper';
 import {useObject, useRealm} from '../models/VideoData';
 
-export default function Painscale() {
+const Painscale = () => {
   const [refreshFlatlist, setRefreshFlatList] = useState(false);
-
-  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  
-  const route: any = useRoute();
+  const navigation = useNavigation();
+  const route = useRoute();
   const id = route.params?.id;
-
   const realm = useRealm();
-  const video: any = useObject('VideoData', id);
+  const video = useObject('VideoData', id);
 
-  let parsedPainscaleWords: any[] = [];
-
-  const [painscaleWords, setPainscaleWords] = useState(video.painScale);
-
-  painscaleWords.map((pain: string) =>
-    parsedPainscaleWords.push(JSON.parse(pain)),
-  );
-
+  const parsedPainscaleWords = video.painScale.map(pain => JSON.parse(pain));
+  const parsedNumericScale = video.numericScale.map(numeric => JSON.parse(numeric));
   const [category, setCategory] = useState(parsedPainscaleWords);
+  const [mcGillIsVisible, setMcGillIsVisible] = useState(false);
 
-  const onPress = (index: any, value: any, severity_level: any) => {
-    const existing: any = {...category};
-    existing[index].severity_level = severity_level;
+  const numericPainRatingScale = [
+    {id: 1, name: 'Pain', severity_level: 'none'},
+  ];
+
+  const [numericScale, setNumericScale] = useState(parsedNumericScale);
+
+  const onPress = (index, severity_level, data, setData) => {
+    const newData = [...data];
+    newData[index].severity_level = severity_level;
+    setData(newData);
     setRefreshFlatList(!refreshFlatlist);
-    console.log(existing[index].name, 'status set to', severity_level);
-    savePainScale();
+    if (data === numericScale) {
+      saveNumericScale(newData);
+      console.log(newData);
+    }
+    if (data === category) {
+      savePainScale(newData);
+      console.log(newData);
+    }
   };
 
-  function savePainScale() {
-    const painscales: any = [];
-    category.map((item: any) => {
-      painscales.push(JSON.stringify(item));
-    });
+  const saveNumericScale = data => {
+    const numericScales = data.map(item => JSON.stringify(item));
     if (video) {
       realm.write(() => {
-        video.painScale! = painscales;
+        video.numericScale = numericScales;
+      }
+    );
+  }
+}
+
+  const savePainScale = data => {
+    const painscales = data.map(item => JSON.stringify(item));
+    if (video) {
+      realm.write(() => {
+        video.painScale = painscales;
       });
     }
-  }
+  };
 
-  const [sliderValue, setSliderValue] = useState(0);
-
-  // const interpolate = (start: number, end: number) => {
-  //   let k = (sliderValue - 0) / 10; // 0 =>min  && 10 => MAX
-  //   return Math.ceil((1 - k) * start + k * end) % 256;
-  // };
-
-  const renderItem = ({item, index}) => {
-    return (
-      <ScrollView style={styles.container}>
-        <View style={{flexDirection: 'row'}}>
-          <View style={{width: '35%'}}>
-            <Text style={styles.textStyle}>{item.name}</Text>
-          </View>
-          <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: 280,
-              }}>
-              <RadioButton.Group>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                  }}>
-                  <View style={styles.singleRadioButtonContainer}>
-                    <Text style={{fontSize: 24}}>None</Text>
+  const renderItem = ({item, index, data, setData}) => (
+    <ScrollView style={styles.container}>
+      <View style={{flexDirection: 'row'}}>
+        <View style={{width: '35%'}}>
+          <Text style={styles.textStyle}>{item.name}</Text>
+        </View>
+        <View style={{alignSelf: 'flex-end', justifyContent: 'flex-end'}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: 280,
+            }}>
+            <RadioButton.Group>
+              <View style={{flexDirection: 'row'}}>
+                {['none', 'mild', 'moderate', 'severe'].map((level, idx) => (
+                  <View key={idx} style={styles.singleRadioButtonContainer}>
+                    <Text style={{fontSize: 24}}>
+                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                    </Text>
                     <RadioButton
                       color="#5d86d7"
-                      value="none"
-                      // key={index}
+                      value={level}
                       status={
-                        item.severity_level == 'none' ? 'checked' : 'unchecked'
+                        item.severity_level === level ? 'checked' : 'unchecked'
                       }
-                      onPress={() => {
-                        onPress(index, 0, 'none');
-                      }}
+                      onPress={() => onPress(index, level, data, setData)}
                     />
                   </View>
-                  <View style={styles.singleRadioButtonContainer}>
-                    <Text style={{fontSize: 24}}>Mild</Text>
-                    <RadioButton
-                      color="#5d86d7"
-                      value="mild"
-                      // key={index}
-                      status={
-                        item.severity_level == 'mild' ? 'checked' : 'unchecked'
-                      }
-                      onPress={() => {
-                        onPress(index, 1, 'mild');
-                      }}
-                    />
-                  </View>
-
-                  <View style={styles.singleRadioButtonContainer}>
-                    <Text style={{fontSize: 24}}>Moderate</Text>
-                    <RadioButton
-                      color="#5d86d7"
-                      value="moderate"
-                      key={item.id}
-                      status={
-                        item.severity_level == 'moderate'
-                          ? 'checked'
-                          : 'unchecked'
-                      }
-                      onPress={() => {
-                        onPress(index, 2, 'moderate');
-                      }}
-                    />
-                  </View>
-                  <View style={styles.singleRadioButtonContainer}>
-                    <Text style={{fontSize: 24}}>Severe</Text>
-                    <RadioButton
-                      color="#5d86d7"
-                      value="severe"
-                      key={item.id}
-                      status={
-                        item.severity_level == 'severe'
-                          ? 'checked'
-                          : 'unchecked'
-                      }
-                      onPress={() => {
-                        onPress(index, 3, 'severe');
-                      }}
-                    />
-                  </View>
-                </View>
-              </RadioButton.Group>
-            </View>
+                ))}
+              </View>
+            </RadioButton.Group>
           </View>
         </View>
-      </ScrollView>
-    );
-  };
+      </View>
+    </ScrollView>
+  );
 
   useEffect(() => {
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
@@ -166,49 +111,62 @@ export default function Painscale() {
 
   return (
     <ScrollView style={[styles.container]}>
+      <View style={{alignSelf: 'center', paddingTop: 30, flex: 1}}>
+        <Text style={{fontSize: 36, color: 'black'}}>
+          Numeric pain rating scale
+
+        </Text>
+      </View>
+      <View style={{paddingBottom: 30}}>
+        <FlatList
+          style={styles.container}
+          extraData={refreshFlatlist}
+          data={numericScale}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={props =>
+            renderItem({...props, data: numericScale, setData: setNumericScale})
+          }
+        />
+      </View>
       <View style={{alignSelf: 'center'}}>
         <Text style={{fontSize: 36, color: 'black'}}>
           McGill pain questionnaire
         </Text>
       </View>
-      <FlatList
-        style={styles.container}
-        // data={data}
-        extraData={refreshFlatlist}
-        data={category}
-        keyExtractor={(item: any, index) => index.toString()}
-        renderItem={renderItem}
-      />
-      <View style={{alignSelf: 'center', paddingTop: 30}}>
-        <Text style={{fontSize: 36, color: 'black'}}>
-          Numeric pain rating scale
-        </Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          padding: 10,
+          backgroundColor: '#d1d1d1',
+        }}>
+        <TouchableOpacity onPress={() => setMcGillIsVisible(!mcGillIsVisible)}>
+          {mcGillIsVisible ? (
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{fontSize: 20, fontWeight: 'bold'}}>Hide –</Text>
+            </View>
+          ) : (
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show ▼</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
-      <View style={{marginHorizontal: 40, paddingBottom: 50}}>
-        <Text style={{paddingTop: 20}}>Value: {sliderValue}</Text>
-        <Slider
-          value={sliderValue}
-          onValueChange={setSliderValue}
-          maximumValue={10}
-          minimumValue={0}
-          step={1}
-          allowTouchTrack
-          trackStyle={{height: 5, backgroundColor: 'transparent'}}
-          thumbStyle={{height: 20, width: 20, backgroundColor: 'transparent'}}
-          thumbProps={{
-            children: (
-              <Icon
-                name="heartbeat"
-                type="font-awesome"
-                size={20}
-                reverse
-                containerStyle={{bottom: 20, right: 20}}
-                // color={color()}
-              />
-            ),
-          }}
-        />
-      </View>
+      {mcGillIsVisible ? (
+        <View style={{backgroundColor: '#e8e8e8', paddingBottom: 40}}>
+          <FlatList
+            style={styles.container}
+            extraData={refreshFlatlist}
+            data={category}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={props =>
+              renderItem({...props, data: category, setData: setCategory})
+            }
+          />
+        </View>
+      ) : (
+        <View></View>
+      )}
       <Button
         buttonStyle={{
           width: 220,
@@ -223,20 +181,18 @@ export default function Painscale() {
       <View style={{margin: 40, height: 75}} />
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     paddingTop: 10,
   },
-
   textStyle: {
     marginHorizontal: 20,
     paddingTop: 20,
     color: 'black',
     fontWeight: '600',
     fontSize: 22,
-
     alignSelf: 'flex-start',
   },
   singleRadioButtonContainer: {
@@ -245,3 +201,5 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+
+export default Painscale;
