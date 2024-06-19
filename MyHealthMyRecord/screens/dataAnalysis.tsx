@@ -146,17 +146,20 @@ const DataAnalysis = () => {
   }, [currentVideos]);
 
   function removePunctuationAndLowercase(text: string) {
-    return text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").toLowerCase();
+    return text
+      .replace(/[^\w\s]|_/g, '')
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
   }
-  
+
   function getFreq(transcript: string, datetime: any) {
     let M = new Map();
-  
+
     // Remove punctuation and convert to lowercase
     transcript = removePunctuationAndLowercase(transcript);
-  
+
     let word = '';
-  
+
     for (let i = 0; i < transcript.length; i++) {
       if (transcript[i] === ' ') {
         if (!M.has(word)) {
@@ -170,15 +173,15 @@ const DataAnalysis = () => {
         word += transcript[i];
       }
     }
-         
+
     if (!M.has(word)) {
       M.set(word, 1);
     } else {
       M.set(word, M.get(word) + 1);
     }
-  
+
     M = new Map([...M.entries()].sort());
-  
+
     let jsonTest = [];
     let dayJson = [];
     for (let [key, value] of M) {
@@ -193,7 +196,7 @@ const DataAnalysis = () => {
 
     return M;
   }
-  
+
   /* ------------------------------ BAR GRAPH FREQUENCY ------------------------------ */
 
   /**
@@ -273,7 +276,12 @@ const DataAnalysis = () => {
     for (let [key, value] of mapNoStop) {
       //console.log(`${key} - ${value}`);
       barNoStop.push({text: `${key}`, value: parseInt(`${value}`)});
-      setNoStopWords(noStopWords => [...noStopWords, {label: `${key}`, value: `${counter}`}]);
+      if (noStopWords.length <= barNoStop.length) {
+        setNoStopWords(noStopWords => [
+          ...noStopWords,
+          {label: `${key}`, value: `${counter}`},
+        ]);
+      }
     }
     for (let [key, value] of mapNoMed) {
       //console.log(`${key} - ${value}`);
@@ -396,6 +404,7 @@ const DataAnalysis = () => {
           onPress={() => {
             setModalVisible(true);
             console.log('-------------------------data', data);
+            console.log('-------------------------noStopWords', noStopWords);
           }}
           titleStyle={{fontSize: 40}}
           containerStyle={{
