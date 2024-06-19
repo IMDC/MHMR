@@ -18,6 +18,7 @@ import {
   sendVideoSetToChatGPT,
 } from '../components/chatgpt_api';
 import {Button, Icon, Dialog} from '@rneui/themed';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -37,6 +38,7 @@ const DataAnalysisTextSummary = () => {
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [transcriptsLoaded, setTranscriptsLoaded] = useState(false);
   const [transcriptEdited, setTranscriptEdited] = useState(false);
+  const [reportFormat, setReportFormat] = useState('bullet');
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -120,6 +122,7 @@ const DataAnalysisTextSummary = () => {
           realm,
           videoSetVideoIDs,
           currentVideoSet,
+          reportFormat,
         );
 
         realm.write(() => {
@@ -133,7 +136,60 @@ const DataAnalysisTextSummary = () => {
     };
 
     updateVideoSetSummary();
-  }, [transcriptsLoaded, transcriptEdited, videoSetSummary, currentVideoSet, videoSetVideoIDs, realm]);
+  }, [transcriptsLoaded, transcriptEdited, videoSetSummary, currentVideoSet, videoSetVideoIDs, realm, reportFormat]);
+
+  useEffect(() => {
+    const regenerateSummaries = async () => {
+      if (currentVideoSet && transcriptsLoaded) {
+        const summary = await sendVideoSetToChatGPT(
+          realm,
+          videoSetVideoIDs,
+          currentVideoSet,
+          reportFormat,
+        );
+
+        realm.write(() => {
+          const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+          videoSetToUpdate.summaryAnalysis = summary;
+        });
+
+        setVideoSetSummary(summary);
+
+        const updatedVideos = await Promise.all(
+          videos.map(async video => {
+            const updatedTranscript = video.transcript[0] || '';
+            const keywords = video.keywords
+              .map(key => JSON.parse(key))
+              .map(obj => obj.title)
+              .join(', ');
+            const locations = video.locations
+              .map(loc => JSON.parse(loc))
+              .map(obj => obj.title)
+              .join(', ');
+
+            const summary = await sendToChatGPT(
+              video.filename,
+              updatedTranscript,
+              keywords,
+              locations,
+              realm,
+              video._id.toString(),
+              reportFormat,
+            );
+
+            return {
+              ...video,
+              transcriptFileContent: summary,
+            };
+          }),
+        );
+
+        setVideos(updatedVideos);
+      }
+    };
+
+    regenerateSummaries();
+  }, [reportFormat]);
 
   const handleEdit = video => {
     setEditingID(video._id);
@@ -162,6 +218,7 @@ const DataAnalysisTextSummary = () => {
       locations,
       realm,
       editingID,
+      reportFormat,
     );
 
     realm.write(() => {
@@ -195,6 +252,7 @@ const DataAnalysisTextSummary = () => {
         videoToUpdateAfterSave.checkedLocations,
         realm,
         editingID,
+        reportFormat,
       );
 
       const finalUpdatedVideos = updatedVideos.map(video => {
@@ -248,6 +306,18 @@ const DataAnalysisTextSummary = () => {
         <Text style={[styles.title, { textAlign: 'center' }]}>
           {videoSet?.name} - Video set summary
         </Text>
+        <Dropdown
+          style={styles.dropdown}
+          data={[
+            { label: 'Bullet Points', value: 'bullet' },
+            { label: 'Full Sentences', value: 'sentence' },
+          ]}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Report Format"
+          value={reportFormat}
+          onChange={item => setReportFormat(item.value)}
+        />
         <Text style={styles.output}>{videoSetSummary}</Text>
       </View>
       {videos.map(video => (
@@ -381,6 +451,14 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     marginLeft: 5,
+  },
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    marginBottom: 10,
   },
 });
 

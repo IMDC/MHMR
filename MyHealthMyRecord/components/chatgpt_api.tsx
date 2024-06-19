@@ -11,7 +11,7 @@ async function connectToChatGPT(inputText) {
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        messages: [{role: 'user', content: inputText}],
+        messages: [{ role: 'user', content: inputText }],
         max_tokens: 150,
       }),
     });
@@ -30,12 +30,13 @@ export const sendToChatGPT = async (
   locations,
   realm,
   _id,
+  reportFormat,
 ) => {
   try {
-    const inputText = `Summarize this video transcript (${transcript}) and include the summary of the keywords (${keywords}) and locations (${locations}) tagged.`;
+    const inputText = `Summarize this video transcript (${transcript}) and include the summary of the keywords (${keywords}) and locations (${locations}) tagged. Format the summary in ${reportFormat}.`;
     // Create directories if they don't exist
     const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
-    await RNFS.mkdir(directoryPath, {recursive: true} as RNFS.MkdirOptions);
+    await RNFS.mkdir(directoryPath, { recursive: true } as RNFS.MkdirOptions);
 
     // Send the input text to ChatGPT API
     const data = await connectToChatGPT(inputText);
@@ -74,6 +75,7 @@ export const sendVideoSetToChatGPT = async (
   realm,
   videoSetVideoIDs,
   selectedVideoSet,
+  reportFormat,
 ) => {
   const videoTranscripts = videoSetVideoIDs.map(videoID => {
     const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
@@ -84,7 +86,7 @@ export const sendVideoSetToChatGPT = async (
   try {
     const inputText = `Summarize the selected video transcripts in this video set: ${videoTranscripts.join(
       ' ',
-    )} and return only the summary.`;
+    )} and format the summary in ${reportFormat}.`;
     const data = await connectToChatGPT(inputText);
     if (data.choices && data.choices.length > 0) {
       const outputText = data.choices[0].message.content;
