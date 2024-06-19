@@ -65,7 +65,7 @@ const Home = () => {
               textAlign: 'center',
               color: 'black',
             }}>
-            Record a Video
+            Record a video
           </Text>
         </View>
         {/* <View>
@@ -84,7 +84,7 @@ const Home = () => {
               textAlign: 'center',
               color: 'black',
             }}>
-            View Recordings
+            View recordings
           </Text>
         </View> */}
       </View>

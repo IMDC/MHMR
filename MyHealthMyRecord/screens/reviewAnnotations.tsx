@@ -199,7 +199,7 @@ const ReviewAnnotations = () => {
       <View style={styles.container}>
         <Text style={styles.titleStyle}>{video.title}</Text>
         <View>
-          {/* <Text style={styles.headerStyle}>Keywords and Locations</Text> */}
+          {/* <Text style={styles.headerStyle}>Keywords and locations</Text> */}
           <View style={styles.row}>
             {video.keywords.map((key: string) => {
               if (JSON.parse(key).checked) {
@@ -266,13 +266,13 @@ const ReviewAnnotations = () => {
                       </View>
                     );
                   })
-                : <Text>No Comments Added</Text>}
+                : <Text>No comments added</Text>}
             </ScrollView>
           </SafeAreaView>
         </View>
 
         <View>
-          <Text style={styles.headerStyle}>Emotion Stickers</Text>
+          <Text style={styles.headerStyle}>Emotion stickers</Text>
 
           <SafeAreaView>
             <ScrollView style={styles.container}>
@@ -298,7 +298,7 @@ const ReviewAnnotations = () => {
                       </View>
                     );
                   })
-                : <Text>No Stickers Added</Text>}
+                : <Text>No stickers added</Text>}
             </ScrollView>
           </SafeAreaView>
         </View>
@@ -308,7 +308,7 @@ const ReviewAnnotations = () => {
         buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         color="#1C3EAA"
         radius={50}
-        title="Save Changes"
+        title="Save changes"
         onPress={() => saveChanges()}
       />
     </ScrollView>

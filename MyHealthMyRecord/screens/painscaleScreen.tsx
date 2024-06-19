@@ -113,7 +113,8 @@ const Painscale = () => {
     <ScrollView style={[styles.container]}>
       <View style={{alignSelf: 'center', paddingTop: 30, flex: 1}}>
         <Text style={{fontSize: 36, color: 'black'}}>
-          Numeric Pain Rating Scale
+          Numeric pain rating scale
+
         </Text>
       </View>
       <View style={{paddingBottom: 30}}>
@@ -129,7 +130,7 @@ const Painscale = () => {
       </View>
       <View style={{alignSelf: 'center'}}>
         <Text style={{fontSize: 36, color: 'black'}}>
-          McGill Pain Questionnaire
+          McGill pain questionnaire
         </Text>
       </View>
       <View

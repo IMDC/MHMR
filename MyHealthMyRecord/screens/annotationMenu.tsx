@@ -196,7 +196,7 @@ const AnnotationMenu = () => {
             color={painButtonColour}
             onPress={() => navigation.navigate('Painscale', {id})}
           />
-          <Text style={styles.textStyle}>Adjust Painscale</Text>
+          <Text style={styles.textStyle}>Adjust painscale</Text>
         </View>
         <View style={styles.selectionContainer}>
           <Icon
@@ -207,7 +207,7 @@ const AnnotationMenu = () => {
             color={keywordButtonColour}
             onPress={() => navigation.navigate('Keywords', {id})}
           />
-          <Text style={styles.textStyle}>Add Keywords</Text>
+          <Text style={styles.textStyle}>Add keywords</Text>
         </View>
         <View style={styles.selectionContainer}>
           <Icon
@@ -218,7 +218,7 @@ const AnnotationMenu = () => {
             color={locationButtonColour}
             onPress={() => navigation.navigate('Location', {id})}
           />
-          <Text style={styles.textStyle}>Add Location</Text>
+          <Text style={styles.textStyle}>Add location</Text>
         </View>
         <View style={styles.selectionContainer}>
           <Icon
@@ -233,7 +233,7 @@ const AnnotationMenu = () => {
               });
             }}
           />
-          <Text style={styles.textStyle}>Add Emotion Stickers</Text>
+          <Text style={styles.textStyle}>Add emotion stickers</Text>
         </View>
         <View style={styles.selectionContainer}>
           <Icon
@@ -248,7 +248,7 @@ const AnnotationMenu = () => {
               })
             }
           />
-          <Text style={styles.textStyle}>Add Text Comments</Text>
+          <Text style={styles.textStyle}>Add text comments</Text>
         </View>
       </View>
 
@@ -257,7 +257,7 @@ const AnnotationMenu = () => {
         buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
         color="#1C3EAA"
         radius={50}
-        title="Review Markups"
+        title="Review markups"
         onPress={() =>
           navigation.navigate('Review Annotations', {
             id,

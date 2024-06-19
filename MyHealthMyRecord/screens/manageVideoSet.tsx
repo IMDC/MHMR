@@ -177,14 +177,14 @@ const ManageVideoSet = () => {
               {lastRemovedVideo && (
                 <Button
                   radius={50}
-                  title="Undo Last Removed Video"
+                  title="Undo last removed video"
                   onPress={handleUndoRemoveVideo}
                   buttonStyle={styles.deleteButton}
                 />
               )}
               <Button
                 radius={50}
-                title="Delete Video Set"
+                title="Delete video set"
                 onPress={DeleteVideoSetAlert}
                 buttonStyle={styles.deleteButton}
               />
@@ -227,14 +227,14 @@ const ManageVideoSet = () => {
       {/* {lastRemovedVideo && (
         <Button
           radius={50}
-          title="Undo Remove"
+          title="Undo remove"
           onPress={handleUndoRemoveVideo}
           buttonStyle={styles.deleteButton}
         />
       )} */}
       {/* <Button
         radius={80}
-        title="Delete Video Set"
+        title="Delete video set"
         onPress={handleDeleteVideoSet}
         buttonStyle={styles.deleteButton}
       /> */}

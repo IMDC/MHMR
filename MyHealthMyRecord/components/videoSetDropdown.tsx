@@ -103,7 +103,7 @@ const VideoSetDropdown = ({
         justifyContent: 'center',
       }}>
       <View style={{paddingBottom: 10}}>
-        <Text style={{fontSize: 20}}>Select Video Set: </Text>
+        <Text style={{fontSize: 20}}>Select video set: </Text>
       </View>
       <Dropdown
         data={localDropdown}
@@ -134,7 +134,7 @@ const VideoSetDropdown = ({
       deleteAllVideoSetsBtn == false ? (
         <View style={{flexDirection: 'row', paddingTop: 30}}>
           <Button
-            title="View Videos in Video Set"
+            title="View videos in video set"
             onPress={() => navigation.navigate('Dashboard')}
             color={Styles.MHMRBlue}
             radius={50}
@@ -151,7 +151,7 @@ const VideoSetDropdown = ({
                 disabled={
                   videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
                 }
-                title="Save Video Set"
+                title="Save video set"
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
                   handleNewSet(videoSetVideoIDs, videoSets);
@@ -175,7 +175,7 @@ const VideoSetDropdown = ({
                 disabled={
                   videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
                 }
-                title="Clear Video Set"
+                title="Clear video set"
                 onPress={clearVideoSet}
                 color={Styles.MHMRBlue}
                 radius={50}
@@ -191,7 +191,7 @@ const VideoSetDropdown = ({
             {manageSetBtn && (
               <Button
                 disabled={videoSetValue == null || videoSetValue === ''}
-                title="Manage Video Set"
+                title="Manage video set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
                     videoSet: videoSets[videoSetValue],
@@ -208,7 +208,7 @@ const VideoSetDropdown = ({
             )}
             {deleteAllVideoSetsBtn && (
               <Button
-                title="Delete all Video Sets"
+                title="Delete all video sets"
                 onPress={deleteAllVideoSets}
                 color={Styles.MHMRBlue}
                 radius={50}

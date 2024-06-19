@@ -144,11 +144,18 @@ const DataAnalysis = () => {
     }
   }, [currentVideos]);
 
+  function removePunctuationAndLowercase(text: string) {
+    return text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").toLowerCase();
+  }
+  
   function getFreq(transcript: string, datetime: any) {
     let M = new Map();
-
+  
+    // Remove punctuation and convert to lowercase
+    transcript = removePunctuationAndLowercase(transcript);
+  
     let word = '';
-
+  
     for (let i = 0; i < transcript.length; i++) {
       if (transcript[i] === ' ') {
         if (!M.has(word)) {
@@ -162,15 +169,15 @@ const DataAnalysis = () => {
         word += transcript[i];
       }
     }
-
+         
     if (!M.has(word)) {
       M.set(word, 1);
     } else {
       M.set(word, M.get(word) + 1);
     }
-
+  
     M = new Map([...M.entries()].sort());
-
+  
     let jsonTest = [];
     let dayJson = [];
     for (let [key, value] of M) {
@@ -185,7 +192,7 @@ const DataAnalysis = () => {
 
     return M;
   }
-
+  
   /* ------------------------------ BAR GRAPH FREQUENCY ------------------------------ */
 
   /**
@@ -443,7 +450,7 @@ const DataAnalysis = () => {
           }}
           color={Styles.MHMRBlue}
           radius={50}>
-          Text Insights
+          Text Report
         </Button>
         {/* <Button
           disabled={true}
@@ -512,7 +519,7 @@ const DataAnalysis = () => {
             {lineGraphNavigationVisible && (
               <Button
                 containerStyle={{marginTop: 20, marginLeft: 10}}
-                title="View Line Graph"
+                title="View line graph"
                 color={Styles.MHMRBlue}
                 radius={50}
                 onPress={() => {

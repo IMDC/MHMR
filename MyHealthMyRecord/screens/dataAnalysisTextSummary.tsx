@@ -18,6 +18,7 @@ import {
   sendVideoSetToChatGPT,
 } from '../components/chatgpt_api';
 import {Button, Icon, Dialog} from '@rneui/themed';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -31,13 +32,13 @@ const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-  const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
+  const { videoSetVideoIDs, currentVideoSet } = useDropdownContext();
   const realm = useRealm();
   const [videoSet, setVideoSet] = useState(null);
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [transcriptsLoaded, setTranscriptsLoaded] = useState(false);
-
-  useEffect(() => {}, [currentVideoSet]);
+  const [transcriptEdited, setTranscriptEdited] = useState(false);
+  const [reportFormat, setReportFormat] = useState('bullet');
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -54,6 +55,8 @@ const DataAnalysisTextSummary = () => {
       getVideoData();
       if (currentVideoSet) {
         setVideoSet(currentVideoSet);
+        setVideoSetSummary(currentVideoSet.summaryAnalysis);
+        setReportFormat(currentVideoSet.reportFormat || 'bullet');
       }
     }
   }, [isFocused, videoSetVideoIDs, realm, currentVideoSet]);
@@ -62,9 +65,7 @@ const DataAnalysisTextSummary = () => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
         videos.map(async video => {
-          const filePath = `${
-            RNFS.DocumentDirectoryPath
-          }/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
+          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
           const fileExists = await RNFS.exists(filePath);
 
           let fileContent = '';
@@ -86,7 +87,11 @@ const DataAnalysisTextSummary = () => {
             .map(obj => obj.title)
             .join(', ');
 
-          const sentimentLabel = await getSentimentFromChatGPT(fileContent);
+          let sentimentLabel = video.sentiment;
+
+          if (!sentimentLabel || sentimentLabel === 'Neutral') {
+            sentimentLabel = await getSentimentFromChatGPT(fileContent, realm, video._id.toString());
+          }
 
           return {
             _id: video._id.toString(),
@@ -113,18 +118,79 @@ const DataAnalysisTextSummary = () => {
 
   useEffect(() => {
     const updateVideoSetSummary = async () => {
-      if (transcriptsLoaded) {
+      if (currentVideoSet && transcriptsLoaded && (transcriptEdited || videoSetSummary === '')) {
         const summary = await sendVideoSetToChatGPT(
           realm,
           videoSetVideoIDs,
           currentVideoSet,
+          reportFormat,
         );
+
+        realm.write(() => {
+          const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+          videoSetToUpdate.summaryAnalysis = summary;
+        });
+
         setVideoSetSummary(summary);
+        setTranscriptEdited(false);
       }
     };
 
     updateVideoSetSummary();
-  }, [transcriptsLoaded]);
+  }, [transcriptsLoaded, transcriptEdited, videoSetSummary, currentVideoSet, videoSetVideoIDs, realm, reportFormat]);
+
+  useEffect(() => {
+    const regenerateSummaries = async () => {
+      if (currentVideoSet && transcriptsLoaded) {
+        const summary = await sendVideoSetToChatGPT(
+          realm,
+          videoSetVideoIDs,
+          currentVideoSet,
+          reportFormat,
+        );
+
+        realm.write(() => {
+          const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+          videoSetToUpdate.summaryAnalysis = summary;
+        });
+
+        setVideoSetSummary(summary);
+
+        const updatedVideos = await Promise.all(
+          videos.map(async video => {
+            const updatedTranscript = video.transcript[0] || '';
+            const keywords = video.keywords
+              .map(key => JSON.parse(key))
+              .map(obj => obj.title)
+              .join(', ');
+            const locations = video.locations
+              .map(loc => JSON.parse(loc))
+              .map(obj => obj.title)
+              .join(', ');
+
+            const summary = await sendToChatGPT(
+              video.filename,
+              updatedTranscript,
+              keywords,
+              locations,
+              realm,
+              video._id.toString(),
+              reportFormat,
+            );
+
+            return {
+              ...video,
+              transcriptFileContent: summary,
+            };
+          }),
+        );
+
+        setVideos(updatedVideos);
+      }
+    };
+
+    regenerateSummaries();
+  }, [reportFormat]);
 
   const handleEdit = video => {
     setEditingID(video._id);
@@ -133,7 +199,7 @@ const DataAnalysisTextSummary = () => {
 
   const handleSave = async () => {
     const updatedTranscript = draftTranscript;
-    const sentimentLabel = await getSentimentFromChatGPT(updatedTranscript);
+    const sentimentLabel = await getSentimentFromChatGPT(updatedTranscript, realm, editingID);
 
     const objectId = new Realm.BSON.ObjectId(editingID);
     const videoToUpdate = realm.objectForPrimaryKey('VideoData', objectId);
@@ -153,6 +219,7 @@ const DataAnalysisTextSummary = () => {
       locations,
       realm,
       editingID,
+      reportFormat,
     );
 
     realm.write(() => {
@@ -186,6 +253,7 @@ const DataAnalysisTextSummary = () => {
         videoToUpdateAfterSave.checkedLocations,
         realm,
         editingID,
+        reportFormat,
       );
 
       const finalUpdatedVideos = updatedVideos.map(video => {
@@ -203,6 +271,7 @@ const DataAnalysisTextSummary = () => {
 
     setEditingID(null);
     setDraftTranscript('');
+    setTranscriptEdited(true);
   };
 
   const handleCancel = () => {
@@ -234,19 +303,45 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
-      <View style={{padding: 10}}>
-        <Text style={[styles.title, {textAlign: 'center'}]}>
-          {videoSet?.name} - Video Set Summary
+      <View style={styles.dropdownContainer}>
+        <Text style={styles.dropdownLabel}>
+          Select report format:
+        </Text>
+        <Dropdown
+          style={styles.dropdown}
+          data={[
+            { label: 'Bullet points', value: 'bullet' },
+            { label: 'Full sentences', value: 'sentence' },
+          ]}
+          labelField="label"
+          valueField="value"
+          placeholder="Select format"
+          value={reportFormat}
+          onChange={item => {
+            setReportFormat(item.value);
+            if (currentVideoSet) {
+              realm.write(() => {
+                const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+                videoSetToUpdate.reportFormat = item.value;
+              });
+            }
+          }}
+          selectedTextStyle={styles.dropdownItem}
+        />
+      </View>
+      <View style={{ padding: 10 }}>
+        <Text style={[styles.title, { textAlign: 'center' }]}>
+          {videoSet?.name} - Video set summary
         </Text>
         <Text style={styles.output}>{videoSetSummary}</Text>
       </View>
       {videos.map(video => (
         <View key={video._id} style={styles.container}>
-          <View style={{padding: 10}}>
+          <View style={{ padding: 10 }}>
             <Text style={styles.title}>{video.title}</Text>
             {editingID === video._id ? (
               <>
-                <View style={{flexDirection: 'row'}}>
+                <View style={{ flexDirection: 'row' }}>
                   <TextInput
                     style={styles.textInput}
                     onChangeText={setDraftTranscript}
@@ -275,21 +370,19 @@ const DataAnalysisTextSummary = () => {
               </>
             ) : (
               <>
-                <View style={{flexDirection: 'row'}}>
-                  <View style={{flex: 1, justifyContent: 'flex-start'}}>
+                <View style={{ flexDirection: 'row' }}>
+                  <View style={{ flex: 1, justifyContent: 'flex-start' }}>
                     <Text style={styles.transcript}>
-                      <Text style={styles.boldText}>Video Transcript: </Text>
+                      <Text style={styles.boldText}>Video transcript: </Text>
                       {video.transcript[0]}
                     </Text>
                   </View>
 
-                  <View style={{alignSelf: 'flex-end'}}>
+                  <View style={{ alignSelf: 'flex-end' }}>
                     <Button
                       radius={50}
-                      title="Edit Transcript"
-                      onPress={() => {
-                        handleEdit(video), console.log('Edit button pressed');
-                      }}
+                      title="Edit transcript"
+                      onPress={() => handleEdit(video)}
                       color={Styles.MHMRBlue}
                     />
                   </View>
@@ -301,7 +394,7 @@ const DataAnalysisTextSummary = () => {
               {video.transcriptFileContent}
             </Text>
             <Text style={styles.sentiment}>
-              <Text style={styles.boldText}>Overall Feeling: </Text>
+              <Text style={styles.boldText}>Overall feeling: </Text>
               {video.sentiment}{' '}
               <Image
                 source={getEmojiForSentiment(video.sentiment)}
@@ -373,6 +466,31 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     marginLeft: 5,
+  },
+  dropdownContainer: {
+    padding: 10,
+    borderBottomColor: 'black',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  dropdownLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'center',
+    color: 'black'
+  },
+  dropdown: {
+    height: 40,
+    borderWidth: 0.5,
+    borderRadius: 22,
+    paddingHorizontal: 8,
+    marginBottom: 10,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  dropdownItem: {
+    textAlign: 'center',
+    color: 'black'
   },
 });
 

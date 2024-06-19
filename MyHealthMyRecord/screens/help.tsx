@@ -3,7 +3,7 @@ import { Text } from 'react-native-paper';
 
 function Help() {
   return (
-    <Text>This is the Help Page</Text>
+    <Text>This is the help page</Text>
   );
 }
 

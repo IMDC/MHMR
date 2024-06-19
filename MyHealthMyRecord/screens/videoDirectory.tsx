@@ -243,8 +243,8 @@ const ViewRecordings = ({selected, setSelected}) => {
   };
 
   const viewData = [
-    {label: 'List View', value: 1},
-    {label: 'Grid View', value: 2},
+    {label: 'List view', value: 1},
+    {label: 'Grid view', value: 2},
   ];
 
   const sortData = [
@@ -256,8 +256,8 @@ const ViewRecordings = ({selected, setSelected}) => {
   ];
 
   const oldestNewestData = [
-    {label: 'Newest to Oldest', value: 1},
-    {label: 'Oldest to Newest', value: 2},
+    {label: 'Newest to oldest', value: 1},
+    {label: 'Oldest to newest', value: 2},
   ];
 
   const weekdayData = [
@@ -490,7 +490,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
-                Add {selectedVideos.size} video(s) to Current Video Set
+                Add {selectedVideos.size} video(s) to current video set
               </Text>
             </Button>
             <View style={{width: 10}}></View>
@@ -505,7 +505,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 handleSendToDashboard();
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
-                Create New Video Set
+                Create new video set
               </Text>
             </Button>
           </View>
@@ -539,8 +539,8 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                   await handleSend();
                   Alert.alert(
-                    'Video Transcripts Generated',
-                    'Your transcripts have been generated, and your videos have been added to the Video Set!',
+                    'Video transcripts generated',
+                    'Your transcripts have been generated, and your videos have been added to the video set!',
                   );
                 }}
               />
@@ -625,7 +625,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               // paddingRight: 20,
               color: 'black',
             }}>
-            Delete All Videos
+            Delete all videos
           </Text> */}
           </TouchableOpacity>
           <View
@@ -1188,7 +1188,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                 <Button
                                   buttonStyle={styles.btnStyle}
                                   radius={50}
-                                  title="Add/Edit Markups"
+                                  title="Add or edit markups"
                                   onPress={() =>
                                     navigation.navigate('Annotation Menu', {
                                       id: video._id,
@@ -1199,7 +1199,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                 <Button
                                   buttonStyle={styles.btnStyle}
                                   radius={50}
-                                  title="Delete Video"
+                                  title="Delete video"
                                   onPress={() =>
                                     handleDeleteVideo(video, video.filename)
                                   }
@@ -1400,7 +1400,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                         <View style={{width: 15}} />
                         <Button
                           buttonStyle={styles.btnStyle}
-                          title="Add/Edit Markups"
+                          title="Add or edit markups"
                           radius={50}
                           onPress={() =>
                             navigation.navigate('Annotation Menu', {
@@ -1411,7 +1411,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                         <View style={{width: 15}} />
                         <Button
                           buttonStyle={styles.btnStyle}
-                          title="Delete Video"
+                          title="Delete video"
                           radius={50}
                           onPress={() => deleteVideo(video, video.filename)}
                           // onPress={() => {
@@ -1433,7 +1433,7 @@ const ViewRecordings = ({selected, setSelected}) => {
             style={{alignItems: 'center'}}
             onPress={onPressTouch}>
             <Text style={{padding: 5, fontSize: 16, color: 'black'}}>
-              Scroll to Top
+              Scroll to top
             </Text>
           </TouchableOpacity>
         </ScrollView>

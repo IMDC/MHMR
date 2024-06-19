@@ -162,7 +162,7 @@ const KeywordTagging = () => {
         <Card containerStyle={{marginHorizontal: 10, margin: 10}}>
           <View style={{flexDirection: 'row'}}>
             <Icon style={{marginLeft: 8}} name="add-outline" type="ionicon" />
-            <Text style={{fontSize: 20, height: 30}}> Add Keyword</Text>
+            <Text style={{fontSize: 20, height: 30}}> Add keyword</Text>
           </View>
         </Card>
       </TouchableOpacity>
