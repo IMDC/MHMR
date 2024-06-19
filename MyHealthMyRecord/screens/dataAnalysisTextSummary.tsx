@@ -317,6 +317,7 @@ const DataAnalysisTextSummary = () => {
           placeholder="Select format"
           value={reportFormat}
           onChange={item => setReportFormat(item.value)}
+          selectedTextStyle={styles.dropdownItem}
         />
       </View>
       <View style={{ padding: 10 }}>
@@ -467,14 +468,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
     textAlign: 'center',
+    color: 'black'
   },
   dropdown: {
     height: 40,
-    borderColor: 'gray',
     borderWidth: 0.5,
-    borderRadius: 8,
+    borderRadius: 22,
     paddingHorizontal: 8,
     marginBottom: 10,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  dropdownItem: {
+    textAlign: 'center',
+    color: 'black'
   },
 });
 
