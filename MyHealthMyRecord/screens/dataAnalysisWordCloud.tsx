@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
-import {Text, View, Dimensions} from 'react-native';
+import {useRoute} from '@react-navigation/native';
+import {Text, View} from 'react-native';
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 
@@ -8,8 +8,9 @@ const DataAnalysisWordCloud = () => {
   const route = useRoute();
   const barData = route.params?.data;
   const [wordFrequency, setWordFrequency] = useState(barData.data);
-  let [updatedData, setUpdatedData] = useState(barData.dataNoStop);
-  const [dropdownValue, setDropdownValue] = useState(0);
+  const [updatedData, setUpdatedData] = useState(barData.dataNoStop);
+  const [dropdownValue, setDropdownValue] = useState(null);
+
   const dropdownData = [
     {label: 'IBM', value: 'IBM'},
     {label: 'Wong', value: 'Wong'},
@@ -46,32 +47,32 @@ const DataAnalysisWordCloud = () => {
     {color: '#882255'},
   ];
 
-  // create a function to add selected palette to the objects color in data using random selection
-  const addPalette = (data: string | any[], palette: string | any[]) => {
-    for (let i = 0; i < data.length; i++) {
-      data[i].color = palette[Math.floor(Math.random() * palette.length)].color;
-    }
-    return data;
+  const addPalette = (data, palette) => {
+    return data.map(item => ({
+      ...item,
+      color: palette[Math.floor(Math.random() * palette.length)].color,
+    }));
   };
-  // useEffect(() => {
-  //   addPalette(updatedData, IBM_palette);
-  // }, [updatedData]);
 
-  // const renderWordCloud = data => {
-  //   return (
-      
-  //   );
-  // };
+  useEffect(() => {
+    if (dropdownValue) {
+      let newPalette;
+      if (dropdownValue === 'IBM') {
+        newPalette = IBM_palette;
+      } else if (dropdownValue === 'Wong') {
+        newPalette = wong_palette;
+      } else if (dropdownValue === 'Tol') {
+        newPalette = tol_palette;
+      }
+      setUpdatedData(addPalette(barData.dataNoStop, newPalette));
+    }
+  }, [dropdownValue]);
 
   return (
     <View style={{flexDirection: 'column'}}>
-      <View>
-        <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+      <View style={{justifyContent: 'center', alignItems: 'center'}}>
         <WordCloud
+          key={JSON.stringify(updatedData)} 
           options={{
             words: updatedData,
             verticalEnabled: true,
@@ -85,51 +86,33 @@ const DataAnalysisWordCloud = () => {
           }}
         />
       </View>
-        <Text
+      <Text
+        style={{
+          textAlign: 'center',
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: 'black',
+          paddingVertical: 10,
+        }}>
+        Select Color Palette:
+      </Text>
+      <View style={{justifyContent: 'center', alignItems: 'center'}}>
+        <Dropdown
+          data={dropdownData}
+          maxHeight={400}
           style={{
-            textAlign: 'center',
-            fontSize: 20,
-            fontWeight: 'bold',
-            color: 'black',
-            paddingVertical: 10,
-          }}>
-          Select Color Palette:
-        </Text>
-        <View style={{justifyContent: 'center', alignItems: 'center'}}>
-          <Dropdown
-            data={dropdownData}
-            maxHeight={400}
-            style={{
-              height: 50,
-
-              width: 600,
-              paddingHorizontal: 20,
-              backgroundColor: '#DBDBDB',
-              borderRadius: 22,
-            }}
-            itemTextStyle={{textAlign: 'center'}}
-            labelField="label"
-            valueField="value"
-            value={dropdownData[dropdownValue]}
-            onChange={item => {
-              console.log('item', item);
-              if (item.value === 'IBM') {
-                setUpdatedData(addPalette(barData.dataNoStop, IBM_palette));
-                setDropdownValue(0);
-                console.log('IBM_palette', updatedData);
-              } else if (item.value === 'Wong') {
-                setUpdatedData(addPalette(barData.dataNoStop, wong_palette));
-                addPalette(barData.dataNoStop, wong_palette);
-                setDropdownValue(1);
-                console.log('wong_palette', updatedData);
-              } else if (item.value === 'Tol') {
-                setUpdatedData(addPalette(barData.dataNoStop, tol_palette));
-                setDropdownValue(2);
-                console.log('tol_palette', updatedData);
-              }
-            }}
-          />
-        </View>
+            height: 50,
+            width: 600,
+            paddingHorizontal: 20,
+            backgroundColor: '#DBDBDB',
+            borderRadius: 22,
+          }}
+          itemTextStyle={{textAlign: 'center'}}
+          labelField="label"
+          valueField="value"
+          value={dropdownValue}
+          onChange={item => setDropdownValue(item.value)}
+        />
       </View>
     </View>
   );
