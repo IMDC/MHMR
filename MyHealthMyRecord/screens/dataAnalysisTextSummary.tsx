@@ -302,22 +302,27 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <ScrollView>
-      <View style={{ padding: 10 }}>
-        <Text style={[styles.title, { textAlign: 'center' }]}>
-          {videoSet?.name} - Video set summary
+      <View style={styles.dropdownContainer}>
+        <Text style={styles.dropdownLabel}>
+          Select report format:
         </Text>
         <Dropdown
           style={styles.dropdown}
           data={[
-            { label: 'Bullet Points', value: 'bullet' },
-            { label: 'Full Sentences', value: 'sentence' },
+            { label: 'Bullet points', value: 'bullet' },
+            { label: 'Full sentences', value: 'sentence' },
           ]}
           labelField="label"
           valueField="value"
-          placeholder="Select Report Format"
+          placeholder="Select format"
           value={reportFormat}
           onChange={item => setReportFormat(item.value)}
         />
+      </View>
+      <View style={{ padding: 10 }}>
+        <Text style={[styles.title, { textAlign: 'center' }]}>
+          {videoSet?.name} - Video set summary
+        </Text>
         <Text style={styles.output}>{videoSetSummary}</Text>
       </View>
       {videos.map(video => (
@@ -452,8 +457,19 @@ const styles = StyleSheet.create({
     height: 20,
     marginLeft: 5,
   },
+  dropdownContainer: {
+    padding: 10,
+    borderBottomColor: 'black',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  dropdownLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
   dropdown: {
-    height: 50,
+    height: 40,
     borderColor: 'gray',
     borderWidth: 0.5,
     borderRadius: 8,
