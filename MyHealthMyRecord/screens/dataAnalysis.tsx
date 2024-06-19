@@ -53,6 +53,7 @@ const DataAnalysis = () => {
   const [viewValue, setViewValue] = useState(1);
   const [data, setData] = useState<any>([]);
   const [selectedWord, setSelectedWord] = useState('');
+  const [noStopWords, setNoStopWords] = useState<any>([]);
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
@@ -272,6 +273,7 @@ const DataAnalysis = () => {
     for (let [key, value] of mapNoStop) {
       //console.log(`${key} - ${value}`);
       barNoStop.push({text: `${key}`, value: parseInt(`${value}`)});
+      setNoStopWords(noStopWords => [...noStopWords, {label: `${key}`, value: `${counter}`}]);
     }
     for (let [key, value] of mapNoMed) {
       //console.log(`${key} - ${value}`);
@@ -483,8 +485,8 @@ const DataAnalysis = () => {
             Select a word to view in line graph:
           </Text>
           <Dropdown
-            //display the text from barData
-            data={data}
+            //display the no stop words text from barData
+            data={noStopWords}
             maxHeight={400}
             style={{
               height: 50,
