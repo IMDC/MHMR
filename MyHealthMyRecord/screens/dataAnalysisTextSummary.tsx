@@ -56,6 +56,7 @@ const DataAnalysisTextSummary = () => {
       if (currentVideoSet) {
         setVideoSet(currentVideoSet);
         setVideoSetSummary(currentVideoSet.summaryAnalysis);
+        setReportFormat(currentVideoSet.reportFormat || 'bullet');
       }
     }
   }, [isFocused, videoSetVideoIDs, realm, currentVideoSet]);
@@ -316,7 +317,15 @@ const DataAnalysisTextSummary = () => {
           valueField="value"
           placeholder="Select format"
           value={reportFormat}
-          onChange={item => setReportFormat(item.value)}
+          onChange={item => {
+            setReportFormat(item.value);
+            if (currentVideoSet) {
+              realm.write(() => {
+                const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+                videoSetToUpdate.reportFormat = item.value;
+              });
+            }
+          }}
           selectedTextStyle={styles.dropdownItem}
         />
       </View>

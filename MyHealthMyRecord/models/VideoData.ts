@@ -55,6 +55,7 @@ export class VideoSet extends Realm.Object<VideoSet> {
   frequencyData!: Realm.List<string>;
   summaryAnalysis!: string;
   isSummaryGenerated!: boolean;
+  reportFormat!: string;
 
   static schema = {
     name: 'VideoSet',
@@ -68,6 +69,7 @@ export class VideoSet extends Realm.Object<VideoSet> {
       frequencyData: {type: 'mixed[]', default: []},
       summaryAnalysis: {type: 'string', default: ''},
       isSummaryGenerated: {type: 'bool', default: false},
+      reportFormat: {type: 'string', default: 'bullet'},
     },
   };
 }
