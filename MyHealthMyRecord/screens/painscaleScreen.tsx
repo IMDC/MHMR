@@ -3,10 +3,10 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import {
   FlatList,
   LogBox,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {Button} from '@rneui/themed';
@@ -23,17 +23,22 @@ const Painscale = () => {
 
   const parsedPainscaleWords = video.painScale.map(pain => JSON.parse(pain));
   const [category, setCategory] = useState(parsedPainscaleWords);
+  const [mcGillIsVisible, setMcGillIsVisible] = useState(false);
 
   const numericPainRatingScale = [
     {id: 1, name: 'Pain', severity_level: 'none'},
   ];
 
-  const onPress = (index, severity_level, data) => {
+  const [numericScale, setNumericScale] = useState(numericPainRatingScale);
+
+  const onPress = (index, severity_level, data, setData) => {
     const newData = [...data];
     newData[index].severity_level = severity_level;
-    setCategory(newData);
+    setData(newData);
     setRefreshFlatList(!refreshFlatlist);
-    savePainScale(newData);
+    if (data === category) {
+      savePainScale(newData);
+    }
   };
 
   const savePainScale = data => {
@@ -45,7 +50,7 @@ const Painscale = () => {
     }
   };
 
-  const renderItem = ({item, index, data}) => (
+  const renderItem = ({item, index, data, setData}) => (
     <ScrollView style={styles.container}>
       <View style={{flexDirection: 'row'}}>
         <View style={{width: '35%'}}>
@@ -72,7 +77,7 @@ const Painscale = () => {
                       status={
                         item.severity_level === level ? 'checked' : 'unchecked'
                       }
-                      onPress={() => onPress(index, level, data)}
+                      onPress={() => onPress(index, level, data, setData)}
                     />
                   </View>
                 ))}
@@ -99,10 +104,10 @@ const Painscale = () => {
         <FlatList
           style={styles.container}
           extraData={refreshFlatlist}
-          data={numericPainRatingScale}
+          data={numericScale}
           keyExtractor={(item, index) => index.toString()}
           renderItem={props =>
-            renderItem({...props, data: numericPainRatingScale})
+            renderItem({...props, data: numericScale, setData: setNumericScale})
           }
         />
       </View>
@@ -111,13 +116,40 @@ const Painscale = () => {
           McGill Pain Questionnaire
         </Text>
       </View>
-      <FlatList
-        style={styles.container}
-        extraData={refreshFlatlist}
-        data={category}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={props => renderItem({...props, data: category})}
-      />
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          padding: 10,
+          backgroundColor: '#d1d1d1',
+        }}>
+        <TouchableOpacity onPress={() => setMcGillIsVisible(!mcGillIsVisible)}>
+          {mcGillIsVisible ? (
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{fontSize: 20, fontWeight: 'bold'}}>Hide –</Text>
+            </View>
+          ) : (
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show ▼</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+      {mcGillIsVisible ? (
+        <View style={{backgroundColor: '#e8e8e8', paddingBottom: 40}}>
+          <FlatList
+            style={styles.container}
+            extraData={refreshFlatlist}
+            data={category}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={props =>
+              renderItem({...props, data: category, setData: setCategory})
+            }
+          />
+        </View>
+      ) : (
+        <View></View>
+      )}
       <Button
         buttonStyle={{
           width: 220,
