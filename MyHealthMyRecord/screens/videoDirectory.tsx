@@ -12,7 +12,7 @@ import {
   StyleSheet,
   Touchable,
 } from 'react-native';
-import {View, TouchableOpacity, Text} from 'react-native';
+import {View, TouchableOpacity, Text, useWindowDimensions} from 'react-native';
 import React, {
   useRef,
   useCallback,
@@ -632,12 +632,24 @@ const ViewRecordings = ({selected, setSelected}) => {
             style={{
               flexDirection: 'row',
               flexWrap: 'wrap',
+              justifyContent: 'flex-start',
             }}>
+            <View>
+              <Text
+                style={{
+                  paddingTop: 5,
+                  fontSize: 18,
+                  paddingLeft: 10,
+                  fontWeight: 'bold',
+                }}>
+                View as:
+              </Text>
+            </View>
             <Dropdown
               data={viewData}
               maxHeight={300}
               style={{
-                width: windowWidth / 5,
+                width: windowWidth / 8,
               }}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
@@ -650,10 +662,19 @@ const ViewRecordings = ({selected, setSelected}) => {
                 console.log(item.value);
               }}
             />
+            <Text
+              style={{
+                paddingTop: 5,
+                fontSize: 18,
+                paddingLeft: 10,
+                fontWeight: 'bold',
+              }}>
+              Sort by:
+            </Text>
             <Dropdown
               data={sortData}
               maxHeight={300}
-              style={{width: windowWidth / 2.5}}
+              style={{width: '30%'}}
               placeholderStyle={styles.dropdownText}
               selectedTextStyle={styles.dropdownText}
               itemTextStyle={{textAlign: 'center'}}
@@ -670,7 +691,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               <MultiSelect
                 data={weekdayData}
                 maxHeight={1000}
-                style={{width: windowWidth / 2.5}}
+                style={styles.sortValueStyle}
                 placeholderStyle={styles.dropdownText}
                 selectedTextStyle={styles.dropdownText}
                 itemTextStyle={{textAlign: 'center'}}
@@ -714,7 +735,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               <Dropdown
                 data={nameData}
                 maxHeight={1000}
-                style={{width: windowWidth / 2.5}}
+                style={styles.sortValueStyle}
                 placeholderStyle={styles.dropdownText}
                 selectedTextStyle={styles.dropdownText}
                 itemTextStyle={{textAlign: 'center'}}
@@ -736,7 +757,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               <MultiSelect
                 data={keywordData}
                 maxHeight={1000}
-                style={{width: windowWidth / 2.5}}
+                style={styles.sortValueStyle}
                 placeholderStyle={styles.dropdownText}
                 selectedTextStyle={styles.dropdownText}
                 itemTextStyle={{textAlign: 'center'}}
@@ -803,7 +824,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               <MultiSelect
                 data={locationData}
                 maxHeight={1000}
-                style={{width: windowWidth / 2.5}}
+                style={styles.sortValueStyle}
                 placeholderStyle={styles.dropdownText}
                 selectedTextStyle={styles.dropdownText}
                 itemTextStyle={{textAlign: 'center'}}
@@ -848,7 +869,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               <MultiSelect
                 data={emotionData}
                 maxHeight={1000}
-                style={{width: windowWidth / 2.5}}
+                style={styles.sortValueStyle}
                 placeholderStyle={styles.dropdownText}
                 selectedTextStyle={styles.dropdownText}
                 itemTextStyle={{textAlign: 'center'}}
@@ -1524,6 +1545,10 @@ const styles = StyleSheet.create({
   },
   space: {
     width: 50,
+  },
+
+  sortValueStyle: {
+    width: '30%',
   },
 });
 
