@@ -22,6 +22,7 @@ const Painscale = () => {
   const video = useObject('VideoData', id);
 
   const parsedPainscaleWords = video.painScale.map(pain => JSON.parse(pain));
+  const parsedNumericScale = video.numericScale.map(numeric => JSON.parse(numeric));
   const [category, setCategory] = useState(parsedPainscaleWords);
   const [mcGillIsVisible, setMcGillIsVisible] = useState(false);
 
@@ -29,17 +30,32 @@ const Painscale = () => {
     {id: 1, name: 'Pain', severity_level: 'none'},
   ];
 
-  const [numericScale, setNumericScale] = useState(numericPainRatingScale);
+  const [numericScale, setNumericScale] = useState(parsedNumericScale);
 
   const onPress = (index, severity_level, data, setData) => {
     const newData = [...data];
     newData[index].severity_level = severity_level;
     setData(newData);
     setRefreshFlatList(!refreshFlatlist);
+    if (data === numericScale) {
+      saveNumericScale(newData);
+      console.log(newData);
+    }
     if (data === category) {
       savePainScale(newData);
+      console.log(newData);
     }
   };
+
+  const saveNumericScale = data => {
+    const numericScales = data.map(item => JSON.stringify(item));
+    if (video) {
+      realm.write(() => {
+        video.numericScale = numericScales;
+      }
+    );
+  }
+}
 
   const savePainScale = data => {
     const painscales = data.map(item => JSON.stringify(item));

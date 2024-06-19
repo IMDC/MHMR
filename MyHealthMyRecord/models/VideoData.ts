@@ -35,6 +35,7 @@ export class VideoData extends Realm.Object<VideoData> {
       emotionStickers: {type: 'string[]', default: []},
       keywords: {type: 'mixed[]', default: []},
       painScale: {type: 'string[]', default: []},
+      numericScale: {type: 'string[]', default: []},
       isConverted: { type: 'bool', default: false },
       isSelected: { type: 'bool', default: false },
       isTranscribed: {type: 'bool', default: false},
