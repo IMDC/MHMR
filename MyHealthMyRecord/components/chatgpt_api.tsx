@@ -33,7 +33,7 @@ export const sendToChatGPT = async (
   reportFormat,
 ) => {
   try {
-    const inputText = `Summarize this video transcript (${transcript}) and include the summary of the keywords (${keywords}) and locations (${locations}) tagged. Format the summary in ${reportFormat}.`;
+    const inputText = `Summarize this video transcript (${transcript}). Format the summary in ${reportFormat}.`;
     // Create directories if they don't exist
     const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
     await RNFS.mkdir(directoryPath, { recursive: true } as RNFS.MkdirOptions);
