@@ -33,10 +33,19 @@ export const sendToChatGPT = async (
   reportFormat,
 ) => {
   try {
-    const inputText = `Summarize this video transcript (${transcript}) and include the summary of the keywords (${keywords}) and locations (${locations}) tagged. Format the summary in ${reportFormat}.`;
+    const transcriptWordCount = transcript.split(' ').length;
+    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
+    
+    let inputText;
+    if (reportFormat === 'bullet') {
+      inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using \u2022`;
+    } else {
+      inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat}.`;
+    }
+
     // Create directories if they don't exist
     const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
-    await RNFS.mkdir(directoryPath, { recursive: true } as RNFS.MkdirOptions);
+    await RNFS.mkdir(directoryPath, { recursive: true });
 
     // Send the input text to ChatGPT API
     const data = await connectToChatGPT(inputText);
@@ -83,10 +92,18 @@ export const sendVideoSetToChatGPT = async (
     return video ? video.transcript.join(' ') : '';
   });
   console.log('!!!!!!!!!!!!!!!!!!Video Transcripts:', videoTranscripts);
+  const combinedTranscripts = videoTranscripts.join(' ');
+  const transcriptWordCount = combinedTranscripts.split(' ').length;
+  const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
+
   try {
-    const inputText = `Summarize the selected video transcripts in this video set: ${videoTranscripts.join(
-      ' ',
-    )} and format the summary in ${reportFormat}.`;
+    let inputText;
+    if (reportFormat === 'bullet') {
+      inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using \u2022`;
+    } else {
+      inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat}.`;
+    }
+
     const data = await connectToChatGPT(inputText);
     if (data.choices && data.choices.length > 0) {
       const outputText = data.choices[0].message.content;
