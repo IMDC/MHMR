@@ -38,7 +38,7 @@ export const sendToChatGPT = async (
     
     let inputText;
     if (reportFormat === 'bullet') {
-      inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using this format: \n• Point 1\n• Point 2`;
+      inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using \u2022`;
     } else {
       inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat}.`;
     }
@@ -99,7 +99,7 @@ export const sendVideoSetToChatGPT = async (
   try {
     let inputText;
     if (reportFormat === 'bullet') {
-      inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using this format: \n• Point 1\n• Point 2`;
+      inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using \u2022`;
     } else {
       inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat}.`;
     }
