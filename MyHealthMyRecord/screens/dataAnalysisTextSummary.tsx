@@ -299,6 +299,50 @@ const DataAnalysisTextSummary = () => {
     console.log('Videos:', videos);
   }, [videoSet, videos]);
 
+  const [sentimentCounts, setSentimentCounts] = useState({
+    veryPositive: 0,
+    positive: 0,
+    neutral: 0,
+    negative: 0,
+    veryNegative: 0,
+  });
+
+  useEffect(() => {
+    const counts = videos.reduce(
+      (acc, video) => {
+        switch (video.sentiment) {
+          case 'Very Positive':
+            acc.veryPositive += 1;
+            break;
+          case 'Positive':
+            acc.positive += 1;
+            break;
+          case 'Neutral':
+            acc.neutral += 1;
+            break;
+          case 'Negative':
+            acc.negative += 1;
+            break;
+          case 'Very Negative':
+            acc.veryNegative += 1;
+            break;
+          default:
+            break;
+        }
+        return acc;
+      },
+      {
+        veryPositive: 0,
+        positive: 0,
+        neutral: 0,
+        negative: 0,
+        veryNegative: 0,
+      }
+    );
+
+    setSentimentCounts(counts);
+  }, [videos]);
+
   return (
     <ScrollView>
       <View style={styles.dropdownContainer}>
@@ -330,6 +374,14 @@ const DataAnalysisTextSummary = () => {
           {videoSet?.name} - Video set summary
         </Text>
         <Text style={styles.output}>{videoSetSummary}</Text>
+        <View style={styles.sentimentCountsContainer}>
+          <Text style={styles.sentimentCountsTitle}>Emotional distribution</Text>
+          <Text style={styles.sentimentCount}>Very positive: {sentimentCounts.veryPositive}</Text>
+          <Text style={styles.sentimentCount}>Positive: {sentimentCounts.positive}</Text>
+          <Text style={styles.sentimentCount}>Neutral: {sentimentCounts.neutral}</Text>
+          <Text style={styles.sentimentCount}>Negative: {sentimentCounts.negative}</Text>
+          <Text style={styles.sentimentCount}>Very negative: {sentimentCounts.veryNegative}</Text>
+        </View>
       </View>
       {videos.map((video) => (
         <View key={video._id} style={styles.container}>
@@ -486,6 +538,24 @@ const styles = StyleSheet.create({
   dropdownItem: {
     textAlign: 'center',
     color: 'black',
+  },
+  sentimentCountsContainer: {
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  sentimentCountsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  sentimentCount: {
+    fontSize: 18,
+    color: 'black',
+    marginTop: 5,
   },
 });
 
