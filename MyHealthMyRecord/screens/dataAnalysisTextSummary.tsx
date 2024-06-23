@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   View,
+  TouchableOpacity,
 } from 'react-native';
 import {useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
@@ -17,7 +18,7 @@ import {
   sendToChatGPT,
   sendVideoSetToChatGPT,
 } from '../components/chatgpt_api';
-import {Button, Icon, Dialog} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 import { Dropdown } from 'react-native-element-dropdown';
 
 const neutral = require('../assets/images/emojis/neutral.png');
@@ -296,6 +297,15 @@ const DataAnalysisTextSummary = () => {
     }
   };
 
+  const [showTranscript, setShowTranscript] = useState({});
+
+  const toggleTranscript = (videoId) => {
+    setShowTranscript(prevState => ({
+      ...prevState,
+      [videoId]: !prevState[videoId]
+    }));
+  };
+
   useEffect(() => {
     console.log('Video Set:', videoSet);
     console.log('Videos:', videos);
@@ -370,22 +380,30 @@ const DataAnalysisTextSummary = () => {
               </>
             ) : (
               <>
-                <View style={{ flexDirection: 'row' }}>
-                  <View style={{ flex: 1, justifyContent: 'flex-start' }}>
-                    <Text style={styles.transcript}>
-                      <Text style={styles.boldText}>Video transcript: </Text>
-                      {video.transcript[0]}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity onPress={() => toggleTranscript(video._id)}>
+                    <Text style={styles.transcriptLabel}>
+                      Video transcript: 
                     </Text>
-                  </View>
-
-                  <View style={{ alignSelf: 'flex-end' }}>
-                    <Button
-                      radius={50}
-                      title="Edit transcript"
-                      onPress={() => handleEdit(video)}
-                      color={Styles.MHMRBlue}
-                    />
-                  </View>
+                  </TouchableOpacity>
+                  <Icon
+                    name={showTranscript[video._id] ? 'arrow-drop-up' : 'arrow-drop-down'}
+                    size={30}
+                    onPress={() => toggleTranscript(video._id)}
+                  />
+                </View>
+                {showTranscript[video._id] && (
+                  <Text style={styles.transcript}>
+                    {video.transcript[0]}
+                  </Text>
+                )}
+                <View style={{ alignSelf: 'flex-end' }}>
+                  <Button
+                    radius={50}
+                    title="Edit transcript"
+                    onPress={() => handleEdit(video)}
+                    color={Styles.MHMRBlue}
+                  />
                 </View>
               </>
             )}
@@ -441,6 +459,12 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  transcriptLabel: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'black',
+    marginBottom: 10,
   },
   transcript: {
     fontSize: 20,
