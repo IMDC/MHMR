@@ -361,7 +361,7 @@ const DataAnalysisTextSummary = () => {
                     <Text style={styles.transcriptLabel}>Video transcript:</Text>
                   </TouchableOpacity>
                   <Icon
-                    name={showTranscript[video._id] ? 'arrow-drop-up' : 'arrow-drop-down'}
+                    name={showTranscript[video._id] ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                     size={30}
                     onPress={() => toggleTranscript(video._id)}
                   />
