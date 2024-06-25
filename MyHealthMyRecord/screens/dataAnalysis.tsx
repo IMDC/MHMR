@@ -101,6 +101,7 @@ const DataAnalysis = () => {
   const [routeFreqMaps, setRouteFreqMaps] = useState<any>([]);
 
   const [barData, setBarData] = useState<any>([]);
+  const [sentimentBarData, setSentimentBarData] = useState<any>([]);
 
   function addFreqMapWithInfo(freqMapWithInfo: any) {
     let temp = freqMapsWithInfo;
@@ -142,6 +143,7 @@ const DataAnalysis = () => {
     if (videosSelected.length > 0) {
       getFreqMaps();
       combineFreqMaps();
+      processSentimentData();
     }
   }, [currentVideos]);
 
@@ -341,6 +343,40 @@ const DataAnalysis = () => {
   /* ------------------------------ DROP DOWN MENU ------------------------------ */
 
   /* ======================================================================= */
+
+
+  function processSentimentData() {
+    const sentimentCounts = {
+      'Very Positive': 0,
+      'Positive': 0,
+      'Neutral': 0,
+      'Negative': 0,
+      'Very Negative': 0,
+    };
+
+
+    const sentimentTimeline = videosSelected.map(video => {
+      sentimentCounts[video.sentiment]++;
+      return {
+        datetime: video.datetimeRecorded,
+        sentiment: video.sentiment,
+      };
+    });
+
+
+    const formattedData = Object.keys(sentimentCounts).map((sentiment, index) => {
+      return {
+        label: sentiment,
+        value: sentimentCounts[sentiment],
+        svg: { fill: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722', '#F44336'][index] },
+      };
+    });
+
+
+    setSentimentBarData(formattedData);
+  }
+
+
   return (
     <View style={{flexDirection: 'column', flex: 1}}>
       <View
@@ -372,6 +408,7 @@ const DataAnalysis = () => {
             navigation.navigate('Bar Graph', {
               data: barData,
               freqMaps: routeFreqMaps,
+              sentimentData: sentimentBarData,
             })
           }
           titleStyle={{fontSize: 40}}
