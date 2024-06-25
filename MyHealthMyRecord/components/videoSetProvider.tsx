@@ -45,16 +45,21 @@ export const VideoSetProvider = ({children}) => {
 
   const handleNewSet = (videoIDs, videoSets) => {
     setVideoSetVideoIDs(videoIDs);
+    console.log('videoSetValue', videoSetValue);
+    
     const selectedSet = videoSets.find(
       set => set._id.toString() === videoSetValue,
     );
-    if (selectedSet) {
-      setCurrentVideoSet(selectedSet);
-      setCurrentSetID(selectedSet._id);
-    } else {
-      setCurrentVideoSet([]);
-      setCurrentSetID([]);
-    }
+    setCurrentVideoSet(selectedSet);
+    console.log('currentSetID', currentSetID);
+    setCurrentSetID(selectedSet._id);
+    // if (selectedSet) {
+    //   setCurrentVideoSet(selectedSet);
+    //   setCurrentSetID(selectedSet._id);
+    // } else {
+    //   setCurrentVideoSet([]);
+    //   setCurrentSetID([]);
+    // }
     console.log(
       '-----------------------------------------------New selectedSet:',
       selectedSet,

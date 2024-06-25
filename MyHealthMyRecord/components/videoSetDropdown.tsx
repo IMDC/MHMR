@@ -33,7 +33,19 @@ const VideoSetDropdown = ({
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
+   const [selectedVideoSet, setSelectedVideoSet] = useState();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+   const handleVideoSelectionChange = (selectedId: string) => {
+     if (!selectedId) {
+       setSelectedVideoSet(undefined);
+       return;
+     }
+     const selectedSet = videoSets.find(
+       set => set._id.toString() === selectedId,
+     );
+     setSelectedVideoSet(selectedSet);
+   };
 
   useEffect(() => {
     const formattedDropdown = videoSets.map(set => ({
@@ -157,6 +169,8 @@ const VideoSetDropdown = ({
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
                   handleNewSet(videoSetVideoIDs, videoSets);
+                  console.log('!!!!!!!!!!!!!!!!!!!!!!!videoSetValue', videoSetValue);
+                  handleVideoSelectionChange(currentSetID);
                   // sendVideoSetToChatGPT(
                   //   realm,
                   //   videoSetVideoIDs,
@@ -196,7 +210,7 @@ const VideoSetDropdown = ({
                 title="Manage video set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
-                    videoSet: currentVideoSet,
+                    videoSet: selectedVideoSet,
                   })
                 }
                 color={Styles.MHMRBlue}
