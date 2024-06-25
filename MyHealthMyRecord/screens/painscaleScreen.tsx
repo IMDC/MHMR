@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {Button} from '@rneui/themed';
+import {Button, Icon, Slider} from '@rneui/themed';
 import {RadioButton} from 'react-native-paper';
 import {useObject, useRealm} from '../models/VideoData';
 
@@ -22,25 +22,18 @@ const Painscale = () => {
   const video = useObject('VideoData', id);
 
   const parsedPainscaleWords = video.painScale.map(pain => JSON.parse(pain));
-  const parsedNumericScale = video.numericScale.map(numeric => JSON.parse(numeric));
+
   const [category, setCategory] = useState(parsedPainscaleWords);
   const [mcGillIsVisible, setMcGillIsVisible] = useState(false);
 
-  const numericPainRatingScale = [
-    {id: 1, name: 'Pain', severity_level: 'none'},
-  ];
-
-  const [numericScale, setNumericScale] = useState(parsedNumericScale);
+  const [value, setValue] = useState(video.numericScale);
+  // const [numericScale, setNumericScale] = video.numericScale;
 
   const onPress = (index, severity_level, data, setData) => {
     const newData = [...data];
     newData[index].severity_level = severity_level;
     setData(newData);
     setRefreshFlatList(!refreshFlatlist);
-    if (data === numericScale) {
-      saveNumericScale(newData);
-      console.log(newData);
-    }
     if (data === category) {
       savePainScale(newData);
       console.log(newData);
@@ -48,10 +41,9 @@ const Painscale = () => {
   };
 
   const saveNumericScale = data => {
-    const numericScales = data.map(item => JSON.stringify(item));
     if (video) {
       realm.write(() => {
-        video.numericScale = numericScales;
+        video.numericScale = data;
       }
     );
   }
@@ -114,10 +106,54 @@ const Painscale = () => {
       <View style={{alignSelf: 'center', paddingTop: 30, flex: 1}}>
         <Text style={{fontSize: 36, color: 'black'}}>
           Numeric pain rating scale
-
         </Text>
       </View>
-      <View style={{paddingBottom: 30}}>
+      <View style={[styles.contentView]}>
+        <Slider
+          value={value}
+          onValueChange={setValue}
+          maximumValue={3}
+          minimumValue={0}
+          step={1}
+          allowTouchTrack
+          trackStyle={{ height: 5, backgroundColor: 'transparent' }}
+          thumbStyle={{ height: 20, width: 20, backgroundColor: 'transparent' }}
+          thumbProps={{
+            children: (
+              <Icon
+                name="circle"
+                type="font-awesome"
+                size={20}
+                reverse
+                containerStyle={{ bottom: 20, right: 20 }}
+              // color={color()}
+              />
+            ),
+          }}
+          onSlidingComplete={value => {
+            console.log(value);
+            saveNumericScale(value);
+          }}
+        />
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={{fontSize: 20, color: 'black'}}>0</Text>
+          <Text style={{fontSize: 20, color: 'black'}}>1</Text>
+          <Text style={{fontSize: 20, color: 'black'}}>2</Text>
+          <Text style={{fontSize: 20, color: 'black'}}>3</Text>
+        </View>
+        <View>
+          <Text style={{fontSize: 20, color: 'black', alignSelf: 'center'}}>
+            {value === 0
+              ? 'No pain'
+              : value === 1
+              ? 'Mild pain'
+              : value === 2
+              ? 'Moderate pain'
+              : 'Severe pain'}
+          </Text>
+        </View>
+      </View>
+      {/* <View style={{paddingBottom: 30}}>
         <FlatList
           style={styles.container}
           extraData={refreshFlatlist}
@@ -127,7 +163,7 @@ const Painscale = () => {
             renderItem({...props, data: numericScale, setData: setNumericScale})
           }
         />
-      </View>
+      </View> */}
       <View style={{alignSelf: 'center'}}>
         <Text style={{fontSize: 36, color: 'black'}}>
           McGill pain questionnaire
@@ -174,7 +210,10 @@ const Painscale = () => {
           marginTop: 50,
           alignSelf: 'center',
         }}
-        onPress={() => navigation.goBack()}
+        onPress={() => {
+          navigation.goBack();
+          // saveNumericScale(value);
+         }}
         title="Save"
         color="#1C3EAA"
       />
@@ -195,11 +234,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     alignSelf: 'flex-start',
   },
+  contentView: {
+    padding: 20,
+    paddingHorizontal: 100,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'stretch',
+  },
   singleRadioButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 10,
   },
 });
+
+
 
 export default Painscale;
