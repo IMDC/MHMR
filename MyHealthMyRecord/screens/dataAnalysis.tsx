@@ -84,10 +84,10 @@ const DataAnalysis = () => {
       });
       setVideos(selectedSetVideos);
     } else {
-      setVideos(videosByIsSelected);
+      setVideos(videosByIsSelected.filter(video => video !== undefined));
     }
     console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
-  }, [selectedVideoSet, videoSetVideoIDs]);
+  }, [selectedVideoSet, videoSetVideoIDs, videoData]); 
 
   // get videos selected
   const videosSelected = currentVideos;
@@ -121,10 +121,14 @@ const DataAnalysis = () => {
   // loop through, get and save transcript to array with datetime and video id
   function getFreqMaps() {
     for (let i = 0; i < videosSelected.length; i++) {
+      if (!videosSelected[i]) {
+        console.error(`Video at index ${i} is undefined.`);
+        continue;
+      }
       let transcript = videosSelected[i].transcript;
       let datetime = videosSelected[i].datetimeRecorded;
       console.log('transcript:', transcript);
-      if (transcript.length > 0) {
+      if (transcript && transcript.length > 0) {
         let temp = getFreq(transcript[0], datetime);
         let freqWithInfo = {
           videoID: videosSelected[i]._id,
@@ -132,7 +136,7 @@ const DataAnalysis = () => {
           map: temp,
         };
         addFreqMapWithInfo(freqWithInfo);
-        //addFreqMap(temp);
+        // addFreqMap(temp);
       } else {
         console.log('empty transcript');
       }
@@ -354,16 +358,19 @@ const DataAnalysis = () => {
       'Very Negative': 0,
     };
 
-
     const sentimentTimeline = videosSelected.map(video => {
-      sentimentCounts[video.sentiment]++;
-      return {
-        datetime: video.datetimeRecorded,
-        sentiment: video.sentiment,
-      };
-    });
-
-
+      if (video && video.sentiment) {
+        sentimentCounts[video.sentiment]++;
+        return {
+          datetime: video.datetimeRecorded,
+          sentiment: video.sentiment,
+        };
+      } else {
+        console.error(`Video sentiment is undefined for video: ${video}`);
+        return null;
+      }
+    }).filter(item => item !== null);
+  
     const formattedData = Object.keys(sentimentCounts).map((sentiment, index) => {
       return {
         label: sentiment,
