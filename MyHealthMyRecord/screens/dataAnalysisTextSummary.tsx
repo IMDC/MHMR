@@ -66,6 +66,10 @@ const DataAnalysisTextSummary = () => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
         videos.map(async video => {
+          if (!video) {
+            return null;
+          }
+
           const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
           const fileExists = await RNFS.exists(filePath);
 
@@ -109,7 +113,7 @@ const DataAnalysisTextSummary = () => {
         })
       );
 
-      setVideos(videoTranscripts);
+      setVideos(videoTranscripts.filter(Boolean));
       setTranscriptsLoaded(true);
     };
     if (videos.length && !transcriptsLoaded) {
@@ -149,6 +153,9 @@ const DataAnalysisTextSummary = () => {
 
         const updatedVideos = await Promise.all(
           videos.map(async (video) => {
+            if (!video) {
+              return null;
+            }
             const updatedTranscript = video.transcript[0] || '';
             const keywords = video.keywords
               .map((key) => JSON.parse(key))
@@ -176,7 +183,7 @@ const DataAnalysisTextSummary = () => {
           })
         );
 
-        setVideos(updatedVideos);
+        setVideos(updatedVideos.filter(Boolean));
       }
     };
 
@@ -310,6 +317,9 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const counts = videos.reduce(
       (acc, video) => {
+        if (!video) {
+          return acc;
+        }
         switch (video.sentiment) {
           case 'Very Positive':
             acc.veryPositive += 1;
@@ -383,68 +393,73 @@ const DataAnalysisTextSummary = () => {
           <Text style={styles.sentimentCount}>Very negative: {sentimentCounts.veryNegative}</Text>
         </View>
       </View>
-      {videos.map((video) => (
-        <View key={video._id} style={styles.container}>
-          <View style={{ padding: 10 }}>
-            <Text style={styles.title}>{video.title}</Text>
-            {editingID === video._id ? (
-              <>
-                <View style={{ flexDirection: 'row' }}>
-                  <TextInput
-                    style={styles.textInput}
-                    onChangeText={setDraftTranscript}
-                    value={draftTranscript}
-                    multiline
-                  />
-                  <View style={styles.buttonContainer}>
-                    <View style={styles.buttonWrapper}>
-                      <Button radius={20} title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
-                    </View>
-                    <View style={styles.buttonWrapper}>
-                      <Button radius={20} title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
+      {videos.map((video) => {
+        if (!video) {
+          return null;
+        }
+        return (
+          <View key={video._id} style={styles.container}>
+            <View style={{ padding: 10 }}>
+              <Text style={styles.title}>{video.title}</Text>
+              {editingID === video._id ? (
+                <>
+                  <View style={{ flexDirection: 'row' }}>
+                    <TextInput
+                      style={styles.textInput}
+                      onChangeText={setDraftTranscript}
+                      value={draftTranscript}
+                      multiline
+                    />
+                    <View style={styles.buttonContainer}>
+                      <View style={styles.buttonWrapper}>
+                        <Button radius={20} title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
+                      </View>
+                      <View style={styles.buttonWrapper}>
+                        <Button radius={20} title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
+                      </View>
                     </View>
                   </View>
-                </View>
-              </>
-            ) : (
-              <>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <TouchableOpacity onPress={() => toggleTranscript(video._id)}>
-                    <Text style={styles.transcriptLabel}>Video transcript:</Text>
-                  </TouchableOpacity>
-                  <Icon
-                    name={showTranscript[video._id] ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
-                    size={30}
-                    onPress={() => toggleTranscript(video._id)}
-                  />
-                </View>
-                {showTranscript[video._id] && (
-                  <>
-                    <Text style={styles.transcript}>{video.transcript[0]}</Text>
-                    <View style={{ alignSelf: 'flex-end' }}>
-                      <Button
-                        radius={50}
-                        title="Edit transcript"
-                        onPress={() => handleEdit(video)}
-                        color={Styles.MHMRBlue}
-                      />
-                    </View>
-                  </>
-                )}
-              </>
-            )}
-            <Text style={styles.output}>
-              <Text style={styles.boldText}>Output: </Text>
-              {video.transcriptFileContent}
-            </Text>
-            <Text style={styles.sentiment}>
-              <Text style={styles.boldText}>Overall feeling: </Text>
-              {video.sentiment}{' '}
-              <Image source={getEmojiForSentiment(video.sentiment)} style={styles.emoji} />
-            </Text>
+                </>
+              ) : (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => toggleTranscript(video._id)}>
+                      <Text style={styles.transcriptLabel}>Video transcript:</Text>
+                    </TouchableOpacity>
+                    <Icon
+                      name={showTranscript[video._id] ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                      size={30}
+                      onPress={() => toggleTranscript(video._id)}
+                    />
+                  </View>
+                  {showTranscript[video._id] && (
+                    <>
+                      <Text style={styles.transcript}>{video.transcript[0]}</Text>
+                      <View style={{ alignSelf: 'flex-end' }}>
+                        <Button
+                          radius={50}
+                          title="Edit transcript"
+                          onPress={() => handleEdit(video)}
+                          color={Styles.MHMRBlue}
+                        />
+                      </View>
+                    </>
+                  )}
+                </>
+              )}
+              <Text style={styles.output}>
+                <Text style={styles.boldText}>Output: </Text>
+                {video.transcriptFileContent}
+              </Text>
+              <Text style={styles.sentiment}>
+                <Text style={styles.boldText}>Overall feeling: </Text>
+                {video.sentiment}{' '}
+                <Image source={getEmojiForSentiment(video.sentiment)} style={styles.emoji} />
+              </Text>
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </ScrollView>
   );
 };

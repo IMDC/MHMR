@@ -87,10 +87,10 @@ const DataAnalysis = () => {
       setVideos(videosByIsSelected.filter(video => video !== undefined));
     }
     console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
-  }, [selectedVideoSet, videoSetVideoIDs, videoData]); 
+  }, [selectedVideoSet, videoSetVideoIDs, videoData]);
 
-  // get videos selected
-  const videosSelected = currentVideos;
+  // Filter out any undefined or null videos
+  const videosSelected = currentVideos.filter(video => video !== undefined && video !== null);
   //console.log(videosSelected);
 
   const videosSetsByDate = videoSets.sorted('datetime', false);
@@ -176,7 +176,7 @@ const DataAnalysis = () => {
         word += transcript[i];
       }
     }
-         
+
     if (!M.has(word)) {
       M.set(word, 1);
     } else {
@@ -358,18 +358,15 @@ const DataAnalysis = () => {
       'Very Negative': 0,
     };
 
-    const sentimentTimeline = videosSelected.map(video => {
-      if (video && video.sentiment) {
+    const sentimentTimeline = videosSelected
+      .filter(video => video && video.sentiment)  // Filter out videos with undefined sentiment
+      .map(video => {
         sentimentCounts[video.sentiment]++;
         return {
           datetime: video.datetimeRecorded,
           sentiment: video.sentiment,
         };
-      } else {
-        console.error(`Video sentiment is undefined for video: ${video}`);
-        return null;
-      }
-    }).filter(item => item !== null);
+      });
   
     const formattedData = Object.keys(sentimentCounts).map((sentiment, index) => {
       return {
