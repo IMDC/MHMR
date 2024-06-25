@@ -155,11 +155,11 @@ const VideoSetDropdown = ({
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
                   handleNewSet(videoSetVideoIDs, videoSets);
-                  sendVideoSetToChatGPT(
-                    realm,
-                    videoSetVideoIDs,
-                    currentVideoSet,
-                  );
+                  // sendVideoSetToChatGPT(
+                  //   realm,
+                  //   videoSetVideoIDs,
+                  //   currentVideoSet,
+                  // );
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}

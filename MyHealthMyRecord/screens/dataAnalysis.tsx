@@ -219,16 +219,22 @@ const DataAnalysis = () => {
     return combinedMap;
   }
 
-  /**
-   * Combine all of the freqMaps from each video
-   */
   function combineFreqMaps() {
     let temp = accessFreqMaps();
-    //console.log(freqMaps);
+    console.log('temp:', temp); // Add this log to check the contents of temp
+
+    if (temp.length === 0) {
+      console.error('No frequency maps available to combine.');
+      return;
+    }
+
     let result = temp[0];
+    console.log('Initial result:', result); // Log the initial result
+
     for (let i = 1; i < temp.length; i++) {
       result = combineMaps(result, temp[i]);
     }
+
     // sort by largest value to smallest value
     result = new Map([...result.entries()].sort((a, b) => b[1] - a[1]));
 
@@ -266,15 +272,12 @@ const DataAnalysis = () => {
 
     // barData formatting
     for (let [key, value] of result) {
-      //console.log(`${key} - ${value}`);
       bar.push({text: `${key}`, value: parseInt(`${value}`)});
       if (data.length <= bar.length) {
-        // data.push({label: `${key}`, value: `${counter}`});
         setData(data => [...data, {label: `${key}`, value: `${counter}`}]);
       }
     }
     for (let [key, value] of mapNoStop) {
-      //console.log(`${key} - ${value}`);
       barNoStop.push({text: `${key}`, value: parseInt(`${value}`)});
       if (noStopWords.length <= barNoStop.length) {
         setNoStopWords(noStopWords => [
@@ -284,11 +287,9 @@ const DataAnalysis = () => {
       }
     }
     for (let [key, value] of mapNoMed) {
-      //console.log(`${key} - ${value}`);
       barNoMed.push({text: `${key}`, value: parseInt(`${value}`)});
     }
     for (let [key, value] of mapNone) {
-      //console.log(`${key} - ${value}`);
       barNone.push({text: `${key}`, value: parseInt(`${value}`)});
     }
     console.log(result);
