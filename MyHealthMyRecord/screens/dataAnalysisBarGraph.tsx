@@ -289,17 +289,36 @@ const DataAnalysisBarGraph = () => {
             <Text style={{ padding: 20, fontSize: 20, color: 'black' }}>
               Overall Feelings Distribution
             </Text>
-            <BarChart
-              style={{ height: 400, width: Dimensions.get('window').width - 40 }}
-              data={sentimentData}
-              yAccessor={({ item }) => item.value}
-              svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-              contentInset={{ top: 10, bottom: 10 }}
-              spacing={0.2}
-              gridMin={0}
-              numberOfTicks={Math.max(...sentimentData.map(d => d.value))}>
-              <Grid direction={Grid.Direction.HORIZONTAL} />
-            </BarChart>
+            <View style={{ flexDirection: 'row', flex: 1 }}>
+              <View style={{ width: 50, justifyContent: 'center' }}>
+                <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18, color: 'black' }}>
+                  Count
+                </Text>
+              </View>
+              <YAxis
+                data={sentimentData}
+                yAccessor={({ index }) => sentimentData[index].value}
+                contentInset={{ top: 10, bottom: 10 }}
+                spacing={0.2}
+                formatLabel={value => value}
+                min={0}
+                max={Math.max(...sentimentData.map(d => d.value))}
+                numberOfTicks={Math.max(...sentimentData.map(d => d.value))}
+                style={{ height: 400 }}
+                svg={{ fontSize: 20 }}
+              />
+              <BarChart
+                style={{ height: 400, width: Dimensions.get('window').width - 90 }}
+                data={sentimentData}
+                yAccessor={({ item }) => item.value}
+                svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
+                contentInset={{ top: 10, bottom: 10 }}
+                spacing={0.2}
+                gridMin={0}
+                numberOfTicks={Math.max(...sentimentData.map(d => d.value))}>
+                <Grid direction={Grid.Direction.HORIZONTAL} />
+              </BarChart>
+            </View>
             <XAxis
               style={{ marginHorizontal: -10 }}
               data={sentimentData}
