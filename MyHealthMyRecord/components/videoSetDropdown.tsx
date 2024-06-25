@@ -28,6 +28,8 @@ const VideoSetDropdown = ({
     setVideoSetValue,
     setCurrentVideoSet,
     currentVideoSet,
+    setCurrentSetID,
+    currentSetID,
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
@@ -190,11 +192,11 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {manageSetBtn && (
               <Button
-                disabled={videoSetValue == null || videoSetValue === ''}
+                disabled={videoSetValue == ''}
                 title="Manage video set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
-                    videoSet: videoSets[videoSetValue],
+                    videoSet: currentVideoSet,
                   })
                 }
                 color={Styles.MHMRBlue}

@@ -1,4 +1,9 @@
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
 import {VideoData, useRealm, useObject, useQuery} from '../models/VideoData';
@@ -40,6 +45,7 @@ const DataAnalysis = () => {
   } = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
+  const isFocused = useIsFocused();
   const setLineGraphData = useSetLineGraphData();
   const [wordLabel, setWordLabel] = useState('');
   const [videos, setVideos] = useState<VideoData[]>([]);
@@ -71,6 +77,13 @@ const DataAnalysis = () => {
 
   //console.log(videosByDate);
   console.log('**********************************************************');
+
+  useEffect(() => {
+    if (isFocused) {
+      getFreqMaps();
+      combineFreqMaps();
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     if (selectedVideoSet && selectedVideoSet.videoIDs && videoData) {
