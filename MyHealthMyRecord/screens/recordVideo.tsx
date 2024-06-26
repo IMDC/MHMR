@@ -3,7 +3,7 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { NativeEventEmitter, PermissionsAndroid, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import { Icon, Button } from '@rneui/themed';
 import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
@@ -12,6 +12,7 @@ import Realm from 'realm';
 import { createRealmContext } from '@realm/react';
 import { getAuth, getTranscript } from '../components/stt_api';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import Transcription from 'react-native-transcription';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -28,6 +29,7 @@ const RecordVideo = () => {
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
+  const [audioTranscript, setAudioTranscript] = useState('');
 
   // ref for timer interval
   const timerRef: any = useRef(null);
@@ -247,6 +249,23 @@ const RecordVideo = () => {
               } else {
                 console.error('Conversion failed');
               }
+
+          const TranscriptEvents = new NativeEventEmitter(Transcription);
+
+        Transcription.transcribeWav(
+          `${audioFolderPath}/${audioFileName}`,
+          `${MHMRfolderPath}/DeepSpeech/deepspeech-0.9.3-models.tflite`,
+          `${MHMRfolderPath}/DeepSpeech/deepspeech-0.9.3-models.scorer`,
+        );
+
+          TranscriptEvents.addListener('onWavTranscribed', res => {
+            console.log('onWavTranscribed event', res);
+            var transcription = '';
+            for (const word in res.words) {
+              transcription = transcription + res.words[word] + ' ';
+            }
+            setAudioTranscript(transcription);
+          });
 
           Alert.alert('Your recording has been saved');
           navigation.navigate('Home');

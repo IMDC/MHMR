@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Text } from 'react-native-paper';
+import { View, Text } from 'react-native';
 
 function Help() {
   return (
-    <Text>This is the help page</Text>
+    <View>
+      <Text>This is the help page</Text>
+    </View>
   );
 }
 
