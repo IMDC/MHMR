@@ -52,7 +52,7 @@ export const VideoSetProvider = ({children}) => {
     );
     setCurrentVideoSet(selectedSet);
     console.log('currentSetID', currentSetID);
-    setCurrentSetID(selectedSet._id);
+    setCurrentSetID(selectedSet?._id);
     // if (selectedSet) {
     //   setCurrentVideoSet(selectedSet);
     //   setCurrentSetID(selectedSet._id);
