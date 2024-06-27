@@ -215,6 +215,7 @@ function Dashboard() {
           locations,
           realm,
           video._id.toHexString(),
+          'bullet'
         );
         setInputText(outputText);
         console.log(

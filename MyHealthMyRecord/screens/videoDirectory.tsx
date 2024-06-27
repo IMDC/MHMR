@@ -183,6 +183,7 @@ const ViewRecordings = ({selected, setSelected}) => {
           locations,
           realm,
           video._id.toHexString(),
+          'bullet'
         );
         setInputText(outputText); // State update here
         console.log(

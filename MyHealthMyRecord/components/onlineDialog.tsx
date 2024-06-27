@@ -97,6 +97,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
           locations,
           realm,
           video._id.toHexString(),
+          'bullet'
         );
         setInputText(outputText); // State update here
         console.log(
