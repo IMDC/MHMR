@@ -143,6 +143,7 @@ const DataAnalysisBarGraph = () => {
                         textAlign: 'center',
                         fontSize: 18,
                         color: 'black',
+                        width: 100,
                       }}>
                       Count
                     </Text>
@@ -321,6 +322,7 @@ const DataAnalysisBarGraph = () => {
                     textAlign: 'center',
                     fontSize: 18,
                     color: 'black',
+                    width: 100,
                   }}>
                   Count
                 </Text>
