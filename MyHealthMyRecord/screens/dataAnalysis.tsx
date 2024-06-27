@@ -82,6 +82,7 @@ const DataAnalysis = () => {
     if (isFocused) {
       getFreqMaps();
       combineFreqMaps();
+      processSentimentData();
     }
   }, [isFocused]);
 

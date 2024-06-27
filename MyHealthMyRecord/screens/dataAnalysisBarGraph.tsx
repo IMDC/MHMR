@@ -18,7 +18,7 @@ import * as scale from 'd3-scale';
 import {Rect} from 'react-native-svg';
 import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
-import { useSetLineGraphData } from '../components/lineGraphData';
+import {useSetLineGraphData} from '../components/lineGraphData';
 
 const setLineGraphData = useSetLineGraphData();
 
@@ -32,7 +32,7 @@ const DataAnalysisBarGraph = () => {
     ...freqMap,
     videoID: freqMap.videoID.toHexString(),
   }));
-  
+
   const [freqMaps, setFreqMaps] = useState(transformedFreqMaps);
   const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(
     barData.dataNoStop,
@@ -83,7 +83,7 @@ const DataAnalysisBarGraph = () => {
    * Labels on each bar with the frequency value for the vertical view
    */
   const CUT_OFF_VER = wordFreqBarGraphData[0]?.value - 1;
-  const LabelsVertical = ({ x, y, bandwidth, data }) =>
+  const LabelsVertical = ({x, y, bandwidth, data}) =>
     wordFreqBarGraphData.map((value, index) => (
       <svg.Text
         key={index}
@@ -118,53 +118,64 @@ const DataAnalysisBarGraph = () => {
   }, [isEnabledMedWords]);
 
   const scrollLeft = () => {
-    scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+    scrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
 
   const scrollRight = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    scrollViewRef.current?.scrollToEnd({animated: true});
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ height: '100%' }}>
-          <View id="bargraph" style={{ flex: 1 }}>
+    <SafeAreaView style={{flex: 1}}>
+      <ScrollView contentContainerStyle={{flexGrow: 1}}>
+        <View style={{height: '100%'}}>
+          <View id="bargraph" style={{flex: 1}}>
             {barGraphVertical == true ? (
-              <View id="bargraph-vertical" style={{ flex: 1 }}>
-                <Text style={{ padding: 20, fontSize: 20, color: 'black' }}>
+              <View id="bargraph-vertical" style={{flex: 1}}>
+                <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
                   Count of words mentioned in selected video
                 </Text>
-                <View style={{ flexDirection: 'row', flex: 1 }}>
-                  <View style={{ width: 50, justifyContent: 'center' }}>
-                    <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18, color: 'black' }}>
+                <View style={{flexDirection: 'row', flex: 1}}>
+                  <View style={{width: 50, justifyContent: 'center'}}>
+                    <Text
+                      style={{
+                        transform: [{rotate: '270deg'}],
+                        textAlign: 'center',
+                        fontSize: 18,
+                        color: 'black',
+                      }}>
                       Count
                     </Text>
                   </View>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
+                  <View style={{flexDirection: 'row', flex: 1}}>
                     <YAxis
                       data={yTest}
-                      yAccessor={({ index }) => index}
-                      contentInset={{ top: 10, bottom: 10 }}
+                      yAccessor={({index}) => index}
+                      contentInset={{top: 10, bottom: 10}}
                       spacing={0.2}
                       formatLabel={value => value}
                       min={0}
                       max={wordFreqBarGraphData[0]?.value}
                       numberOfTicks={wordFreqBarGraphData[0]?.value}
-                      style={{ height: 600 }}
-                      svg={{ fontSize: 20 }}
+                      style={{height: 600}}
+                      svg={{fontSize: 20}}
                     />
-                    <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
+                    <TouchableOpacity
+                      onPress={scrollLeft}
+                      style={{justifyContent: 'center'}}>
                       <Icon name="arrow-left" size={60} color="black" />
                     </TouchableOpacity>
                     <ScrollView horizontal={true} ref={scrollViewRef}>
                       <View>
                         <BarChart
-                          style={{ height: 600, width: wordFreqBarGraphData.length * 50 }}
+                          style={{
+                            height: 600,
+                            width: wordFreqBarGraphData.length * 50,
+                          }}
                           data={wordFreq}
-                          yAccessor={({ item }) => item.y.value}
-                          svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-                          contentInset={{ top: 10, bottom: 10 }}
+                          yAccessor={({item}) => item.y.value}
+                          svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                          contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
                           numberOfTicks={wordFreqBarGraphData[0]?.value}>
@@ -172,7 +183,12 @@ const DataAnalysisBarGraph = () => {
                           <LabelsVertical />
                         </BarChart>
                         <XAxis
-                          style={{ height: 60, marginTop: 0, marginBottom: 20, width: wordFreqBarGraphData.length * 50 }}
+                          style={{
+                            height: 60,
+                            marginTop: 0,
+                            marginBottom: 20,
+                            width: wordFreqBarGraphData.length * 50,
+                          }}
                           data={wordFreqBarGraphData}
                           scale={scale.scaleBand}
                           svg={{
@@ -182,7 +198,7 @@ const DataAnalysisBarGraph = () => {
                             originY: 20,
                             translateY: 15,
                             translateX: 0,
-                            y: 5
+                            y: 5,
                           }}
                           formatLabel={(value: any, index: string | number) =>
                             wordFreqBarGraphData[index].text
@@ -190,74 +206,77 @@ const DataAnalysisBarGraph = () => {
                         />
                       </View>
                     </ScrollView>
-                    <TouchableOpacity onPress={scrollRight} style={{ justifyContent: 'center' }}>
+                    <TouchableOpacity
+                      onPress={scrollRight}
+                      style={{justifyContent: 'center'}}>
                       <Icon name="arrow-right" size={60} color="black" />
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Text style={{ textAlign: 'center', fontSize: 20, color: 'black' }}>Word</Text>
+                <Text
+                  style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
+                  Word
+                </Text>
               </View>
-            ) : (
-              // <View id="bargraph-horizontal">
-              //   <Text>Count of words mentioned in selected video</Text>
-              //   <View
-              //     style={{
-              //       flexDirection: 'row',
-              //       height: 800,
-              //       paddingVertical: 16,
-              //     }}>
-              //     <YAxis
-              //       data={wordFreqBarGraphData}
-              //       yAccessor={({index}) => index}
-              //       scale={scale.scaleBand}
-              //       contentInset={{top: 10, bottom: 10}}
-              //       spacing={0.2}
-              //       formatLabel={(value, index) =>
-              //         wordFreqBarGraphData[index].text
-              //       }
-              //       svg={{fontSize: 20, margin: 10}}
-              //       min={0}
-              //       max={wordFreqBarGraphData[0]?.value}
-              //     />
-              //     <ScrollView horizontal={true}>
-              //       <View style={{flexDirection: 'row'}}>
-              //         <BarChart
-              //           style={{height: 400, width: wordFreqBarGraphData.length * 50}}
-              //           data={wordFreq}
-              //           horizontal={true}
-              //           yAccessor={({item}) => item.y.value}
-              //           svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
-              //           contentInset={{top: 10, bottom: 10}}
-              //           spacing={0.2}
-              //           gridMin={0}>
-              //           <Grid direction={Grid.Direction.VERTICAL} />
-              //           <LabelsHorizontal />
-              //         </BarChart>
-              //       </View>
-              //     </ScrollView>
-              //   </View>
-              //   <ScrollView horizontal={true}>
-              //     <XAxis
-              //       data={yTest}
-              //       yAccessor={({index}) => index}
-              //       scale={scale.scaleBand}
-              //       contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
-              //       spacing={0.2}
-              //       formatLabel={value => value}
-              //       style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
-              //     />
-              //   </ScrollView>
-              //   <Text style={{textAlign: 'center'}}>Count</Text>
-              // </View>
-              null
-            )}
-            <View style={{ height: '15%', width: '100%' }}>
+            ) : // <View id="bargraph-horizontal">
+            //   <Text>Count of words mentioned in selected video</Text>
+            //   <View
+            //     style={{
+            //       flexDirection: 'row',
+            //       height: 800,
+            //       paddingVertical: 16,
+            //     }}>
+            //     <YAxis
+            //       data={wordFreqBarGraphData}
+            //       yAccessor={({index}) => index}
+            //       scale={scale.scaleBand}
+            //       contentInset={{top: 10, bottom: 10}}
+            //       spacing={0.2}
+            //       formatLabel={(value, index) =>
+            //         wordFreqBarGraphData[index].text
+            //       }
+            //       svg={{fontSize: 20, margin: 10}}
+            //       min={0}
+            //       max={wordFreqBarGraphData[0]?.value}
+            //     />
+            //     <ScrollView horizontal={true}>
+            //       <View style={{flexDirection: 'row'}}>
+            //         <BarChart
+            //           style={{height: 400, width: wordFreqBarGraphData.length * 50}}
+            //           data={wordFreq}
+            //           horizontal={true}
+            //           yAccessor={({item}) => item.y.value}
+            //           svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+            //           contentInset={{top: 10, bottom: 10}}
+            //           spacing={0.2}
+            //           gridMin={0}>
+            //           <Grid direction={Grid.Direction.VERTICAL} />
+            //           <LabelsHorizontal />
+            //         </BarChart>
+            //       </View>
+            //     </ScrollView>
+            //   </View>
+            //   <ScrollView horizontal={true}>
+            //     <XAxis
+            //       data={yTest}
+            //       yAccessor={({index}) => index}
+            //       scale={scale.scaleBand}
+            //       contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
+            //       spacing={0.2}
+            //       formatLabel={value => value}
+            //       style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
+            //     />
+            //   </ScrollView>
+            //   <Text style={{textAlign: 'center'}}>Count</Text>
+            // </View>
+            null}
+            <View style={{height: '15%', width: '100%'}}>
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginVertical: 10
+                  marginVertical: 10,
                 }}>
                 {/* <Button
                   title="Horizontal"
@@ -279,9 +298,9 @@ const DataAnalysisBarGraph = () => {
                     marginHorizontal: 30,
                   }}
                 /> */}
-                <Text style={{ fontSize: 20 }}>Include medical words</Text>
+                <Text style={{fontSize: 20}}>Include medical words</Text>
                 <Switch
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  trackColor={{false: '#767577', true: '#81b0ff'}}
                   thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={toggleSwitchMedWords}
@@ -290,34 +309,43 @@ const DataAnalysisBarGraph = () => {
               </View>
             </View>
           </View>
-          <View id="sentiment-bargraph" style={{ flex: 1 }}>
-            <Text style={{ padding: 20, fontSize: 20, color: 'black' }}>
+          <View id="sentiment-bargraph" style={{flex: 1}}>
+            <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
               Overall Feelings Distribution
             </Text>
-            <View style={{ flexDirection: 'row', flex: 1 }}>
-              <View style={{ width: 50, justifyContent: 'center' }}>
-                <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18, color: 'black' }}>
+            <View style={{flexDirection: 'row', flex: 1}}>
+              <View style={{width: 50, justifyContent: 'center'}}>
+                <Text
+                  style={{
+                    transform: [{rotate: '270deg'}],
+                    textAlign: 'center',
+                    fontSize: 18,
+                    color: 'black',
+                  }}>
                   Count
                 </Text>
               </View>
               <YAxis
                 data={sentimentData}
-                yAccessor={({ index }) => sentimentData[index].value}
-                contentInset={{ top: 10, bottom: 10 }}
+                yAccessor={({index}) => sentimentData[index].value}
+                contentInset={{top: 10, bottom: 10}}
                 spacing={0.2}
                 formatLabel={value => value}
                 min={0}
                 max={Math.max(...sentimentData.map(d => d.value))}
                 numberOfTicks={Math.max(...sentimentData.map(d => d.value))}
-                style={{ height: 400 }}
-                svg={{ fontSize: 20 }}
+                style={{height: 400}}
+                svg={{fontSize: 20}}
               />
               <BarChart
-                style={{ height: 400, width: Dimensions.get('window').width - 90 }}
+                style={{
+                  height: 400,
+                  width: Dimensions.get('window').width - 90,
+                }}
                 data={sentimentData}
-                yAccessor={({ item }) => item.value}
-                svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-                contentInset={{ top: 10, bottom: 10 }}
+                yAccessor={({item}) => item.value}
+                svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                contentInset={{top: 10, bottom: 10}}
                 spacing={0.2}
                 gridMin={0}
                 numberOfTicks={Math.max(...sentimentData.map(d => d.value))}>
@@ -325,13 +353,15 @@ const DataAnalysisBarGraph = () => {
               </BarChart>
             </View>
             <XAxis
-              style={{ marginHorizontal: -10 }}
+              style={{marginHorizontal: -10}}
               data={sentimentData}
               scale={scale.scaleBand}
               formatLabel={(value, index) => sentimentData[index].label}
-              svg={{ fontSize: 12, fill: 'black' }}
+              svg={{fontSize: 12, fill: 'black'}}
             />
-            <Text style={{ textAlign: 'center', fontSize: 20, color: 'black' }}>Sentiment</Text>
+            <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
+              Sentiment
+            </Text>
           </View>
         </View>
       </ScrollView>
