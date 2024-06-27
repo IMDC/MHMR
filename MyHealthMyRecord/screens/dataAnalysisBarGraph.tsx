@@ -27,8 +27,13 @@ const DataAnalysisBarGraph = () => {
   const route: any = useRoute();
   const barData = route.params?.data;
   const sentimentData = route.params?.sentimentData;
-  const [freqMaps, setFreqMaps] = useState(route.params?.freqMaps);
 
+  const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
+    ...freqMap,
+    videoID: freqMap.videoID.toHexString(),
+  }));
+  
+  const [freqMaps, setFreqMaps] = useState(transformedFreqMaps);
   const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(
     barData.dataNoStop,
   );
