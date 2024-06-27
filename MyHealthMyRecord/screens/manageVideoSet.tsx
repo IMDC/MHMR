@@ -45,8 +45,8 @@ const ManageVideoSet = () => {
       const videoSetData = videoSetVideoIDs?.map(videoID => {
         const objectId = new Realm.BSON.ObjectId(videoID);
         return realm.objectForPrimaryKey('VideoData', objectId);
-      });
-      setVideos(videoSetData);
+      }).filter(video => video !== null);
+      setVideos(videoSetData as VideoData[]);
       setVideoSetTitle(currentVideoSet?.name || '');
     };
 

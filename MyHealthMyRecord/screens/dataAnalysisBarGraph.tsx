@@ -26,8 +26,14 @@ const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
   const barData = route.params?.data;
-  const [freqMaps, setFreqMaps] = useState(route.params?.freqMaps);
+  const sentimentData = route.params?.sentimentData;
 
+  const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
+    ...freqMap,
+    videoID: freqMap.videoID.toHexString(),
+  }));
+  
+  const [freqMaps, setFreqMaps] = useState(transformedFreqMaps);
   const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(
     barData.dataNoStop,
   );
@@ -122,7 +128,7 @@ const DataAnalysisBarGraph = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ height: '85%' }}>
+        <View style={{ height: '100%' }}>
           <View id="bargraph" style={{ flex: 1 }}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{ flex: 1 }}>
@@ -248,10 +254,10 @@ const DataAnalysisBarGraph = () => {
             <View style={{ height: '15%', width: '100%' }}>
               <View
                 style={{
-                  flex: 1,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  marginVertical: 10
                 }}>
                 {/* <Button
                   title="Horizontal"
@@ -273,28 +279,59 @@ const DataAnalysisBarGraph = () => {
                     marginHorizontal: 30,
                   }}
                 /> */}
-              </View>
-              <View style={{ height: '20%', width: '100%' }}>
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Text style={{ fontSize: 20 }}>
-                    Include medical words
-                  </Text>
-                  <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
-                    ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitchMedWords}
-                    value={isEnabledMedWords}
-                  />
-                </View>
+                <Text style={{ fontSize: 20 }}>Include medical words</Text>
+                <Switch
+                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  thumbColor={isEnabledMedWords ? '#f5dd4b' : '#f4f3f4'}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={toggleSwitchMedWords}
+                  value={isEnabledMedWords}
+                />
               </View>
             </View>
+          </View>
+          <View id="sentiment-bargraph" style={{ flex: 1 }}>
+            <Text style={{ padding: 20, fontSize: 20, color: 'black' }}>
+              Overall Feelings Distribution
+            </Text>
+            <View style={{ flexDirection: 'row', flex: 1 }}>
+              <View style={{ width: 50, justifyContent: 'center' }}>
+                <Text style={{ transform: [{ rotate: '270deg' }], textAlign: 'center', fontSize: 18, color: 'black' }}>
+                  Count
+                </Text>
+              </View>
+              <YAxis
+                data={sentimentData}
+                yAccessor={({ index }) => sentimentData[index].value}
+                contentInset={{ top: 10, bottom: 10 }}
+                spacing={0.2}
+                formatLabel={value => value}
+                min={0}
+                max={Math.max(...sentimentData.map(d => d.value))}
+                numberOfTicks={Math.max(...sentimentData.map(d => d.value))}
+                style={{ height: 400 }}
+                svg={{ fontSize: 20 }}
+              />
+              <BarChart
+                style={{ height: 400, width: Dimensions.get('window').width - 90 }}
+                data={sentimentData}
+                yAccessor={({ item }) => item.value}
+                svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
+                contentInset={{ top: 10, bottom: 10 }}
+                spacing={0.2}
+                gridMin={0}
+                numberOfTicks={Math.max(...sentimentData.map(d => d.value))}>
+                <Grid direction={Grid.Direction.HORIZONTAL} />
+              </BarChart>
+            </View>
+            <XAxis
+              style={{ marginHorizontal: -10 }}
+              data={sentimentData}
+              scale={scale.scaleBand}
+              formatLabel={(value, index) => sentimentData[index].label}
+              svg={{ fontSize: 12, fill: 'black' }}
+            />
+            <Text style={{ textAlign: 'center', fontSize: 20, color: 'black' }}>Sentiment</Text>
           </View>
         </View>
       </ScrollView>

@@ -97,13 +97,13 @@ const DataAnalysis = () => {
       });
       setVideos(selectedSetVideos);
     } else {
-      setVideos(videosByIsSelected);
+      setVideos(videosByIsSelected.filter(video => video !== undefined));
     }
     console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
-  }, [selectedVideoSet, videoSetVideoIDs]);
+  }, [selectedVideoSet, videoSetVideoIDs, videoData]);
 
-  // get videos selected
-  const videosSelected = currentVideos;
+  // Filter out any undefined or null videos
+  const videosSelected = currentVideos.filter(video => video !== undefined && video !== null);
   //console.log(videosSelected);
 
   const videosSetsByDate = videoSets.sorted('datetime', false);
@@ -114,6 +114,7 @@ const DataAnalysis = () => {
   const [routeFreqMaps, setRouteFreqMaps] = useState<any>([]);
 
   const [barData, setBarData] = useState<any>([]);
+  const [sentimentBarData, setSentimentBarData] = useState<any>([]);
 
   function addFreqMapWithInfo(freqMapWithInfo: any) {
     let temp = freqMapsWithInfo;
@@ -133,10 +134,14 @@ const DataAnalysis = () => {
   // loop through, get and save transcript to array with datetime and video id
   function getFreqMaps() {
     for (let i = 0; i < videosSelected.length; i++) {
+      if (!videosSelected[i]) {
+        console.error(`Video at index ${i} is undefined.`);
+        continue;
+      }
       let transcript = videosSelected[i].transcript;
       let datetime = videosSelected[i].datetimeRecorded;
       console.log('transcript:', transcript);
-      if (transcript.length > 0) {
+      if (transcript && transcript.length > 0) {
         let temp = getFreq(transcript[0], datetime);
         let freqWithInfo = {
           videoID: videosSelected[i]._id,
@@ -144,7 +149,7 @@ const DataAnalysis = () => {
           map: temp,
         };
         addFreqMapWithInfo(freqWithInfo);
-        //addFreqMap(temp);
+        // addFreqMap(temp);
       } else {
         console.log('empty transcript');
       }
@@ -155,6 +160,7 @@ const DataAnalysis = () => {
     if (videosSelected.length > 0) {
       getFreqMaps();
       combineFreqMaps();
+      processSentimentData();
     }
   }, [currentVideos]);
 
@@ -363,6 +369,40 @@ const DataAnalysis = () => {
   /* ------------------------------ DROP DOWN MENU ------------------------------ */
 
   /* ======================================================================= */
+
+
+  function processSentimentData() {
+    const sentimentCounts = {
+      'Very Positive': 0,
+      'Positive': 0,
+      'Neutral': 0,
+      'Negative': 0,
+      'Very Negative': 0,
+    };
+
+    const sentimentTimeline = videosSelected
+      .filter(video => video && video.sentiment)  // Filter out videos with undefined sentiment
+      .map(video => {
+        sentimentCounts[video.sentiment]++;
+        return {
+          datetime: video.datetimeRecorded,
+          sentiment: video.sentiment,
+        };
+      });
+  
+    const formattedData = Object.keys(sentimentCounts).map((sentiment, index) => {
+      return {
+        label: sentiment,
+        value: sentimentCounts[sentiment],
+        svg: { fill: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722', '#F44336'][index] },
+      };
+    });
+
+
+    setSentimentBarData(formattedData);
+  }
+
+
   return (
     <View style={{flexDirection: 'column', flex: 1}}>
       <View
@@ -394,6 +434,7 @@ const DataAnalysis = () => {
             navigation.navigate('Bar Graph', {
               data: barData,
               freqMaps: routeFreqMaps,
+              sentimentData: sentimentBarData,
             })
           }
           titleStyle={{fontSize: 40}}
