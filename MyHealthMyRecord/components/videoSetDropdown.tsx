@@ -28,10 +28,24 @@ const VideoSetDropdown = ({
     setVideoSetValue,
     setCurrentVideoSet,
     currentVideoSet,
+    setCurrentSetID,
+    currentSetID,
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
+   const [selectedVideoSet, setSelectedVideoSet] = useState();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+   const handleVideoSelectionChange = (selectedId: string) => {
+     if (!selectedId) {
+       setSelectedVideoSet(undefined);
+       return;
+     }
+     const selectedSet = videoSets.find(
+       set => set._id.toString() === selectedId,
+     );
+     setSelectedVideoSet(selectedSet);
+   };
 
   useEffect(() => {
     const formattedDropdown = videoSets.map(set => ({
@@ -155,11 +169,13 @@ const VideoSetDropdown = ({
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
                   handleNewSet(videoSetVideoIDs, videoSets);
-                  sendVideoSetToChatGPT(
-                    realm,
-                    videoSetVideoIDs,
-                    currentVideoSet,
-                  );
+                  console.log('!!!!!!!!!!!!!!!!!!!!!!!videoSetValue', videoSetValue);
+                  handleVideoSelectionChange(currentSetID);
+                  // sendVideoSetToChatGPT(
+                  //   realm,
+                  //   videoSetVideoIDs,
+                  //   currentVideoSet,
+                  // );
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}
@@ -190,11 +206,11 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {manageSetBtn && (
               <Button
-                disabled={videoSetValue == null || videoSetValue === ''}
+                disabled={videoSetValue == ''}
                 title="Manage video set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
-                    videoSet: videoSets[videoSetValue],
+                    videoSet: selectedVideoSet,
                   })
                 }
                 color={Styles.MHMRBlue}

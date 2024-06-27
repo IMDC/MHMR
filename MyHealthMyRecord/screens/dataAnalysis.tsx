@@ -1,4 +1,9 @@
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
 import {VideoData, useRealm, useObject, useQuery} from '../models/VideoData';
@@ -40,6 +45,7 @@ const DataAnalysis = () => {
   } = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
+  const isFocused = useIsFocused();
   const setLineGraphData = useSetLineGraphData();
   const [wordLabel, setWordLabel] = useState('');
   const [videos, setVideos] = useState<VideoData[]>([]);
@@ -71,6 +77,14 @@ const DataAnalysis = () => {
 
   //console.log(videosByDate);
   console.log('**********************************************************');
+
+  useEffect(() => {
+    if (isFocused) {
+      getFreqMaps();
+      combineFreqMaps();
+      processSentimentData();
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     if (selectedVideoSet && selectedVideoSet.videoIDs && videoData) {
@@ -152,17 +166,20 @@ const DataAnalysis = () => {
   }, [currentVideos]);
 
   function removePunctuationAndLowercase(text: string) {
-    return text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").toLowerCase();
+    return text
+      .replace(/[^\w\s]|_/g, '')
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
   }
-  
+
   function getFreq(transcript: string, datetime: any) {
     let M = new Map();
-  
+
     // Remove punctuation and convert to lowercase
     transcript = removePunctuationAndLowercase(transcript);
-  
+
     let word = '';
-  
+
     for (let i = 0; i < transcript.length; i++) {
       if (transcript[i] === ' ') {
         if (!M.has(word)) {
@@ -182,9 +199,9 @@ const DataAnalysis = () => {
     } else {
       M.set(word, M.get(word) + 1);
     }
-  
+
     M = new Map([...M.entries()].sort());
-  
+
     let jsonTest = [];
     let dayJson = [];
     for (let [key, value] of M) {
@@ -199,7 +216,7 @@ const DataAnalysis = () => {
 
     return M;
   }
-  
+
   /* ------------------------------ BAR GRAPH FREQUENCY ------------------------------ */
 
   /**
@@ -222,16 +239,22 @@ const DataAnalysis = () => {
     return combinedMap;
   }
 
-  /**
-   * Combine all of the freqMaps from each video
-   */
   function combineFreqMaps() {
     let temp = accessFreqMaps();
-    //console.log(freqMaps);
+    console.log('temp:', temp); // Add this log to check the contents of temp
+
+    if (temp.length === 0) {
+      console.log('No frequency maps available to combine.');
+      return;
+    }
+
     let result = temp[0];
+    console.log('Initial result:', result); // Log the initial result
+
     for (let i = 1; i < temp.length; i++) {
       result = combineMaps(result, temp[i]);
     }
+
     // sort by largest value to smallest value
     result = new Map([...result.entries()].sort((a, b) => b[1] - a[1]));
 
@@ -269,24 +292,24 @@ const DataAnalysis = () => {
 
     // barData formatting
     for (let [key, value] of result) {
-      //console.log(`${key} - ${value}`);
       bar.push({text: `${key}`, value: parseInt(`${value}`)});
       if (data.length <= bar.length) {
-        // data.push({label: `${key}`, value: `${counter}`});
         setData(data => [...data, {label: `${key}`, value: `${counter}`}]);
       }
     }
     for (let [key, value] of mapNoStop) {
-      //console.log(`${key} - ${value}`);
       barNoStop.push({text: `${key}`, value: parseInt(`${value}`)});
-      setNoStopWords(noStopWords => [...noStopWords, {label: `${key}`, value: `${counter}`}]);
+      if (noStopWords.length <= barNoStop.length) {
+        setNoStopWords(noStopWords => [
+          ...noStopWords,
+          {label: `${key}`, value: `${counter}`},
+        ]);
+      }
     }
     for (let [key, value] of mapNoMed) {
-      //console.log(`${key} - ${value}`);
       barNoMed.push({text: `${key}`, value: parseInt(`${value}`)});
     }
     for (let [key, value] of mapNone) {
-      //console.log(`${key} - ${value}`);
       barNone.push({text: `${key}`, value: parseInt(`${value}`)});
     }
     console.log(result);
@@ -437,6 +460,7 @@ const DataAnalysis = () => {
           onPress={() => {
             setModalVisible(true);
             console.log('-------------------------data', data);
+            console.log('-------------------------noStopWords', noStopWords);
           }}
           titleStyle={{fontSize: 40}}
           containerStyle={{

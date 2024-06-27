@@ -9,7 +9,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import {RouteProp, useIsFocused, useNavigation} from '@react-navigation/native';
+import {RouteProp, useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {Button, Icon} from '@rneui/themed';
 import RNFS from 'react-native-fs';
@@ -20,10 +20,12 @@ import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 
 const ManageVideoSet = () => {
-  const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
+  const {videoSetVideoIDs, currentVideoSet, currentSetID} = useDropdownContext();
   const isFocused = useIsFocused();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const realm = useRealm();
+  const route = useRoute();
+  const videoSet = route.params.videoSet;
 
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [videoSetTitle, setVideoSetTitle] = useState('');
@@ -37,6 +39,8 @@ const ManageVideoSet = () => {
       '{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{Selected Video Set in Manage:',
       currentVideoSet,
     );
+    console.log('currentSetID', currentSetID);
+    console.log('[----------------------videoSet', videoSet);
     const getVideoData = async () => {
       const videoSetData = videoSetVideoIDs?.map(videoID => {
         const objectId = new Realm.BSON.ObjectId(videoID);

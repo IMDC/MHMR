@@ -115,6 +115,14 @@ const AnnotationMenu = () => {
     return isAnnotated;
   };
 
+  const checkIfNumericPainScaleAnnotated = () => {
+    let isAnnotated = false;
+    const numeric = video.numericScale;
+    if (numeric != 0) isAnnotated = true;
+
+    return isAnnotated;
+  }
+
   useEffect(() => {
     LogBox.ignoreLogs(['Non-serializable values were found in the navigation state.']);
   })
@@ -149,7 +157,7 @@ const AnnotationMenu = () => {
         setEmotionButtonColour(Styles.MHMRLightBlue);
         setEmotionButtonType('add-outline');
       }
-      if (checkIfPainscaleAnnotated()) {
+      if (checkIfPainscaleAnnotated() || checkIfNumericPainScaleAnnotated() ) {
         setPainButtonColour(Styles.MHMRBlue);
         setPainButtonType('checkmark-outline');
       } else {

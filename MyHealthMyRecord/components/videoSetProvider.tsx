@@ -13,11 +13,11 @@ export const VideoSetProvider = ({children}) => {
 
   // videoSetVideoIDs is the array of videoIDs in the selected video set
   const [videoSetVideoIDs, setVideoSetVideoIDs] = useState<any[]>([]);
+  const [currentSetID, setCurrentSetID] = useState<any[]>([]);
 
   const [currentVideos, setCurrentVideos] = useState<any[]>([]);
 
   const [sendToVideoSet, setSendToVideoSet] = useState(0);
-
 
   const handleChange = (value, videoSets) => {
     setSendToVideoSet(0);
@@ -26,25 +26,40 @@ export const VideoSetProvider = ({children}) => {
     if (selectedSet) {
       setCurrentVideoSet(selectedSet);
       setVideoSetVideoIDs(selectedSet.videoIDs);
+      setCurrentSetID(selectedSet._id);
       const videos = selectedSet.videoIDs.map(id =>
-        realm.objects('VideoData').find(video => video._id.toString() === id)
+        realm.objects('VideoData').find(video => video._id.toString() === id),
       );
+      console.log('*'.repeat(50));
+      console.log('currentSetID', currentSetID);
       setCurrentVideos(videos);
     } else {
       setCurrentVideoSet(null);
+      setCurrentSetID(null);
       setVideoSetVideoIDs([]);
       setCurrentVideos([]);
+      console.log('*'.repeat(50));
+      console.log('currentSetID', currentSetID);
     }
   };
 
   const handleNewSet = (videoIDs, videoSets) => {
     setVideoSetVideoIDs(videoIDs);
-    const selectedSet = videoSets.find(set => set._id.toString() === videoSetValue);
-    if (selectedSet) {
-      setCurrentVideoSet(selectedSet);
-    } else {
-      setCurrentVideoSet([]);
-    }
+    console.log('videoSetValue', videoSetValue);
+    
+    const selectedSet = videoSets.find(
+      set => set._id.toString() === videoSetValue,
+    );
+    setCurrentVideoSet(selectedSet);
+    console.log('currentSetID', currentSetID);
+    setCurrentSetID(selectedSet?._id);
+    // if (selectedSet) {
+    //   setCurrentVideoSet(selectedSet);
+    //   setCurrentSetID(selectedSet._id);
+    // } else {
+    //   setCurrentVideoSet([]);
+    //   setCurrentSetID([]);
+    // }
     console.log(
       '-----------------------------------------------New selectedSet:',
       selectedSet,
