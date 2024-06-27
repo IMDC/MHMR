@@ -6,15 +6,16 @@ import {Dropdown} from 'react-native-element-dropdown';
 
 const DataAnalysisWordCloud = () => {
   const route = useRoute();
-  const barData = route.params?.data;
-  const [wordFrequency, setWordFrequency] = useState(barData.data);
-  const [updatedData, setUpdatedData] = useState(barData.dataNoStop);
+  const barData = route.params?.data || {};
+
+  const [wordFrequency, setWordFrequency] = useState(barData.data || []);
+  const [updatedData, setUpdatedData] = useState(barData.dataNoStop || []);
   const [dropdownValue, setDropdownValue] = useState(null);
 
   const dropdownData = [
-    {label: 'IBM', value: 'IBM'},
-    {label: 'Wong', value: 'Wong'},
-    {label: 'Tol', value: 'Tol'},
+    {label: 'Palette 1', value: 'IBM'},
+    {label: 'Palette 2', value: 'Wong'},
+    {label: 'Palette 3', value: 'Tol'},
   ];
 
   const IBM_palette = [
@@ -64,7 +65,9 @@ const DataAnalysisWordCloud = () => {
       } else if (dropdownValue === 'Tol') {
         newPalette = tol_palette;
       }
-      setUpdatedData(addPalette(barData.dataNoStop, newPalette));
+      if (barData.dataNoStop) {
+        setUpdatedData(addPalette(barData.dataNoStop, newPalette));
+      }
     }
   }, [dropdownValue]);
 
@@ -72,7 +75,7 @@ const DataAnalysisWordCloud = () => {
     <View style={{flexDirection: 'column'}}>
       <View style={{justifyContent: 'center', alignItems: 'center'}}>
         <WordCloud
-          key={JSON.stringify(updatedData)} 
+          key={JSON.stringify(updatedData)}
           options={{
             words: updatedData,
             verticalEnabled: true,

@@ -237,7 +237,7 @@ const DataAnalysis = () => {
     console.log('temp:', temp); // Add this log to check the contents of temp
 
     if (temp.length === 0) {
-      console.error('No frequency maps available to combine.');
+      console.log('No frequency maps available to combine.');
       return;
     }
 
