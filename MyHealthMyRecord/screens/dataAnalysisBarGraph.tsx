@@ -369,7 +369,7 @@ const DataAnalysisBarGraph = () => {
             </View>
             <XAxis
               style={{marginHorizontal: -10}}
-              data={sentimentData}
+              data={sentimentData.map((_, index) => index)}
               scale={scale.scaleBand}
               formatLabel={(value, index) => sentimentData[index].label}
               svg={{
