@@ -26,7 +26,7 @@ const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
   const barData = route.params?.data;
-  const sentimentData = route.params?.sentimentData;
+  const sentimentData = route.params?.sentimentData.reverse();
 
   const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
     ...freqMap,
@@ -348,13 +348,13 @@ const DataAnalysisBarGraph = () => {
                   ...item,
                   svg: {
                     fill:
-                      index === 0
+                      index === 4
                         ? '#00CC00'
-                        : index === 1
+                        : index === 3
                         ? '#99CC00'
                         : index === 2
                         ? '#FFCC00'
-                        : index === 3
+                        : index === 1
                         ? '#9966CC'
                         : '#6633CC',
                   },
