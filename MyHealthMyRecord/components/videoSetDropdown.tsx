@@ -210,7 +210,7 @@ const VideoSetDropdown = ({
                 title="Manage video set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
-                    videoSet: selectedVideoSet,
+                    videoSet: currentVideoSet,
                   })
                 }
                 color={Styles.MHMRBlue}
