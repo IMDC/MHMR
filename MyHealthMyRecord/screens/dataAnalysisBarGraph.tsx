@@ -19,6 +19,7 @@ import {Rect} from 'react-native-svg';
 import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import {useSetLineGraphData} from '../components/lineGraphData';
+import { useDropdownContext } from '../components/videoSetProvider';
 
 const setLineGraphData = useSetLineGraphData();
 
@@ -41,6 +42,8 @@ const DataAnalysisBarGraph = () => {
 
   const realm = useRealm();
   //   const video: any = useObject('VideoData', id);
+
+  const { currentVideoSet } = useDropdownContext();
 
   /* ======================================================================= */
   // bar graph stuff below
@@ -133,7 +136,7 @@ const DataAnalysisBarGraph = () => {
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{flex: 1}}>
                 <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
-                  Count of words mentioned in selected video
+                  {currentVideoSet?.name} - Count of words mentioned in selected video set
                 </Text>
                 <View style={{flexDirection: 'row', flex: 1}}>
                   <View style={{width: 50, justifyContent: 'center'}}>
@@ -312,7 +315,7 @@ const DataAnalysisBarGraph = () => {
           </View>
           <View id="sentiment-bargraph" style={{flex: 1}}>
             <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
-              Overall feelings distribution
+              {currentVideoSet?.name} - Overall feelings distribution
             </Text>
             <View style={{flexDirection: 'row', flex: 1}}>
               <View style={{width: 50, justifyContent: 'center'}}>
