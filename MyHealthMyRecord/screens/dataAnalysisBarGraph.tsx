@@ -344,9 +344,22 @@ const DataAnalysisBarGraph = () => {
                   height: 400,
                   width: Dimensions.get('window').width - 90,
                 }}
-                data={sentimentData}
+                data={sentimentData.map((item, index) => ({
+                  ...item,
+                  svg: {
+                    fill:
+                      index === 0
+                        ? '#00FF00'
+                        : index === 1
+                        ? '#00CC00'
+                        : index === 2
+                        ? '#FFFF00'
+                        : index === 3
+                        ? '#CC00CC'
+                        : '#990099',
+                  },
+                }))}
                 yAccessor={({item}) => item.value}
-                svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
                 contentInset={{top: 10, bottom: 10}}
                 spacing={0.2}
                 gridMin={0}
@@ -364,7 +377,7 @@ const DataAnalysisBarGraph = () => {
                 fill: 'black',
                 translateX: 20,
               }}
-              contentInset={{ left: 50, right: 50 }}
+              contentInset={{left: 50, right: 50}}
             />
             <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
               Feeling
