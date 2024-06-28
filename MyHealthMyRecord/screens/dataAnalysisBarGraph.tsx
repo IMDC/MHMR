@@ -349,14 +349,14 @@ const DataAnalysisBarGraph = () => {
                   svg: {
                     fill:
                       index === 0
-                        ? '#00FF00'
-                        : index === 1
                         ? '#00CC00'
+                        : index === 1
+                        ? '#99CC00'
                         : index === 2
-                        ? '#FFFF00'
+                        ? '#FFCC00'
                         : index === 3
-                        ? '#CC00CC'
-                        : '#990099',
+                        ? '#9966CC'
+                        : '#6633CC',
                   },
                 }))}
                 yAccessor={({item}) => item.value}
