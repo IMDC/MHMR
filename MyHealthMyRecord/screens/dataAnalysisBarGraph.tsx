@@ -25,7 +25,7 @@ const setLineGraphData = useSetLineGraphData();
 
 const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  const route: any = useRoute();
+  const route = useRoute();
   const barData = route.params?.data;
   const sentimentData = route.params?.sentimentData.reverse();
 
@@ -61,14 +61,14 @@ const DataAnalysisBarGraph = () => {
   //const yTest = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
   /* on press functionality for word frequency bar graph */
-  const wordSelected = useState<any>(null);
+  const [wordSelected, setWordSelected] = useState<number | null>(null);
   const wordFreq = wordFreqBarGraphData.map((item, index) => ({
     y: item,
     svg: {
       onPressIn: () => {
         console.log(wordFreqBarGraphData[index]);
-        wordSelected[0] = index;
-        const wordLabel = wordFreqBarGraphData[wordSelected[0]].text;
+        setWordSelected(index);
+        const wordLabel = wordFreqBarGraphData[index].text;
         const result = setLineGraphData(freqMaps, wordLabel);
         navigation.navigate('Line Graph', {
           word: wordLabel,
@@ -76,7 +76,7 @@ const DataAnalysisBarGraph = () => {
         });
       },
       onPressOut: () => {
-        wordSelected[0] = null;
+        setWordSelected(null);
       },
       //fill: wordSelected === index ? '#55C45E' : 'rgba(134, 65, 244, 0.8)',
     },
@@ -204,9 +204,7 @@ const DataAnalysisBarGraph = () => {
                             translateX: 0,
                             y: 5,
                           }}
-                          formatLabel={(value: any, index: string | number) =>
-                            wordFreqBarGraphData[index].text
-                          }
+                          formatLabel={(value, index) => wordFreqBarGraphData[index].text}
                         />
                       </View>
                     </ScrollView>
