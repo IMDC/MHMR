@@ -359,7 +359,12 @@ const DataAnalysisBarGraph = () => {
               data={sentimentData}
               scale={scale.scaleBand}
               formatLabel={(value, index) => sentimentData[index].label}
-              svg={{fontSize: 12, fill: 'black'}}
+              svg={{
+                fontSize: 18,
+                fill: 'black',
+                translateX: 20,
+              }}
+              contentInset={{ left: 50, right: 50 }}
             />
             <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
               Sentiment
