@@ -143,7 +143,7 @@ const DataAnalysisBarGraph = () => {
                         textAlign: 'center',
                         fontSize: 18,
                         color: 'black',
-                        width: 100,
+                        width: 60,
                       }}>
                       Count
                     </Text>
@@ -312,7 +312,7 @@ const DataAnalysisBarGraph = () => {
           </View>
           <View id="sentiment-bargraph" style={{flex: 1}}>
             <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
-              Overall Feelings Distribution
+              Overall feelings distribution
             </Text>
             <View style={{flexDirection: 'row', flex: 1}}>
               <View style={{width: 50, justifyContent: 'center'}}>
@@ -322,7 +322,7 @@ const DataAnalysisBarGraph = () => {
                     textAlign: 'center',
                     fontSize: 18,
                     color: 'black',
-                    width: 100,
+                    width: 60,
                   }}>
                   Count
                 </Text>
@@ -367,7 +367,7 @@ const DataAnalysisBarGraph = () => {
               contentInset={{ left: 50, right: 50 }}
             />
             <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
-              Sentiment
+              Feeling
             </Text>
           </View>
         </View>
