@@ -1,59 +1,54 @@
 import React, {useState, useEffect} from 'react';
 import {
-  StyleSheet,
   View,
   Text,
   ScrollView,
   ImageBackground,
+  StyleSheet,
   TouchableOpacity,
   TextInput,
   Alert,
+  LogBox,
 } from 'react-native';
-import {RouteProp, useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import {Button, Icon} from '@rneui/themed';
 import RNFS from 'react-native-fs';
-import {useRealm, VideoSet, VideoData} from '../models/VideoData';
+import {useRealm, VideoData} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 import {useDropdownContext} from '../components/videoSetProvider';
-import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-
 
 const ManageVideoSet = () => {
-  const {videoSetVideoIDs, currentVideoSet, currentSetID} = useDropdownContext();
+  const {videoSetVideoIDs, currentVideoSet, currentSetID} =
+    useDropdownContext();
   const isFocused = useIsFocused();
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const navigation = useNavigation();
   const realm = useRealm();
   const route = useRoute();
-  const videoSet = route.params.videoSet;
-
-  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [videos, setVideos] = useState([]);
   const [videoSetTitle, setVideoSetTitle] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [lastRemovedVideo, setLastRemovedVideo] = useState<VideoData | null>(
-    null,
-  );
+  const [lastRemovedVideo, setLastRemovedVideo] = useState(null);
 
   useEffect(() => {
-    console.log(
-      '{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{Selected Video Set in Manage:',
-      currentVideoSet,
-    );
-    console.log('currentSetID', currentSetID);
-    console.log('[----------------------videoSet', videoSet);
-    const getVideoData = async () => {
-      const videoSetData = videoSetVideoIDs?.map(videoID => {
-        const objectId = new Realm.BSON.ObjectId(videoID);
-        return realm.objectForPrimaryKey('VideoData', objectId);
-      }).filter(video => video !== null);
-      setVideos(videoSetData as VideoData[]);
-      setVideoSetTitle(currentVideoSet?.name || '');
-    };
+    LogBox.ignoreLogs([
+      'Non-serializable values were found in the navigation state.',
+    ]);
+  });
 
-    if (isFocused) {
-      getVideoData();
+  useEffect(() => {
+    if (isFocused && currentVideoSet) {
+      const videoSetData = videoSetVideoIDs
+        ?.map(videoID =>
+          realm.objectForPrimaryKey(
+            'VideoData',
+            new Realm.BSON.ObjectID(videoID),
+          ),
+        )
+        .filter(video => video !== null);
+      setVideos(videoSetData);
+      setVideoSetTitle(currentVideoSet?.name || '');
     }
-  }, [isFocused, currentVideoSet, realm]);
+  }, [isFocused, currentVideoSet, videoSetVideoIDs, realm]);
 
   const handleSaveVideoSetTitle = () => {
     if (currentVideoSet) {
@@ -69,26 +64,20 @@ const ManageVideoSet = () => {
     setIsEditingTitle(false);
   };
 
-  const RemoveVideoAlert = (video: VideoData) => {
+  const removeVideoAlert = video => {
     Alert.alert(
       'Remove Video',
       'Are you sure you want to remove this video from the set?',
       [
         {text: 'OK', onPress: () => handleRemoveVideo(video)},
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
+        {text: 'Cancel', style: 'cancel'},
       ],
     );
-  }
+  };
 
-
-  const handleRemoveVideo = (video: VideoData) => {
+  const handleRemoveVideo = video => {
     setLastRemovedVideo(video);
     realm.write(() => {
-      // remove video id from from video set
       currentVideoSet.videoIDs = currentVideoSet.videoIDs.filter(
         id => id !== video._id.toString(),
       );
@@ -106,20 +95,16 @@ const ManageVideoSet = () => {
     }
   };
 
-  const DeleteVideoSetAlert = () => {
+  const deleteVideoSetAlert = () => {
     Alert.alert(
       'Delete Video Set',
       'Are you sure you want to delete this video set?',
       [
         {text: 'OK', onPress: () => handleDeleteVideoSet()},
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
+        {text: 'Cancel', style: 'cancel'},
       ],
     );
-  }
+  };
 
   const handleDeleteVideoSet = () => {
     if (currentVideoSet) {
@@ -189,7 +174,7 @@ const ManageVideoSet = () => {
               <Button
                 radius={50}
                 title="Delete video set"
-                onPress={DeleteVideoSetAlert}
+                onPress={deleteVideoSetAlert}
                 buttonStyle={styles.deleteButton}
               />
             </View>
@@ -197,7 +182,7 @@ const ManageVideoSet = () => {
         )}
       </View>
       <ScrollView>
-        {videos.map((video, index) => (
+        {videos.map(video => (
           <View key={video._id.toString()} style={styles.videoContainer}>
             <ImageBackground
               source={{
@@ -209,11 +194,10 @@ const ManageVideoSet = () => {
                   navigation.navigate('Fullscreen Video', {id: video._id})
                 }>
                 <Icon
-                  reverse
-                  name="play-sharp"
+                  name="play-circle"
                   type="ionicon"
-                  color="#1C3EAA"
-                  size={20}
+                  size={40}
+                  color="#fff"
                 />
               </TouchableOpacity>
             </ImageBackground>
@@ -222,27 +206,13 @@ const ManageVideoSet = () => {
               <Button
                 radius={50}
                 title="Remove"
-                onPress={() => RemoveVideoAlert(video)}
+                onPress={() => removeVideoAlert(video)}
                 color={Styles.MHMRBlue}
               />
             </View>
           </View>
         ))}
       </ScrollView>
-      {/* {lastRemovedVideo && (
-        <Button
-          radius={50}
-          title="Undo remove"
-          onPress={handleUndoRemoveVideo}
-          buttonStyle={styles.deleteButton}
-        />
-      )} */}
-      {/* <Button
-        radius={80}
-        title="Delete video set"
-        onPress={handleDeleteVideoSet}
-        buttonStyle={styles.deleteButton}
-      /> */}
     </View>
   );
 };
@@ -324,7 +294,6 @@ const styles = StyleSheet.create({
   deleteButton: {
     marginLeft: 10,
     backgroundColor: Styles.MHMRBlue,
-
   },
 });
 

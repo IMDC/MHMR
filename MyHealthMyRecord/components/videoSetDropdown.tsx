@@ -7,8 +7,6 @@ import * as Styles from '../assets/util/styles';
 import {Button} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-import {sendVideoSetToChatGPT} from './chatgpt_api';
 
 const VideoSetDropdown = ({
   videoSetDropdown,
@@ -33,19 +31,7 @@ const VideoSetDropdown = ({
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
-   const [selectedVideoSet, setSelectedVideoSet] = useState();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
-   const handleVideoSelectionChange = (selectedId: string) => {
-     if (!selectedId) {
-       setSelectedVideoSet(undefined);
-       return;
-     }
-     const selectedSet = videoSets.find(
-       set => set._id.toString() === selectedId,
-     );
-     setSelectedVideoSet(selectedSet);
-   };
 
   useEffect(() => {
     const formattedDropdown = videoSets.map(set => ({
@@ -57,8 +43,9 @@ const VideoSetDropdown = ({
   }, [videoSets]);
 
   const createVideoSet = (frequencyData, videoIDs) => {
+    let newSet;
     realm.write(() => {
-      realm.create('VideoSet', {
+      newSet = realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
         datetime: new Date(),
         name: new Date().toString().split(' GMT-')[0],
@@ -67,28 +54,27 @@ const VideoSetDropdown = ({
         summaryAnalysis: '',
         isSummaryGenerated: false,
       });
+
+      const updatedVideoSets = realm.objects('VideoSet');
+      const updatedDropdown = updatedVideoSets.map(set => ({
+        label: set.name,
+        value: set._id.toString(),
+        id: set._id,
+      }));
+
+      setLocalDropdown(updatedDropdown);
+
+      const newVideoSetValue = newSet._id.toString();
+      setVideoSetValue(newVideoSetValue);
+      handleNewSet(newSet);
+      onVideoSetChange(newVideoSetValue);
     });
-
-    // Refresh dropdown and update video set value
-    const updatedVideoSets = realm.objects('VideoSet');
-    const updatedDropdown = updatedVideoSets.map(set => ({
-      label: set.name,
-      value: set._id.toString(),
-      id: set._id,
-    }));
-
-    setLocalDropdown(updatedDropdown);
-
-    // Set the value to the newly created set
-    const newVideoSetValue = updatedDropdown[updatedDropdown.length - 1].value;
-    setVideoSetValue(newVideoSetValue);
-    onVideoSetChange(newVideoSetValue); // Notify parent component of the change
   };
 
   const clearVideoSet = () => {
     setVideoSetVideoIDs([]);
     setVideoSetValue(null);
-    onVideoSetChange(null); // Notify parent component of the change
+    onVideoSetChange(null);
     refreshDropdown();
   };
 
@@ -137,15 +123,14 @@ const VideoSetDropdown = ({
         value={videoSetValue}
         onChange={item => {
           setVideoSetValue(item.value);
-          console.log('videoSetValue', item.value);
           handleChange(item.value, videoSets);
-          onVideoSetChange(item.value); // Notify parent component of the change
+          onVideoSetChange(item.value);
         }}
       />
       {saveVideoSetBtn === false &&
       clearVideoSetBtn === false &&
-      manageSetBtn == false &&
-      deleteAllVideoSetsBtn == false ? (
+      manageSetBtn === false &&
+      deleteAllVideoSetsBtn === false ? (
         <View style={{flexDirection: 'row', paddingTop: 30}}>
           <Button
             title="View videos in video set"
@@ -168,14 +153,6 @@ const VideoSetDropdown = ({
                 title="Save video set"
                 onPress={() => {
                   createVideoSet([], videoSetVideoIDs);
-                  handleNewSet(videoSetVideoIDs, videoSets);
-                  console.log('!!!!!!!!!!!!!!!!!!!!!!!videoSetValue', videoSetValue);
-                  handleVideoSelectionChange(currentSetID);
-                  // sendVideoSetToChatGPT(
-                  //   realm,
-                  //   videoSetVideoIDs,
-                  //   currentVideoSet,
-                  // );
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}

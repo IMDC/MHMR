@@ -8,6 +8,7 @@ import {
   View,
   Alert,
   TouchableOpacity,
+  LogBox,
 } from 'react-native';
 import {Text, Chip} from 'react-native-paper';
 import {VideoData, useRealm, useQuery} from '../models/VideoData';
@@ -54,6 +55,10 @@ function Dashboard() {
   } = useDropdownContext();
 
   // useEffect to update videoSetVideoIDs when the array is added to or removed from
+
+    useEffect(() => {
+      LogBox.ignoreLogs(['Error: [TypeError: undefined is not a function]']);
+    });
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
