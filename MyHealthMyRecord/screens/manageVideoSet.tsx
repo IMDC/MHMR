@@ -209,10 +209,11 @@ const ManageVideoSet = () => {
                   navigation.navigate('Fullscreen Video', {id: video._id})
                 }>
                 <Icon
-                  name="play-circle"
+                  reverse
+                  name="play-sharp"
                   type="ionicon"
-                  size={50}
-                  color="#fff"
+                  color="#1C3EAA"
+                  size={20}
                 />
               </TouchableOpacity>
             </ImageBackground>

@@ -981,7 +981,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                         <View style={styles.container}>
                           <View style={styles.thumbnail}>
                             <ImageBackground
-                              style={{height: '100%', width: '100%'}}
+                              style={{
+                                height: '100%',
+                                width: '100%',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                overflow: 'hidden',
+                              }}
                               source={{
                                 uri:
                                   'file://' +
@@ -1080,13 +1086,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     id: video._id,
                                   })
                                 }>
-                                {/* <Icon
-                              style={{height: 240, justifyContent: 'center'}}
-                              name="play-sharp"
-                              type="ionicon"
-                              color="black"
-                              size={40}
-                            /> */}
+                                <Icon
+                                  reverse
+                                  name="play-sharp"
+                                  type="ionicon"
+                                  color="#1C3EAA"
+                                  size={20}
+                                />
                               </TouchableOpacity>
                             </ImageBackground>
                           </View>
