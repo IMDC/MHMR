@@ -25,6 +25,8 @@ const RecordVideo = () => {
   //use front camera
   const device = devices[deviceDir];
 
+  
+
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
@@ -64,6 +66,11 @@ const RecordVideo = () => {
       const newCameraPermission = await Camera.requestCameraPermission();
       const microphonePermission = await Camera.requestMicrophonePermission();
       console.log(newCameraPermission, microphonePermission);
+      if (newCameraPermission && microphonePermission) {
+        console.log('Permissions granted');
+      } else if (newCameraPermission !== 'authorized' || microphonePermission !== 'authorized') {
+        console.log('Permissions denied');
+      }
     }
     getPermission();
     //testing state for videoSource to make sure it's being updated right after video is recorded, test later and if it updates fine without this if condition we can delete it
@@ -114,11 +121,18 @@ const RecordVideo = () => {
    */
   const stopRecodingHandler = async () => {
     if (camera.current !== null) {
-      await camera.current.stopRecording();
-      resetRecording();
+      try {
+        await camera.current.stopRecording();
+        console.log('Recording stopped successfully');
+        resetRecording();
+      } catch (error) {
+        console.error('Failed to stop recording:', error);
+      }
       console.log(enableTimer, '----zzzz');
+    } else {
+      console.warn('Camera reference is null');
     }
-  }
+  };
 
   /**
    * Reset recording options
@@ -391,15 +405,17 @@ const RecordVideo = () => {
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
+              <TouchableOpacity onPress={() => {stopRecodingHandler();}}>
                 <Icon
                   name="stop"
                   size={40}
                   type="font-awesome"
                   color="white"
-                  onPress={() => {
-                    stopRecodingHandler();
-                  }}
+                  // onPress={() => {
+                  //   stopRecodingHandler();
+                  // }}
                 />
+                </TouchableOpacity>
 {/* 
                 {recordingPaused ? (
                   <Icon
