@@ -1272,11 +1272,31 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                     <View style={styles.gridThumbnail}>
                       <ImageBackground
-                        style={{height: '100%', width: '100%'}}
+                        style={{
+                          height: '100%',
+                          width: '100%',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          overflow: 'hidden',
+                        }}
                         source={{
                           uri:
                             'file://' + MHMRfolderPath + '/' + video.filename,
                         }}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('Fullscreen Video', {
+                              id: video._id,
+                            })
+                          }>
+                          <Icon
+                            reverse
+                            name="play-sharp"
+                            type="ionicon"
+                            color="#1C3EAA"
+                            size={20}
+                          />
+                        </TouchableOpacity>
                         {selected ? (
                           <View></View>
                         ) : (
