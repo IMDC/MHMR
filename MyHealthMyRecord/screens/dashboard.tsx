@@ -254,7 +254,8 @@ function Dashboard() {
             {
               text: 'YES',
               onPress: () => {
-                handleYesAnalysis();
+                // handleYesAnalysis();
+                console.log('YES Pressed');
               },
             },
             {text: 'NO', onPress: () => console.log('NO Pressed')},

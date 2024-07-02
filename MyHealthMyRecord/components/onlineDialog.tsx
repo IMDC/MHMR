@@ -164,7 +164,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
                 console.log('YES clicked!');
                 toggleOnlineDialog();
                 await processSelectedVideos();
-                await handleYesAnalysis();
+                // await handleYesAnalysis();
                 Alert.alert(
                   'Video Transcripts Generated and Analyzed',
                   'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
