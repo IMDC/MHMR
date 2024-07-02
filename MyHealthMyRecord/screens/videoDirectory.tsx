@@ -556,7 +556,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                   });
 
                   await handleSend();
-                  await handleYesAnalysis();
+                  // await handleYesAnalysis();
                   Alert.alert(
                     'Video Transcripts Generated and Analyzed',
                     'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
