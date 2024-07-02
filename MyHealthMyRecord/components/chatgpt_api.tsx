@@ -77,6 +77,7 @@ export const sendToChatGPT = async (
     }
   } catch (error) {
     console.error('Error:', error);
+    console.log('error found in sendToChatGPT function');
   }
 };
 

@@ -55,10 +55,12 @@ function Dashboard() {
   } = useDropdownContext();
 
   // useEffect to update videoSetVideoIDs when the array is added to or removed from
-
-    useEffect(() => {
-      LogBox.ignoreLogs(['Error: [TypeError: undefined is not a function]']);
-    });
+    
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Non-serializable values were found in the navigation state.',
+    ]);
+  });
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
@@ -252,7 +254,8 @@ function Dashboard() {
             {
               text: 'YES',
               onPress: () => {
-                handleYesAnalysis();
+                // handleYesAnalysis();
+                console.log('YES Pressed');
               },
             },
             {text: 'NO', onPress: () => console.log('NO Pressed')},

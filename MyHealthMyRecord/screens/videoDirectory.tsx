@@ -556,7 +556,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                   });
 
                   await handleSend();
-                  await handleYesAnalysis();
+                  // await handleYesAnalysis();
                   Alert.alert(
                     'Video Transcripts Generated and Analyzed',
                     'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
@@ -1272,11 +1272,31 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                     <View style={styles.gridThumbnail}>
                       <ImageBackground
-                        style={{height: '100%', width: '100%'}}
+                        style={{
+                          height: '100%',
+                          width: '100%',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          overflow: 'hidden',
+                        }}
                         source={{
                           uri:
                             'file://' + MHMRfolderPath + '/' + video.filename,
                         }}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('Fullscreen Video', {
+                              id: video._id,
+                            })
+                          }>
+                          <Icon
+                            reverse
+                            name="play-sharp"
+                            type="ionicon"
+                            color="#1C3EAA"
+                            size={20}
+                          />
+                        </TouchableOpacity>
                         {selected ? (
                           <View></View>
                         ) : (
@@ -1386,32 +1406,37 @@ const ViewRecordings = ({selected, setSelected}) => {
                           {video.datetimeRecorded?.toLocaleString()}
                         </Text>
                       </View>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          flexWrap: 'wrap',
+                        }}>
+                        {video.emotionStickers.map(key => {
+                          const sentiment = JSON.parse(key).sentiment;
+                          const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
 
-                      {video.emotionStickers.map(key => {
-                        const sentiment = JSON.parse(key).sentiment;
-                        const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
-
-                        if (!displayedSentiments.has(sentiment)) {
-                          displayedSentiments.add(sentiment);
-                          return (
-                            <View style={{flexDirection: 'row'}}>
-                              <Tooltip
-                                title={`${sentiment} (${sentimentCounts[sentiment]})`}>
-                                {imageSource && (
-                                  <Image
-                                    style={{height: 60, width: 60}}
-                                    source={imageSource}
-                                  />
-                                )}
-                              </Tooltip>
-                              <Text style={{fontWeight: 'bold'}}>
-                                {sentimentCounts[sentiment]}
-                              </Text>
-                            </View>
-                          );
-                        }
-                        return null; // If sentiment has already been displayed, return null
-                      })}
+                          if (!displayedSentiments.has(sentiment)) {
+                            displayedSentiments.add(sentiment);
+                            return (
+                              <View style={{flexDirection: 'row'}}>
+                                <Tooltip
+                                  title={`${sentiment} (${sentimentCounts[sentiment]})`}>
+                                  {imageSource && (
+                                    <Image
+                                      style={{height: 60, width: 60}}
+                                      source={imageSource}
+                                    />
+                                  )}
+                                </Tooltip>
+                                <Text style={{fontWeight: 'bold'}}>
+                                  {sentimentCounts[sentiment]}
+                                </Text>
+                              </View>
+                            );
+                          }
+                          return null; // If sentiment has already been displayed, return null
+                        })}
+                      </View>
                     </View>
                     {selected ? (
                       <View style={[styles.buttonContainer, {padding: 5}]}>
