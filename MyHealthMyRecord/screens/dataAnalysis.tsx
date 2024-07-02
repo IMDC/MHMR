@@ -430,7 +430,7 @@ const DataAnalysis = () => {
           alignItems: 'center',
         }}>
         <Button
-          disabled={currentVideoSet?.length === 0}
+          disabled={videoSetValue === ''}
           onPress={() =>
             navigation.navigate('Bar Graph', {
               data: barData,
@@ -456,7 +456,7 @@ const DataAnalysis = () => {
           Bar Graph
         </Button>
         <Button
-          disabled={currentVideoSet?.length === 0}
+          disabled={videoSetValue === ''}
           onPress={() => {
             setModalVisible(true);
             console.log('-------------------------data', data);
@@ -480,7 +480,7 @@ const DataAnalysis = () => {
           Line Graph
         </Button>
         <Button
-          disabled={currentVideoSet?.length === 0}
+          disabled={videoSetValue === ''}
           onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -500,7 +500,7 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
-          disabled={currentVideoSet?.length === 0}
+          disabled={videoSetValue === ''}
           onPress={() => navigation.navigate('Text Summary')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
