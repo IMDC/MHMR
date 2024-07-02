@@ -5,18 +5,11 @@ export const VideoSetContext = createContext();
 
 export const VideoSetProvider = ({children}) => {
   const realm = useRealm();
-  // videoSetValue is the value of the selected video set in the dropdown
-  const [videoSetValue, setVideoSetValue] = useState<any[]>([]);
-
-  // selected video set is the selected video set according to the dropdown
-  const [currentVideoSet, setCurrentVideoSet] = useState<any[]>([]);
-
-  // videoSetVideoIDs is the array of videoIDs in the selected video set
-  const [videoSetVideoIDs, setVideoSetVideoIDs] = useState<any[]>([]);
-  const [currentSetID, setCurrentSetID] = useState<any[]>([]);
-
-  const [currentVideos, setCurrentVideos] = useState<any[]>([]);
-
+  const [videoSetValue, setVideoSetValue] = useState('');
+  const [currentVideoSet, setCurrentVideoSet] = useState(null);
+  const [videoSetVideoIDs, setVideoSetVideoIDs] = useState([]);
+  const [currentSetID, setCurrentSetID] = useState('');
+  const [currentVideos, setCurrentVideos] = useState([]);
   const [sendToVideoSet, setSendToVideoSet] = useState(0);
 
   const handleChange = (value, videoSets) => {
@@ -26,44 +19,28 @@ export const VideoSetProvider = ({children}) => {
     if (selectedSet) {
       setCurrentVideoSet(selectedSet);
       setVideoSetVideoIDs(selectedSet.videoIDs);
-      setCurrentSetID(selectedSet._id);
+      setCurrentSetID(selectedSet._id.toString());
       const videos = selectedSet.videoIDs.map(id =>
         realm.objects('VideoData').find(video => video._id.toString() === id),
       );
-      console.log('*'.repeat(50));
-      console.log('currentSetID', currentSetID);
       setCurrentVideos(videos);
     } else {
       setCurrentVideoSet(null);
-      setCurrentSetID(null);
+      setCurrentSetID('');
       setVideoSetVideoIDs([]);
       setCurrentVideos([]);
-      console.log('*'.repeat(50));
-      console.log('currentSetID', currentSetID);
     }
   };
 
-  const handleNewSet = (videoIDs, videoSets) => {
-    setVideoSetVideoIDs(videoIDs);
-    console.log('videoSetValue', videoSetValue);
-    
-    const selectedSet = videoSets.find(
-      set => set._id.toString() === videoSetValue,
+  const handleNewSet = newSet => {
+    setVideoSetValue(newSet._id.toString());
+    setCurrentVideoSet(newSet);
+    setVideoSetVideoIDs(newSet.videoIDs);
+    setCurrentSetID(newSet._id.toString());
+    const videos = newSet.videoIDs.map(id =>
+      realm.objects('VideoData').find(video => video._id.toString() === id),
     );
-    setCurrentVideoSet(selectedSet);
-    console.log('currentSetID', currentSetID);
-    setCurrentSetID(selectedSet?._id);
-    // if (selectedSet) {
-    //   setCurrentVideoSet(selectedSet);
-    //   setCurrentSetID(selectedSet._id);
-    // } else {
-    //   setCurrentVideoSet([]);
-    //   setCurrentSetID([]);
-    // }
-    console.log(
-      '-----------------------------------------------New selectedSet:',
-      selectedSet,
-    );
+    setCurrentVideos(videos);
   };
 
   const contextValues = {

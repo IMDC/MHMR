@@ -7,6 +7,8 @@ import {
   StyleSheet,
   View,
   Alert,
+  TouchableOpacity,
+  LogBox,
 } from 'react-native';
 import {Text, Chip} from 'react-native-paper';
 import {VideoData, useRealm, useQuery} from '../models/VideoData';
@@ -20,7 +22,7 @@ import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
 
 function Dashboard() {
-  const navigation = useNavigation();
+ const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
   const isFocused = useIsFocused();
   const realm = useRealm();
@@ -53,6 +55,10 @@ function Dashboard() {
   } = useDropdownContext();
 
   // useEffect to update videoSetVideoIDs when the array is added to or removed from
+
+    useEffect(() => {
+      LogBox.ignoreLogs(['Error: [TypeError: undefined is not a function]']);
+    });
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
@@ -333,12 +339,32 @@ function Dashboard() {
                   <View style={styles.container}>
                     <View style={styles.thumbnail}>
                       <ImageBackground
-                        style={{height: '100%', width: '100%'}}
+                        style={{
+                          height: '100%',
+                          width: '100%',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          overflow: 'hidden',
+                        }}
                         source={{
                           uri:
                             'file://' + MHMRfolderPath + '/' + video.filename,
-                        }}
-                      />
+                        }}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('Fullscreen Video', {
+                              id: video._id,
+                            })
+                          }>
+                          <Icon
+                            reverse
+                            name="play-sharp"
+                            type="ionicon"
+                            color="#1C3EAA"
+                            size={20}
+                          />
+                        </TouchableOpacity>
+                      </ImageBackground>
                     </View>
                     <View style={styles.rightContainer}>
                       <View>
@@ -451,6 +477,8 @@ const styles = StyleSheet.create({
     height: 240,
     width: '40%',
     padding: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   space: {
     width: 50,

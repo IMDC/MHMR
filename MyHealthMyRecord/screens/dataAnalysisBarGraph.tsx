@@ -10,6 +10,7 @@ import {
   Dimensions,
   Switch,
   TouchableOpacity,
+  LogBox,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
@@ -28,6 +29,7 @@ const DataAnalysisBarGraph = () => {
   const route = useRoute();
   const barData = route.params?.data;
   const sentimentData = route.params?.sentimentData.reverse();
+
 
   const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
     ...freqMap,
@@ -120,6 +122,12 @@ const DataAnalysisBarGraph = () => {
     updateData();
   }, [isEnabledMedWords]);
 
+   useEffect(() => {
+     LogBox.ignoreLogs([
+       'Non-serializable values were found in the navigation state.',
+     ]);
+   });
+  
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
