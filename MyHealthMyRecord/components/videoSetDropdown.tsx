@@ -83,6 +83,10 @@ const VideoSetDropdown = ({
       realm.delete(realm.objects('VideoSet'));
     });
     setLocalDropdown([]);
+    setLocalDropdown([]);
+    setVideoSetValue(null);
+    setVideoSetVideoIDs([]);
+    onVideoSetChange(null);
   };
 
   const refreshDropdown = () => {
@@ -92,6 +96,11 @@ const VideoSetDropdown = ({
       id: set._id,
     }));
     setLocalDropdown(updatedDropdown);
+    if (updatedDropdown.length === 0) {
+      setVideoSetValue(null);
+      setVideoSetVideoIDs([]);
+      onVideoSetChange(null);
+    }
   };
 
   return (
@@ -183,7 +192,7 @@ const VideoSetDropdown = ({
           <View style={{flexDirection: 'row', paddingTop: 10}}>
             {manageSetBtn && (
               <Button
-                disabled={videoSetValue == ''}
+                disabled={!currentVideoSet || videoSetValue == null}
                 title="Manage video set"
                 onPress={() =>
                   navigation.navigate('Manage Video Set', {
