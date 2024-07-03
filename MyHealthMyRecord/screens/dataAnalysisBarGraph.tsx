@@ -30,7 +30,7 @@ const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
   const barData = route.params?.data;
-  const sentimentData = route.params?.sentimentData.reverse();
+  const sentimentData = route.params?.sentimentData;
 
 
   const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
