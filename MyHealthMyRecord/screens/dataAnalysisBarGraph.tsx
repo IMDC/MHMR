@@ -144,8 +144,10 @@ const DataAnalysisBarGraph = () => {
 
   const handleSentimentPress = async (sentiment) => {
     try {
+      const videoIDsSet = new Set(currentVideoSet.videoIDs);
       const videos = await realm.objects('VideoData').filtered(`sentiment == "${sentiment}"`);
-      setVideoIDs(videos);
+      const filteredVideos = videos.filter(video => videoIDsSet.has(video._id.toString()));
+      setVideoIDs(filteredVideos);
       setModalVisible(true);
     } catch (error) {
       console.error('Error in handleSentimentPress:', error);
