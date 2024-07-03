@@ -374,11 +374,11 @@ const DataAnalysis = () => {
 
   function processSentimentData() {
     const sentimentCounts = {
-      'Very Positive': 0,
-      'Positive': 0,
-      'Neutral': 0,
-      'Negative': 0,
       'Very Negative': 0,
+      'Negative': 0,
+      'Neutral': 0,
+      'Positive': 0,
+      'Very Positive': 0,
     };
 
     const sentimentTimeline = videosSelected

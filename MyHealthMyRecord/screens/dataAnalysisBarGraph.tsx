@@ -11,6 +11,8 @@ import {
   Switch,
   TouchableOpacity,
   LogBox,
+  Modal,
+  StyleSheet,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
@@ -28,7 +30,7 @@ const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
   const barData = route.params?.data;
-  const sentimentData = route.params?.sentimentData.reverse();
+  const sentimentData = route.params?.sentimentData;
 
 
   const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
@@ -134,6 +136,22 @@ const DataAnalysisBarGraph = () => {
 
   const scrollRight = () => {
     scrollViewRef.current?.scrollToEnd({animated: true});
+  };
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [videoIDs, setVideoIDs] = useState([]);
+
+
+  const handleSentimentPress = async (sentiment) => {
+    try {
+      const videoIDsSet = new Set(currentVideoSet.videoIDs);
+      const videos = await realm.objects('VideoData').filtered(`sentiment == "${sentiment}"`);
+      const filteredVideos = videos.filter(video => videoIDsSet.has(video._id.toString()));
+      setVideoIDs(filteredVideos);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Error in handleSentimentPress:', error);
+    }
   };
 
   return (
@@ -366,6 +384,7 @@ const DataAnalysisBarGraph = () => {
                         : index === 1
                         ? '#9966CC'
                         : '#6633CC',
+                    onPressIn: () => handleSentimentPress(item.label),
                   },
                 }))}
                 yAccessor={({item}) => item.value}
@@ -394,8 +413,65 @@ const DataAnalysisBarGraph = () => {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>View video(s) with this sentiment</Text>
+          {videoIDs.map((video, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => {
+                navigation.navigate('Fullscreen Video', {
+                  id: video?._id,
+                });
+                setModalVisible(false);
+              }}>
+              <Text style={styles.videoIDText}>{video?.title}</Text>
+            </TouchableOpacity>
+          ))}
+          <Button
+            title="Close"
+            color={Styles.MHMRBlue}
+            radius={50}
+            onPress={() => setModalVisible(false)}
+          />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  videoIDText: {
+    marginVertical: 10,
+    fontSize: 16,
+    color: 'blue',
+  },
+});
+
 
 export default DataAnalysisBarGraph;

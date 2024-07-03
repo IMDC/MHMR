@@ -386,11 +386,11 @@ const DataAnalysisTextSummary = () => {
         <Text style={styles.output}>{videoSetSummary}</Text>
         <View style={styles.sentimentCountsContainer}>
           <Text style={styles.sentimentCountsTitle}>Emotional distribution</Text>
-          <Text style={styles.sentimentCount}>Very positive: {sentimentCounts.veryPositive}</Text>
-          <Text style={styles.sentimentCount}>Positive: {sentimentCounts.positive}</Text>
-          <Text style={styles.sentimentCount}>Neutral: {sentimentCounts.neutral}</Text>
-          <Text style={styles.sentimentCount}>Negative: {sentimentCounts.negative}</Text>
           <Text style={styles.sentimentCount}>Very negative: {sentimentCounts.veryNegative}</Text>
+          <Text style={styles.sentimentCount}>Negative: {sentimentCounts.negative}</Text>
+          <Text style={styles.sentimentCount}>Neutral: {sentimentCounts.neutral}</Text>
+          <Text style={styles.sentimentCount}>Positive: {sentimentCounts.positive}</Text>
+          <Text style={styles.sentimentCount}>Very positive: {sentimentCounts.veryPositive}</Text>
         </View>
       </View>
       {videos.map((video) => {
