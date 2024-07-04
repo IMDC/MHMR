@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  LogBox,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -40,6 +41,12 @@ const DataAnalysisLineGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
   const scrollViewRef = useRef<ScrollView>(null);
+
+useEffect(() => {
+  LogBox.ignoreLogs([
+    'Non-serializable values were found in the navigation state.',
+  ]);
+});
 
   useEffect(() => {
     if (wordLabel == undefined) {
