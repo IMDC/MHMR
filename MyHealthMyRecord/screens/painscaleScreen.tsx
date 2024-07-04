@@ -116,8 +116,8 @@ const Painscale = () => {
           minimumValue={0}
           step={1}
           allowTouchTrack
-          trackStyle={{ height: 5, backgroundColor: 'transparent' }}
-          thumbStyle={{ height: 20, width: 20, backgroundColor: 'transparent' }}
+          trackStyle={{height: 5, backgroundColor: 'transparent'}}
+          thumbStyle={{height: 20, width: 20, backgroundColor: 'transparent'}}
           thumbProps={{
             children: (
               <Icon
@@ -125,8 +125,8 @@ const Painscale = () => {
                 type="font-awesome"
                 size={20}
                 reverse
-                containerStyle={{ bottom: 20, right: 20 }}
-              // color={color()}
+                containerStyle={{bottom: 20, right: 20}}
+                // color={color()}
               />
             ),
           }}
@@ -204,6 +204,7 @@ const Painscale = () => {
         <View></View>
       )}
       <Button
+        radius={50}
         buttonStyle={{
           width: 220,
           height: 75,
@@ -213,7 +214,7 @@ const Painscale = () => {
         onPress={() => {
           navigation.goBack();
           // saveNumericScale(value);
-         }}
+        }}
         title="Save"
         color="#1C3EAA"
       />

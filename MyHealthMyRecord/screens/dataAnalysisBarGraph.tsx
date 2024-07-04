@@ -161,8 +161,15 @@ const DataAnalysisBarGraph = () => {
           <View id="bargraph" style={{flex: 1}}>
             {barGraphVertical == true ? (
               <View id="bargraph-vertical" style={{flex: 1}}>
-                <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
-                  {currentVideoSet?.name} - Count of words mentioned in selected video set
+                <Text
+                  style={{
+                    padding: 20,
+                    fontSize: 20,
+                    color: 'black',
+                    fontWeight: 'bold',
+                  }}>
+                  {currentVideoSet?.name} - Count of words mentioned in selected
+                  video set
                 </Text>
                 <View style={{flexDirection: 'row', flex: 1}}>
                   <View style={{width: 50, justifyContent: 'center'}}>
@@ -230,7 +237,9 @@ const DataAnalysisBarGraph = () => {
                             translateX: 0,
                             y: 5,
                           }}
-                          formatLabel={(value, index) => wordFreqBarGraphData[index].text}
+                          formatLabel={(value, index) =>
+                            wordFreqBarGraphData[index].text
+                          }
                         />
                       </View>
                     </ScrollView>
@@ -337,8 +346,20 @@ const DataAnalysisBarGraph = () => {
               </View>
             </View>
           </View>
+          <View
+            style={{
+              borderBottomColor: 'black',
+              borderBottomWidth: StyleSheet.hairlineWidth,
+            }}
+          />
           <View id="sentiment-bargraph" style={{flex: 1}}>
-            <Text style={{padding: 20, fontSize: 20, color: 'black'}}>
+            <Text
+              style={{
+                padding: 20,
+                fontSize: 20,
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
               {currentVideoSet?.name} - Overall feelings distribution
             </Text>
             <View style={{flexDirection: 'row', flex: 1}}>
@@ -407,7 +428,7 @@ const DataAnalysisBarGraph = () => {
               }}
               contentInset={{left: 50, right: 50}}
             />
-            <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
+            <Text style={{textAlign: 'center', fontSize: 20, color: 'black', marginBottom: 15}}>
               Feeling
             </Text>
           </View>
@@ -419,7 +440,9 @@ const DataAnalysisBarGraph = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>View video(s) with this sentiment</Text>
+          <Text style={styles.modalText}>
+            View video(s) with this sentiment
+          </Text>
           {videoIDs.map((video, index) => (
             <TouchableOpacity
               key={index}
