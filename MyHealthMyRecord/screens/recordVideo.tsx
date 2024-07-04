@@ -130,7 +130,7 @@ const RecordVideo = () => {
       }
       console.log(enableTimer, '----zzzz');
     } else {
-      console.warn('Camera reference is null');
+      console.log('Camera reference is null');
     }
   };
 
