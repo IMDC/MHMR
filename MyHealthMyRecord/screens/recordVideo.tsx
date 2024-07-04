@@ -1,22 +1,21 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { ParamListBase, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCameraDevices, Camera } from 'react-native-vision-camera';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
+import {ParamListBase, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import { PermissionsAndroid, Platform } from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
-import { Icon, Button } from '@rneui/themed';
-import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
-import { useQuery, useRealm } from '../models/VideoData';
+import {Icon, Button} from '@rneui/themed';
+import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
+import {useQuery, useRealm} from '../models/VideoData';
 import Realm from 'realm';
-import { createRealmContext } from '@realm/react';
-import { getAuth, getTranscript } from '../components/stt_api';
+import {createRealmContext} from '@realm/react';
+import {getAuth, getTranscript} from '../components/stt_api';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
-  
+  const [saveBtnState, setSaveBtnState] = useState(false);
   const camera: any = useRef(null);
   const videoPlayer: any = useRef();
   const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
@@ -24,8 +23,6 @@ const RecordVideo = () => {
   const devices: any = useCameraDevices(deviceType);
   //use front camera
   const device = devices[deviceDir];
-
-  
 
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
@@ -68,7 +65,10 @@ const RecordVideo = () => {
       console.log(newCameraPermission, microphonePermission);
       if (newCameraPermission && microphonePermission) {
         console.log('Permissions granted');
-      } else if (newCameraPermission !== 'authorized' || microphonePermission !== 'authorized') {
+      } else if (
+        newCameraPermission !== 'authorized' ||
+        microphonePermission !== 'authorized'
+      ) {
         console.log('Permissions denied');
       }
     }
@@ -100,7 +100,7 @@ const RecordVideo = () => {
       setEnableTimer(true);
       // getAuth();
     }
-  }
+  };
 
   async function pauseRecodingHandler() {
     if (camera.current !== null) {
@@ -144,7 +144,7 @@ const RecordVideo = () => {
     setEnableTimer(false);
     displayTime[1](0);
     timeWarningMessage[1]('');
-  }
+  };
 
   /* timer */
   useEffect(() => {
@@ -159,7 +159,10 @@ const RecordVideo = () => {
         displayTime[1](timeOfRecording[0]);
 
         // 5 second warning
-        if (timeOfRecording[0] >= maxLength[0] - 5) timeWarningMessage[1]( (maxLength[0]-timeOfRecording[0]) + ' more seconds');
+        if (timeOfRecording[0] >= maxLength[0] - 5)
+          timeWarningMessage[1](
+            maxLength[0] - timeOfRecording[0] + ' more seconds',
+          );
 
         // stop recording once max time limit is reached
         if (maxLength[0] > 0 && time >= maxLength[0]) {
@@ -167,7 +170,6 @@ const RecordVideo = () => {
           clearInterval(timerRef.current);
           console.log(enableTimer, timerRef.current, '----enable timer 3');
         }
-
       }, 1000);
     } else {
       stopRecodingHandler();
@@ -177,7 +179,6 @@ const RecordVideo = () => {
     console.log('.........................................ss', enableTimer);
   }, [enableTimer]);
 
-
   /**
    * format timestamp from seconds to 00:00:00
    * @param d - data in seconds
@@ -186,9 +187,15 @@ const RecordVideo = () => {
   function secondsToHms(d: number) {
     d = Number(d);
     var h = Math.floor(d / 3600);
-    var m = Math.floor(d % 3600 / 60);
-    var s = Math.floor(d % 3600 % 60);
-    return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+    var m = Math.floor((d % 3600) / 60);
+    var s = Math.floor((d % 3600) % 60);
+    return (
+      ('0' + h).slice(-2) +
+      ':' +
+      ('0' + m).slice(-2) +
+      ':' +
+      ('0' + s).slice(-2)
+    );
   }
 
   if (device == null) {
@@ -225,11 +232,11 @@ const RecordVideo = () => {
     const audioFileName = fileName.replace('.mp4', '.wav');
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
 
-     const audioFolderExists = await RNFS.exists(audioFolderPath);
-     if (!audioFolderExists) {
-       await RNFS.mkdir(audioFolderPath);
+    const audioFolderExists = await RNFS.exists(audioFolderPath);
+    if (!audioFolderExists) {
+      await RNFS.mkdir(audioFolderPath);
     }
-    
+
     // delete console logs later
     console.log(filePath);
     // ex. /data/user/0/com.myhealthmyrecord/cache/VisionCamera-20230606_1208147672158123173592211.mp4
@@ -252,15 +259,15 @@ const RecordVideo = () => {
           const session = await FFmpegKit.execute(ffmpegCommand);
           const returnCode = await session.getReturnCode();
 
-              if (ReturnCode.isSuccess(returnCode)) {
-                console.log('Conversion success');
-                // if isConverted is for audio and not STT
-                // video.isConverted = true;
-              } else if (ReturnCode.isCancel(returnCode)) {
-                console.log('Conversion canceled');
-              } else {
-                console.error('Conversion failed');
-              }
+          if (ReturnCode.isSuccess(returnCode)) {
+            console.log('Conversion success');
+            // if isConverted is for audio and not STT
+            // video.isConverted = true;
+          } else if (ReturnCode.isCancel(returnCode)) {
+            console.log('Conversion canceled');
+          } else {
+            console.error('Conversion failed');
+          }
 
           Alert.alert('Your recording has been saved');
           navigation.navigate('Home');
@@ -268,6 +275,7 @@ const RecordVideo = () => {
         })
         .catch(err => {
           console.log(err.message);
+          navigation.navigate('Home');
         });
     } catch (err: any) {
       console.error('Error during video saving or conversion:', err);
@@ -322,26 +330,25 @@ const RecordVideo = () => {
     {id: new Realm.BSON.ObjectID(), value: 7, title: 'Other', checked: false},
   ];
 
-
   const painscaleRef = [
-    { id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Stabbing', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Sharp', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Cramping', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Gnawing', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Burning', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Aching', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Heavy', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Tender', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Splitting', severity_level: 'none' },
+    {id: new Realm.BSON.ObjectID(), name: 'Throbbing', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Shooting', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Stabbing', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Sharp', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Cramping', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Gnawing', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Burning', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Aching', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Heavy', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Tender', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Splitting', severity_level: 'none'},
     {
       id: new Realm.BSON.ObjectID(),
       name: 'Tiring/Exhausting',
       severity_level: 'none',
     },
-    { id: new Realm.BSON.ObjectID(), name: 'Sickening', severity_level: 'none' },
-    { id: new Realm.BSON.ObjectID(), name: 'Fearful', severity_level: 'none' },
+    {id: new Realm.BSON.ObjectID(), name: 'Sickening', severity_level: 'none'},
+    {id: new Realm.BSON.ObjectID(), name: 'Fearful', severity_level: 'none'},
     {
       id: new Realm.BSON.ObjectID(),
       name: 'Cruel/Punishing',
@@ -379,7 +386,7 @@ const RecordVideo = () => {
         numericScale: 0,
         isSelected: false,
         isConverted: false,
-        transcript:[],
+        transcript: [],
         weekday: new Date().toString().split(' ')[0],
       });
     });
@@ -389,7 +396,6 @@ const RecordVideo = () => {
     <View style={styles.container}>
       {showCamera ? (
         <>
-
           <Camera
             ref={camera}
             style={StyleSheet.absoluteFill}
@@ -399,24 +405,27 @@ const RecordVideo = () => {
             audio={true}
           />
           <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
-          {(timeWarningMessage[0] != '') ? (
+          {timeWarningMessage[0] != '' ? (
             <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
-          ): null}
+          ) : null}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
-              <TouchableOpacity onPress={() => {stopRecodingHandler();}}>
-                <Icon
-                  name="stop"
-                  size={40}
-                  type="font-awesome"
-                  color="white"
-                  // onPress={() => {
-                  //   stopRecodingHandler();
-                  // }}
-                />
+                <TouchableOpacity
+                  onPress={() => {
+                    stopRecodingHandler();
+                  }}>
+                  <Icon
+                    name="stop"
+                    size={40}
+                    type="font-awesome"
+                    color="white"
+                    // onPress={() => {
+                    //   stopRecodingHandler();
+                    // }}
+                  />
                 </TouchableOpacity>
-{/* 
+                {/* 
                 {recordingPaused ? (
                   <Icon
                     name="play"
@@ -460,6 +469,7 @@ const RecordVideo = () => {
                   style={styles.camButton}
                   onPress={() => {
                     StartRecodingHandler();
+                    setSaveBtnState(false);
                   }}
                 />
               </>
@@ -471,7 +481,7 @@ const RecordVideo = () => {
           {videoSource !== '' ? (
             <Video
               ref={ref => (videoPlayer.current = ref)}
-              source={{ uri: videoSource.path }} // path in cache where vision camera stores video
+              source={{uri: videoSource.path}} // path in cache where vision camera stores video
               paused={false} // make it start
               style={styles.backgroundVideo}
               repeat={true}
@@ -494,12 +504,13 @@ const RecordVideo = () => {
                 <Icon name="repeat" color="white" />
               </Button>
               <Button
+                disabled={saveBtnState}
                 buttonStyle={styles.btnStyle}
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
                   saveVideo(videoSource.path);
-                  // console.log(painscaleRef);
+                  setSaveBtnState(true);
                 }}>
                 Save Video
                 <Icon name="save" color="white" />
@@ -564,12 +575,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-  btnStyle: { backgroundColor: '#1C3EAA' },
-  timer : {
+  btnStyle: {backgroundColor: '#1C3EAA'},
+  timer: {
     color: 'red',
     fontSize: 25,
     backgroundColor: 'white',
-    opacity: 0.50,
+    opacity: 0.5,
     borderRadius: 50,
     position: 'absolute',
     justifyContent: 'center',
@@ -581,15 +592,14 @@ const styles = StyleSheet.create({
     color: 'orange',
     fontSize: 15,
     backgroundColor: 'black',
-    opacity: 0.50,
+    opacity: 0.5,
     borderRadius: 50,
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
     top: 100,
     padding: 10,
-    
-  }
+  },
 });
 
 export default RecordVideo;
