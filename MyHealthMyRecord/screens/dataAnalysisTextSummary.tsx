@@ -66,7 +66,7 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videos.map(async video => {
+        videos.map(async (video) => {
           if (!video) {
             return null;
           }
@@ -180,6 +180,7 @@ const DataAnalysisTextSummary = () => {
             return {
               ...video,
               transcriptFileContent: summary,
+              sentiment: await getSentimentFromChatGPT(updatedTranscript, realm, video._id.toString()),
             };
           })
         );
