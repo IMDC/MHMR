@@ -21,6 +21,8 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useRealm} from '../models/VideoData';
 
 const DataAnalysisLineGraph = () => {
+  const [previousButtonState, setPreviousButtonState] = useState(false);
+  const [nextButtonState, setNextButtonState] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
   const wordLabel = route.params?.word;
@@ -42,11 +44,11 @@ const DataAnalysisLineGraph = () => {
   const [videoIDs, setVideoIDs] = useState([]);
   const scrollViewRef = useRef<ScrollView>(null);
 
-useEffect(() => {
-  LogBox.ignoreLogs([
-    'Non-serializable values were found in the navigation state.',
-  ]);
-});
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Non-serializable values were found in the navigation state.',
+    ]);
+  });
 
   useEffect(() => {
     if (wordLabel == undefined) {
@@ -125,7 +127,7 @@ useEffect(() => {
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
-    {label: 'Weekly', value: '2'},
+    // {label: 'Weekly', value: '2'},
     {label: 'Monthly', value: '3'},
   ];
 
@@ -220,11 +222,11 @@ useEffect(() => {
   };
 
   const scrollLeft = () => {
-    scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+    scrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
 
   const scrollRight = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    scrollViewRef.current?.scrollToEnd({animated: true});
   };
 
   return (
@@ -248,7 +250,9 @@ useEffect(() => {
               )}
             />
 
-            <TouchableOpacity onPress={scrollLeft} style={{ justifyContent: 'center' }}>
+            <TouchableOpacity
+              onPress={scrollLeft}
+              style={{justifyContent: 'center'}}>
               <Icon name="arrow-left" size={60} color="black" />
             </TouchableOpacity>
             <ScrollView horizontal={true} ref={scrollViewRef}>
@@ -802,7 +806,9 @@ useEffect(() => {
                 </View>
               )}
             </ScrollView>
-            <TouchableOpacity onPress={scrollRight} style={{ justifyContent: 'center' }}>
+            <TouchableOpacity
+              onPress={scrollRight}
+              style={{justifyContent: 'center'}}>
               <Icon name="arrow-right" size={60} color="black" />
             </TouchableOpacity>
           </View>
@@ -816,6 +822,7 @@ useEffect(() => {
                 justifyContent: 'space-evenly',
               }}>
               <Button
+                disabled={date == 0 ? true : false}
                 title="Previous period"
                 color={Styles.MHMRBlue}
                 radius={50}
@@ -876,6 +883,15 @@ useEffect(() => {
               )}
 
               <Button
+                disabled={
+                  (periodValue == '1' &&
+                    date < dateOptionsForHours.length - 1) ||
+                  (periodValue == '2' &&
+                    date < dateOptionsForWeeks.length - 1) ||
+                  (periodValue == '3' && date < dateOptionsForMonths.length - 1)
+                    ? false
+                    : true
+                }
                 title="Next period"
                 color={Styles.MHMRBlue}
                 radius={50}
@@ -887,7 +903,10 @@ useEffect(() => {
                   color: 'white',
                 }}
                 onPress={() => {
-                  if (date < dateOptionsForHours.length - 1) {
+                  if (
+                    date < dateOptionsForHours.length - 1 ||
+                    date < dateOptionsForMonths.length - 1
+                  ) {
                     setDateValue(date + 1);
                   } else {
                     console.log('There is no next date');
