@@ -52,13 +52,6 @@ const EmotionTagging = () => {
         onPanResponderGrant: (e, gesture) => {
           //pause video here
           videoPlayerRef.current.pause();
-          // delete below
-          /* if (videoPlayerRef != null) {
-            let t: number = videoPlayerRef.current.currentTime;
-            let v = videoPlayerRef.current;
-            //setTime(t);
-            console.log("time at pause:", currentTime, t);
-          }    */
           this.state.pan.setOffset({
             x: this._val.x,
             y: this._val.y,
@@ -133,27 +126,23 @@ const EmotionTagging = () => {
       };
       if (this.state.showDraggable) {
         return (
-          console.log('Re-rendering test===='),
-          (
-            <View style={{ position: 'absolute', paddingRight: 60 }}>
-              <Animated.View
-                {...this.panResponder.panHandlers}
-                style={[
-                  panStyle,
-                  styles.circle,
-                  { opacity: this.state.opacity },
-                ]}>
-                <Image
-                  style={{ height: 120, width: 120 }}
-                  source={this.props.source}
-                />
-              </Animated.View>
-            </View>
-          )
+          <View style={{ position: 'absolute', paddingRight: 60 }}>
+            <Animated.View
+              {...this.panResponder.panHandlers}
+              style={[
+                panStyle,
+                styles.circle,
+                { opacity: this.state.opacity },
+              ]}>
+              <Image
+                style={styles.sticker}
+                source={this.props.source}
+              />
+            </Animated.View>
+          </View>
         );
       }
     }
-
   }
 
   const [isDeleteBtnVisible, setDeleteBtnVisible] = useState(false);
@@ -362,7 +351,7 @@ const EmotionTagging = () => {
           }}
         />
         {overlaySticker[0] != '' ? (
-          <Image style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]} source={overlaySticker[0]}></Image>
+          <Image style={[styles.overlayText, styles.overlaySticker]} source={overlaySticker[0]}></Image>
         ) : null }
         {/* <Text style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]}>{overlaySticker[0]}</Text> */}
       </View>
@@ -490,7 +479,6 @@ const EmotionTagging = () => {
   );
 };
 
-let CIRCLE_RADIUS = 30;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
@@ -500,11 +488,6 @@ const styles = StyleSheet.create({
   },
   ballContainer: {
     height: 80,
-  },
-  // left container style not in use currently
-  leftContainer: {
-    width: '90%',
-    flexWrap: 'wrap',
   },
   rightContainer: {
     flex: 1,
@@ -516,25 +499,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   circle: {
-    width: CIRCLE_RADIUS * 2,
-    height: CIRCLE_RADIUS * 2,
-    borderRadius: CIRCLE_RADIUS,
-  },
-  // player style not in use currently
-  playerStyle: {
-    height: '70%',
-    padding: 4
+    width: 120,
+    height: 120,
   },
   headerStyle: {
     fontWeight: 'bold',
     fontSize: 28,
     paddingLeft: 25,
-  },
-  // button style not in use currently
-  buttonStyle: {
-    borderColor: 'transparent',
-    borderWidth: 0,
-    borderRadius: 30,
   },
   textStyle: {
     fontSize: 22,
@@ -549,23 +520,24 @@ const styles = StyleSheet.create({
     borderBottomColor: 'grey',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  // overlay style not in use currently
-  overlay: {
-    flex: 1,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
   overlayText: {
     flex: 1,
     position: 'absolute',
-    //textAlignVertical: 'center',
     marginTop: 20,
     marginLeft: 20,
     padding: 5,
     backgroundColor: 'white',
     opacity: 0.85,
     borderRadius: 10,
+  },
+  overlaySticker: {
+    width: 100,
+    height: 100,
+    marginRight: Dimensions.get('window').width / 1.5,
+  },
+  sticker: {
+    width: 100,
+    height: 100,
   },
 });
 
