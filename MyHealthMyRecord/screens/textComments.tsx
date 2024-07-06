@@ -360,13 +360,13 @@ const TextComments = () => {
                                 // console.log('comment selected', c.text);
                                 console.log('comment selected', c.id);
                               }}>
-                              <Icon name="pencil" type="font-awesome" size={20} color="#1C3EAA" />
+                              <Icon name="pencil" type="font-awesome" size={24} color="#1C3EAA" />
                             </TouchableOpacity>
 
                             <TouchableOpacity
                               style={{ alignSelf: 'flex-end' }}
                               onPress={() => deleteComment(c.id)}>
-                              <Icon name="trash" type="font-awesome" size={20} color="#cf7f11" />
+                              <Icon name="delete" size={24} color="#cf7f11" />
                             </TouchableOpacity>
                           </View>
                         )}
