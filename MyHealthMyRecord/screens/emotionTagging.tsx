@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   LogBox,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 const angry = require('../assets/images/emojis/angry.png');
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -461,9 +462,7 @@ const EmotionTagging = () => {
                           <TouchableOpacity
                             style={{ alignSelf: 'flex-end' }}
                             onPress={() => deleteSticker(s.id)}>
-                            <Text style={{ color: '#cf7f11', fontSize: 16 }}>
-                              Delete
-                            </Text>
+                            <Icon name="delete" size={24} color="grey" />
                           </TouchableOpacity>
                         </View>
                       )}
