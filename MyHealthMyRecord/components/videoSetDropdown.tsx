@@ -149,6 +149,7 @@ const VideoSetDropdown = ({
             containerStyle={{
               width: 300,
             }}
+            disabled={localDropdown.length === 0}
           />
         </View>
       ) : (
