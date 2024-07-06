@@ -186,7 +186,7 @@ const ReviewAnnotations = () => {
           </View>
         ) : null}
         {overlaySticker[0] != '' ? (
-          <Image style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]} source={overlaySticker[0]} />
+          <Image style={[styles.overlayText, styles.overlaySticker]} source={overlaySticker[0]} />
         ) : null}
       </View>
 
@@ -358,6 +358,11 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
     //change margintop to something more responsive
     marginTop: 450,
+  },
+  overlaySticker: {
+    width: 100,
+    height: 100,
+    marginRight: Dimensions.get('window').width / 1.5,
   },
 });
 
