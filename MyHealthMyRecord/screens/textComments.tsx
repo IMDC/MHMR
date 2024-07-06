@@ -349,9 +349,9 @@ const TextComments = () => {
                       <View style={styles.rightContainer}>
                         {/* display this when user clicks edit */}
                         {isDeleteBtnVisible && (
-                          <View>
+                          <View style={{ flexDirection: 'row' }}>
                             <TouchableOpacity
-                              style={{alignSelf: 'flex-end'}}
+                              style={{ alignSelf: 'flex-end', marginRight: 10 }}
                               onPress={() => {
                                 setCommentSelectedText(c.text);
                                 setCommentSelectedID(c.id);
@@ -360,17 +360,13 @@ const TextComments = () => {
                                 // console.log('comment selected', c.text);
                                 console.log('comment selected', c.id);
                               }}>
-                              <Text style={{color: '#1C3EAA', fontSize: 16}}>
-                                Edit
-                              </Text>
+                              <Icon name="pencil" type="font-awesome" size={20} color="#1C3EAA" />
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                              style={{alignSelf: 'flex-end'}}
+                              style={{ alignSelf: 'flex-end' }}
                               onPress={() => deleteComment(c.id)}>
-                              <Text style={{color: '#cf7f11', fontSize: 16}}>
-                                Delete
-                              </Text>
+                              <Icon name="trash" type="font-awesome" size={20} color="#cf7f11" />
                             </TouchableOpacity>
                           </View>
                         )}
@@ -390,11 +386,6 @@ const styles = StyleSheet.create({
   container: {
     padding: 25,
   },
-  // left container style not in use currently
-  leftContainer: {
-    width: '90%',
-    flexWrap: 'wrap',
-  },
   rightContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -404,21 +395,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
   },
-  // player style not in use currently
-  playerStyle: {
-    height: '70%',
-    padding: 4,
-  },
   headerStyle: {
     fontWeight: 'bold',
     fontSize: 28,
     paddingLeft: 25,
-  },
-  // button style not in use currently
-  buttonStyle: {
-    borderColor: 'transparent',
-    borderWidth: 0,
-    borderRadius: 30,
   },
   textStyle: {
     fontSize: 22,
@@ -432,13 +412,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     borderBottomColor: 'grey',
     borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  // overlay style not in use currently
-  overlay: {
-    flex: 1,
-    position: 'absolute',
-    left: 0,
-    top: 0,
   },
   overlayText: {
     flex: 1,

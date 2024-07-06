@@ -462,7 +462,7 @@ const EmotionTagging = () => {
                           <TouchableOpacity
                             style={{ alignSelf: 'flex-end' }}
                             onPress={() => deleteSticker(s.id)}>
-                            <Icon name="delete" size={24} color="grey" />
+                            <Icon name="delete" size={24} color="#cf7f11" />
                           </TouchableOpacity>
                         </View>
                       )}
