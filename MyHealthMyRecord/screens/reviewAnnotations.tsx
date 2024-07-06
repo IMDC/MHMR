@@ -13,13 +13,14 @@ import {
   Dimensions,
   TouchableOpacity,
   LogBox,
+  Image
 } from 'react-native';
 const angry = require('../assets/images/emojis/angry.png');
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
 const smile = require('../assets/images/emojis/smile.png');
 const worried = require('../assets/images/emojis/worried.png');
-import { Icon, Button, Image } from '@rneui/themed';
+import { Icon, Button } from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import { useObject, useRealm } from '../models/VideoData';
@@ -36,7 +37,7 @@ const ReviewAnnotations = () => {
 
   useEffect(() => {
     LogBox.ignoreLogs(['Non-serializable values were found in the navigation state.']);
-  })
+  });
 
   const videoPlayerRef: any = useRef(null);
 
@@ -140,7 +141,9 @@ const ReviewAnnotations = () => {
   }
 
   const seekToTimestamp = (timestamp: any) => {
-    videoPlayerRef.current.setNativeProps({ seek: timestamp });
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.seek(timestamp);
+    }
     console.log('press', timestamp);
   };
 
@@ -174,25 +177,16 @@ const ReviewAnnotations = () => {
           }
         />
         {overlayComment[0] != '' ? (
-          <View
-            style={[
-              styles.overlayText,
-              styles.overlayTextForComment,
-              {marginRight: windowWidth / 1.5},
-            ]}>
-            <Icon
-              name="chatbox-ellipses"
-              type="ionicon"
-              color="black"
-              size={40}
-              //style={{ alignSelf: 'flex-start', paddingLeft: 5 }}
-            />
+          <View style={[
+            styles.overlayText,
+            styles.overlayTextForComment,
+            { position: 'absolute', bottom: 10, left: 10 }
+          ]}>
+            <Text>{overlayComment[0]}</Text>
           </View>
         ) : null}
         {overlaySticker[0] != '' ? (
-          <Text style={[styles.overlayText, {marginRight: windowWidth / 1.5}]}>
-            {overlaySticker[0]}
-          </Text>
+          <Image style={[styles.overlayText, { marginRight: windowWidth / 1.5 }]} source={overlaySticker[0]} />
         ) : null}
       </View>
 
