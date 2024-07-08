@@ -20,7 +20,7 @@ import {
 } from '../components/chatgpt_api';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
-import NetInfo from '@react-native-community/netinfo';
+import { useNetwork } from '../components/networkProvider';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -29,6 +29,7 @@ const worried = require('../assets/images/emojis/worried.png');
 const happy = require('../assets/images/emojis/happy.png');
 
 const DataAnalysisTextSummary = () => {
+  const {online} = useNetwork();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
@@ -43,7 +44,6 @@ const DataAnalysisTextSummary = () => {
   const [transcriptEdited, setTranscriptEdited] = useState(false);
   const [reportFormat, setReportFormat] = useState('bullet');
   const [sentimentsGenerated, setSentimentsGenerated] = useState(false);
-  const state = NetInfo.fetch();
 
   // useEffect to retrieve the video data of the selected video set
   useEffect(() => {
@@ -112,35 +112,41 @@ const DataAnalysisTextSummary = () => {
 
   useEffect(() => {
     const updateVideoSetSummary = async () => {
-      if (
-        currentVideoSet &&
-        transcriptsLoaded &&
-        (transcriptEdited || videoSetSummary === '')
-      ) {
-        const summary = await sendVideoSetToChatGPT(
-          realm,
-          videoSetVideoIDs,
-          currentVideoSet,
-          reportFormat,
-        );
-
-        realm.write(() => {
-          const videoSetToUpdate = realm.objectForPrimaryKey(
-            'VideoSet',
-            currentVideoSet._id,
+      if (online) {
+        console.log('You are online.')
+        if (
+          currentVideoSet &&
+          transcriptsLoaded &&
+          (transcriptEdited || currentVideoSet.isSummaryGenerated === false)
+        ) {
+          const summary = await sendVideoSetToChatGPT(
+            realm,
+            videoSetVideoIDs,
+            currentVideoSet,
+            reportFormat,
           );
-          videoSetToUpdate.summaryAnalysisSentence = summary[0];
-          videoSetToUpdate.summaryAnalysisBullet = summary[1];
-        });
 
-        if (reportFormat === 'bullet') {
-          setVideoSetSummary(summary[1]);
-          console.log('videoSetSummary Bullet:', videoSetSummary);
-        } else {
-          setVideoSetSummary(summary[0]);
-          console.log('videoSetSummary Sentence:', videoSetSummary);
+          realm.write(() => {
+            const videoSetToUpdate = realm.objectForPrimaryKey(
+              'VideoSet',
+              currentVideoSet._id,
+            );
+            videoSetToUpdate.summaryAnalysisSentence = summary[0];
+            videoSetToUpdate.summaryAnalysisBullet = summary[1];
+          });
+
+          if (reportFormat === 'bullet') {
+            setVideoSetSummary(summary[1]);
+            console.log('videoSetSummary Bullet:', videoSetSummary);
+          } else {
+            setVideoSetSummary(summary[0]);
+            console.log('videoSetSummary Sentence:', videoSetSummary);
+          }
+          setTranscriptEdited(false);
         }
-        setTranscriptEdited(false);
+      }
+      else {
+        console.log('You are offline.')
       }
     };
 
@@ -153,6 +159,7 @@ const DataAnalysisTextSummary = () => {
     videoSetVideoIDs,
     realm,
     reportFormat,
+    online,
   ]);
 
   //useEffect for updating transcript
@@ -419,6 +426,11 @@ const DataAnalysisTextSummary = () => {
             {reportFormat === 'bullet'
               ? currentVideoSet.summaryAnalysisBullet
               : currentVideoSet.summaryAnalysisSentence}
+          </Text>
+          <Text style={[styles.output,{fontWeight: 'bold'} ]}>
+            {!online && currentVideoSet.isSummaryGenerated === false
+              ? 'Your device is currently offline. Your video set summary cannot be generated without internet connection. '
+              : ''}
           </Text>
         </View>
 

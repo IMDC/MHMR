@@ -117,7 +117,7 @@ function Dashboard() {
       // add these videos to the current video set if there is a selected video set
       realm.write(() => {
         currentVideoSet.videoIDs = Array.from(
-          new Set([...currentVideoSet.videoIDs, ...selectedVideosArray]),
+          new Set([...currentVideoSet?.videoIDs, ...selectedVideosArray]),
         );
         console.log('NEW currentSet.videoIDs:', currentVideoSet.videoIDs);
       });
