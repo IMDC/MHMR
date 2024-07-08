@@ -1,9 +1,8 @@
 import Realm from 'realm';
 import axios from 'axios';
 import RNFS from 'react-native-fs';
-import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import Config from 'react-native-config';
-import { VideoData, useRealm } from '../models/VideoData';
+import {VideoData, useRealm} from '../models/VideoData';
 import {Buffer} from 'buffer';
 
 export const getAuth = async () => {
@@ -50,12 +49,21 @@ export const getTranscript = async (
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
     const audioFilePath = `${audioFolderPath}/${audioFileName}`;
     const data = await RNFS.readFile(audioFilePath, 'base64');
+    if (data.length === 0) {
+      console.log('Audio file is empty. Returning empty transcript.');
+      await saveEmptyTranscript(_id, realm);
+      return '';
+    }
+
     const bufferData = Buffer.from(data, 'base64'); // Correctly convert base64 to binary
     console.log(data.substring(0, 5), ', ', data.substring(data.length - 5));
     await transcribeAudio(bufferData, _id, auth, realm); // Use bufferData instead of data
     console.log('done');
   } catch (error) {
-    console.error('Error during transcription:', error.message);
+    console.error(
+      'Error during getTranscript function transcription:',
+      error.message,
+    );
     if (error.response) {
       console.error('Response error:', error.response.data);
     }
@@ -63,6 +71,21 @@ export const getTranscript = async (
   }
 };
 
+const saveEmptyTranscript = async (_id: string, realm: Realm) => {
+  realm.write(() => {
+    const objectId = new Realm.BSON.ObjectId(_id);
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    if (video) {
+      // Add an empty transcript
+      video.isTranscribed = true;
+      video.transcript.push('');
+      console.log('Transcript:', video.transcript);
+      console.log('Updated video with empty transcript');
+    } else {
+      console.log('No video found with ID:', _id);
+    }
+  });
+};
 const transcribeAudio = async (
   body: any,
   _id: any,
@@ -70,6 +93,11 @@ const transcribeAudio = async (
   realm: Realm,
 ) => {
   try {
+    if (!body || body.length === 0) {
+      console.log('No audio data found. Saving empty transcript.');
+      await saveEmptyTranscript(_id, realm);
+      return;
+    }
     const response = await axios.post(
       'https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize',
       body,
@@ -97,17 +125,16 @@ const transcribeAudio = async (
         console.log('Transcript:', video.transcript);
         // video.isConverted = true; // Mark the video as converted
         // console.log('isConverted:', video.isConverted);
-        console.log(
-          'Updated video with transcript',
-        );
+        console.log('Updated video with transcript');
       } else {
         console.log('No video found with ID:', _id);
       }
     });
-
-
   } catch (error) {
-    console.log('Error during transcription:', error.message || error);
+    console.log(
+      'Error during transcribeAudio transcription:',
+      error.message || error,
+    );
 
     if (error.response?.status === 401) {
       console.log('Authentication error, obtaining new token...');

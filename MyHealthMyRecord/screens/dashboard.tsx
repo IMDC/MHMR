@@ -63,11 +63,12 @@ function Dashboard() {
   });
 
   useEffect(() => {
+    console.log(currentVideoSet);
     const selectedVideos = route.params?.selectedVideos || [];
-    console.log('selectedVideos:', selectedVideos);
-    console.log('selectedVideos.size:', selectedVideos.size);
-    console.log('sendToVideoSet number:', sendToVideoSet);
-    console.log('selectedVideoSet:', selectedVideoSet);
+    // console.log('selectedVideos:', selectedVideos);
+    // console.log('selectedVideos.size:', selectedVideos.size);
+    // console.log('sendToVideoSet number:', sendToVideoSet);
+    // console.log('selectedVideoSet:', selectedVideoSet);
     if (sendToVideoSet == 0 || sendToVideoSet == undefined) {
       if (videoSetVideoIDs) {
         const videoIDSet = new Set(videoSetVideoIDs);
@@ -141,15 +142,15 @@ function Dashboard() {
       setSendToVideoSet(0);
     }
 
-    console.log('selectedSetVideos:', selectedSetVideos);
+    // console.log('selectedSetVideos:', selectedSetVideos);
     // remove duplicates from videoSetVideoIDs
     // setVideoSetVideoIDs(...Array.from(new Set(videoSetVideoIDs)));
     if (isFocused) {
       setVideos(selectedSetVideos);
     }
-    console.log('-'.repeat(40));
-    console.log('videoSetVideoIDs in Dashboard.tsx:', videoSetVideoIDs);
-    console.log('-'.repeat(40));
+    // console.log('-'.repeat(40));
+    // console.log('videoSetVideoIDs in Dashboard.tsx:', videoSetVideoIDs);
+    // console.log('-'.repeat(40));
   }, [
     route.params?.selectedVideos,
     currentVideoSet,
@@ -216,6 +217,7 @@ function Dashboard() {
       const locations = getCheckedLocations(video.filename).join(', ');
 
       try {
+        console.log(video.filename, transcript, realm, video._id.toHexString(), 'bullet');
         const outputText = await sendToChatGPT(
           video.filename,
           transcript,

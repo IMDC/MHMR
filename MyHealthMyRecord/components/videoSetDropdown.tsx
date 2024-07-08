@@ -51,7 +51,8 @@ const VideoSetDropdown = ({
         name: new Date().toString().split(' GMT-')[0],
         frequencyData: frequencyData,
         videoIDs: videoIDs,
-        summaryAnalysis: '',
+        summaryAnalysisBullet: '',
+        summaryAnalysisSentence: '',
         isSummaryGenerated: false,
       });
 

@@ -107,7 +107,7 @@ const ViewRecordings = ({selected, setSelected}) => {
         );
       } catch (error) {
         console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
+          `Failed to process video ${video._id.toHexString()} in video directory:`,
           error,
         );
       }
@@ -556,7 +556,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                   });
 
                   await handleSend();
-                  // await handleYesAnalysis();
+                  await handleYesAnalysis();
                   Alert.alert(
                     'Video Transcripts Generated and Analyzed',
                     'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
@@ -1016,7 +1016,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                       const updatedSelectedVideos = new Set(
                                         selectedVideos,
                                       );
-                                      if (!isChecked && !transcriptIsEmpty) {
+                                      if (!isChecked) {
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
@@ -1030,28 +1030,10 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         realm.write(() => {
                                           video.isSelected = true;
                                         });
-                                        // convertToAudio(video);
-                                        // realm.write(() => {
-                                        //   video.isConverted = true;
-                                        // });
-                                        // getAuth();
-                                        // getTranscript(
-                                        //   video.filename.replace('.mp4', '') +
-                                        //     '.wav',
-                                        //   video._id.toString(),
-                                        // );
-
+                                    
                                         console.log('checked');
                                         console.log(video.isSelected);
-                                      } else if (
-                                        !isChecked &&
-                                        transcriptIsEmpty
-                                      ) {
-                                        toggleVideoChecked(
-                                          video._id.toString(),
-                                        );
-                                        console.log('else if checked');
-                                      } else if (isChecked) {
+                                      }  else { // If video is already checked, uncheck it and remove from selected videos
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );

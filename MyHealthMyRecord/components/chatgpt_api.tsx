@@ -1,5 +1,7 @@
+import {useState} from 'react';
 import Config from 'react-native-config';
 import RNFS from 'react-native-fs';
+import Realm from 'realm';
 
 async function connectToChatGPT(inputText) {
   try {
@@ -11,12 +13,12 @@ async function connectToChatGPT(inputText) {
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        messages: [{ role: 'user', content: inputText }],
+        messages: [{role: 'user', content: inputText}],
         max_tokens: 150,
       }),
     });
     const data = await response.json();
-    console.log('Response from ChatGPT API:', data); // Log the response
+    // console.log('Response from ChatGPT API:', data); // Log the response
     return data;
   } catch (error) {
     console.error('Error:', error);
@@ -32,31 +34,64 @@ export const sendToChatGPT = async (
   _id,
   reportFormat,
 ) => {
+  if (transcript === '') {
+    return;
+}
+
+  let returnOutput: any[] = [];
   try {
     const transcriptWordCount = transcript.split(' ').length;
     const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
-    
-    let inputText;
-    if (reportFormat === 'bullet') {
-      inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using \u2022`;
-    } else {
-      inputText = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in ${reportFormat}.`;
+
+    let inputTextBullet = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary with bullet points using \u2022`;
+    let inputTextSentence = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+    let sentimentInputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
+
+    console.log('*'.repeat(50));
+    console.log('Transcript:', transcript);
+
+    const sentimentData = await connectToChatGPT(sentimentInputText);
+    if (sentimentData.choices && sentimentData.choices.length > 0) {
+      const sentiment = sentimentData.choices[0].message.content.trim();
+
+      realm.write(() => {
+        const objectId = new Realm.BSON.ObjectId(_id);
+        const video = realm.objectForPrimaryKey('VideoData', objectId);
+        if (video) {
+          console.log('Sentiment:', sentiment);
+          video.sentiment = sentiment;
+        }
+      });
     }
 
-    // Create directories if they don't exist
-    const directoryPath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts`;
-    await RNFS.mkdir(directoryPath, { recursive: true });
+    const dataSentence = await connectToChatGPT(inputTextSentence);
+
+    if (dataSentence.choices && dataSentence.choices.length > 0) {
+      const outputText = dataSentence.choices[0].message.content;
+
+      realm.write(() => {
+        const objectId = new Realm.BSON.ObjectId(_id); // Ensure _id is a Realm ObjectId
+        const video = realm.objectForPrimaryKey('VideoData', objectId);
+
+        if (video) {
+          // video.isConverted = true; // Mark the video as converted
+          video.tsOutputSentence = outputText;
+          console.log('tsOutputSentence:', video.tsOutputSentence);
+          returnOutput.push(outputText);
+        } else {
+          console.log('No video found with ID:', _id);
+        }
+      });
+    } else {
+      throw new Error('Invalid response from ChatGPT API');
+    }
 
     // Send the input text to ChatGPT API
-    const data = await connectToChatGPT(inputText);
+    const dataBullet = await connectToChatGPT(inputTextBullet);
 
     // Check if data.choices is defined and contains at least one item
-    if (data.choices && data.choices.length > 0) {
-      const outputText = data.choices[0].message.content;
-      const outputFile = `${textFileName.replace('.mp4', '.txt')}`;
-      const filePath = `${directoryPath}/${outputFile}`;
-      await RNFS.writeFile(filePath, outputText, 'utf8');
-      console.log('Output saved to file: ' + filePath);
+    if (dataBullet.choices && dataBullet.choices.length > 0) {
+      const outputText = dataBullet.choices[0].message.content;
 
       realm.write(() => {
         const objectId = new Realm.BSON.ObjectId(_id); // Ensure _id is a Realm ObjectId
@@ -64,14 +99,13 @@ export const sendToChatGPT = async (
 
         if (video) {
           video.isConverted = true; // Mark the video as converted
-          console.log('isConverted:', video.isConverted);
-          console.log('Marked as converted');
+          video.tsOutputBullet = outputText;
+          console.log('tsOutputBullet:', video.tsOutputBullet);
+          returnOutput.push(outputText);
         } else {
           console.log('No video found with ID:', _id);
         }
       });
-
-      return outputText;
     } else {
       throw new Error('Invalid response from ChatGPT API');
     }
@@ -79,6 +113,8 @@ export const sendToChatGPT = async (
     console.error('Error:', error);
     console.log('error found in sendToChatGPT function');
   }
+  console.log('returnOutput:', returnOutput);
+  return returnOutput;
 };
 
 export const sendVideoSetToChatGPT = async (
@@ -87,50 +123,64 @@ export const sendVideoSetToChatGPT = async (
   selectedVideoSet,
   reportFormat,
 ) => {
+  let returnOutput: any[] = [];
   const videoTranscripts = videoSetVideoIDs.map(videoID => {
     const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
     const video = realm.objectForPrimaryKey('VideoData', objectId);
-    return video ? video.transcript.join(' ') : '';
+    return video ? video.transcript : '';
   });
-  console.log('!!!!!!!!!!!!!!!!!!Video Transcripts:', videoTranscripts);
+  
+  console.log('Video Transcripts in Set:', videoTranscripts, videoTranscripts.length);
   const combinedTranscripts = videoTranscripts.join(' ');
   const transcriptWordCount = combinedTranscripts.split(' ').length;
   const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
+  // console.log('combinedTranscripts:', combinedTranscripts);
 
   try {
-    let inputText;
-    if (reportFormat === 'bullet') {
-      inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat} with bullet points using \u2022`;
-    } else {
-      inputText = `Summarize the selected video transcripts in this video set: ${combinedTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in ${reportFormat}.`;
-    }
+    let inputTextBullet = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+    let inputTextSentence = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
 
-    const data = await connectToChatGPT(inputText);
-    if (data.choices && data.choices.length > 0) {
-      const outputText = data.choices[0].message.content;
-      console.log('Output Text:', outputText);
+    const dataSentence = await connectToChatGPT(inputTextSentence);
+    if (dataSentence.choices && dataSentence.choices.length > 0) {
+      const outputText = dataSentence.choices[0].message.content;
 
       realm.write(() => {
-        selectedVideoSet.summaryAnalysis = outputText;
+        selectedVideoSet.summaryAnalysisSentence = outputText;
         selectedVideoSet.isSummaryGenerated = true;
+        returnOutput.push(outputText);
       });
 
       console.log(
-        '+++++++++++++++++++++Summary Analysis:',
-        selectedVideoSet.summaryAnalysis,
-      );
-      console.log(
-        '+++++++++++++++++++++isSummaryGenerated:',
-        selectedVideoSet.isSummaryGenerated,
+        'Single Video Summary Analysis Sentence:',
+        selectedVideoSet.summaryAnalysisSentence,
       );
 
-      return outputText;
+    
+    } else {
+      throw new Error('Invalid response from ChatGPT API');
+    }
+
+    const dataBullet = await connectToChatGPT(inputTextBullet);
+    if (dataBullet.choices && dataBullet.choices.length > 0) {
+      const outputText = dataBullet.choices[0].message.content;
+
+      realm.write(() => {
+        selectedVideoSet.summaryAnalysisBullet = outputText;
+        returnOutput.push(outputText);
+      });
+
+      console.log(
+        'Single Video Summary Analysis Bullet:',
+        selectedVideoSet.summaryAnalysisBullet,
+      );
     } else {
       throw new Error('Invalid response from ChatGPT API');
     }
   } catch (error) {
     console.error('Error:', error);
   }
+  console.log('Video Set returnOutput:', returnOutput);
+  return returnOutput;
 };
 
 export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {

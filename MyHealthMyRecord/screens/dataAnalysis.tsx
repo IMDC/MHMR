@@ -76,7 +76,7 @@ const DataAnalysis = () => {
   //const video: any = useObject('VideoData', id);
 
   //console.log(videosByDate);
-  console.log('**********************************************************');
+  // console.log('**********************************************************');
 
   useEffect(() => {
     if (isFocused) {
@@ -100,7 +100,7 @@ const DataAnalysis = () => {
     } else {
       setVideos(videosByIsSelected.filter(video => video !== undefined));
     }
-    console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
+    // console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
   }, [selectedVideoSet, videoSetVideoIDs, videoData]);
 
   // Filter out any undefined or null videos
@@ -143,7 +143,7 @@ const DataAnalysis = () => {
       let datetime = videosSelected[i].datetimeRecorded;
       console.log('transcript:', transcript);
       if (transcript && transcript.length > 0) {
-        let temp = getFreq(transcript[0], datetime);
+        let temp = getFreq(transcript, datetime);
         let freqWithInfo = {
           videoID: videosSelected[i]._id,
           datetime: videosSelected[i].datetimeRecorded,

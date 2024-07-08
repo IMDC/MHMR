@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   ScrollView,
@@ -8,18 +8,19 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import { useRealm } from '../models/VideoData';
+import {useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
-import { useDropdownContext } from '../components/videoSetProvider';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import {useDropdownContext} from '../components/videoSetProvider';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import * as Styles from '../assets/util/styles';
 import {
   getSentimentFromChatGPT,
   sendToChatGPT,
   sendVideoSetToChatGPT,
 } from '../components/chatgpt_api';
-import { Button, Icon } from '@rneui/themed';
-import { Dropdown } from 'react-native-element-dropdown';
+import {Button, Icon} from '@rneui/themed';
+import {Dropdown} from 'react-native-element-dropdown';
+import NetInfo from '@react-native-community/netinfo';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -33,7 +34,8 @@ const DataAnalysisTextSummary = () => {
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-  const { videoSetVideoIDs, currentVideoSet } = useDropdownContext();
+  const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
+  const [generatedOutput, setGeneratedOutput] = useState('');
   const realm = useRealm();
   const [videoSet, setVideoSet] = useState(null);
   const [videoSetSummary, setVideoSetSummary] = useState('');
@@ -41,15 +43,17 @@ const DataAnalysisTextSummary = () => {
   const [transcriptEdited, setTranscriptEdited] = useState(false);
   const [reportFormat, setReportFormat] = useState('bullet');
   const [sentimentsGenerated, setSentimentsGenerated] = useState(false);
+  const state = NetInfo.fetch();
 
+  // useEffect to retrieve the video data of the selected video set
   useEffect(() => {
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
-        videoSetVideoIDs.map(async (videoID) => {
+        videoSetVideoIDs.map(async videoID => {
           const objectId = new Realm.BSON.ObjectId(videoID);
           const video = realm.objectForPrimaryKey('VideoData', objectId);
           return video;
-        })
+        }),
       );
       setVideos(videoDataVideos);
     };
@@ -57,7 +61,7 @@ const DataAnalysisTextSummary = () => {
       getVideoData();
       if (currentVideoSet) {
         setVideoSet(currentVideoSet);
-        setVideoSetSummary(currentVideoSet.summaryAnalysis);
+        setVideoSetSummary(currentVideoSet.summaryAnalysisBullet || '');
         setReportFormat(currentVideoSet.reportFormat || 'bullet');
       }
     }
@@ -66,37 +70,20 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const loadTranscripts = async () => {
       const videoTranscripts = await Promise.all(
-        videos.map(async (video) => {
+        videos.map(async video => {
+          // console.log('video.transcript', video.transcript);
           if (!video) {
             return null;
           }
 
-          const filePath = `${RNFS.DocumentDirectoryPath}/MHMR/transcripts/${video.filename.replace('.mp4', '.txt')}`;
-          const fileExists = await RNFS.exists(filePath);
-
-          let fileContent = '';
-          if (fileExists) {
-            fileContent = await RNFS.readFile(filePath, 'utf8');
-          } else {
-            fileContent = 'Transcript not available';
-          }
-
-          const checkedTitles = video.keywords
-            .map((key) => JSON.parse(key))
-            .filter((obj) => obj.checked)
-            .map((obj) => obj.title)
-            .join(', ');
-
-          const checkedLocations = video.locations
-            .map((loc) => JSON.parse(loc))
-            .filter((obj) => obj.checked)
-            .map((obj) => obj.title)
-            .join(', ');
-
           let sentimentLabel = video.sentiment;
 
           if (!sentimentLabel || sentimentLabel === 'Neutral') {
-            sentimentLabel = await getSentimentFromChatGPT(fileContent, realm, video._id.toString());
+            sentimentLabel = await getSentimentFromChatGPT(
+              video.transcript,
+              realm,
+              video._id.toString(),
+            );
           }
 
           return {
@@ -106,12 +93,11 @@ const DataAnalysisTextSummary = () => {
             keywords: video.keywords,
             locations: video.locations,
             transcript: video.transcript,
-            transcriptFileContent: fileContent,
-            checkedTitles,
-            checkedLocations,
+            tsOutputBullet: video.tsOutputBullet,
+            tsOutputSentence: video.tsOutputSentence,
             sentiment: sentimentLabel,
           };
-        })
+        }),
       );
 
       setVideos(videoTranscripts.filter(Boolean));
@@ -122,95 +108,152 @@ const DataAnalysisTextSummary = () => {
     }
   }, [videos, transcriptsLoaded]);
 
+  // useEffect for when reportFormat is changed
+
   useEffect(() => {
     const updateVideoSetSummary = async () => {
-      if (currentVideoSet && transcriptsLoaded && (transcriptEdited || videoSetSummary === '')) {
-        const summary = await sendVideoSetToChatGPT(realm, videoSetVideoIDs, currentVideoSet, reportFormat);
+      if (
+        currentVideoSet &&
+        transcriptsLoaded &&
+        (transcriptEdited || videoSetSummary === '')
+      ) {
+        const summary = await sendVideoSetToChatGPT(
+          realm,
+          videoSetVideoIDs,
+          currentVideoSet,
+          reportFormat,
+        );
 
         realm.write(() => {
-          const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
-          videoSetToUpdate.summaryAnalysis = summary;
+          const videoSetToUpdate = realm.objectForPrimaryKey(
+            'VideoSet',
+            currentVideoSet._id,
+          );
+          videoSetToUpdate.summaryAnalysisSentence = summary[0];
+          videoSetToUpdate.summaryAnalysisBullet = summary[1];
         });
 
-        setVideoSetSummary(summary);
+        if (reportFormat === 'bullet') {
+          setVideoSetSummary(summary[1]);
+          console.log('videoSetSummary Bullet:', videoSetSummary);
+        } else {
+          setVideoSetSummary(summary[0]);
+          console.log('videoSetSummary Sentence:', videoSetSummary);
+        }
         setTranscriptEdited(false);
       }
     };
 
     updateVideoSetSummary();
-  }, [transcriptsLoaded, transcriptEdited, videoSetSummary, currentVideoSet, videoSetVideoIDs, realm, reportFormat]);
+  }, [
+    transcriptsLoaded,
+    transcriptEdited,
+    videoSetSummary,
+    currentVideoSet,
+    videoSetVideoIDs,
+    realm,
+    reportFormat,
+  ]);
 
-  useEffect(() => {
-    const regenerateSummaries = async () => {
-      if (currentVideoSet && transcriptsLoaded && !sentimentsGenerated) {
-        const summary = await sendVideoSetToChatGPT(realm, videoSetVideoIDs, currentVideoSet, reportFormat);
+  //useEffect for updating transcript
+  // useEffect(() => {
+  //   videos.map(async video => {
+  //     if (!video) {
+  //       return null;
+  //     }
+  //     const updatedTranscript = video.transcript[0] || '';
+  //     // return {
+  //     //   ...video,
+  //   });
+  // }, []);
 
-        realm.write(() => {
-          const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
-          videoSetToUpdate.summaryAnalysis = summary;
-        });
+  // useEffect(() => {
+  //   const regenerateSummaries = async () => {
+  //     if (currentVideoSet && transcriptsLoaded && !sentimentsGenerated) {
+  //       const summary = await sendVideoSetToChatGPT(
+  //         realm,
+  //         videoSetVideoIDs,
+  //         currentVideoSet,
+  //         reportFormat,
+  //       );
 
-        setVideoSetSummary(summary);
+  //       realm.write(() => {
+  //         const videoSetToUpdate = realm.objectForPrimaryKey(
+  //           'VideoSet',
+  //           currentVideoSet._id,
+  //         );
+  //         videoSetToUpdate.summaryAnalysis = summary;
+  //       });
 
-        const updatedVideos = await Promise.all(
-          videos.map(async (video) => {
-            if (!video) {
-              return null;
-            }
-            const updatedTranscript = video.transcript[0] || '';
-            const keywords = video.keywords
-              .map((key) => JSON.parse(key))
-              .map((obj) => obj.title)
-              .join(', ');
-            const locations = video.locations
-              .map((loc) => JSON.parse(loc))
-              .map((obj) => obj.title)
-              .join(', ');
+  //       setVideoSetSummary(summary);
 
-            const summary = await sendToChatGPT(
-              video.filename,
-              updatedTranscript,
-              keywords,
-              locations,
-              realm,
-              video._id.toString(),
-              reportFormat
-            );
+  //       const updatedVideos = await Promise.all(
+  //         videos.map(async video => {
+  //           if (!video) {
+  //             return null;
+  //           }
+  //           const updatedTranscript = video.transcript[0] || '';
+  //           const keywords = video.keywords
+  //             .map(key => JSON.parse(key))
+  //             .map(obj => obj.title)
+  //             .join(', ');
+  //           const locations = video.locations
+  //             .map(loc => JSON.parse(loc))
+  //             .map(obj => obj.title)
+  //             .join(', ');
 
-            return {
-              ...video,
-              transcriptFileContent: summary,
-              sentiment: await getSentimentFromChatGPT(updatedTranscript, realm, video._id.toString()),
-            };
-          })
-        );
+  //           const summary = await sendToChatGPT(
+  //             video.filename,
+  //             updatedTranscript,
+  //             keywords,
+  //             locations,
+  //             realm,
+  //             video._id.toString(),
+  //             reportFormat
+  //           );
 
-        setVideos(updatedVideos.filter(Boolean));
-        setSentimentsGenerated(true);
-      }
-    };
+  //           return {
+  //             ...video,
+  //             gptTranscriptOutput: video.gptTranscriptOutput,
+  //             sentiment: await getSentimentFromChatGPT(
+  //               updatedTranscript,
+  //               realm,
+  //               video._id.toString(),
+  //             ),
+  //           };
+  //         }),
+  //       );
 
-    regenerateSummaries();
-  }, [reportFormat, transcriptsLoaded, sentimentsGenerated]);
+  //       setVideos(updatedVideos.filter(Boolean));
+  //       setSentimentsGenerated(true);
+  //     }
+  //   };
 
-  const handleEdit = (video) => {
+  //   regenerateSummaries();
+  // }, [reportFormat, sentimentsGenerated]);
+
+  const handleEdit = video => {
     setEditingID(video._id);
-    setDraftTranscript(video.transcript[0] || '');
+    setDraftTranscript(video.transcript || '');
   };
 
   const handleSave = async () => {
     const updatedTranscript = draftTranscript;
-    const sentimentLabel = await getSentimentFromChatGPT(updatedTranscript, realm, editingID);
+    const sentimentLabel = await getSentimentFromChatGPT(
+      updatedTranscript,
+      realm,
+      editingID,
+    );
 
     const objectId = new Realm.BSON.ObjectId(editingID);
     const videoToUpdate = realm.objectForPrimaryKey('VideoData', objectId);
     const keywords = videoToUpdate.keywords
-      .map((key) => JSON.parse(key))
-      .map((obj) => obj.title)
+      .map(key => JSON.parse(key))
+      .map(obj => obj.title)
       .join(', ');
     const locations = videoToUpdate.locations
-      .map((loc) => JSON.parse(loc))
-      .map((obj) => obj.title)
+      .map(loc => JSON.parse(loc))
+      .map(obj => obj.title)
       .join(', ');
 
     const summary = await sendToChatGPT(
@@ -220,53 +263,30 @@ const DataAnalysisTextSummary = () => {
       locations,
       realm,
       editingID,
-      reportFormat
+      reportFormat,
     );
 
     realm.write(() => {
-      videoToUpdate.transcript = [updatedTranscript];
+      videoToUpdate.transcript = updatedTranscript;
       videoToUpdate.sentiment = sentimentLabel;
-      videoToUpdate.transcriptFileContent = summary;
+      videoToUpdate.tsOutputSentence = summary[0];
+      videoToUpdate.tsOutputBullet = summary[1];
     });
 
-    const updatedVideos = videos.map((video) => {
+    const updatedVideos = videos.map(video => {
       if (video._id === editingID) {
         return {
           ...video,
-          transcript: [updatedTranscript],
+          transcript: updatedTranscript,
           sentiment: sentimentLabel,
-          transcriptFileContent: summary,
+          tsOutputBullet: summary[1],
+          tsOutputSentence: summary[0],
         };
       }
       return video;
     });
 
     setVideos(updatedVideos);
-
-    const videoToUpdateAfterSave = updatedVideos.find((video) => video._id === editingID);
-    if (videoToUpdateAfterSave) {
-      const outputText = await sendToChatGPT(
-        videoToUpdateAfterSave.filename,
-        updatedTranscript,
-        videoToUpdateAfterSave.checkedTitles,
-        videoToUpdateAfterSave.checkedLocations,
-        realm,
-        editingID,
-        reportFormat
-      );
-
-      const finalUpdatedVideos = updatedVideos.map((video) => {
-        if (video._id === editingID) {
-          return {
-            ...video,
-            transcriptFileContent: outputText,
-          };
-        }
-        return video;
-      });
-
-      setVideos(finalUpdatedVideos);
-    }
 
     setEditingID(null);
     setDraftTranscript('');
@@ -278,7 +298,7 @@ const DataAnalysisTextSummary = () => {
     setDraftTranscript('');
   };
 
-  const getEmojiForSentiment = (sentiment) => {
+  const getEmojiForSentiment = sentiment => {
     switch (sentiment) {
       case 'Very Negative':
         return sad;
@@ -297,17 +317,17 @@ const DataAnalysisTextSummary = () => {
 
   const [showTranscript, setShowTranscript] = useState({});
 
-  const toggleTranscript = (videoId) => {
-    setShowTranscript((prevState) => ({
+  const toggleTranscript = videoId => {
+    setShowTranscript(prevState => ({
       ...prevState,
       [videoId]: !prevState[videoId],
     }));
   };
 
-  useEffect(() => {
-    console.log('Video Set:', videoSet);
-    console.log('Videos:', videos);
-  }, [videoSet, videos]);
+  // useEffect(() => {
+  //   console.log('Video Set:', videoSet);
+  //   console.log('Videos:', videos);
+  // }, [videoSet, videos]);
 
   const [sentimentCounts, setSentimentCounts] = useState({
     veryPositive: 0,
@@ -317,6 +337,7 @@ const DataAnalysisTextSummary = () => {
     veryNegative: 0,
   });
 
+  // useEffecct for video set summary dentiment counter
   useEffect(() => {
     const counts = videos.reduce(
       (acc, video) => {
@@ -350,7 +371,7 @@ const DataAnalysisTextSummary = () => {
         neutral: 0,
         negative: 0,
         veryNegative: 0,
-      }
+      },
     );
 
     setSentimentCounts(counts);
@@ -363,18 +384,22 @@ const DataAnalysisTextSummary = () => {
         <Dropdown
           style={styles.dropdown}
           data={[
-            { label: 'Bullet points', value: 'bullet' },
-            { label: 'Full sentences', value: 'sentence' },
+            {label: 'Bullet points', value: 'bullet'},
+            {label: 'Full sentences', value: 'sentence'},
           ]}
           labelField="label"
           valueField="value"
           placeholder="Select format"
           value={reportFormat}
-          onChange={(item) => {
+          onChange={item => {
             setReportFormat(item.value);
+            console.log('reportFormat:', item.value);
             if (currentVideoSet) {
               realm.write(() => {
-                const videoSetToUpdate = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+                const videoSetToUpdate = realm.objectForPrimaryKey(
+                  'VideoSet',
+                  currentVideoSet._id,
+                );
                 videoSetToUpdate.reportFormat = item.value;
               });
             }
@@ -382,31 +407,53 @@ const DataAnalysisTextSummary = () => {
           selectedTextStyle={styles.dropdownItem}
         />
       </View>
-      <View style={{ padding: 10 }}>
-        <Text style={[styles.title, { textAlign: 'center' }]}>
+      <View style={{padding: 10}}>
+        <Text style={[styles.title, {textAlign: 'center'}]}>
           {videoSet?.name} - Video set summary
         </Text>
-        <Text style={styles.output}>{videoSetSummary}</Text>
+        <View
+          style={{
+            padding: 10,
+          }}>
+          <Text style={styles.output}>
+            {reportFormat === 'bullet'
+              ? currentVideoSet.summaryAnalysisBullet
+              : currentVideoSet.summaryAnalysisSentence}
+          </Text>
+        </View>
+
         <View style={styles.sentimentCountsContainer}>
-          <Text style={styles.sentimentCountsTitle}>Emotional distribution</Text>
-          <Text style={styles.sentimentCount}>Very negative: {sentimentCounts.veryNegative}</Text>
-          <Text style={styles.sentimentCount}>Negative: {sentimentCounts.negative}</Text>
-          <Text style={styles.sentimentCount}>Neutral: {sentimentCounts.neutral}</Text>
-          <Text style={styles.sentimentCount}>Positive: {sentimentCounts.positive}</Text>
-          <Text style={styles.sentimentCount}>Very positive: {sentimentCounts.veryPositive}</Text>
+          <Text style={styles.sentimentCountsTitle}>
+            Emotional distribution
+          </Text>
+          <Text style={styles.sentimentCount}>
+            Very negative: {sentimentCounts.veryNegative}
+          </Text>
+          <Text style={styles.sentimentCount}>
+            Negative: {sentimentCounts.negative}
+          </Text>
+          <Text style={styles.sentimentCount}>
+            Neutral: {sentimentCounts.neutral}
+          </Text>
+          <Text style={styles.sentimentCount}>
+            Positive: {sentimentCounts.positive}
+          </Text>
+          <Text style={styles.sentimentCount}>
+            Very positive: {sentimentCounts.veryPositive}
+          </Text>
         </View>
       </View>
-      {videos.map((video) => {
+      {videos.map(video => {
         if (!video) {
           return null;
         }
         return (
           <View key={video._id} style={styles.container}>
-            <View style={{ padding: 10 }}>
+            <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
               <Text style={styles.title}>{video.title}</Text>
               {editingID === video._id ? (
                 <>
-                  <View style={{ flexDirection: 'row' }}>
+                  <View style={{flexDirection: 'row'}}>
                     <TextInput
                       style={styles.textInput}
                       onChangeText={setDraftTranscript}
@@ -415,30 +462,47 @@ const DataAnalysisTextSummary = () => {
                     />
                     <View style={styles.buttonContainer}>
                       <View style={styles.buttonWrapper}>
-                        <Button radius={20} title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
+                        <Button
+                          radius={20}
+                          title="Save"
+                          onPress={handleSave}
+                          color={Styles.MHMRBlue}
+                        />
                       </View>
                       <View style={styles.buttonWrapper}>
-                        <Button radius={20} title="Cancel" onPress={handleCancel} color={Styles.MHMRBlue} />
+                        <Button
+                          radius={20}
+                          title="Cancel"
+                          onPress={handleCancel}
+                          color={Styles.MHMRBlue}
+                        />
                       </View>
                     </View>
                   </View>
                 </>
               ) : (
                 <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => toggleTranscript(video._id)}>
-                      <Text style={styles.transcriptLabel}>Video transcript:</Text>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <TouchableOpacity
+                      onPress={() => toggleTranscript(video._id)}>
+                      <Text style={styles.transcriptLabel}>
+                        Video transcript:
+                      </Text>
                     </TouchableOpacity>
                     <Icon
-                      name={showTranscript[video._id] ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                      name={
+                        showTranscript[video._id]
+                          ? 'keyboard-arrow-up'
+                          : 'keyboard-arrow-down'
+                      }
                       size={30}
                       onPress={() => toggleTranscript(video._id)}
                     />
                   </View>
                   {showTranscript[video._id] && (
                     <>
-                      <Text style={styles.transcript}>{video.transcript[0]}</Text>
-                      <View style={{ alignSelf: 'flex-end' }}>
+                      <Text style={styles.transcript}>{video.transcript}</Text>
+                      <View style={{alignSelf: 'flex-end'}}>
                         <Button
                           radius={50}
                           title="Edit transcript"
@@ -452,12 +516,20 @@ const DataAnalysisTextSummary = () => {
               )}
               <Text style={styles.output}>
                 <Text style={styles.boldText}>Output: </Text>
-                {video.transcriptFileContent}
+                {/* if transcript is not generated yet, display Output not generated yet, else display transcript */}
+                {video.tsOutputBullet === '' || video.tsOutputSentence === ''
+                  ? 'Output has not been generated.'
+                  : reportFormat === 'bullet'
+                  ? video.tsOutputBullet
+                  : video.tsOutputSentence}
               </Text>
               <Text style={styles.sentiment}>
                 <Text style={styles.boldText}>Overall feeling: </Text>
-                {video.sentiment}{' '}
-                <Image source={getEmojiForSentiment(video.sentiment)} style={styles.emoji} />
+                {video.sentiment}
+                <Image
+                  source={getEmojiForSentiment(video.sentiment)}
+                  style={styles.emoji}
+                />
               </Text>
             </View>
           </View>
@@ -475,7 +547,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'black',
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginBottom: 10,
+
   },
   title: {
     fontWeight: 'bold',
@@ -546,7 +618,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     height: 40,
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderRadius: 22,
     paddingHorizontal: 8,
     marginBottom: 10,
