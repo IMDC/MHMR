@@ -32,6 +32,7 @@ function Dashboard() {
   const [inputText, setInputText] = useState('');
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
+  
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',
@@ -63,7 +64,7 @@ function Dashboard() {
   });
 
   useEffect(() => {
-    console.log(currentVideoSet);
+    // console.log(currentVideoSet);
     const selectedVideos = route.params?.selectedVideos || [];
     // console.log('selectedVideos:', selectedVideos);
     // console.log('selectedVideos.size:', selectedVideos.size);
@@ -322,6 +323,7 @@ function Dashboard() {
         </View>
         {videos !== null || videos !== undefined
           ? videos.map(video => {
+            
               // const isTranscriptEmpty = video => {
               //   return (
               //     video.transcript === undefined || video.transcript === ''

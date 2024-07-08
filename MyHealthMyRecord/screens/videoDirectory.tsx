@@ -183,7 +183,7 @@ const ViewRecordings = ({selected, setSelected}) => {
           locations,
           realm,
           video._id.toHexString(),
-          'bullet'
+          'bullet',
         );
         setInputText(outputText); // State update here
         console.log(
@@ -525,20 +525,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                 title="NO"
                 onPress={async () => {
                   console.log('NO clicked!');
-                  navigation.navigate('Video Set Dashboard', {
-                    screen: 'Dashboard',
-                    params: {selectedVideos},
-                  });
-                  Alert.alert(
-                    'Your transcripts have been generated, and your videos have been added to the Video Set!',
-                  );
+                  
                   toggleDialog2();
                   navigation.navigate('Video Set Dashboard', {
                     screen: 'Dashboard',
                     params: {selectedVideos},
                   });
-
-                  await handleSend();
                   Alert.alert(
                     'Video transcripts generated',
                     'Your transcripts have been generated, and your videos have been added to the video set!',
@@ -558,8 +550,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                   await handleSend();
                   await handleYesAnalysis();
                   Alert.alert(
-                    'Video Transcripts Generated and Analyzed',
-                    'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                    'Video transcripts generated and analyzed',
+                    'Your transcripts have been generated and analyzed, and your videos have been added to the video set!',
                   );
                 }}
               />
@@ -1030,10 +1022,11 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         realm.write(() => {
                                           video.isSelected = true;
                                         });
-                                    
+
                                         console.log('checked');
                                         console.log(video.isSelected);
-                                      }  else { // If video is already checked, uncheck it and remove from selected videos
+                                      } else {
+                                        // If video is already checked, uncheck it and remove from selected videos
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );

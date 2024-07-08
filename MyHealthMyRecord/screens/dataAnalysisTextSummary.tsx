@@ -20,7 +20,7 @@ import {
 } from '../components/chatgpt_api';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
-import { useNetwork } from '../components/networkProvider';
+import {useNetwork} from '../components/networkProvider';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -69,39 +69,43 @@ const DataAnalysisTextSummary = () => {
 
   useEffect(() => {
     const loadTranscripts = async () => {
-      const videoTranscripts = await Promise.all(
-        videos.map(async video => {
-          // console.log('video.transcript', video.transcript);
-          if (!video) {
-            return null;
-          }
+      if (online) {
+        console.log('You are online.');
 
-          let sentimentLabel = video.sentiment;
+        const videoTranscripts = await Promise.all(
+          videos.map(async video => {
+            // console.log('video.transcript', video.transcript);
+            if (!video) {
+              return null;
+            }
 
-          if (!sentimentLabel || sentimentLabel === 'Neutral') {
-            sentimentLabel = await getSentimentFromChatGPT(
-              video.transcript,
-              realm,
-              video._id.toString(),
-            );
-          }
+            let sentimentLabel = video.sentiment;
 
-          return {
-            _id: video._id.toString(),
-            title: video.title,
-            filename: video.filename,
-            keywords: video.keywords,
-            locations: video.locations,
-            transcript: video.transcript,
-            tsOutputBullet: video.tsOutputBullet,
-            tsOutputSentence: video.tsOutputSentence,
-            sentiment: sentimentLabel,
-          };
-        }),
-      );
+            if (!sentimentLabel || sentimentLabel === 'Neutral') {
+              sentimentLabel = await getSentimentFromChatGPT(
+                video.transcript,
+                realm,
+                video._id.toString(),
+              );
+            }
 
-      setVideos(videoTranscripts.filter(Boolean));
-      setTranscriptsLoaded(true);
+            return {
+              _id: video._id.toString(),
+              title: video.title,
+              filename: video.filename,
+              keywords: video.keywords,
+              locations: video.locations,
+              transcript: video.transcript,
+              tsOutputBullet: video.tsOutputBullet,
+              tsOutputSentence: video.tsOutputSentence,
+              sentiment: sentimentLabel,
+            };
+          }),
+        );
+
+        setVideos(videoTranscripts.filter(Boolean));
+        setTranscriptsLoaded(true);
+      }
     };
     if (videos.length && !transcriptsLoaded) {
       loadTranscripts();
@@ -112,13 +116,8 @@ const DataAnalysisTextSummary = () => {
 
   useEffect(() => {
     const updateVideoSetSummary = async () => {
-      if (online) {
-        console.log('You are online.')
-        if (
-          currentVideoSet &&
-          transcriptsLoaded &&
-          (transcriptEdited || currentVideoSet.isSummaryGenerated === false)
-        ) {
+      if (online && currentVideoSet && transcriptsLoaded) {
+        if (transcriptEdited || currentVideoSet.isSummaryGenerated === false) {
           const summary = await sendVideoSetToChatGPT(
             realm,
             videoSetVideoIDs,
@@ -145,16 +144,12 @@ const DataAnalysisTextSummary = () => {
           setTranscriptEdited(false);
         }
       }
-      else {
-        console.log('You are offline.')
-      }
     };
 
     updateVideoSetSummary();
   }, [
     transcriptsLoaded,
     transcriptEdited,
-    videoSetSummary,
     currentVideoSet,
     videoSetVideoIDs,
     realm,
@@ -276,8 +271,10 @@ const DataAnalysisTextSummary = () => {
     realm.write(() => {
       videoToUpdate.transcript = updatedTranscript;
       videoToUpdate.sentiment = sentimentLabel;
-      videoToUpdate.tsOutputSentence = summary[0];
-      videoToUpdate.tsOutputBullet = summary[1];
+      if (summary) {
+        videoToUpdate.tsOutputSentence = summary[0];
+        videoToUpdate.tsOutputBullet = summary[1];
+      }
     });
 
     const updatedVideos = videos.map(video => {
@@ -286,8 +283,8 @@ const DataAnalysisTextSummary = () => {
           ...video,
           transcript: updatedTranscript,
           sentiment: sentimentLabel,
-          tsOutputBullet: summary[1],
-          tsOutputSentence: summary[0],
+          tsOutputBullet: summary ? summary[1] : '',
+          tsOutputSentence: summary ? summary[0] : '',
         };
       }
       return video;
@@ -423,14 +420,17 @@ const DataAnalysisTextSummary = () => {
             padding: 10,
           }}>
           <Text style={styles.output}>
-            {reportFormat === 'bullet'
+            {currentVideoSet.summaryAnalysisBullet === '' ||
+            currentVideoSet.summaryAnalysisSentence === ''
+              ? 'Summary has not been generated yet.'
+              : reportFormat === 'bullet'
               ? currentVideoSet.summaryAnalysisBullet
               : currentVideoSet.summaryAnalysisSentence}
-          </Text>
-          <Text style={[styles.output,{fontWeight: 'bold'} ]}>
-            {!online && currentVideoSet.isSummaryGenerated === false
-              ? 'Your device is currently offline. Your video set summary cannot be generated without internet connection. '
-              : ''}
+            <Text style={{fontWeight: 'bold'}}>
+              {!online && currentVideoSet.isSummaryGenerated === false
+                ? 'Your device is currently offline. Your video set summary cannot be generated without internet connection. '
+                : ''}
+            </Text>
           </Text>
         </View>
 
@@ -529,7 +529,9 @@ const DataAnalysisTextSummary = () => {
               <Text style={styles.output}>
                 <Text style={styles.boldText}>Output: </Text>
                 {/* if transcript is not generated yet, display Output not generated yet, else display transcript */}
-                {video.tsOutputBullet === '' || video.tsOutputSentence === ''
+                {video.transcript === ''
+                  ? 'Transcript has not been generated.'
+                  : video.tsOutputBullet === '' || video.tsOutputSentence === ''
                   ? 'Output has not been generated.'
                   : reportFormat === 'bullet'
                   ? video.tsOutputBullet
@@ -537,7 +539,11 @@ const DataAnalysisTextSummary = () => {
               </Text>
               <Text style={styles.sentiment}>
                 <Text style={styles.boldText}>Overall feeling: </Text>
-                {video.sentiment}
+                {video.transcript === '' &&
+                video.tsOutputBullet === '' &&
+                video.tsOutputSentence === ''
+                  ? 'Neutral '
+                  : video.sentiment}
                 <Image
                   source={getEmojiForSentiment(video.sentiment)}
                   style={styles.emoji}
@@ -559,7 +565,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'black',
     borderTopWidth: StyleSheet.hairlineWidth,
-
   },
   title: {
     fontWeight: 'bold',

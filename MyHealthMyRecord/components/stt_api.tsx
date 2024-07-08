@@ -49,15 +49,16 @@ export const getTranscript = async (
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
     const audioFilePath = `${audioFolderPath}/${audioFileName}`;
     const data = await RNFS.readFile(audioFilePath, 'base64');
-    if (data.length === 0) {
-      console.log('Audio file is empty. Returning empty transcript.');
+
+    if (!data) {
+      console.log('No audio data found. Saving empty transcript.');
       await saveEmptyTranscript(_id, realm);
-      return '';
+      return;
     }
 
-    const bufferData = Buffer.from(data, 'base64'); // Correctly convert base64 to binary
+    const bufferData = Buffer.from(data, 'base64');
     console.log(data.substring(0, 5), ', ', data.substring(data.length - 5));
-    await transcribeAudio(bufferData, _id, auth, realm); // Use bufferData instead of data
+    await transcribeAudio(bufferData, _id, auth, realm);
     console.log('done');
   } catch (error) {
     console.error(
@@ -71,6 +72,7 @@ export const getTranscript = async (
   }
 };
 
+
 const saveEmptyTranscript = async (_id: string, realm: Realm) => {
   realm.write(() => {
     const objectId = new Realm.BSON.ObjectId(_id);
@@ -78,7 +80,7 @@ const saveEmptyTranscript = async (_id: string, realm: Realm) => {
     if (video) {
       // Add an empty transcript
       video.isTranscribed = true;
-      video.transcript.push('');
+      video.transcript = '';
       console.log('Transcript:', video.transcript);
       console.log('Updated video with empty transcript');
     } else {
@@ -88,7 +90,7 @@ const saveEmptyTranscript = async (_id: string, realm: Realm) => {
 };
 const transcribeAudio = async (
   body: any,
-  _id: any,
+  _id: string,
   auth: string,
   realm: Realm,
 ) => {
@@ -96,8 +98,9 @@ const transcribeAudio = async (
     if (!body || body.length === 0) {
       console.log('No audio data found. Saving empty transcript.');
       await saveEmptyTranscript(_id, realm);
-      return;
+      return; // Exit the function early
     }
+
     const response = await axios.post(
       'https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize',
       body,
@@ -108,23 +111,21 @@ const transcribeAudio = async (
         },
       },
     );
+
     const transcript =
       response.data.results[0]?.alternatives[0]?.transcript || '';
     const confidence =
       response.data.results[0]?.alternatives[0]?.confidence || 0;
     console.log('Transcript:', transcript);
     console.log('Confidence:', confidence);
-    // Realm operations here
+
     realm.write(() => {
       const objectId = new Realm.BSON.ObjectId(_id); // Ensure _id is a Realm ObjectId
       const video = realm.objectForPrimaryKey('VideoData', objectId);
 
       if (video) {
-        // Add the new transcript
-        video.transcript.push(transcript);
+        video.transcript = transcript;
         console.log('Transcript:', video.transcript);
-        // video.isConverted = true; // Mark the video as converted
-        // console.log('isConverted:', video.isConverted);
         console.log('Updated video with transcript');
       } else {
         console.log('No video found with ID:', _id);
@@ -145,3 +146,4 @@ const transcribeAudio = async (
     throw error;
   }
 };
+
