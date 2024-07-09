@@ -105,6 +105,25 @@ const DataAnalysisBarGraph = () => {
       </svg.Text>
     ));
 
+  /**
+   * Labels on each bar with the frequency value for the vertical view
+   */
+  const CUT_OFF_HOR = wordFreqBarGraphData[0].value - 1;
+  const LabelsHorizontal = ({ x, y, bandwidth, data }) => (
+    wordFreqBarGraphData.map((value, index) => (
+      <svg.Text
+        key={index}
+        x={value.value > CUT_OFF_HOR ? x(value.value) - 30 : x(value.value) + 10}
+        y={y(index) + (bandwidth / 2)}
+        fontSize={14}
+        fill={value.value > CUT_OFF_HOR ? 'white' : 'black'}
+        alignmentBaseline={'middle'}
+      >
+        {value.value}
+      </svg.Text>
+    ))
+  );
+
   const isEnabledStopWords = false;
   const [isEnabledMedWords, setIsEnabledMedWords] = useState(true);
   const toggleSwitchMedWords = () =>
@@ -255,58 +274,63 @@ const DataAnalysisBarGraph = () => {
                   Word
                 </Text>
               </View>
-            ) : // <View id="bargraph-horizontal">
-            //   <Text>Count of words mentioned in selected video</Text>
-            //   <View
-            //     style={{
-            //       flexDirection: 'row',
-            //       height: 800,
-            //       paddingVertical: 16,
-            //     }}>
-            //     <YAxis
-            //       data={wordFreqBarGraphData}
-            //       yAccessor={({index}) => index}
-            //       scale={scale.scaleBand}
-            //       contentInset={{top: 10, bottom: 10}}
-            //       spacing={0.2}
-            //       formatLabel={(value, index) =>
-            //         wordFreqBarGraphData[index].text
-            //       }
-            //       svg={{fontSize: 20, margin: 10}}
-            //       min={0}
-            //       max={wordFreqBarGraphData[0]?.value}
-            //     />
-            //     <ScrollView horizontal={true}>
-            //       <View style={{flexDirection: 'row'}}>
-            //         <BarChart
-            //           style={{height: 400, width: wordFreqBarGraphData.length * 50}}
-            //           data={wordFreq}
-            //           horizontal={true}
-            //           yAccessor={({item}) => item.y.value}
-            //           svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
-            //           contentInset={{top: 10, bottom: 10}}
-            //           spacing={0.2}
-            //           gridMin={0}>
-            //           <Grid direction={Grid.Direction.VERTICAL} />
-            //           <LabelsHorizontal />
-            //         </BarChart>
-            //       </View>
-            //     </ScrollView>
-            //   </View>
-            //   <ScrollView horizontal={true}>
-            //     <XAxis
-            //       data={yTest}
-            //       yAccessor={({index}) => index}
-            //       scale={scale.scaleBand}
-            //       contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
-            //       spacing={0.2}
-            //       formatLabel={value => value}
-            //       style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
-            //     />
-            //   </ScrollView>
-            //   <Text style={{textAlign: 'center'}}>Count</Text>
-            // </View>
-            null}
+            ) : (
+              <View id="bargraph-horizontal" style={{flex: 1}}>
+                <Text
+                  style={{
+                    padding: 20,
+                    fontSize: 20,
+                    color: 'black',
+                    fontWeight: 'bold',
+                  }}>
+                  {currentVideoSet?.name} - Count of words mentioned in selected video set
+                </Text>
+                <View style={{flexDirection: 'row', height: 800, paddingVertical: 16}}>
+                  <YAxis
+                    data={wordFreqBarGraphData}
+                    yAccessor={({index}) => index}
+                    scale={scale.scaleBand}
+                    contentInset={{top: 10, bottom: 10}}
+                    spacing={0.2}
+                    formatLabel={(value, index) => wordFreqBarGraphData[index].text}
+                    svg={{fontSize: 20, margin: 10}}
+                    min={0}
+                    max={wordFreqBarGraphData[0]?.value}
+                  />
+                  <ScrollView horizontal={true} ref={scrollViewRef}>
+                    <View style={{flexDirection: 'row'}}>
+                      <BarChart
+                        style={{height: 400, width: wordFreqBarGraphData.length * 50}}
+                        data={wordFreq}
+                        horizontal={true}
+                        yAccessor={({item}) => item.y.value}
+                        svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                        contentInset={{top: 10, bottom: 10}}
+                        spacing={0.2}
+                        gridMin={0}
+                        numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                        <Grid direction={Grid.Direction.VERTICAL} />
+                        <LabelsHorizontal />
+                      </BarChart>
+                    </View>
+                  </ScrollView>
+                </View>
+                <ScrollView horizontal={true}>
+                  <XAxis
+                    data={yTest}
+                    yAccessor={({index}) => index}
+                    scale={scale.scaleBand}
+                    contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
+                    spacing={0.2}
+                    formatLabel={value => value}
+                    style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
+                  />
+                </ScrollView>
+                <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
+                  Count
+                </Text>
+              </View>
+            )}
             <View style={{height: '15%', width: '100%'}}>
               <View
                 style={{
@@ -315,7 +339,7 @@ const DataAnalysisBarGraph = () => {
                   justifyContent: 'center',
                   marginVertical: 10,
                 }}>
-                {/* <Button
+                <Button
                   title="Horizontal"
                   onPress={() => setBarGraphVertical(false)}
                   color={Styles.MHMRBlue}
@@ -324,8 +348,8 @@ const DataAnalysisBarGraph = () => {
                     width: 200,
                     marginHorizontal: 30,
                   }}
-                /> */}
-                {/* <Button
+                />
+                <Button
                   title="Vertical"
                   onPress={() => setBarGraphVertical(true)}
                   color={Styles.MHMRBlue}
@@ -334,7 +358,7 @@ const DataAnalysisBarGraph = () => {
                     width: 200,
                     marginHorizontal: 30,
                   }}
-                /> */}
+                />
                 <Text style={{fontSize: 20}}>Include medical words</Text>
                 <Switch
                   trackColor={{false: '#767577', true: '#81b0ff'}}
@@ -495,6 +519,5 @@ const styles = StyleSheet.create({
     color: 'blue',
   },
 });
-
 
 export default DataAnalysisBarGraph;
