@@ -506,7 +506,7 @@ const DataAnalysis = () => {
         </Button>
         <Button
           disabled={videoSetValue === ''}
-          onPress={() => navigation.navigate('Text Summary')}
+          onPress={() => navigation.navigate('Text Report')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: 400,
