@@ -18,6 +18,7 @@ import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import Video from 'react-native-video';
 import {useObject, useRealm} from '../models/VideoData';
+import MHMRVideoPlayer from '../components/mhmrVideoPlayer';
 
 const FullscreenVideo = () => {
   const windowWidth = Dimensions.get('window').width;
@@ -32,19 +33,16 @@ const FullscreenVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   return (
-    <SafeAreaView style={{width: windowWidth, height: windowHeight - 220}}>
-      <VideoPlayer
-        source={{uri: MHMRfolderPath + '/' + video.filename}}
-        paused={true}
-        disableBack={true}
-        toggleResizeModeOnFullscreen={true}
-        showOnStart={true}
+    <View>
+      <MHMRVideoPlayer
+        videoID={id}
+        emotionConsole={false}
+        commentConsole={false}
+        emotionView={true}
+        commentView={true}
         isFullscreen={true}
-        repeat={false}
-        onExitFullscreen={() => navigation.goBack()}
-        // disableSeekButtons={true}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 export default FullscreenVideo;

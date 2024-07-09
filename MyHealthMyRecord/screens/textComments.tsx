@@ -231,6 +231,9 @@ const TextComments = () => {
         commentConsole={true}
         emotionView={false}
         commentView={true}
+        isFullscreen={false}
+        commentComments={true}
+        emotionComments={false}
       />
     </View>
 

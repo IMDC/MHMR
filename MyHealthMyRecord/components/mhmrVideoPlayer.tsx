@@ -21,12 +21,13 @@ import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {VideoData, useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
+import Video from 'react-native-video';
 
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
 const angry = require('../assets/images/emojis/angry.png');
-const neutral = require('../assets/images/emojis/neutral120.png');
+const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
-const smile = require('../assets/images/emojis/smile120.png');
+const smile = require('../assets/images/emojis/smile.png');
 const worried = require('../assets/images/emojis/worried.png');
 
 const MHMRVideoPlayer = ({
@@ -35,7 +36,9 @@ const MHMRVideoPlayer = ({
   commentConsole,
   emotionView,
   commentView,
+  isFullscreen,
 }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const ObjectID = new ObjectId(videoID);
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   const realm = useRealm();
@@ -43,7 +46,6 @@ const MHMRVideoPlayer = ({
   const videoPath = MHMRfolderPath + '/' + video.filename;
   const videoPlayerRef: any = useRef<Video>(null);
   const input = useRef(null);
-  const [storedStickers, setStoredStickers] = useState(video.emotionStickers);
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
   const currentTime = useState(0);
@@ -53,6 +55,7 @@ const MHMRVideoPlayer = ({
   const [commentSelectedText, setCommentSelectedText] = useState('');
   const overlaySticker = useState('');
   const stickerRef: any = useRef([]);
+  const [storedStickers, setStoredStickers] = useState(video.emotionStickers);
   const [storedComments, setStoredComments] = useState(video.textComments);
   const overlayComment = useState('');
   const commentRef: any = useRef([]);
@@ -61,11 +64,43 @@ const MHMRVideoPlayer = ({
   const commentEditInput = useRef(null);
   const [commentEdit, setCommentEdit] = useState('');
   const [visible, setVisible] = useState(false);
-  let parsedStickers = storedStickers.map(sticker => JSON.parse(sticker));
+  const toggleDialog = () => {
+    setVisible(!visible);
+  };
+  let parsedStickers: string[] = [];
+  storedStickers.map((sticker: string) =>
+    parsedStickers.push(JSON.parse(sticker)),
+  );
   let parsedComments = storedComments.map(comment => JSON.parse(comment));
+
+  function addSticker(emotion: string) {
+    let emotionSchema: any = {
+      id: new Realm.BSON.ObjectId(),
+      sentiment: emotion,
+      timestamp: currentTime[0],
+    };
+
+    const stickerIndex = parsedStickers.findIndex(
+      (element: any) => element.timestamp > emotionSchema.timestamp,
+    );
+
+    if (stickerIndex == -1) {
+      parsedStickers.push(emotionSchema);
+    } else {
+      parsedStickers.splice(stickerIndex, 0, emotionSchema);
+    }
+    const newStickers = parsedStickers.map(sticker => JSON.stringify(sticker));
+    setStoredStickers(newStickers);
+    if (video) {
+      realm.write(() => {
+        video.emotionStickers! = newStickers;
+      });
+    }
+  }
 
   useEffect(() => {
     commentRef.current = new Array(parsedComments.length);
+
     stickerRef.current = new Array(parsedStickers.length);
   }, []);
 
@@ -76,73 +111,81 @@ const MHMRVideoPlayer = ({
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      let empty = true;
-      for (let i = 0; i < parsedComments.length; i++) {
-        if (commentRef.current[i]) {
-          commentRef.current[i].setNativeProps({
-            style: {backgroundColor: 'transparent'},
-          });
-        }
-        if (
-          parsedComments[i].timestamp > currentTime[0] &&
-          parsedComments[i].timestamp < currentTime[0] + 2
-        ) {
-          overlayComment[1](
-            parsedComments[i].text + ' ' + parsedComments[i].timestamp,
-          );
-          if (commentRef[i]) {
-            commentRef[i].setNativeProps({
-              style: {backgroundColor: '#b7c3eb'},
+    if (commentView) {
+      const interval = setInterval(() => {
+        let empty = true;
+        for (let i = 0; i < parsedComments.length; i++) {
+          if (commentRef.current[i]) {
+            commentRef.current[i].setNativeProps({
+              style: {backgroundColor: 'transparent'},
             });
           }
-          empty = false;
-          break;
+          if (
+            parsedComments[i].timestamp > currentTime[0] &&
+            parsedComments[i].timestamp < currentTime[0] + 2
+          ) {
+            overlayComment[1](
+              parsedComments[i].text + ' ' + parsedComments[i].timestamp,
+            );
+            if (commentRef[i]) {
+              commentRef[i].setNativeProps({
+                style: {backgroundColor: '#b7c3eb'},
+              });
+            }
+            empty = false;
+            break;
+          }
         }
-      }
-      if (empty) overlayComment[1]('');
-    }, 250);
-    return () => clearInterval(interval);
+        if (empty) overlayComment[1]('');
+      }, 250);
+      return () => clearInterval(interval);
+    }
   }, [overlayComment]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      let empty = true;
-      for (let i = 0; i < parsedStickers.length; i++) {
-        stickerRef[i].setNativeProps({style: {backgroundColor: 'transparent'}});
-        if (
-          parsedStickers[i].timestamp > currentTime[0] &&
-          parsedStickers[i].timestamp < currentTime[0] + 2
-        ) {
-          switch (parsedStickers[i].sentiment) {
-            case 'smile':
-              overlaySticker[1](smile);
-              break;
-            case 'neutral':
-              overlaySticker[1](neutral);
-              break;
-            case 'worried':
-              overlaySticker[1](worried);
-              break;
-            case 'sad':
-              overlaySticker[1](sad);
-              break;
-            case 'angry':
-              overlaySticker[1](angry);
-              break;
-            default:
-              overlaySticker[1]('');
+    if (emotionView) {
+      const interval = setInterval(() => {
+        let empty = true;
+        for (let i = 0; i < parsedStickers.length; i++) {
+          stickerRef[i].setNativeProps({
+            style: {backgroundColor: 'transparent'},
+          });
+          if (
+            parsedStickers[i].timestamp > currentTime[0] &&
+            parsedStickers[i].timestamp < currentTime[0] + 2
+          ) {
+            switch (parsedStickers[i].sentiment) {
+              case 'smile':
+                overlaySticker[1](smile);
+                break;
+              case 'neutral':
+                overlaySticker[1](neutral);
+                break;
+              case 'worried':
+                overlaySticker[1](worried);
+                break;
+              case 'sad':
+                overlaySticker[1](sad);
+                break;
+              case 'angry':
+                overlaySticker[1](angry);
+                break;
+              default:
+                overlaySticker[1]('');
+            }
+            if (stickerRef[i] != null) {
+              stickerRef[i].setNativeProps({
+                style: {backgroundColor: '#b7c3eb'},
+              });
+            }
+            empty = false;
+            break;
           }
-          if (stickerRef[i] != null) {
-            stickerRef[i].setNativeProps({style: {backgroundColor: '#b7c3eb'}});
-          }
-          empty = false;
-          break;
         }
-      }
-      if (empty) overlaySticker[1]('');
-    }, 250);
-    return () => clearInterval(interval);
+        if (empty) overlaySticker[1]('');
+      }, 250);
+      return () => clearInterval(interval);
+    }
   }, [overlaySticker]);
 
   function secondsToHms(d: number) {
@@ -170,31 +213,6 @@ const MHMRVideoPlayer = ({
   function toggleEditBtnVisible() {
     setDeleteBtnVisible(false);
     setEditBtnVisible(true);
-  }
-
-  function addSticker(emotion: string) {
-    let emotionSchema = {
-      id: new Realm.BSON.ObjectId(),
-      sentiment: emotion,
-      timestamp: currentTime[0],
-    };
-
-    const stickerIndex = parsedStickers.findIndex(
-      (element: any) => element.timestamp > emotionSchema.timestamp,
-    );
-
-    if (stickerIndex == -1) {
-      parsedStickers.push(emotionSchema);
-    } else {
-      parsedStickers.splice(stickerIndex, 0, emotionSchema);
-    }
-    const newStickers = parsedStickers.map(sticker => JSON.stringify(sticker));
-    setStoredStickers(newStickers);
-    if (video) {
-      realm.write(() => {
-        video.emotionStickers! = newStickers;
-      });
-    }
   }
 
   function addComment() {
@@ -380,42 +398,86 @@ const MHMRVideoPlayer = ({
 
   return (
     <View>
-      <View
-        style={{
-          width: windowWidth,
-          height: windowHeight / 2.5,
-          paddingHorizontal: 15,
-          paddingTop: 15,
-        }}>
-        <VideoPlayer
-          videoRef={videoPlayerRef}
-          source={{uri: videoPath}}
-          paused={true}
-          disableBack={true}
-          toggleResizeModeOnFullscreen={true}
-          showOnStart={true}
-          disableSeekButtons={true}
-          style={{width: Dimensions.get('window').width, height: 300}}
-          resizeMode="contain"
-          onProgress={data => {
-            currentTime[0] = data.currentTime;
-          }}
-          onSeek={data => {
-            currentTime[0] = data.currentTime;
-          }}
-        />
-        {emotionView && overlaySticker[0] !== '' && (
-          <Image
-            style={[styles.overlayText, styles.overlaySticker]}
-            source={overlaySticker[0]}
+      {isFullscreen ? (
+        <SafeAreaView style={{width: windowWidth, height: windowHeight - 220}}>
+          <VideoPlayer
+            videoRef={videoPlayerRef}
+            source={{uri: videoPath}}
+            paused={true}
+            disableBack={true}
+            toggleResizeModeOnFullscreen={true}
+            style={{
+              width: Dimensions.get('window').width,
+              height: Dimensions.get('window').height - 220,
+            }}
+            showOnStart={true}
+            isFullscreen={true}
+            repeat={false}
+            onProgress={data => {
+              currentTime[0] = data.currentTime;
+            }}
+            onSeek={data => {
+              currentTime[0] = data.currentTime;
+            }}
+            onExitFullscreen={() => navigation.goBack()}
+            // disableSeekButtons={true}
           />
-        )}
-      </View>
-      {commentConsole && !emotionConsole ? (
+        </SafeAreaView>
+      ) : (
+        <View
+          style={{
+            width: windowWidth,
+            height: windowHeight / 2.5,
+            paddingHorizontal: 15,
+            paddingTop: 15,
+          }}>
+          <VideoPlayer
+            videoRef={videoPlayerRef}
+            source={{uri: videoPath}}
+            paused={true}
+            disableBack={true}
+            toggleResizeModeOnFullscreen={true}
+            showOnStart={true}
+            disableSeekButtons={true}
+            style={{width: Dimensions.get('window').width, height: 300}}
+            resizeMode="contain"
+            onProgress={data => {
+              currentTime[0] = data.currentTime;
+            }}
+            onSeek={data => {
+              currentTime[0] = data.currentTime;
+            }}
+            onEnterFullscreen={() =>
+              navigation.navigate('Fullscreen Video', {
+                id: video._id,
+              })
+            }
+            isFullscreen={isFullscreen}
+          />
+        </View>
+      )}
+      {emotionView && overlaySticker[0] !== '' && (
+        <Image
+          style={[styles.overlayText, styles.overlaySticker]}
+          source={overlaySticker[0]}
+        />
+      )}
+      {commentView && overlayComment[0] !== '' && (
+        <View
+          style={[
+            styles.overlayText,
+            styles.overlayTextForComment,
+            {position: 'absolute', bottom: 10, left: 10},
+          ]}>
+          <Text>{overlayComment[0]}</Text>
+        </View>
+      )}
+
+      {commentConsole && (
         <>
           <Input
             ref={input}
-            containerStyle={{paddingHorizontal: 25, paddingTop: 15}}
+            containerStyle={{paddingHorizontal: 25, paddingTop: 35}}
             multiline={true}
             placeholder="Enter comment here..."
             style={{padding: 15}}
@@ -436,14 +498,11 @@ const MHMRVideoPlayer = ({
             onFocus={() => videoPlayerRef.current.pause()}
           />
         </>
-      ) : (
+      )}
+      {emotionConsole && (
         <View>
           <View style={styles.ballContainer} />
-          <View
-            style={[
-              styles.row,
-              {paddingBottom: 140, justifyContent: 'center'},
-            ]}>
+          <View style={[styles.row, styles.draggableContainer]}>
             <Draggable id="smile" source={smile} />
             <Draggable id="neutral" source={neutral} />
             <Draggable id="worried" source={worried} />
@@ -453,31 +512,34 @@ const MHMRVideoPlayer = ({
         </View>
       )}
       <ScrollView>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Text style={styles.headerStyle}>
-            {commentConsole ? 'Comments' : 'Stickers'}
-          </Text>
-          {isDeleteBtnVisible && (
-            <TouchableOpacity
-              style={{justifyContent: 'flex-end'}}
-              onPress={() => toggleEditBtnVisible()}>
-              <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
-            </TouchableOpacity>
-          )}
-          {isEditBtnVisible && (
-            <TouchableOpacity
-              style={{justifyContent: 'flex-end'}}
-              onPress={() => toggleDeleteBtnVisibile()}>
-              <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
-            </TouchableOpacity>
-          )}
-        </View>
         <SafeAreaView>
           <ScrollView style={styles.container}>
-            {commentConsole && !emotionConsole ? (
-              <View>
-                {parsedComments.length != 0
-                  ? parsedComments.map((c, i) => (
+            {commentView && !isFullscreen && (
+              <>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text style={styles.headerStyle}>Comments</Text>
+                  {isDeleteBtnVisible && (
+                    <TouchableOpacity
+                      style={{justifyContent: 'flex-end'}}
+                      onPress={() => toggleEditBtnVisible()}>
+                      <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
+                    </TouchableOpacity>
+                  )}
+                  {isEditBtnVisible && (
+                    <TouchableOpacity
+                      style={{justifyContent: 'flex-end'}}
+                      onPress={() => toggleDeleteBtnVisibile()}>
+                      <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View>
+                  {parsedComments.length != 0 ? (
+                    parsedComments.map((c, i) => (
                       <View
                         ref={el => {
                           commentRef.current[i] = el;
@@ -550,40 +612,67 @@ const MHMRVideoPlayer = ({
                         </View>
                       </View>
                     ))
-                  : null}
-              </View>
-            ) : (
+                  ) : (
+                    <Text>No comments added</Text>
+                  )}
+                </View>
+              </>
+            )}
+            {emotionView && !isFullscreen && (
               <View>
-                {parsedStickers.length != 0
-                  ? parsedStickers.map((s:any, i) => (
-                      <View
-                        ref={el => {
-                          stickerRef[i] = el;
-                        }}
-                        key={s.id}
-                        style={[styles.commentContainer, styles.row]}>
-                        <View style={styles.row}>
-                          <TouchableOpacity
-                            onPress={() => seekToTimestamp(s.timestamp)}>
-                            <Text style={styles.textStyle}>
-                              {secondsToHms(s.timestamp)} - {s.sentiment}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                        <View style={styles.rightContainer}>
-                          {isDeleteBtnVisible && (
-                            <View>
-                              <TouchableOpacity
-                                style={{alignSelf: 'flex-end'}}
-                                onPress={() => deleteSticker(s.id)}>
-                                <Icon name="delete" size={24} color="#cf7f11" />
-                              </TouchableOpacity>
-                            </View>
-                          )}
-                        </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text style={styles.headerStyle}>Emotion stickers</Text>
+                  {isDeleteBtnVisible && (
+                    <TouchableOpacity
+                      style={{justifyContent: 'flex-end'}}
+                      onPress={() => toggleEditBtnVisible()}>
+                      <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
+                    </TouchableOpacity>
+                  )}
+                  {isEditBtnVisible && (
+                    <TouchableOpacity
+                      style={{justifyContent: 'flex-end'}}
+                      onPress={() => toggleDeleteBtnVisibile()}>
+                      <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                {parsedStickers.length != 0 ? (
+                  parsedStickers.map((s: any, i) => (
+                    <View
+                      ref={el => {
+                        stickerRef[i] = el;
+                      }}
+                      key={s.id}
+                      style={[styles.commentContainer, styles.row]}>
+                      <View style={styles.row}>
+                        <TouchableOpacity
+                          onPress={() => seekToTimestamp(s.timestamp)}>
+                          <Text style={styles.textStyle}>
+                            {secondsToHms(s.timestamp)} - {s.sentiment}
+                          </Text>
+                        </TouchableOpacity>
                       </View>
-                    ))
-                  : null}
+                      <View style={styles.rightContainer}>
+                        {isDeleteBtnVisible && (
+                          <View>
+                            <TouchableOpacity
+                              style={{alignSelf: 'flex-end'}}
+                              onPress={() => deleteSticker(s.id)}>
+                              <Icon name="delete" size={24} color="#cf7f11" />
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Text>No stickers added</Text>
+                )}
               </View>
             )}
           </ScrollView>
@@ -595,10 +684,22 @@ const MHMRVideoPlayer = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 25,
+    paddingHorizontal: 25,
+  },
+  draggableContainer: {
+    paddingBottom: 140,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    width: Dimensions.get('window').width,
+    paddingHorizontal: 25,
+  },
+  draggableItem: {
+    marginHorizontal: 10,
+    alignItems: 'center',
   },
   ballContainer: {
-    height: 80,
+    height: 40,
   },
   circle: {
     width: 120,
@@ -615,8 +716,9 @@ const styles = StyleSheet.create({
   },
   headerStyle: {
     fontWeight: 'bold',
-    fontSize: 28,
-    paddingLeft: 25,
+    fontSize: 32,
+    paddingLeft: 15,
+    paddingTop: 15,
   },
   textStyle: {
     fontSize: 22,
@@ -647,8 +749,13 @@ const styles = StyleSheet.create({
     marginRight: Dimensions.get('window').width / 1.5,
   },
   sticker: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
+  },
+  overlayTextForComment: {
+    textAlignVertical: 'center',
+    //change margintop to something more responsive
+    marginTop: 450,
   },
 });
 
