@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Image,
   ScrollView,
@@ -44,7 +44,9 @@ const DataAnalysisTextSummary = () => {
   const [transcriptEdited, setTranscriptEdited] = useState(false);
   const [reportFormat, setReportFormat] = useState('bullet');
   const [sentimentsGenerated, setSentimentsGenerated] = useState(false);
-
+  const previousVideoSetVideoIDsRef = useRef<Set<string>>(
+    new Set(videoSetVideoIDs),
+  );
   // useEffect to retrieve the video data of the selected video set
   useEffect(() => {
     const getVideoData = async () => {
@@ -117,7 +119,16 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const updateVideoSetSummary = async () => {
       if (online && currentVideoSet && transcriptsLoaded) {
-        if (transcriptEdited || currentVideoSet.isSummaryGenerated === false) {
+        const previousVideoSetVideoIDs = previousVideoSetVideoIDsRef.current;
+        const newVideosAdded = videoSetVideoIDs.some(
+          videoID => !previousVideoSetVideoIDs.has(videoID),
+        );
+
+        if (
+          transcriptEdited ||
+          currentVideoSet.isSummaryGenerated === false ||
+          newVideosAdded
+        ) {
           const summary = await sendVideoSetToChatGPT(
             realm,
             videoSetVideoIDs,
@@ -136,13 +147,14 @@ const DataAnalysisTextSummary = () => {
 
           if (reportFormat === 'bullet') {
             setVideoSetSummary(summary[1]);
-            console.log('videoSetSummary Bullet:', videoSetSummary);
+            console.log('videoSetSummary Bullet:', summary[1]);
           } else {
             setVideoSetSummary(summary[0]);
-            console.log('videoSetSummary Sentence:', videoSetSummary);
+            console.log('videoSetSummary Sentence:', summary[0]);
           }
           setTranscriptEdited(false);
         }
+        previousVideoSetVideoIDsRef.current = new Set(videoSetVideoIDs);
       }
     };
 
