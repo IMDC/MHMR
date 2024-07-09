@@ -253,7 +253,7 @@ const DataAnalysisLineGraph = () => {
             <TouchableOpacity
               onPress={scrollLeft}
               style={{justifyContent: 'center'}}>
-              <Icon name="arrow-left" size={60} color="black" />
+              <Icon name="keyboard-arrow-left" size={60} color="black" />
             </TouchableOpacity>
             <ScrollView horizontal={true} ref={scrollViewRef}>
               {periodValue == '1' && (
@@ -809,7 +809,7 @@ const DataAnalysisLineGraph = () => {
             <TouchableOpacity
               onPress={scrollRight}
               style={{justifyContent: 'center'}}>
-              <Icon name="arrow-right" size={60} color="black" />
+              <Icon name="keyboard-arrow-right" size={60} color="black" />
             </TouchableOpacity>
           </View>
 
