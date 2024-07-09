@@ -119,8 +119,8 @@ const ViewRecordings = ({selected, setSelected}) => {
     if (state.isConnected) {
       toggleDialog2();
     } else {
-      navigation.navigate('Video Set Dashboard', {
-        screen: 'Dashboard',
+      navigation.navigate('Dashboard', {
+        screen: 'Video Set Dashboard',
         params: {selectedVideos},
       });
       Alert.alert(
@@ -212,8 +212,7 @@ const ViewRecordings = ({selected, setSelected}) => {
       processSelectedVideos();
     } else if (state.isConnected && answer === 'NO') {
       console.log('Online and connected, NO clicked');
-    } 
-    else {
+    } else {
       console.log('Offline and disconnected');
     }
   }
@@ -530,8 +529,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                   console.log('NO clicked!');
                   handleSend('NO');
                   toggleDialog2();
-                  navigation.navigate('Video Set Dashboard', {
-                    screen: 'Dashboard',
+                  navigation.navigate('Dashboard', {
+                    screen: 'Video Set Dashboard',
                     params: {selectedVideos},
                   });
                   Alert.alert(
@@ -545,8 +544,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                 onPress={async () => {
                   console.log('YES clicked!');
                   toggleDialog2();
-                  navigation.navigate('Video Set Dashboard', {
-                    screen: 'Dashboard',
+                  navigation.navigate('Dashboard', {
+                    screen: 'Video Set Dashboard',
                     params: {selectedVideos},
                   });
 
@@ -1185,9 +1184,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   title="Review"
                                   radius={50}
                                   onPress={() =>
-                                    navigation.navigate('Review Annotations', {
-                                      id: video._id,
-                                    })
+                                    navigation.navigate(
+                                      'Review Video Markups',
+                                      {
+                                        id: video._id,
+                                      },
+                                    )
                                   }
                                 />
                                 <View style={styles.space} />
@@ -1196,7 +1198,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   radius={50}
                                   title="Add or edit markups"
                                   onPress={() =>
-                                    navigation.navigate('Annotation Menu', {
+                                    navigation.navigate('Add or Edit Markups', {
                                       id: video._id,
                                     })
                                   }
@@ -1423,7 +1425,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           title="Review"
                           radius={50}
                           onPress={() =>
-                            navigation.navigate('Review Annotations', {
+                            navigation.navigate('Review Video Markups', {
                               id: video._id,
                             })
                           }
@@ -1434,7 +1436,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           title="Add or edit markups"
                           radius={50}
                           onPress={() =>
-                            navigation.navigate('Annotation Menu', {
+                            navigation.navigate('Add or Edit Markups', {
                               id: video._id,
                             })
                           }

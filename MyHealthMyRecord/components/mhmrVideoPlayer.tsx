@@ -1,4 +1,4 @@
-import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useRef, useState} from 'react';
 import {
@@ -16,12 +16,11 @@ import {
   PanResponder,
   PanResponderGestureState,
 } from 'react-native';
-import {Button, Icon, Input, Dialog} from '@rneui/themed';
+import {Icon, Input, Dialog} from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import {VideoData, useObject, useRealm} from '../models/VideoData';
+import { useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
-import Video from 'react-native-video';
 
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
 const angry = require('../assets/images/emojis/angry.png');
@@ -755,7 +754,6 @@ const styles = StyleSheet.create({
   },
   overlayTextForComment: {
     textAlignVertical: 'center',
-    //change margintop to something more responsive
     marginTop: 450,
   },
 });
