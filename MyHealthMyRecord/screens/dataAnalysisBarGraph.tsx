@@ -157,6 +157,14 @@ const DataAnalysisBarGraph = () => {
     scrollViewRef.current?.scrollToEnd({animated: true});
   };
 
+  const scrollUp = () => {
+    scrollViewRef.current?.scrollTo({y: 0, animated: true});
+  };
+
+  const scrollDown = () => {
+    scrollViewRef.current?.scrollToEnd({animated: true});
+  };
+
   const [modalVisible, setModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
 
@@ -285,47 +293,48 @@ const DataAnalysisBarGraph = () => {
                   }}>
                   {currentVideoSet?.name} - Count of words mentioned in selected video set
                 </Text>
-                <View style={{flexDirection: 'row', height: 800, paddingVertical: 16}}>
-                  <YAxis
-                    data={wordFreqBarGraphData}
-                    yAccessor={({index}) => index}
-                    scale={scale.scaleBand}
-                    contentInset={{top: 10, bottom: 10}}
-                    spacing={0.2}
-                    formatLabel={(value, index) => wordFreqBarGraphData[index].text}
-                    svg={{fontSize: 20, margin: 10}}
-                    min={0}
-                    max={wordFreqBarGraphData[0]?.value}
-                  />
-                  <ScrollView horizontal={true} ref={scrollViewRef}>
-                    <View style={{flexDirection: 'row'}}>
-                      <BarChart
-                        style={{height: 400, width: wordFreqBarGraphData.length * 50}}
-                        data={wordFreq}
-                        horizontal={true}
-                        yAccessor={({item}) => item.y.value}
-                        svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                <View style={{flexDirection: 'column', height: 800, paddingVertical: 16}}>
+                  <TouchableOpacity
+                    onPress={scrollUp}
+                    style={{alignItems: 'center'}}>
+                    <Icon name="arrow-up" size={60} color="black" />
+                  </TouchableOpacity>
+                  <ScrollView ref={scrollViewRef}>
+                    <View style={{flexDirection: 'row', flex: 1}}>
+                      <YAxis
+                        data={wordFreqBarGraphData}
+                        yAccessor={({index}) => index}
+                        scale={scale.scaleBand}
                         contentInset={{top: 10, bottom: 10}}
                         spacing={0.2}
-                        gridMin={0}
-                        numberOfTicks={wordFreqBarGraphData[0]?.value}>
-                        <Grid direction={Grid.Direction.VERTICAL} />
-                        <LabelsHorizontal />
-                      </BarChart>
+                        formatLabel={(value, index) => wordFreqBarGraphData[index].text}
+                        svg={{fontSize: 20, margin: 10}}
+                        min={0}
+                        max={wordFreqBarGraphData[0]?.value}
+                      />
+                      <View style={{height: wordFreqBarGraphData.length * 50}}>
+                        <BarChart
+                          style={{height: wordFreqBarGraphData.length * 50, width: 600}}
+                          data={wordFreq}
+                          horizontal={true}
+                          yAccessor={({item}) => item.y.value}
+                          svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                          contentInset={{top: 10, bottom: 10}}
+                          spacing={0.2}
+                          gridMin={0}
+                          numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                          <Grid direction={Grid.Direction.VERTICAL} />
+                          <LabelsHorizontal />
+                        </BarChart>
+                      </View>
                     </View>
                   </ScrollView>
+                  <TouchableOpacity
+                    onPress={scrollDown}
+                    style={{alignItems: 'center'}}>
+                    <Icon name="arrow-down" size={60} color="black" />
+                  </TouchableOpacity>
                 </View>
-                <ScrollView horizontal={true}>
-                  <XAxis
-                    data={yTest}
-                    yAccessor={({index}) => index}
-                    scale={scale.scaleBand}
-                    contentInset={{top: 10, bottom: 10, left: 20, right: 20}}
-                    spacing={0.2}
-                    formatLabel={value => value}
-                    style={{marginLeft: 65, width: wordFreqBarGraphData.length * 50}}
-                  />
-                </ScrollView>
                 <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
                   Count
                 </Text>
