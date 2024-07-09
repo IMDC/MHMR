@@ -221,7 +221,7 @@ const DataAnalysisBarGraph = () => {
                         </BarChart>
                         <XAxis
                           style={{
-                            height: 60,
+                            height: 100,
                             marginTop: 0,
                             marginBottom: 20,
                             width: wordFreqBarGraphData.length * 50,
@@ -233,7 +233,7 @@ const DataAnalysisBarGraph = () => {
                             rotation: -45,
                             fill: 'black',
                             originY: 20,
-                            translateY: 15,
+                            translateY: 25,
                             translateX: 0,
                             y: 5,
                           }}
