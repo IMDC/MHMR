@@ -103,10 +103,8 @@ const DataAnalysis = () => {
     // console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
   }, [selectedVideoSet, videoSetVideoIDs, videoData]);
 
-  const videoIDsSet = new Set(currentVideoSet?.videoIDs);
-
   const videosSelected = videosByDate.filter(video =>
-    videoIDsSet.has(video._id.toString()),
+    new Set(currentVideoSet?.videoIDs).has(video._id.toString()),
   );
 
   // console.log('videosSelected:', videosSelected);
