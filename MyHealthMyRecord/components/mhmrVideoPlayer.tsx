@@ -270,7 +270,6 @@ const MHMRVideoPlayer = ({
           </Text>
         ) : null}
       </View>
-
       {commentConsole && !emotionConsole ? (
         <>
           <Input
@@ -296,128 +295,122 @@ const MHMRVideoPlayer = ({
             onFocus={() => {
               videoPlayerRef.current.pause();
             }}
-                  />
-                  </>
-                  ) : (
+          />
+        </>
+      ) : (
         <View></View>
       )}
-          <ScrollView>
-            <View
-              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <Text style={styles.headerStyle}>Comments</Text>
-              {isDeleteBtnVisible && (
-                <TouchableOpacity
-                  style={{justifyContent: 'flex-end'}}
-                  onPress={() => toggleEditBtnVisible()}>
-                  <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
-                </TouchableOpacity>
-              )}
-              {isEditBtnVisible && (
-                <TouchableOpacity
-                  style={{justifyContent: 'flex-end'}}
-                  onPress={() => toggleDeleteBtnVisibile()}>
-                  <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
-                </TouchableOpacity>
-              )}
-            </View>
 
-            <SafeAreaView>
-              <ScrollView style={styles.container}>
-                {parsedComments.length != 0
-                  ? parsedComments.map((c: any, i) => {
-                      return (
-                        <View
-                          ref={el => {
-                            if (el != null) {
-                              commentRef[i] = el;
-                            }
+      <ScrollView>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={styles.headerStyle}>Comments</Text>
+          {isDeleteBtnVisible && (
+            <TouchableOpacity
+              style={{justifyContent: 'flex-end'}}
+              onPress={() => toggleEditBtnVisible()}>
+              <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
+            </TouchableOpacity>
+          )}
+          {isEditBtnVisible && (
+            <TouchableOpacity
+              style={{justifyContent: 'flex-end'}}
+              onPress={() => toggleDeleteBtnVisibile()}>
+              <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <SafeAreaView>
+          <ScrollView style={styles.container}>
+            {parsedComments.length != 0
+              ? parsedComments.map((c: any, i) => {
+                  return (
+                    <View
+                      ref={el => {
+                        if (el != null) {
+                          commentRef[i] = el;
+                        }
+                      }}
+                      key={c.id}
+                      style={[styles.commentContainer, styles.row]}>
+                      <Dialog
+                        isVisible={visible}
+                        onBackdropPress={toggleDialog}>
+                        <Dialog.Title title="Edit text" />
+                        <Input
+                          ref={commentEditInput}
+                          inputStyle={{fontSize: 35}}
+                          //value={text}
+                          defaultValue={commentSelectedText}
+                          onChangeText={value => setCommentEdit(value)}
+                          onSubmitEditing={() => {
+                            editComment(commentSelectedID);
+                            toggleDialog();
                           }}
-                          key={c.id}
-                          style={[styles.commentContainer, styles.row]}>
-                          <Dialog
-                            isVisible={visible}
-                            onBackdropPress={toggleDialog}>
-                            <Dialog.Title title="Edit text" />
-                            <Input
-                              ref={commentEditInput}
-                              inputStyle={{fontSize: 35}}
-                              //value={text}
-                              defaultValue={commentSelectedText}
-                              onChangeText={value => setCommentEdit(value)}
-                              onSubmitEditing={() => {
-                                editComment(commentSelectedID);
-                                toggleDialog();
-                              }}
-                            />
+                        />
 
-                            <Dialog.Actions>
-                              <Dialog.Button
-                                title="CONFIRM"
-                                onPress={() => {
-                                  editComment(commentSelectedID);
-                                  toggleDialog();
-                                }}
-                              />
-                              <Dialog.Button
-                                title="CANCEL"
-                                onPress={toggleDialog}
-                              />
-                            </Dialog.Actions>
-                          </Dialog>
-                          <View style={styles.row}>
+                        <Dialog.Actions>
+                          <Dialog.Button
+                            title="CONFIRM"
+                            onPress={() => {
+                              editComment(commentSelectedID);
+                              toggleDialog();
+                            }}
+                          />
+                          <Dialog.Button
+                            title="CANCEL"
+                            onPress={toggleDialog}
+                          />
+                        </Dialog.Actions>
+                      </Dialog>
+                      <View style={styles.row}>
+                        <TouchableOpacity
+                          onPress={() => seekToTimestamp(c.timestamp)}>
+                          <Text key={c.id} style={styles.textStyle}>
+                            {secondsToHms(c.timestamp)} - {c.text}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.rightContainer}>
+                        {/* display this when user clicks edit */}
+                        {isDeleteBtnVisible && (
+                          <View style={{flexDirection: 'row'}}>
                             <TouchableOpacity
-                              onPress={() => seekToTimestamp(c.timestamp)}>
-                              <Text key={c.id} style={styles.textStyle}>
-                                {secondsToHms(c.timestamp)} - {c.text}
-                              </Text>
+                              style={{
+                                alignSelf: 'flex-end',
+                                marginRight: 10,
+                              }}
+                              onPress={() => {
+                                setCommentSelectedText(c.text);
+                                setCommentSelectedID(c.id);
+
+                                toggleDialog();
+                                // console.log('comment selected', c.text);
+                                console.log('comment selected', c.id);
+                              }}>
+                              <Icon
+                                name="pencil"
+                                type="font-awesome"
+                                size={24}
+                                color="#1C3EAA"
+                              />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={{alignSelf: 'flex-end'}}
+                              onPress={() => deleteComment(c.id)}>
+                              <Icon name="delete" size={24} color="#cf7f11" />
                             </TouchableOpacity>
                           </View>
-                          <View style={styles.rightContainer}>
-                            {/* display this when user clicks edit */}
-                            {isDeleteBtnVisible && (
-                              <View style={{flexDirection: 'row'}}>
-                                <TouchableOpacity
-                                  style={{
-                                    alignSelf: 'flex-end',
-                                    marginRight: 10,
-                                  }}
-                                  onPress={() => {
-                                    setCommentSelectedText(c.text);
-                                    setCommentSelectedID(c.id);
-
-                                    toggleDialog();
-                                    // console.log('comment selected', c.text);
-                                    console.log('comment selected', c.id);
-                                  }}>
-                                  <Icon
-                                    name="pencil"
-                                    type="font-awesome"
-                                    size={24}
-                                    color="#1C3EAA"
-                                  />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                  style={{alignSelf: 'flex-end'}}
-                                  onPress={() => deleteComment(c.id)}>
-                                  <Icon
-                                    name="delete"
-                                    size={24}
-                                    color="#cf7f11"
-                                  />
-                                </TouchableOpacity>
-                              </View>
-                            )}
-                          </View>
-                        </View>
-                      );
-                    })
-                  : null}
-              </ScrollView>
-            </SafeAreaView>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })
+              : null}
           </ScrollView>
-        </>
-      
+        </SafeAreaView>
+      </ScrollView>
     </View>
   );
 };

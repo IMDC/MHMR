@@ -54,6 +54,8 @@ export const VideoSetProvider = ({children}) => {
     setSendToVideoSet,
     currentVideoSet,
     currentVideos,
+    setCurrentVideos,
+    setCurrentVideoSet,
   };
 
   return (

@@ -132,6 +132,8 @@ const VideoSetDropdown = ({
         valueField="value"
         value={videoSetValue}
         onChange={item => {
+          setCurrentVideoSet(videoSets.find(set => set._id.toString() === item.value));
+          console.log('Current Video Set:', currentVideoSet);
           setVideoSetValue(item.value);
           handleChange(item.value, videoSets);
           onVideoSetChange(item.value);
