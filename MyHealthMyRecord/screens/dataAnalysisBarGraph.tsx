@@ -227,7 +227,7 @@ const DataAnalysisBarGraph = () => {
                     <TouchableOpacity
                       onPress={scrollLeft}
                       style={{justifyContent: 'center'}}>
-                      <Icon name="arrow-left" size={60} color="black" />
+                      <Icon name="keyboard-arrow-left" size={60} color="black" />
                     </TouchableOpacity>
                     <ScrollView horizontal={true} ref={scrollViewRef}>
                       <View>
@@ -273,7 +273,7 @@ const DataAnalysisBarGraph = () => {
                     <TouchableOpacity
                       onPress={scrollRight}
                       style={{justifyContent: 'center'}}>
-                      <Icon name="arrow-right" size={60} color="black" />
+                      <Icon name="keyboard-arrow-right" size={60} color="black" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -297,7 +297,7 @@ const DataAnalysisBarGraph = () => {
                   <TouchableOpacity
                     onPress={scrollUp}
                     style={{alignItems: 'center'}}>
-                    <Icon name="arrow-up" size={60} color="black" />
+                    <Icon name="keyboard-arrow-up" size={60} color="black" />
                   </TouchableOpacity>
                   <ScrollView ref={scrollViewRef}>
                     <View style={{flexDirection: 'row', flex: 1}}>
@@ -332,7 +332,7 @@ const DataAnalysisBarGraph = () => {
                   <TouchableOpacity
                     onPress={scrollDown}
                     style={{alignItems: 'center'}}>
-                    <Icon name="arrow-down" size={60} color="black" />
+                    <Icon name="keyboard-arrow-down" size={60} color="black" />
                   </TouchableOpacity>
                 </View>
                 <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
