@@ -368,6 +368,14 @@ const DataAnalysisBarGraph = () => {
                     marginHorizontal: 30,
                   }}
                 />
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginVertical: 10,
+                }}>
                 <Text style={{fontSize: 20}}>Include medical words</Text>
                 <Switch
                   trackColor={{false: '#767577', true: '#81b0ff'}}
