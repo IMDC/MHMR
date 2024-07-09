@@ -100,9 +100,8 @@ const MHMRVideoPlayer = ({
 
   useEffect(() => {
     commentRef.current = new Array(parsedComments.length);
-
     stickerRef.current = new Array(parsedStickers.length);
-  }, []);
+  }, [parsedComments.length, parsedStickers.length]);
 
   useEffect(() => {
     LogBox.ignoreLogs([
@@ -127,8 +126,8 @@ const MHMRVideoPlayer = ({
             overlayComment[1](
               parsedComments[i].text + ' ' + parsedComments[i].timestamp,
             );
-            if (commentRef[i]) {
-              commentRef[i].setNativeProps({
+            if (commentRef.current[i]) {
+              commentRef.current[i].setNativeProps({
                 style: {backgroundColor: '#b7c3eb'},
               });
             }
@@ -140,16 +139,18 @@ const MHMRVideoPlayer = ({
       }, 250);
       return () => clearInterval(interval);
     }
-  }, [overlayComment]);
+  }, [overlayComment, parsedComments, currentTime, commentView]);
 
   useEffect(() => {
     if (emotionView) {
       const interval = setInterval(() => {
         let empty = true;
         for (let i = 0; i < parsedStickers.length; i++) {
-          stickerRef[i].setNativeProps({
-            style: {backgroundColor: 'transparent'},
-          });
+          if (stickerRef.current[i]) {
+            stickerRef.current[i].setNativeProps({
+              style: {backgroundColor: 'transparent'},
+            });
+          }
           if (
             parsedStickers[i].timestamp > currentTime[0] &&
             parsedStickers[i].timestamp < currentTime[0] + 2
@@ -173,8 +174,8 @@ const MHMRVideoPlayer = ({
               default:
                 overlaySticker[1]('');
             }
-            if (stickerRef[i] != null) {
-              stickerRef[i].setNativeProps({
+            if (stickerRef.current[i]) {
+              stickerRef.current[i].setNativeProps({
                 style: {backgroundColor: '#b7c3eb'},
               });
             }
@@ -186,7 +187,7 @@ const MHMRVideoPlayer = ({
       }, 250);
       return () => clearInterval(interval);
     }
-  }, [overlaySticker]);
+  }, [overlaySticker, parsedStickers, currentTime, emotionView]);
 
   function secondsToHms(d: number) {
     d = Number(d);
@@ -645,7 +646,7 @@ const MHMRVideoPlayer = ({
                   parsedStickers.map((s: any, i) => (
                     <View
                       ref={el => {
-                        stickerRef[i] = el;
+                        stickerRef.current[i] = el;
                       }}
                       key={s.id}
                       style={[styles.commentContainer, styles.row]}>
