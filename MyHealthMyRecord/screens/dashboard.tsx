@@ -22,7 +22,7 @@ import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
 
 function Dashboard() {
- const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
   const isFocused = useIsFocused();
   const realm = useRealm();
@@ -32,7 +32,7 @@ function Dashboard() {
   const [inputText, setInputText] = useState('');
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
-  
+
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',
@@ -56,7 +56,7 @@ function Dashboard() {
   } = useDropdownContext();
 
   // useEffect to update videoSetVideoIDs when the array is added to or removed from
-    
+
   useEffect(() => {
     LogBox.ignoreLogs([
       'Non-serializable values were found in the navigation state.',
@@ -120,7 +120,13 @@ function Dashboard() {
         currentVideoSet.videoIDs = Array.from(
           new Set([...currentVideoSet?.videoIDs, ...selectedVideosArray]),
         );
-        console.log('NEW currentSet.videoIDs:', currentVideoSet.videoIDs);
+        const videoIDsSet = new Set(currentVideoSet?.videoIDs);
+
+        setVideos(
+          videosByDate.filter(video => videoIDsSet.has(video._id.toString())),
+        );
+        console.log('currentVideos:', currentVideos);
+        console.log('NEW currentVideoSet.videoIDs:', currentVideoSet.videoIDs);
       });
 
       setSendToVideoSet(0);
@@ -218,7 +224,13 @@ function Dashboard() {
       const locations = getCheckedLocations(video.filename).join(', ');
 
       try {
-        console.log(video.filename, transcript, realm, video._id.toHexString(), 'bullet');
+        console.log(
+          video.filename,
+          transcript,
+          realm,
+          video._id.toHexString(),
+          'bullet',
+        );
         const outputText = await sendToChatGPT(
           video.filename,
           transcript,
@@ -226,7 +238,7 @@ function Dashboard() {
           locations,
           realm,
           video._id.toHexString(),
-          'bullet'
+          'bullet',
         );
         setInputText(outputText);
         console.log(
@@ -323,7 +335,6 @@ function Dashboard() {
         </View>
         {videos !== null || videos !== undefined
           ? videos.map(video => {
-            
               // const isTranscriptEmpty = video => {
               //   return (
               //     video.transcript === undefined || video.transcript === ''

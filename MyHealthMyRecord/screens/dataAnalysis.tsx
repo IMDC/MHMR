@@ -103,9 +103,13 @@ const DataAnalysis = () => {
     // console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
   }, [selectedVideoSet, videoSetVideoIDs, videoData]);
 
-  // Filter out any undefined or null videos
-  const videosSelected = currentVideos.filter(video => video !== undefined && video !== null);
-  //console.log(videosSelected);
+  const videoIDsSet = new Set(currentVideoSet?.videoIDs);
+
+  const videosSelected = videosByDate.filter(video =>
+    videoIDsSet.has(video._id.toString()),
+  );
+
+  // console.log('videosSelected:', videosSelected);
 
   const videosSetsByDate = videoSets.sorted('datetime', false);
   //console.log("sets", videoSets);
@@ -371,18 +375,17 @@ const DataAnalysis = () => {
 
   /* ======================================================================= */
 
-
   function processSentimentData() {
     const sentimentCounts = {
       'Very Negative': 0,
-      'Negative': 0,
-      'Neutral': 0,
-      'Positive': 0,
+      Negative: 0,
+      Neutral: 0,
+      Positive: 0,
       'Very Positive': 0,
     };
 
     const sentimentTimeline = videosSelected
-      .filter(video => video && video.sentiment)  // Filter out videos with undefined sentiment
+      .filter(video => video && video.sentiment) // Filter out videos with undefined sentiment
       .map(video => {
         sentimentCounts[video.sentiment]++;
         return {
@@ -390,19 +393,23 @@ const DataAnalysis = () => {
           sentiment: video.sentiment,
         };
       });
-  
-    const formattedData = Object.keys(sentimentCounts).map((sentiment, index) => {
-      return {
-        label: sentiment,
-        value: sentimentCounts[sentiment],
-        svg: { fill: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722', '#F44336'][index] },
-      };
-    });
 
+    const formattedData = Object.keys(sentimentCounts).map(
+      (sentiment, index) => {
+        return {
+          label: sentiment,
+          value: sentimentCounts[sentiment],
+          svg: {
+            fill: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722', '#F44336'][
+              index
+            ],
+          },
+        };
+      },
+    );
 
     setSentimentBarData(formattedData);
   }
-
 
   return (
     <View style={{flexDirection: 'column', flex: 1}}>

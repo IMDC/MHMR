@@ -199,7 +199,7 @@ const ViewRecordings = ({selected, setSelected}) => {
   }
 
   //handleSend just adds videos to video set
-  async function handleSend() {
+  async function handleSend(answer) {
     const state = await NetInfo.fetch();
     setSelectedVideos(selected);
 
@@ -207,10 +207,13 @@ const ViewRecordings = ({selected, setSelected}) => {
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
 
-    if (state.isConnected) {
+    if (state.isConnected && answer === 'YES') {
       console.log('Online and connected');
       processSelectedVideos();
-    } else {
+    } else if (state.isConnected && answer === 'NO') {
+      console.log('Online and connected, NO clicked');
+    } 
+    else {
       console.log('Offline and disconnected');
     }
   }
@@ -525,7 +528,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 title="NO"
                 onPress={async () => {
                   console.log('NO clicked!');
-                  
+                  handleSend('NO');
                   toggleDialog2();
                   navigation.navigate('Video Set Dashboard', {
                     screen: 'Dashboard',
@@ -547,7 +550,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                     params: {selectedVideos},
                   });
 
-                  await handleSend();
+                  await handleSend('YES');
                   await handleYesAnalysis();
                   Alert.alert(
                     'Video transcripts generated and analyzed',
