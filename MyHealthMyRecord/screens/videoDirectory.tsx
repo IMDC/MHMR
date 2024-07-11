@@ -127,7 +127,7 @@ const ViewRecordings = ({selected, setSelected}) => {
         'Added to Video Set',
         'Your videos have been added to the Video Set!',
       );
-      handleSend();
+      handleSend('NO');
     }
   }
 
@@ -209,7 +209,7 @@ const ViewRecordings = ({selected, setSelected}) => {
 
     if (state.isConnected && answer === 'YES') {
       console.log('Online and connected');
-      processSelectedVideos();
+      // processSelectedVideos();
     } else if (state.isConnected && answer === 'NO') {
       console.log('Online and connected, NO clicked');
     } else {
@@ -550,6 +550,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                   });
 
                   await handleSend('YES');
+                  await processSelectedVideos();
                   await handleYesAnalysis();
                   Alert.alert(
                     'Video transcripts generated and analyzed',
@@ -1025,8 +1026,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                                           video.isSelected = true;
                                         });
 
-                                        console.log('checked');
-                                        console.log(video.isSelected);
+                                        console.log('checked', video.isSelected);
+                                        console.log(
+                                          'converted status',
+                                          video.filename,
+                                          video.isConverted,
+                                        );
                                       } else {
                                         // If video is already checked, uncheck it and remove from selected videos
                                         toggleVideoChecked(
@@ -1041,8 +1046,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         realm.write(() => {
                                           video.isSelected = false;
                                         });
-                                        console.log(video.isSelected);
-                                        console.log('unchecked');
+                                        console.log('unchecked', video.filename, video.isSelected);
+                                        console.log('converted status', video.filename, video.isConverted);
                                       }
                                     }}
                                     wrapperStyle={{
