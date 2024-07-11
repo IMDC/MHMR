@@ -527,7 +527,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 title="NO"
                 onPress={async () => {
                   console.log('NO clicked!');
-                  handleSend('NO');
+                  await handleSend('NO');
                   toggleDialog2();
                   navigation.navigate('Dashboard', {
                     screen: 'Video Set Dashboard',
@@ -1046,8 +1046,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         realm.write(() => {
                                           video.isSelected = false;
                                         });
-                                        console.log('unchecked', video.filename, video.isSelected);
-                                        console.log('converted status', video.filename, video.isConverted);
                                       }
                                     }}
                                     wrapperStyle={{

@@ -22,6 +22,7 @@ import {
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../components/networkProvider';
+import { refresh } from '@react-native-community/netinfo';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -49,7 +50,9 @@ const DataAnalysisTextSummary = () => {
   const previousVideoSetVideoIDsRef = useRef<Set<string>>(
     new Set(videoSetVideoIDs),
   );
+  const [refreshSummary, setRefreshSummary] = useState(false);
   // useEffect to retrieve the video data of the selected video set
+
   useEffect(() => {
     const getVideoData = async () => {
       const videoDataVideos = await Promise.all(
@@ -129,7 +132,7 @@ const DataAnalysisTextSummary = () => {
         if (
           transcriptEdited ||
           currentVideoSet.isSummaryGenerated === false ||
-          newVideosAdded
+          newVideosAdded || refreshSummary
         ) {
           const summary = await sendVideoSetToChatGPT(
             realm,
@@ -157,6 +160,7 @@ const DataAnalysisTextSummary = () => {
           setTranscriptEdited(false);
         }
         previousVideoSetVideoIDsRef.current = new Set(videoSetVideoIDs);
+        setRefreshSummary(false);
       }
     };
 
@@ -169,6 +173,7 @@ const DataAnalysisTextSummary = () => {
     realm,
     reportFormat,
     online,
+    refreshSummary,
   ]);
 
   //useEffect for updating transcript
@@ -425,7 +430,23 @@ const DataAnalysisTextSummary = () => {
           selectedTextStyle={styles.dropdownItem}
         />
       </View>
+
       <View style={{padding: 10}}>
+        {online && (
+          <TouchableOpacity
+            onPress={() => setRefreshSummary(!refreshSummary)}
+            style={{flexDirection: 'row', justifyContent: 'flex-end', opacity: 0.5}}>
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 16,
+                textAlignVertical: 'center',
+              }}>
+              Refresh video set summary
+            </Text>
+            <Icon name="refresh-outline" type="ionicon" size={24} />
+          </TouchableOpacity>
+        )}
         <Text style={[styles.title, {textAlign: 'center'}]}>
           {videoSet?.name} - Video set summary
         </Text>
@@ -560,7 +581,11 @@ const DataAnalysisTextSummary = () => {
                         <Text style={styles.transcript}>
                           {video.transcript}
                         </Text>
-                        <View style={[styles.buttonContainer, {justifyContent: 'center'}]}>
+                        <View
+                          style={[
+                            styles.buttonContainer,
+                            {justifyContent: 'center'},
+                          ]}>
                           <View style={styles.buttonWrapper}>
                             <Button
                               buttonStyle={{width: 150}}
