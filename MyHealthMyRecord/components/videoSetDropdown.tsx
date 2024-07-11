@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Alert} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useDropdownContext} from './videoSetProvider';
 import {useRealm} from '../models/VideoData';
@@ -27,6 +27,7 @@ const VideoSetDropdown = ({
     setCurrentVideoSet,
     currentVideoSet,
     isVideoSetSaved,
+    handleDeleteSet
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
@@ -82,15 +83,16 @@ const VideoSetDropdown = ({
   };
 
   const deleteAllVideoSets = () => {
-    realm.write(() => {
-      realm.delete(realm.objects('VideoSet'));
-    });
-    setLocalDropdown([]);
-    setLocalDropdown([]);
-    setVideoSetValue(null);
-    setVideoSetVideoIDs([]);
-    onVideoSetChange(null);
+    Alert.alert(
+      'Delete Video Set',
+      'Are you sure you want to delete ALL video sets?',
+      [
+        {text: 'OK', onPress: () => handleDeleteSet(realm.objects('VideoSet'))},
+        {text: 'Cancel', style: 'cancel'},
+      ],
+    );
   };
+
 
   const refreshDropdown = () => {
     const updatedDropdown = videoSets.map(set => ({

@@ -161,6 +161,7 @@ function Dashboard() {
   }, [
     route.params?.selectedVideos,
     currentVideoSet,
+    currentVideos,
     isFocused,
     videoData,
     // videoSetVideoIDs,

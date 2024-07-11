@@ -1,5 +1,5 @@
 import React, {createContext, useState, useContext} from 'react';
-import {useRealm} from '../models/VideoData';
+import {useRealm, VideoSet} from '../models/VideoData';
 
 export const VideoSetContext = createContext();
 
@@ -18,6 +18,7 @@ export const VideoSetProvider = ({children}) => {
     setVideoSetValue(value);
     const selectedSet = videoSets.find(set => set._id.toString() === value);
     if (selectedSet) {
+      setIsVideoSetSaved(true);
       setCurrentVideoSet(selectedSet);
       setVideoSetVideoIDs(selectedSet.videoIDs);
       setCurrentSetID(selectedSet._id.toString());
@@ -46,9 +47,25 @@ export const VideoSetProvider = ({children}) => {
     setIsVideoSetSaved(true);
   };
 
+  const handleDeleteSet = (setToDelete: VideoSet) => {
+      setCurrentVideoSet(null);
+      setVideoSetValue('');
+      setVideoSetVideoIDs([]);
+      setCurrentVideos([]);
+      
+      setIsVideoSetSaved(false);
+      if (setToDelete) {
+        realm.write(() => {
+          realm.delete(setToDelete);
+        });
+        console.log('SET DELETED FROM DB');
+      }
+  };
+
   const contextValues = {
     handleNewSet,
     handleChange,
+    handleDeleteSet,
     videoSetVideoIDs,
     setVideoSetVideoIDs,
     videoSetValue,
@@ -60,7 +77,7 @@ export const VideoSetProvider = ({children}) => {
     setCurrentVideos,
     setCurrentVideoSet,
     isVideoSetSaved,
-    setIsVideoSetSaved
+    setIsVideoSetSaved,
   };
 
   return (
