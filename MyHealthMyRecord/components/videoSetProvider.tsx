@@ -1,5 +1,5 @@
 import React, {createContext, useState, useContext} from 'react';
-import {useRealm} from '../models/VideoData';
+import {useRealm, VideoSet} from '../models/VideoData';
 
 export const VideoSetContext = createContext();
 
@@ -11,12 +11,14 @@ export const VideoSetProvider = ({children}) => {
   const [currentSetID, setCurrentSetID] = useState('');
   const [currentVideos, setCurrentVideos] = useState([]);
   const [sendToVideoSet, setSendToVideoSet] = useState(0);
+  const [isVideoSetSaved, setIsVideoSetSaved] = useState(Boolean);
 
   const handleChange = (value, videoSets) => {
     setSendToVideoSet(0);
     setVideoSetValue(value);
     const selectedSet = videoSets.find(set => set._id.toString() === value);
     if (selectedSet) {
+      setIsVideoSetSaved(true);
       setCurrentVideoSet(selectedSet);
       setVideoSetVideoIDs(selectedSet.videoIDs);
       setCurrentSetID(selectedSet._id.toString());
@@ -29,6 +31,7 @@ export const VideoSetProvider = ({children}) => {
       setCurrentSetID('');
       setVideoSetVideoIDs([]);
       setCurrentVideos([]);
+      setIsVideoSetSaved(true);
     }
   };
 
@@ -41,11 +44,28 @@ export const VideoSetProvider = ({children}) => {
       realm.objects('VideoData').find(video => video._id.toString() === id),
     );
     setCurrentVideos(videos);
+    setIsVideoSetSaved(true);
+  };
+
+  const handleDeleteSet = (setToDelete: VideoSet) => {
+      setCurrentVideoSet(null);
+      setVideoSetValue('');
+      setVideoSetVideoIDs([]);
+      setCurrentVideos([]);
+      
+      setIsVideoSetSaved(false);
+      if (setToDelete) {
+        realm.write(() => {
+          realm.delete(setToDelete);
+        });
+        console.log('SET DELETED FROM DB');
+      }
   };
 
   const contextValues = {
     handleNewSet,
     handleChange,
+    handleDeleteSet,
     videoSetVideoIDs,
     setVideoSetVideoIDs,
     videoSetValue,
@@ -56,6 +76,8 @@ export const VideoSetProvider = ({children}) => {
     currentVideos,
     setCurrentVideos,
     setCurrentVideoSet,
+    isVideoSetSaved,
+    setIsVideoSetSaved,
   };
 
   return (

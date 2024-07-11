@@ -19,7 +19,7 @@ import {
 import {Icon, Input, Dialog} from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import { useObject, useRealm} from '../models/VideoData';
+import {useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
 
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
@@ -401,6 +401,7 @@ const MHMRVideoPlayer = ({
       {isFullscreen ? (
         <SafeAreaView style={{width: windowWidth, height: windowHeight - 220}}>
           <VideoPlayer
+            disableVolume={true}
             videoRef={videoPlayerRef}
             source={{uri: videoPath}}
             paused={true}
@@ -432,6 +433,7 @@ const MHMRVideoPlayer = ({
             paddingTop: 15,
           }}>
           <VideoPlayer
+            disableVolume={true}
             videoRef={videoPlayerRef}
             source={{uri: videoPath}}
             paused={true}
@@ -456,6 +458,7 @@ const MHMRVideoPlayer = ({
           />
         </View>
       )}
+
       {emotionView && overlaySticker[0] !== '' && (
         <Image
           style={[styles.overlayText, styles.overlaySticker]}
@@ -467,9 +470,9 @@ const MHMRVideoPlayer = ({
           style={[
             styles.overlayText,
             styles.overlayTextForComment,
-            {position: 'absolute', bottom: 10, left: 10},
+            // {position: 'absolute', top: 10, left: 10},
           ]}>
-          <Text>{overlayComment[0]}</Text>
+          <Text style={{width: 100}}>{overlayComment[0]}</Text>
         </View>
       )}
 
@@ -613,7 +616,28 @@ const MHMRVideoPlayer = ({
                       </View>
                     ))
                   ) : (
-                    <Text>No comments added</Text>
+                    // <Text>No comments added </Text>
+                    <View>
+                      {!commentConsole ? (
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('Text Comments', {id: videoID})
+                          }>
+                          <Text
+                            style={{
+                              fontSize: 20,
+                              paddingTop: 10,
+                              color: 'blue',
+                            }}>
+                            No comments added. Click to add a comment.
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={{fontSize: 20, paddingTop: 10}}>
+                          No comments added.
+                        </Text>
+                      )}
+                    </View>
                   )}
                 </View>
               </>
@@ -671,7 +695,24 @@ const MHMRVideoPlayer = ({
                     </View>
                   ))
                 ) : (
-                  <Text>No stickers added</Text>
+                  <View>
+                    {!emotionConsole ? (
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('Emotion Tagging', {id: videoID})
+                        }>
+                        <Text
+                          style={{fontSize: 20, paddingTop: 10, color: 'blue'}}>
+                          No emotion stickers added. Click to add a emotion
+                          stickers.
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={{fontSize: 20, paddingTop: 10}}>
+                        No emotion stickers added.
+                      </Text>
+                    )}
+                  </View>
                 )}
               </View>
             )}
@@ -717,7 +758,7 @@ const styles = StyleSheet.create({
   headerStyle: {
     fontWeight: 'bold',
     fontSize: 32,
-    paddingLeft: 15,
+
     paddingTop: 15,
   },
   textStyle: {
@@ -753,8 +794,8 @@ const styles = StyleSheet.create({
     height: 120,
   },
   overlayTextForComment: {
-    textAlignVertical: 'center',
-    marginTop: 450,
+    flex: 1,
+    right: 20,
   },
 });
 

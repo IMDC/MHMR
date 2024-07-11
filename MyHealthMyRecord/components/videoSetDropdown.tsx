@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Alert} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useDropdownContext} from './videoSetProvider';
 import {useRealm} from '../models/VideoData';
@@ -26,14 +26,17 @@ const VideoSetDropdown = ({
     setVideoSetValue,
     setCurrentVideoSet,
     currentVideoSet,
-    setCurrentSetID,
-    currentSetID,
+    isVideoSetSaved,
+    handleDeleteSet
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   useEffect(() => {
+    console.log(currentVideoSet);
+    console.log(videoSetVideoIDs.length);
+    console.log(isVideoSetSaved)
     const formattedDropdown = videoSets.map(set => ({
       label: set.name,
       value: set._id.toString(),
@@ -80,15 +83,16 @@ const VideoSetDropdown = ({
   };
 
   const deleteAllVideoSets = () => {
-    realm.write(() => {
-      realm.delete(realm.objects('VideoSet'));
-    });
-    setLocalDropdown([]);
-    setLocalDropdown([]);
-    setVideoSetValue(null);
-    setVideoSetVideoIDs([]);
-    onVideoSetChange(null);
+    Alert.alert(
+      'Delete Video Set',
+      'Are you sure you want to delete ALL video sets?',
+      [
+        {text: 'OK', onPress: () => handleDeleteSet(realm.objects('VideoSet'))},
+        {text: 'Cancel', style: 'cancel'},
+      ],
+    );
   };
+
 
   const refreshDropdown = () => {
     const updatedDropdown = videoSets.map(set => ({
@@ -132,7 +136,9 @@ const VideoSetDropdown = ({
         valueField="value"
         value={videoSetValue}
         onChange={item => {
-          setCurrentVideoSet(videoSets.find(set => set._id.toString() === item.value));
+          setCurrentVideoSet(
+            videoSets.find(set => set._id.toString() === item.value),
+          );
           console.log('Current Video Set:', currentVideoSet);
           setVideoSetValue(item.value);
           handleChange(item.value, videoSets);
@@ -226,6 +232,14 @@ const VideoSetDropdown = ({
               />
             )}
           </View>
+          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
+            <View style={{paddingBottom: 15}}>
+              <Text style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>
+                Warning! Current video set is not saved. Click 'Save video set'
+                to save it.{' '}
+              </Text>
+            </View>
+          )}
         </View>
       )}
     </View>

@@ -18,7 +18,7 @@ import * as Styles from '../assets/util/styles';
 import {useDropdownContext} from '../components/videoSetProvider';
 
 const ManageVideoSet = () => {
-  const {videoSetVideoIDs, currentVideoSet, currentSetID} =
+  const {videoSetVideoIDs, currentVideoSet, currentSetID, handleDeleteSet} =
     useDropdownContext();
   const isFocused = useIsFocused();
   const navigation = useNavigation();
@@ -100,19 +100,16 @@ const ManageVideoSet = () => {
       'Delete Video Set',
       'Are you sure you want to delete this video set?',
       [
-        {text: 'OK', onPress: () => handleDeleteVideoSet()},
+        {text: 'OK', onPress: () => handleDelete()},
         {text: 'Cancel', style: 'cancel'},
       ],
     );
   };
 
-  const handleDeleteVideoSet = () => {
-    if (currentVideoSet) {
-      realm.write(() => {
-        realm.delete(currentVideoSet);
-        navigation.goBack();
-      });
-    }
+  const handleDelete = async () => {
+   
+    await handleDeleteSet(currentVideoSet);
+     navigation.goBack();
   };
 
   if (!currentVideoSet) {
