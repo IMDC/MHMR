@@ -26,14 +26,16 @@ const VideoSetDropdown = ({
     setVideoSetValue,
     setCurrentVideoSet,
     currentVideoSet,
-    setCurrentSetID,
-    currentSetID,
+    isVideoSetSaved,
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   useEffect(() => {
+    console.log(currentVideoSet);
+    console.log(videoSetVideoIDs.length);
+    console.log(isVideoSetSaved)
     const formattedDropdown = videoSets.map(set => ({
       label: set.name,
       value: set._id.toString(),
@@ -132,7 +134,9 @@ const VideoSetDropdown = ({
         valueField="value"
         value={videoSetValue}
         onChange={item => {
-          setCurrentVideoSet(videoSets.find(set => set._id.toString() === item.value));
+          setCurrentVideoSet(
+            videoSets.find(set => set._id.toString() === item.value),
+          );
           console.log('Current Video Set:', currentVideoSet);
           setVideoSetValue(item.value);
           handleChange(item.value, videoSets);
@@ -226,6 +230,14 @@ const VideoSetDropdown = ({
               />
             )}
           </View>
+          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
+            <View style={{paddingBottom: 15}}>
+              <Text style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>
+                Warning! Current video set is not saved. Click 'Save video set'
+                to save it.{' '}
+              </Text>
+            </View>
+          )}
         </View>
       )}
     </View>

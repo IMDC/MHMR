@@ -51,8 +51,8 @@ export const sendToChatGPT = async (
       const transcriptWordCount = transcript.split(' ').length;
       const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
 
-      let inputTextBullet = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
-      let inputTextSentence = `Summarize this video transcript (${transcript}). Make the total word count of the summary be ${maxSummaryWords} words or less. Format the summary in sentences.`;
+      let inputTextBullet = `Provide bullet points of the main topics discussed in this video transcript: (${transcript}). Format this in bullet points using \u2022`;
+      let inputTextSentence = `Summarize and overview the main topics covered in this video transcript: (${transcript}). Format this summary in sentences.`;
       let sentimentInputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
 
       const sentimentData = await connectToChatGPT(sentimentInputText);
@@ -80,7 +80,7 @@ export const sendToChatGPT = async (
           if (video) {
             video.isConverted = true; // Mark the video as converted
             video.tsOutputSentence = outputText;
-            console.log('tsOutputSentence:', video.tsOutputSentence);
+            console.log('individual transcript output in sentence form:', video.tsOutputSentence);
             returnOutput.push(outputText);
           } else {
             console.log('No video found with ID:', _id);
@@ -101,7 +101,7 @@ export const sendToChatGPT = async (
           if (video) {
             video.isConverted = true; // Mark the video as converted
             video.tsOutputBullet = outputText;
-            console.log('tsOutputBullet:', video.tsOutputBullet);
+            console.log('individual transcript output in bullet form:', video.tsOutputBullet);
             returnOutput.push(outputText);
           } else {
             console.log('No video found with ID:', _id);
@@ -114,7 +114,7 @@ export const sendToChatGPT = async (
       console.error('Error:', error);
       console.log('error found in sendToChatGPT function');
     }
-    console.log('returnOutput:', returnOutput);
+    // console.log('returnOutput:', returnOutput);
     return returnOutput;
   }
 };
@@ -147,13 +147,14 @@ export const sendVideoSetToChatGPT = async (
     );
     const combinedTranscripts = videoTranscripts.join(' ');
     const transcriptWordCount = combinedTranscripts.split(' ').length;
-    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
+    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.3);
     // console.log('combinedTranscripts:', combinedTranscripts);
 
     try {
-      let inputTextBullet = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
-      let inputTextSentence = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
-
+      // let inputTextBullet = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+      // let inputTextSentence = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+       let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+       let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
       const dataSentence = await connectToChatGPT(inputTextSentence);
       if (dataSentence.choices && dataSentence.choices.length > 0) {
         const outputText = dataSentence.choices[0].message.content;
@@ -165,7 +166,7 @@ export const sendVideoSetToChatGPT = async (
         });
 
         console.log(
-          'Single Video Summary Analysis Sentence:',
+          'Set summary analysis in sentence form:',
           selectedVideoSet.summaryAnalysisSentence,
         );
       } else {
@@ -182,7 +183,7 @@ export const sendVideoSetToChatGPT = async (
         });
 
         console.log(
-          'Single Video Summary Analysis Bullet:',
+          'Set summary analysis in bullet form:',
           selectedVideoSet.summaryAnalysisBullet,
         );
       } else {

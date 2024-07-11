@@ -153,6 +153,7 @@ const Painscale = () => {
           </Text>
         </View>
       </View>
+
       {/* <View style={{paddingBottom: 30}}>
         <FlatList
           style={styles.container}
@@ -177,15 +178,20 @@ const Painscale = () => {
           backgroundColor: '#d1d1d1',
         }}>
         <TouchableOpacity onPress={() => setMcGillIsVisible(!mcGillIsVisible)}>
-          {mcGillIsVisible ? (
-            <View style={{flexDirection: 'row'}}>
-              <Text style={{fontSize: 20, fontWeight: 'bold'}}>Hide –</Text>
-            </View>
-          ) : (
-            <View style={{flexDirection: 'row'}}>
-              <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show ▼</Text>
-            </View>
-          )}
+          <View>
+            <TouchableOpacity
+              style={{flexDirection: 'row'}}
+              onPress={() => setMcGillIsVisible(!mcGillIsVisible)}>
+              <Text>{mcGillIsVisible ? 'Hide' : 'Show'}</Text>
+
+              {/* <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show +</Text> */}
+              <Icon
+                name={
+                  mcGillIsVisible ? 'keyboard-arrow-up' : 'keyboard-arrow-down'
+                }
+              />
+            </TouchableOpacity>
+          </View>
         </TouchableOpacity>
       </View>
       {mcGillIsVisible ? (

@@ -11,6 +11,7 @@ export const VideoSetProvider = ({children}) => {
   const [currentSetID, setCurrentSetID] = useState('');
   const [currentVideos, setCurrentVideos] = useState([]);
   const [sendToVideoSet, setSendToVideoSet] = useState(0);
+  const [isVideoSetSaved, setIsVideoSetSaved] = useState(Boolean);
 
   const handleChange = (value, videoSets) => {
     setSendToVideoSet(0);
@@ -29,6 +30,7 @@ export const VideoSetProvider = ({children}) => {
       setCurrentSetID('');
       setVideoSetVideoIDs([]);
       setCurrentVideos([]);
+      setIsVideoSetSaved(true);
     }
   };
 
@@ -41,6 +43,7 @@ export const VideoSetProvider = ({children}) => {
       realm.objects('VideoData').find(video => video._id.toString() === id),
     );
     setCurrentVideos(videos);
+    setIsVideoSetSaved(true);
   };
 
   const contextValues = {
@@ -56,6 +59,8 @@ export const VideoSetProvider = ({children}) => {
     currentVideos,
     setCurrentVideos,
     setCurrentVideoSet,
+    isVideoSetSaved,
+    setIsVideoSetSaved
   };
 
   return (

@@ -50,9 +50,9 @@ function Dashboard() {
     sendToVideoSet,
     setSendToVideoSet,
     currentVideos,
-    setCurrentVideos,
-    setCurrentVideoSet,
     currentVideoSet,
+    setIsVideoSetSaved,
+    isVideoSetSaved,
   } = useDropdownContext();
 
   // useEffect to update videoSetVideoIDs when the array is added to or removed from
@@ -133,7 +133,7 @@ function Dashboard() {
     } else if (sendToVideoSet == 2) {
       // Send to new video set
       // Display the videos associated with the IDs in isSelected
-
+      setIsVideoSetSaved(false);
       setVideoSetValue(null);
       const selectedVideosArray = Array.from(selectedVideos);
       setVideoSetVideoIDs(Array.from(selectedVideos));
@@ -486,6 +486,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding: 10,
+    
   },
   buttonContainer: {
     flexDirection: 'row',

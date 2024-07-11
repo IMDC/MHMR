@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import {useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
@@ -44,6 +45,7 @@ const DataAnalysisTextSummary = () => {
   const [transcriptEdited, setTranscriptEdited] = useState(false);
   const [reportFormat, setReportFormat] = useState('bullet');
   const [sentimentsGenerated, setSentimentsGenerated] = useState(false);
+  const [videosVisible, setVideosVisible] = useState(true);
   const previousVideoSetVideoIDsRef = useRef<Set<string>>(
     new Set(videoSetVideoIDs),
   );
@@ -448,7 +450,7 @@ const DataAnalysisTextSummary = () => {
 
         <View style={styles.sentimentCountsContainer}>
           <Text style={styles.sentimentCountsTitle}>
-            Emotional distribution
+            Emotional distribution of video set
           </Text>
           <Text style={styles.sentimentCount}>
             Very negative: {sentimentCounts.veryNegative}
@@ -467,103 +469,147 @@ const DataAnalysisTextSummary = () => {
           </Text>
         </View>
       </View>
+
+      <View
+        style={{
+          padding: 10,
+          borderBottomColor: 'black',
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderTopColor: 'black',
+          borderTopWidth: StyleSheet.hairlineWidth,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
+        <Text style={[styles.title, {paddingHorizontal: 10}]}>
+          Individual videos in video set
+        </Text>
+        <TouchableOpacity
+          style={{flexDirection: 'row', alignSelf: 'center'}}
+          onPress={() => setVideosVisible(!videosVisible)}>
+          <Text style={{}}>{videosVisible ? 'Hide' : 'Show'}</Text>
+
+          {/* <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show +</Text> */}
+          <Icon
+            name={videosVisible ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+          />
+        </TouchableOpacity>
+      </View>
       {videos.map(video => {
         if (!video) {
           return null;
-        }
-        return (
-          <View key={video._id} style={styles.container}>
-            <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
-              <Text style={styles.title}>{video.title}</Text>
-              {editingID === video._id ? (
-                <>
-                  <View style={{flexDirection: 'row'}}>
-                    <TextInput
-                      style={styles.textInput}
-                      onChangeText={setDraftTranscript}
-                      value={draftTranscript}
-                      multiline
-                    />
-                    <View style={styles.buttonContainer}>
-                      <View style={styles.buttonWrapper}>
-                        <Button
-                          radius={20}
-                          title="Save"
-                          onPress={handleSave}
-                          color={Styles.MHMRBlue}
-                        />
-                      </View>
-                      <View style={styles.buttonWrapper}>
-                        <Button
-                          radius={20}
-                          title="Cancel"
-                          onPress={handleCancel}
-                          color={Styles.MHMRBlue}
-                        />
+        } else if (videosVisible) {
+          return (
+            <View key={video._id} style={styles.container}>
+              <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
+                <Text style={[styles.title, {fontSize: 28}]}>
+                  {video.title}
+                </Text>
+                {editingID === video._id ? (
+                  <>
+                    <Text style={styles.transcriptLabel}>
+                      Video transcript:
+                    </Text>
+                    <View style={{flexDirection: 'row'}}>
+                      <TextInput
+                        style={styles.textInput}
+                        onChangeText={setDraftTranscript}
+                        value={draftTranscript}
+                        multiline
+                      />
+                      <View style={styles.buttonContainer}>
+                        <View style={styles.buttonWrapper}>
+                          <Button
+                            radius={20}
+                            title="Save"
+                            onPress={handleSave}
+                            color={Styles.MHMRBlue}
+                          />
+                        </View>
+                        <View style={styles.buttonWrapper}>
+                          <Button
+                            radius={20}
+                            title="Cancel"
+                            onPress={handleCancel}
+                            color={Styles.MHMRBlue}
+                          />
+                        </View>
                       </View>
                     </View>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <TouchableOpacity
-                      onPress={() => toggleTranscript(video._id)}>
-                      <Text style={styles.transcriptLabel}>
-                        Video transcript:
-                      </Text>
-                    </TouchableOpacity>
-                    <Icon
-                      name={
-                        showTranscript[video._id]
-                          ? 'keyboard-arrow-up'
-                          : 'keyboard-arrow-down'
-                      }
-                      size={30}
-                      onPress={() => toggleTranscript(video._id)}
-                    />
-                  </View>
-                  {showTranscript[video._id] && (
-                    <>
-                      <Text style={styles.transcript}>{video.transcript}</Text>
-                      <View style={{alignSelf: 'flex-end'}}>
-                        <Button
-                          radius={50}
-                          title="Edit transcript"
-                          onPress={() => handleEdit(video)}
-                          color={Styles.MHMRBlue}
-                        />
+                  </>
+                ) : (
+                  <>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <TouchableOpacity
+                        onPress={() => toggleTranscript(video._id)}>
+                        <Text style={styles.transcriptLabel}>
+                          Video transcript:
+                        </Text>
+                      </TouchableOpacity>
+                      <Icon
+                        name={
+                          showTranscript[video._id]
+                            ? 'keyboard-arrow-up'
+                            : 'keyboard-arrow-down'
+                        }
+                        size={30}
+                        onPress={() => toggleTranscript(video._id)}
+                      />
+                    </View>
+                    {showTranscript[video._id] && (
+                      <View style={{flexDirection: 'row'}}>
+                        <Text style={styles.transcript}>
+                          {video.transcript}
+                        </Text>
+                        <View style={[styles.buttonContainer, {justifyContent: 'center'}]}>
+                          <View style={styles.buttonWrapper}>
+                            <Button
+                              buttonStyle={{width: 150}}
+                              radius={50}
+                              title="Edit transcript"
+                              onPress={() => handleEdit(video)}
+                              color={Styles.MHMRBlue}
+                            />
+                          </View>
+                        </View>
+                        <View style={{alignSelf: 'center'}}></View>
                       </View>
-                    </>
-                  )}
-                </>
-              )}
-              <Text style={styles.output}>
-                <Text style={styles.boldText}>Output: </Text>
-                {/* if transcript is not generated yet, display Output not generated yet, else display transcript */}
-                {video.transcript === ''
-                  ? 'Transcript has not been generated.'
-                  : video.tsOutputBullet === '' || video.tsOutputSentence === ''
-                  ? 'Output has not been generated.'
-                  : reportFormat === 'bullet'
-                  ? video.tsOutputBullet
-                  : video.tsOutputSentence}
-              </Text>
-              <Text style={styles.sentiment}>
-                <Text style={styles.boldText}>Overall feeling: </Text>
-                {video.transcript === '' &&
-                video.tsOutputBullet === '' &&
-                video.tsOutputSentence === ''
-                  ? 'Neutral '
-                  : video.sentiment}
-                <Image
-                  source={getEmojiForSentiment(video.sentiment)}
-                  style={styles.emoji}
-                />
-              </Text>
+                    )}
+                  </>
+                )}
+
+                <View style={{flexDirection: 'column'}}>
+                  <Text style={[styles.output, {fontWeight: 'bold'}]}>
+                    Video output:{' '}
+                  </Text>
+                  {/* if transcript is not generated yet, display Output not generated yet, else display transcript */}
+
+                  <Text style={styles.output}>
+                    {video.transcript === ''
+                      ? 'Transcript has not been generated.'
+                      : video.tsOutputBullet === '' ||
+                        video.tsOutputSentence === ''
+                      ? 'Output has not been generated.'
+                      : reportFormat === 'bullet'
+                      ? video.tsOutputBullet
+                      : video.tsOutputSentence}
+                  </Text>
+                </View>
+                <Text style={styles.sentiment}>
+                  <Text style={{fontWeight: 'bold'}}>Overall feeling: </Text>
+                  {video.transcript === '' &&
+                  video.tsOutputBullet === '' &&
+                  video.tsOutputSentence === ''
+                    ? 'Neutral '
+                    : video.sentiment}
+                  <Image
+                    source={getEmojiForSentiment(video.sentiment)}
+                    style={styles.emoji}
+                  />
+                </Text>
+              </View>
             </View>
-          </View>
-        );
+          );
+        }
       })}
     </ScrollView>
   );
@@ -575,14 +621,13 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomColor: 'black',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'black',
-    borderTopWidth: StyleSheet.hairlineWidth,
+    // borderTopColor: 'black',
+    // borderTopWidth: StyleSheet.hairlineWidth,
   },
   title: {
     fontWeight: 'bold',
     fontSize: 32,
     color: 'black',
-    marginBottom: 10,
   },
   textInput: {
     flex: 1,
@@ -596,7 +641,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'column',
     justifyContent: 'space-between',
-    marginTop: 10,
   },
   buttonWrapper: {
     flex: 1,
@@ -606,20 +650,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: 'black',
-    marginBottom: 10,
   },
   transcript: {
     fontSize: 20,
     color: 'black',
     marginBottom: 10,
+    width: Dimensions.get('window').width - 200,
   },
   output: {
     fontSize: 20,
     color: 'black',
-    marginTop: 10,
-  },
-  boldText: {
-    fontWeight: 'bold',
+    marginTop: 5,
+    flexDirection: 'column',
+    marginBottom: 5,
   },
   sentiment: {
     fontSize: 20,
