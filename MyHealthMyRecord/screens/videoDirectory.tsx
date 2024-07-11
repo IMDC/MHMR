@@ -107,7 +107,7 @@ const ViewRecordings = ({selected, setSelected}) => {
         );
       } catch (error) {
         console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
+          `Failed to process video ${video._id.toHexString()} in video directory:`,
           error,
         );
       }
@@ -119,15 +119,15 @@ const ViewRecordings = ({selected, setSelected}) => {
     if (state.isConnected) {
       toggleDialog2();
     } else {
-      navigation.navigate('Video Set Dashboard', {
-        screen: 'Dashboard',
+      navigation.navigate('Dashboard', {
+        screen: 'Video Set Dashboard',
         params: {selectedVideos},
       });
       Alert.alert(
         'Added to Video Set',
         'Your videos have been added to the Video Set!',
       );
-      handleSend();
+      handleSend('NO');
     }
   }
 
@@ -183,7 +183,7 @@ const ViewRecordings = ({selected, setSelected}) => {
           locations,
           realm,
           video._id.toHexString(),
-          'bullet'
+          'bullet',
         );
         setInputText(outputText); // State update here
         console.log(
@@ -199,7 +199,7 @@ const ViewRecordings = ({selected, setSelected}) => {
   }
 
   //handleSend just adds videos to video set
-  async function handleSend() {
+  async function handleSend(answer) {
     const state = await NetInfo.fetch();
     setSelectedVideos(selected);
 
@@ -207,9 +207,11 @@ const ViewRecordings = ({selected, setSelected}) => {
     setSelectedVideos(new Set());
     setCheckedVideos(new Set());
 
-    if (state.isConnected) {
+    if (state.isConnected && answer === 'YES') {
       console.log('Online and connected');
-      processSelectedVideos();
+      // processSelectedVideos();
+    } else if (state.isConnected && answer === 'NO') {
+      console.log('Online and connected, NO clicked');
     } else {
       console.log('Offline and disconnected');
     }
@@ -525,20 +527,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                 title="NO"
                 onPress={async () => {
                   console.log('NO clicked!');
-                  navigation.navigate('Video Set Dashboard', {
-                    screen: 'Dashboard',
-                    params: {selectedVideos},
-                  });
-                  Alert.alert(
-                    'Your transcripts have been generated, and your videos have been added to the Video Set!',
-                  );
+                  handleSend('NO');
                   toggleDialog2();
-                  navigation.navigate('Video Set Dashboard', {
-                    screen: 'Dashboard',
+                  navigation.navigate('Dashboard', {
+                    screen: 'Video Set Dashboard',
                     params: {selectedVideos},
                   });
-
-                  await handleSend();
                   Alert.alert(
                     'Video transcripts generated',
                     'Your transcripts have been generated, and your videos have been added to the video set!',
@@ -550,16 +544,17 @@ const ViewRecordings = ({selected, setSelected}) => {
                 onPress={async () => {
                   console.log('YES clicked!');
                   toggleDialog2();
-                  navigation.navigate('Video Set Dashboard', {
-                    screen: 'Dashboard',
+                  navigation.navigate('Dashboard', {
+                    screen: 'Video Set Dashboard',
                     params: {selectedVideos},
                   });
 
-                  await handleSend();
-                  // await handleYesAnalysis();
+                  await handleSend('YES');
+                  await processSelectedVideos();
+                  await handleYesAnalysis();
                   Alert.alert(
-                    'Video Transcripts Generated and Analyzed',
-                    'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
+                    'Video transcripts generated and analyzed',
+                    'Your transcripts have been generated and analyzed, and your videos have been added to the video set!',
                   );
                 }}
               />
@@ -1016,7 +1011,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                       const updatedSelectedVideos = new Set(
                                         selectedVideos,
                                       );
-                                      if (!isChecked && !transcriptIsEmpty) {
+                                      if (!isChecked) {
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
@@ -1030,28 +1025,15 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         realm.write(() => {
                                           video.isSelected = true;
                                         });
-                                        // convertToAudio(video);
-                                        // realm.write(() => {
-                                        //   video.isConverted = true;
-                                        // });
-                                        // getAuth();
-                                        // getTranscript(
-                                        //   video.filename.replace('.mp4', '') +
-                                        //     '.wav',
-                                        //   video._id.toString(),
-                                        // );
 
-                                        console.log('checked');
-                                        console.log(video.isSelected);
-                                      } else if (
-                                        !isChecked &&
-                                        transcriptIsEmpty
-                                      ) {
-                                        toggleVideoChecked(
-                                          video._id.toString(),
+                                        console.log('checked', video.isSelected);
+                                        console.log(
+                                          'converted status',
+                                          video.filename,
+                                          video.isConverted,
                                         );
-                                        console.log('else if checked');
-                                      } else if (isChecked) {
+                                      } else {
+                                        // If video is already checked, uncheck it and remove from selected videos
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
@@ -1064,8 +1046,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         realm.write(() => {
                                           video.isSelected = false;
                                         });
-                                        console.log(video.isSelected);
-                                        console.log('unchecked');
+                                        console.log('unchecked', video.filename, video.isSelected);
+                                        console.log('converted status', video.filename, video.isConverted);
                                       }
                                     }}
                                     wrapperStyle={{
@@ -1207,9 +1189,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   title="Review"
                                   radius={50}
                                   onPress={() =>
-                                    navigation.navigate('Review Annotations', {
-                                      id: video._id,
-                                    })
+                                    navigation.navigate(
+                                      'Review Video Markups',
+                                      {
+                                        id: video._id,
+                                      },
+                                    )
                                   }
                                 />
                                 <View style={styles.space} />
@@ -1218,7 +1203,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   radius={50}
                                   title="Add or edit markups"
                                   onPress={() =>
-                                    navigation.navigate('Annotation Menu', {
+                                    navigation.navigate('Add or Edit Markups', {
                                       id: video._id,
                                     })
                                   }
@@ -1445,7 +1430,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           title="Review"
                           radius={50}
                           onPress={() =>
-                            navigation.navigate('Review Annotations', {
+                            navigation.navigate('Review Video Markups', {
                               id: video._id,
                             })
                           }
@@ -1456,7 +1441,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           title="Add or edit markups"
                           radius={50}
                           onPress={() =>
-                            navigation.navigate('Annotation Menu', {
+                            navigation.navigate('Add or Edit Markups', {
                               id: video._id,
                             })
                           }

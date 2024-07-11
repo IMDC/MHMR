@@ -43,12 +43,12 @@ export const NetworkProvider: React.FC = ({children}) => {
   return (
     <NetworkContext.Provider
       value={{online, onlineDialogVisible, toggleOnlineDialog}}>
-      {/* {onlineDialogVisible && (
+      {onlineDialogVisible && (
         <OnlineDialog
           message={dialogMessage}
           toggleOnlineDialog={toggleOnlineDialog}
         />
-      )} */}
+      )}
       {children}
     </NetworkContext.Provider>
   );

@@ -76,7 +76,7 @@ const DataAnalysis = () => {
   //const video: any = useObject('VideoData', id);
 
   //console.log(videosByDate);
-  console.log('**********************************************************');
+  // console.log('**********************************************************');
 
   useEffect(() => {
     if (isFocused) {
@@ -100,12 +100,14 @@ const DataAnalysis = () => {
     } else {
       setVideos(videosByIsSelected.filter(video => video !== undefined));
     }
-    console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
+    // console.log('videoSetVideoIDs in dataAnalysis.tsx:', videoSetVideoIDs);
   }, [selectedVideoSet, videoSetVideoIDs, videoData]);
 
-  // Filter out any undefined or null videos
-  const videosSelected = currentVideos.filter(video => video !== undefined && video !== null);
-  //console.log(videosSelected);
+  const videosSelected = videosByDate.filter(video =>
+    new Set(currentVideoSet?.videoIDs).has(video._id.toString()),
+  );
+
+  // console.log('videosSelected:', videosSelected);
 
   const videosSetsByDate = videoSets.sorted('datetime', false);
   //console.log("sets", videoSets);
@@ -143,7 +145,7 @@ const DataAnalysis = () => {
       let datetime = videosSelected[i].datetimeRecorded;
       console.log('transcript:', transcript);
       if (transcript && transcript.length > 0) {
-        let temp = getFreq(transcript[0], datetime);
+        let temp = getFreq(transcript, datetime);
         let freqWithInfo = {
           videoID: videosSelected[i]._id,
           datetime: videosSelected[i].datetimeRecorded,
@@ -371,18 +373,17 @@ const DataAnalysis = () => {
 
   /* ======================================================================= */
 
-
   function processSentimentData() {
     const sentimentCounts = {
       'Very Negative': 0,
-      'Negative': 0,
-      'Neutral': 0,
-      'Positive': 0,
+      Negative: 0,
+      Neutral: 0,
+      Positive: 0,
       'Very Positive': 0,
     };
 
     const sentimentTimeline = videosSelected
-      .filter(video => video && video.sentiment)  // Filter out videos with undefined sentiment
+      .filter(video => video && video.sentiment) // Filter out videos with undefined sentiment
       .map(video => {
         sentimentCounts[video.sentiment]++;
         return {
@@ -390,19 +391,23 @@ const DataAnalysis = () => {
           sentiment: video.sentiment,
         };
       });
-  
-    const formattedData = Object.keys(sentimentCounts).map((sentiment, index) => {
-      return {
-        label: sentiment,
-        value: sentimentCounts[sentiment],
-        svg: { fill: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722', '#F44336'][index] },
-      };
-    });
 
+    const formattedData = Object.keys(sentimentCounts).map(
+      (sentiment, index) => {
+        return {
+          label: sentiment,
+          value: sentimentCounts[sentiment],
+          svg: {
+            fill: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722', '#F44336'][
+              index
+            ],
+          },
+        };
+      },
+    );
 
     setSentimentBarData(formattedData);
   }
-
 
   return (
     <View style={{flexDirection: 'column', flex: 1}}>
@@ -501,7 +506,7 @@ const DataAnalysis = () => {
         </Button>
         <Button
           disabled={videoSetValue === ''}
-          onPress={() => navigation.navigate('Text Summary')}
+          onPress={() => navigation.navigate('Text Report')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: 400,

@@ -47,18 +47,14 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
   };
 
   async function handleYesAnalysis() {
-    const selectedVideos: Realm.Results<VideoData> = realm
+    const selectedVideos = realm
       .objects<VideoData>('VideoData')
       .filtered('isConverted == false AND isSelected == true');
 
     for (const video of selectedVideos) {
-      const getTranscriptByFilename = filename => {
-        if (!videos || videos.length === 0) {
-          console.log('No videos available.');
-          return [];
-        }
+      const getTranscriptByFilename = (filename: string) => {
         const video = videos.find(video => video.filename === filename);
-        return video ? video.transcript : [];
+        return video ? video.transcript : '';
       };
 
       const getCheckedKeywords = filename => {
@@ -97,7 +93,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
           locations,
           realm,
           video._id.toHexString(),
-          'bullet'
+          'bullet',
         );
         setInputText(outputText); // State update here
         console.log(
@@ -164,7 +160,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
                 console.log('YES clicked!');
                 toggleOnlineDialog();
                 await processSelectedVideos();
-                // await handleYesAnalysis();
+                await handleYesAnalysis();
                 Alert.alert(
                   'Video Transcripts Generated and Analyzed',
                   'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',

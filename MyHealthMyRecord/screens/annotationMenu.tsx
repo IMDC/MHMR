@@ -58,8 +58,7 @@ const AnnotationMenu = () => {
   );
   const [emotionButtonType, setEmotionButtonType] =
     React.useState('add-outline');
-  const [painButtonType, setPainButtonType] = 
-  React.useState('add-outline');
+  const [painButtonType, setPainButtonType] = React.useState('add-outline');
   const [painButtonColour, setPainButtonColour] = React.useState(
     Styles.MHMRLightBlue,
   );
@@ -121,11 +120,13 @@ const AnnotationMenu = () => {
     if (numeric != 0) isAnnotated = true;
 
     return isAnnotated;
-  }
+  };
 
   useEffect(() => {
-    LogBox.ignoreLogs(['Non-serializable values were found in the navigation state.']);
-  })
+    LogBox.ignoreLogs([
+      'Non-serializable values were found in the navigation state.',
+    ]);
+  });
 
   useEffect(() => {
     if (isFocused) {
@@ -157,7 +158,7 @@ const AnnotationMenu = () => {
         setEmotionButtonColour(Styles.MHMRLightBlue);
         setEmotionButtonType('add-outline');
       }
-      if (checkIfPainscaleAnnotated() || checkIfNumericPainScaleAnnotated() ) {
+      if (checkIfPainscaleAnnotated() || checkIfNumericPainScaleAnnotated()) {
         setPainButtonColour(Styles.MHMRBlue);
         setPainButtonType('checkmark-outline');
       } else {
@@ -267,7 +268,7 @@ const AnnotationMenu = () => {
         radius={50}
         title="Review markups"
         onPress={() =>
-          navigation.navigate('Review Annotations', {
+          navigation.navigate('Review Video Markups', {
             id,
           })
         }

@@ -51,7 +51,8 @@ const VideoSetDropdown = ({
         name: new Date().toString().split(' GMT-')[0],
         frequencyData: frequencyData,
         videoIDs: videoIDs,
-        summaryAnalysis: '',
+        summaryAnalysisBullet: '',
+        summaryAnalysisSentence: '',
         isSummaryGenerated: false,
       });
 
@@ -131,6 +132,8 @@ const VideoSetDropdown = ({
         valueField="value"
         value={videoSetValue}
         onChange={item => {
+          setCurrentVideoSet(videoSets.find(set => set._id.toString() === item.value));
+          console.log('Current Video Set:', currentVideoSet);
           setVideoSetValue(item.value);
           handleChange(item.value, videoSets);
           onVideoSetChange(item.value);

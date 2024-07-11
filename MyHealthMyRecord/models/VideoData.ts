@@ -19,17 +19,19 @@ export class VideoData extends Realm.Object<VideoData> {
   transcript!: Realm.List<string>;
   weekday!: Date;
   sentiment!: string;
+  tsOutputBullet!: string;
+  tsOutputSentence!: string;
   //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
   static schema = {
     name: 'VideoData',
     primaryKey: '_id',
     properties: {
-      _id: { type: 'objectId', default: new Realm.BSON.ObjectID() },
+      _id: {type: 'objectId', default: new Realm.BSON.ObjectID()},
       // userId: 'int',
-      title: { type: 'string', default: new Date().toLocaleString() },
+      title: {type: 'string', default: new Date().toLocaleString()},
       filename: 'string',
-      datetimeRecorded: { type: 'date', default: new Date() },
+      datetimeRecorded: {type: 'date', default: new Date()},
       duration: 'double',
       textComments: {type: 'mixed[]', default: []},
       locations: {type: 'mixed[]', default: []},
@@ -37,12 +39,14 @@ export class VideoData extends Realm.Object<VideoData> {
       keywords: {type: 'mixed[]', default: []},
       painScale: {type: 'string[]', default: []},
       numericScale: {type: 'int', default: 0},
-      isConverted: { type: 'bool', default: false },
-      isSelected: { type: 'bool', default: false },
-      isTranscribed: { type: 'bool', default: false },
-      transcript: { type: 'string[]', default: [] },
-      weekday: { type: 'string', default: new Date().toString().split(' ')[0] },
-      sentiment: { type: 'string', default: 'Neutral' },
+      isConverted: {type: 'bool', default: false},
+      isSelected: {type: 'bool', default: false},
+      isTranscribed: {type: 'bool', default: false},
+      transcript: {type: 'string', default: ''},
+      weekday: {type: 'string', default: new Date().toString().split(' ')[0]},
+      sentiment: {type: 'string', default: ''},
+      tsOutputBullet: { type: 'string', default: '' },
+      tsOutputSentence: { type: 'string', default: '' },
     },
   };
 }
@@ -54,7 +58,9 @@ export class VideoSet extends Realm.Object<VideoSet> {
   name!: string;
   videoIDs!: Realm.List<string>;
   frequencyData!: Realm.List<string>;
-  summaryAnalysis!: string;
+  // summaryAnalysis!: string;
+  summaryAnalysisSentence!: string;
+  summaryAnalysisBullet!: string;
   isSummaryGenerated!: boolean;
   reportFormat!: string;
 
@@ -68,9 +74,12 @@ export class VideoSet extends Realm.Object<VideoSet> {
       name: {type: 'string', default: new Date().toLocaleString()},
       videoIDs: {type: 'mixed[]', default: []},
       frequencyData: {type: 'mixed[]', default: []},
-      summaryAnalysis: {type: 'string', default: ''},
+      // summaryAnalysis: {type: 'string', default: ''},
+      summaryAnalysisSentence: { type: 'string', default: '' },
+      summaryAnalysisBullet: { type: 'string', default: '' },
       isSummaryGenerated: {type: 'bool', default: false},
-      reportFormat: {type: 'string', default: 'bullet'},
+      reportFormat: { type: 'string', default: 'bullet' },
+      
     },
   };
 }

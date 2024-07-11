@@ -386,8 +386,14 @@ const RecordVideo = () => {
         numericScale: 0,
         isSelected: false,
         isConverted: false,
-        transcript: [],
+        isTranscribed: false,
+        transcript: '',
         weekday: new Date().toString().split(' ')[0],
+        sentiment: '',
+        tsOutputBullet: '',
+        tsOutputSentence: '',
+        summaryAnalysisBullet: '',
+        summaryAnalysisSentence: '',
       });
     });
   };

@@ -62,7 +62,7 @@ function DataAnalysisStack() {
       <Stack.Screen name="Data Analysis" component={DataAnalysis} />
       <Stack.Screen name="Bar Graph" component={DataAnalysisBarGraph} />
       <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
-      <Stack.Screen name="Text Summary" component={DataAnalysisTextSummary} />
+      <Stack.Screen name="Text Report" component={DataAnalysisTextSummary} />
       <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
@@ -72,9 +72,9 @@ function DataAnalysisStack() {
 function DashboardStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Video Set Dashboard"
+      initialRouteName="Dashboard"
       screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
-      <Stack.Screen name="Dashboard" component={Dashboard} />
+      <Stack.Screen name="Video Set Dashboard" component={Dashboard} />
       <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
@@ -126,8 +126,8 @@ function ManageVideosStack() {
                   radius={50}
                   title="Go to video set dashboard"
                   onPress={() =>
-                    navigation.navigate('Video Set Dashboard', {
-                      screen: 'Dashboard',
+                    navigation.navigate('Dashboard', {
+                      screen: 'Video Set Dashboard',
                     })
                   }
                 />
@@ -151,8 +151,8 @@ function ManageVideosStack() {
         }}>
         {() => <ViewRecordings selected={selected} setSelected={setSelected} />}
       </Stack.Screen>
-      <Stack.Screen name="Annotation Menu" component={AnnotationMenu} />
-      <Stack.Screen name="Review Annotations" component={ReviewAnnotations} />
+      <Stack.Screen name="Add or Edit Markups" component={AnnotationMenu} />
+      <Stack.Screen name="Review Video Markups" component={ReviewAnnotations} />
       <Stack.Screen name="Keywords" component={KeywordTagging} />
       <Stack.Screen name="Location" component={LocationTagging} />
       <Stack.Screen name="Emotion Tagging" component={EmotionTagging} />
@@ -198,11 +198,11 @@ function App() {
               />
 
               <Tab.Screen
-                name="Video Set Dashboard"
+                name="Dashboard"
                 component={DashboardStack}
                 options={{
                   headerShown: false,
-                  tabBarLabel: 'Video Set Dashboard',
+                  tabBarLabel: 'Dashboard',
                   headerStyle: {backgroundColor: Styles.NavBarGrey},
                   tabBarIcon: () => (
                     <Icon
