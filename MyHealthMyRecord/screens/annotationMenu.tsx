@@ -18,6 +18,7 @@ import {
   TextInputFocusEventData,
   View,
   useWindowDimensions,
+  TouchableOpacity,
 } from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
 import {VideoData, useObject, useRealm} from '../models/VideoData';
@@ -37,6 +38,7 @@ const AnnotationMenu = () => {
   const titleInput: any = useRef(null);
 
   const [title, setTitle] = React.useState(video.title);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const [keywordButtonColour, setKeywordButtonColour] = React.useState(
     Styles.MHMRLightBlue,
@@ -71,6 +73,12 @@ const AnnotationMenu = () => {
         video.title! = title;
       });
     }
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelEditTitle = () => {
+    setTitle(video.title);
+    setIsEditingTitle(false);
   };
 
   const checkIfKeywordsAnnotated = () => {
@@ -184,15 +192,45 @@ const AnnotationMenu = () => {
         styles.container,
         {minHeight: Math.round(windowHeight), paddingBottom: 275},
       ]}>
-      <Input
-        ref={titleInput}
-        inputStyle={{fontSize: 35}}
-        //value={text}
-        defaultValue={title}
-        onChangeText={value => setTitle(value)}
-        onSubmitEditing={() => updateVideoTitle()}
-      />
-      <Text style={{fontSize: 24}}>
+      {isEditingTitle ? (
+        <View style={styles.editTitleContainer}>
+          <TextInput
+            ref={titleInput}
+            style={styles.input}
+            inputStyle={{fontSize: 35}}
+            //value={text}
+            defaultValue={title}
+            onChangeText={value => setTitle(value)}
+            onSubmitEditing={() => updateVideoTitle()}
+          />
+          <Button
+            radius={50}
+            title="Save"
+            onPress={updateVideoTitle}
+            buttonStyle={styles.saveButton}
+          />
+          <Button
+            radius={50}
+            title="Cancel"
+            onPress={handleCancelEditTitle}
+            buttonStyle={styles.cancelButton}
+          />
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.titleContainer}
+          onPress={() => setIsEditingTitle(true)}>
+          <Text style={styles.videoTitle}>{title}</Text>
+          <Icon
+            name="edit"
+            type="material"
+            size={30}
+            color={Styles.MHMRBlue}
+            containerStyle={styles.iconStyle}
+          />
+        </TouchableOpacity>
+      )}
+      <Text style={styles.annotationText}>
         Select how you would like to start annotating your video:
       </Text>
       <View style={{paddingTop: 45}}>
@@ -299,6 +337,39 @@ const styles = StyleSheet.create({
   selectionContainer: {
     flexDirection: 'row',
     paddingBottom: 20,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  editTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 20,
+  },  
+  saveButton: {
+    backgroundColor: Styles.MHMRBlue,
+    width: 100,
+    marginLeft: 30,
+  },
+  cancelButton: {
+    backgroundColor: Styles.MHMRBlue,
+    width: 100,
+    marginLeft: 30,
+  },
+  videoTitle: {
+    fontSize: 35,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  iconStyle: {
+    marginLeft: 30,
+  },
+  annotationText: {
+    fontSize: 24,
+    marginBottom: 20,
   },
 });
 
