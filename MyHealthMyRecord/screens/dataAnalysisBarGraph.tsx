@@ -297,6 +297,18 @@ const DataAnalysisBarGraph = () => {
                   <Text style={{ textAlign: 'center', fontSize: 20, color: 'black', marginBottom: 10 }}>
                     Count
                   </Text>
+                  <XAxis
+                    data={yTest}
+                    xAccessor={({index}) => index}
+                    contentInset={{ left: 10, right: 10 }}
+                    spacing={0.2}
+                    formatLabel={value => value}
+                    min={0}
+                    max={wordFreqBarGraphData[0]?.value}
+                    numberOfTicks={wordFreqBarGraphData[0]?.value}
+                    style={{ marginLeft: 70 }}
+                    svg={{ fontSize: 20 }}
+                  />
                   <TouchableOpacity
                     onPress={scrollUp}
                     style={{alignItems: 'center'}}>
