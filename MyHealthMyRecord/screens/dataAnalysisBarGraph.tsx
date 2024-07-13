@@ -294,6 +294,9 @@ const DataAnalysisBarGraph = () => {
                   {currentVideoSet?.name} - Count of words mentioned in selected video set
                 </Text>
                 <View style={{flexDirection: 'column', height: 800, paddingVertical: 16}}>
+                  <Text style={{ textAlign: 'center', fontSize: 20, color: 'black', marginBottom: 10 }}>
+                    Count
+                  </Text>
                   <TouchableOpacity
                     onPress={scrollUp}
                     style={{alignItems: 'center'}}>
@@ -335,9 +338,6 @@ const DataAnalysisBarGraph = () => {
                     <Icon name="keyboard-arrow-down" size={60} color="black" />
                   </TouchableOpacity>
                 </View>
-                <Text style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
-                  Count
-                </Text>
               </View>
             )}
             <View style={{height: '15%', width: '100%'}}>
