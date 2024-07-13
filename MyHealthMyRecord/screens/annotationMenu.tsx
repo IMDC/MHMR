@@ -326,13 +326,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     paddingLeft: 10,
   },
-
   input: {
     height: 60,
     margin: 12,
     borderWidth: 1,
     padding: 10,
     fontSize: 30,
+    flex: 1,
   },
   selectionContainer: {
     flexDirection: 'row',
@@ -342,35 +342,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    flexWrap: 'wrap',
   },
   editTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
     marginTop: 20,
+    flexWrap: 'wrap',
   },  
   saveButton: {
     backgroundColor: Styles.MHMRBlue,
     width: 100,
-    marginLeft: 30,
+    marginLeft: 10,
   },
   cancelButton: {
     backgroundColor: Styles.MHMRBlue,
     width: 100,
-    marginLeft: 30,
+    marginLeft: 10,
   },
   videoTitle: {
     fontSize: 35,
     fontWeight: 'bold',
     color: 'black',
+    flexShrink: 1,
   },
   iconStyle: {
-    marginLeft: 30,
+    marginLeft: 10,
   },
   annotationText: {
     fontSize: 24,
     marginBottom: 20,
   },
 });
+
 
 export default AnnotationMenu;
