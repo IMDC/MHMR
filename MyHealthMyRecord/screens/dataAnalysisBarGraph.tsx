@@ -301,6 +301,7 @@ const DataAnalysisBarGraph = () => {
                         fontSize: 18,
                         color: 'black',
                         width: 60,
+                        transform: [{rotate: '270deg'}],
                       }}>
                       Word
                     </Text>
