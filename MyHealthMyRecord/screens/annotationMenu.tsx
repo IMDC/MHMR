@@ -19,6 +19,7 @@ import {
   View,
   useWindowDimensions,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
 import {VideoData, useObject, useRealm} from '../models/VideoData';
@@ -220,7 +221,9 @@ const AnnotationMenu = () => {
         <TouchableOpacity
           style={styles.titleContainer}
           onPress={() => setIsEditingTitle(true)}>
-          <Text style={styles.videoTitle}>{title}</Text>
+          <ScrollView horizontal>
+            <Text style={styles.videoTitle}>{title}</Text>
+          </ScrollView>
           <Icon
             name="edit"
             type="material"
