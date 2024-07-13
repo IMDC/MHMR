@@ -304,6 +304,17 @@ const DataAnalysisBarGraph = () => {
                   </TouchableOpacity>
                   <ScrollView ref={scrollViewRef}>
                     <View style={{flexDirection: 'row', flex: 1}}>
+                      <View style={{justifyContent: 'center', marginRight: 10}}>
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            fontSize: 18,
+                            color: 'black',
+                            width: 60,
+                          }}>
+                          Word
+                        </Text>
+                      </View>
                       <YAxis
                         data={wordFreqBarGraphData}
                         yAccessor={({index}) => index}
