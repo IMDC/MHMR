@@ -306,7 +306,7 @@ const DataAnalysisBarGraph = () => {
                     min={0}
                     max={wordFreqBarGraphData[0]?.value}
                     numberOfTicks={wordFreqBarGraphData[0]?.value}
-                    style={{ marginLeft: 70 }}
+                    style={{ width: 600, marginLeft: 160 }}
                     svg={{ fontSize: 20 }}
                   />
                   <TouchableOpacity
