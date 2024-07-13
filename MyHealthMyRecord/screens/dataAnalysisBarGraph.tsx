@@ -54,7 +54,8 @@ const DataAnalysisBarGraph = () => {
   /* ======================================================================= */
 
   const [barGraphVertical, setBarGraphVertical] = useState(true);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const horizontalScrollViewRef = useRef<ScrollView>(null);
+  const verticalScrollViewRef = useRef<ScrollView>(null);
 
   // array of length of max value in data (first index value) for yAxis
   const yTest = Array.from(
@@ -150,19 +151,19 @@ const DataAnalysisBarGraph = () => {
    });
   
   const scrollLeft = () => {
-    scrollViewRef.current?.scrollTo({x: 0, animated: true});
+    horizontalScrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
 
   const scrollRight = () => {
-    scrollViewRef.current?.scrollToEnd({animated: true});
+    horizontalScrollViewRef.current?.scrollToEnd({animated: true});
   };
 
   const scrollUp = () => {
-    scrollViewRef.current?.scrollTo({y: 0, animated: true});
+    verticalScrollViewRef.current?.scrollTo({y: 0, animated: true});
   };
 
   const scrollDown = () => {
-    scrollViewRef.current?.scrollToEnd({animated: true});
+    verticalScrollViewRef.current?.scrollToEnd({animated: true});
   };
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -229,7 +230,7 @@ const DataAnalysisBarGraph = () => {
                       style={{justifyContent: 'center'}}>
                       <Icon name="keyboard-arrow-left" size={60} color="black" />
                     </TouchableOpacity>
-                    <ScrollView horizontal={true} ref={scrollViewRef}>
+                    <ScrollView horizontal={true} ref={horizontalScrollViewRef}>
                       <View>
                         <BarChart
                           style={{
@@ -327,8 +328,13 @@ const DataAnalysisBarGraph = () => {
                       style={{ alignItems: 'center' }}>
                       <Icon name="keyboard-arrow-up" size={60} color="black" />
                     </TouchableOpacity>
-                    <ScrollView ref={scrollViewRef}>
-                      <View style={{ height: wordFreqBarGraphData.length * 50, flexDirection: 'row', flex: 1 }}>
+                    <ScrollView
+                      ref={verticalScrollViewRef}
+                      style={{ height: '100%', flex: 1 }}
+                      contentContainerStyle={{ height: wordFreqBarGraphData.length * 50 }}
+                      nestedScrollEnabled={true}
+                    >
+                      <View style={{ flexDirection: 'row', flex: 1 }}>
                         <YAxis
                           data={wordFreqBarGraphData}
                           yAccessor={({ index }) => index}
@@ -340,19 +346,23 @@ const DataAnalysisBarGraph = () => {
                           min={0}
                           max={wordFreqBarGraphData[0]?.value}
                         />
-                        <BarChart
-                          style={{ height: wordFreqBarGraphData.length * 50, width: 600 }}
-                          data={wordFreq}
-                          horizontal={true}
-                          yAccessor={({ item }) => item.y.value}
-                          svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-                          contentInset={{ top: 10, bottom: 10 }}
-                          spacing={0.2}
-                          gridMin={0}
-                          numberOfTicks={wordFreqBarGraphData[0]?.value}>
-                          <Grid direction={Grid.Direction.VERTICAL} />
-                          <LabelsHorizontal />
-                        </BarChart>
+                        <ScrollView horizontal={true} ref={horizontalScrollViewRef} nestedScrollEnabled={true}>
+                          <View style={{ height: wordFreqBarGraphData.length * 50, flexDirection: 'row', flex: 1 }}>
+                            <BarChart
+                              style={{ height: wordFreqBarGraphData.length * 50, width: 600 }}
+                              data={wordFreq}
+                              horizontal={true}
+                              yAccessor={({ item }) => item.y.value}
+                              svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
+                              contentInset={{ top: 10, bottom: 10 }}
+                              spacing={0.2}
+                              gridMin={0}
+                              numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                              <Grid direction={Grid.Direction.VERTICAL} />
+                              <LabelsHorizontal />
+                            </BarChart>
+                          </View>
+                        </ScrollView>
                       </View>
                     </ScrollView>
                     <TouchableOpacity
