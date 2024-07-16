@@ -34,9 +34,9 @@ const VideoSetDropdown = ({
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   useEffect(() => {
-    console.log(currentVideoSet);
-    console.log(videoSetVideoIDs.length);
-    console.log(isVideoSetSaved)
+    // console.log(currentVideoSet);
+    // console.log(videoSetVideoIDs.length);
+    // console.log(isVideoSetSaved)
     const formattedDropdown = videoSets.map(set => ({
       label: set.name,
       value: set._id.toString(),
