@@ -59,6 +59,7 @@ const ViewRecordings = ({selected, setSelected}) => {
     sendToVideoSet,
     setSendToVideoSet,
     videoSetVideoIDs,
+    isVideoSetSaved,
   } = useDropdownContext();
 
   async function handleDeleteVideo(
@@ -476,6 +477,7 @@ const ViewRecordings = ({selected, setSelected}) => {
             <Button
               disabled={
                 videoSetVideoIDs === undefined ||
+                isVideoSetSaved === false ||
                 (videoSetVideoIDs.length === 0 &&
                   (videoSetValue == null || videoSetValue.length === 0))
               }
@@ -1026,7 +1028,10 @@ const ViewRecordings = ({selected, setSelected}) => {
                                           video.isSelected = true;
                                         });
 
-                                        console.log('checked', video.isSelected);
+                                        console.log(
+                                          'checked',
+                                          video.isSelected,
+                                        );
                                         console.log(
                                           'converted status',
                                           video.filename,
