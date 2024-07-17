@@ -40,6 +40,7 @@ import {getAuth, getTranscript} from '../components/stt_api';
 import {sendToChatGPT} from '../components/chatgpt_api';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useLoader} from '../components/loaderProvider';
+import { processVideos } from '../components/processVideos';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const {showLoader, hideLoader} = useLoader();
@@ -54,6 +55,10 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
+
+ const handleProcessVideos = async () => {
+   await processVideos(realm, videos, showLoader, hideLoader);
+ };
 
   const {
     handleChange,
@@ -84,40 +89,6 @@ const ViewRecordings = ({selected, setSelected}) => {
     );
   }
 
-  const processSelectedVideos = async () => {
-    showLoader('Processing videos...');
-    const auth = await getAuth();
-    const selectedVideos: Realm.Results<VideoData> = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
-
-    console.log(`Found ${selectedVideos.length} videos to process.`);
-
-    for (const video of selectedVideos) {
-      const audioFileName = video.filename.replace('.mp4', '.wav');
-      console.log('audioFileName:', audioFileName);
-      console.log(
-        `Processing video ${video._id.toHexString()}: ${audioFileName}`,
-      );
-
-      try {
-        await getTranscript(
-          audioFileName,
-          video._id.toHexString(),
-          auth,
-          realm,
-        );
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()} in video directory:`,
-          error,
-        );
-      }
-    }
-  };
 
   async function handleSendToDashboard(selectedVideos: Set<string>) {
     const state = await NetInfo.fetch();
@@ -155,72 +126,6 @@ const ViewRecordings = ({selected, setSelected}) => {
   }
 
   const [inputText, setInputText] = useState('');
-
-  async function handleYesAnalysis() {
-    const selectedVideos: Realm.Results<VideoData> = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
-
-    for (const video of selectedVideos) {
-      const getTranscriptByFilename = filename => {
-        const video = videos.find(video => video.filename === filename);
-        if (video) {
-          return video.transcript;
-        }
-        return [];
-      };
-
-      const getCheckedKeywords = filename => {
-        const video = videos.find(video => video.filename === filename);
-        if (video) {
-          const checkedKeywords = video.keywords
-            .map(key => JSON.parse(key))
-            .filter(obj => obj.checked)
-            .map(obj => obj.title);
-          return checkedKeywords;
-        }
-        return [];
-      };
-
-      const getCheckedLocations = filename => {
-        const video = videos.find(video => video.filename === filename);
-        if (video) {
-          const checkedLocations = video.locations
-            .map(key => JSON.parse(key))
-            .filter(obj => obj.checked)
-            .map(obj => obj.title);
-          return checkedLocations;
-        }
-        return [];
-      };
-
-      const transcript = getTranscriptByFilename(video.filename);
-      const keywords = getCheckedKeywords(video.filename).join(', ');
-      const locations = getCheckedLocations(video.filename).join(', ');
-
-      try {
-        const outputText = await sendToChatGPT(
-          video.filename,
-          transcript,
-          keywords,
-          locations,
-          realm,
-          video._id.toHexString(),
-          'bullet',
-        );
-        setInputText(outputText); // State update here
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-        hideLoader();
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-  }
 
   //handleSend just adds videos to video set
   async function handleSend(answer) {
@@ -583,8 +488,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                   });
 
                   await handleSend('YES');
-                  await processSelectedVideos();
-                  await handleYesAnalysis();
+                  await handleProcessVideos();
+                
                   Alert.alert(
                     'Video transcripts generated and analyzed',
                     'Your transcripts have been generated and analyzed, and your videos have been added to the video set!',

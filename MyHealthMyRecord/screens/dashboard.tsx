@@ -21,6 +21,7 @@ import * as Styles from '../assets/util/styles';
 import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
 import { useLoader } from '../components/loaderProvider';
+import { processVideos } from '../components/processVideos';
 
 function Dashboard() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -41,6 +42,10 @@ function Dashboard() {
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   var selectedSetVideos = [];
+
+ const handleProcessVideos = async () => {
+   await processVideos(realm, videos, showLoader, hideLoader);
+ };
 
   const {
     handleChange,
@@ -186,71 +191,6 @@ function Dashboard() {
     });
   };
 
-  async function handleYesAnalysis() {
-    const selectedVideos = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
-
-    for (const video of selectedVideos) {
-      const getTranscriptByFilename = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video ? video.transcript : '';
-      };
-
-      const getCheckedKeywords = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.keywords
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
-
-      const getCheckedLocations = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.locations
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
-
-      const transcript = getTranscriptByFilename(video.filename);
-      const keywords = getCheckedKeywords(video.filename).join(', ');
-      const locations = getCheckedLocations(video.filename).join(', ');
-
-      try {
-        console.log(
-          video.filename,
-          transcript,
-          realm,
-          video._id.toHexString(),
-          'bullet',
-        );
-        const outputText = await sendToChatGPT(
-          video.filename,
-          transcript,
-          keywords,
-          locations,
-          realm,
-          video._id.toHexString(),
-          'bullet',
-        );
-        setInputText(outputText);
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-    Alert.alert('Your transcripts have been generated and analyzed.');
-  }
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
@@ -267,7 +207,7 @@ function Dashboard() {
             {
               text: 'YES',
               onPress: () => {
-                handleYesAnalysis();
+                handleProcessVideos();
                 console.log('YES Pressed');
               },
             },
