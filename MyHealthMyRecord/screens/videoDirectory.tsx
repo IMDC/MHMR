@@ -115,8 +115,23 @@ const ViewRecordings = ({selected, setSelected}) => {
     }
   };
 
-  async function handleSendToDashboard() {
+  async function handleSendToDashboard(selectedVideos: Set<string>) {
     const state = await NetInfo.fetch();
+
+    let doesVideoNeedAnalysis = false;
+
+    // Iterate through selected video IDs and check if any video needs analysis
+    for (const id of selectedVideos) {
+      const video = realm
+        .objects<VideoData>('VideoData')
+        .find(video => video._id.toHexString() === id);
+
+      if (video && !video.isConverted) {
+        doesVideoNeedAnalysis = true;
+        break; // Stop iteration as soon as an unconverted video is found
+      }
+    }
+
     if (state.isConnected && doesVideoNeedAnalysis) {
       toggleDialog2();
     } else if (
@@ -503,7 +518,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               // onPress={handleSend}>
               onPress={() => {
                 setSendToVideoSet(1);
-                handleSendToDashboard();
+                handleSendToDashboard(selectedVideos);
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
                 Add {selectedVideos.size} video(s) to current video set
@@ -518,7 +533,7 @@ const ViewRecordings = ({selected, setSelected}) => {
               onPress={async () => {
                 // 2 means send to new video set
                 setSendToVideoSet(2);
-                handleSendToDashboard();
+                handleSendToDashboard(selectedVideos);
               }}>
               <Text style={{color: 'white', fontSize: 25}}>
                 Create new video set
@@ -1027,13 +1042,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         selectedVideos,
                                       );
                                       if (!isChecked) {
-                                        if (video.isConverted === false) {
-                                          setDoesVideoNeedAnalysis(true);
-                                        }
-                                        console.log(
-                                          'doesVideoNeedAnalysis:',
-                                          doesVideoNeedAnalysis,
-                                        );
+                                        // if (video.isConverted === false) {
+                                        //   setDoesVideoNeedAnalysis(true);
+                                        // }
+                                        // console.log(
+                                        //   'doesVideoNeedAnalysis:',
+                                        //   doesVideoNeedAnalysis,
+                                        // );
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
@@ -1059,13 +1074,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         );
                                       } else {
                                         // If video is already checked, uncheck it and remove from selected videos
-                                        if (video.isConverted === false) {
-                                          setDoesVideoNeedAnalysis(false);
-                                        }
-                                        console.log(
-                                          'doesVideoNeedAnalysis:',
-                                          doesVideoNeedAnalysis,
-                                        );
+                                        // if (video.isConverted === false) {
+                                        //   setDoesVideoNeedAnalysis(false);
+                                        // }
+                                        // console.log(
+                                        //   'doesVideoNeedAnalysis:',
+                                        //   doesVideoNeedAnalysis,
+                                        // );
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
