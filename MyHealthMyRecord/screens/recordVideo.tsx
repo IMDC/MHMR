@@ -64,14 +64,8 @@ const RecordVideo = () => {
     async function getPermission() {
       const newCameraPermission = await Camera.requestCameraPermission();
       const microphonePermission = await Camera.requestMicrophonePermission();
-      console.log(newCameraPermission, microphonePermission);
-      if (newCameraPermission && microphonePermission) {
-        console.log('Permissions granted');
-      } else if (
-        newCameraPermission !== 'authorized' ||
-        microphonePermission !== 'authorized'
-      ) {
-        console.log('Permissions denied');
+      if (newCameraPermission !== 'authorized' || microphonePermission !== 'authorized') {
+        Alert.alert('Permissions denied', 'Camera and microphone permissions are required.');
       }
     }
     getPermission();
@@ -95,12 +89,19 @@ const RecordVideo = () => {
           setVideoSource(video);
           console.log(video, 'videodata');
         },
-        onRecordingError: (error: any) => console.error(error, 'videoerror'),
+        onRecordingError: (error: any) => {
+          Alert.alert(
+            'Recording Error',
+            'The recording failed because no valid data was produced. Please try again.',
+            [{ text: 'OK' }]
+          );
+          // console.error(error);
+          navigation.navigate('Home');
+        },
       });
       setRecordingInProgress(true);
       timeOfRecording[0] = 0;
       setEnableTimer(true);
-      // getAuth();
     }
   };
 
@@ -128,11 +129,13 @@ const RecordVideo = () => {
         console.log('Recording stopped successfully');
         resetRecording();
       } catch (error) {
-        console.error('Failed to stop recording:', error);
+        Alert.alert(
+          'Stop Recording Error',
+          'Failed to stop the recording. Please try again.',
+          [{ text: 'OK' }]
+        );
+        // console.error(error);
       }
-      console.log(enableTimer, '----zzzz');
-    } else {
-      console.log('Camera reference is null');
     }
   };
 
@@ -204,7 +207,7 @@ const RecordVideo = () => {
     return <Text>Camera not available</Text>;
   }
 
-  /**
+    /**
    * Check if device has permissions to read external storage and cameraroll
    * @returns boolean - true if permission granted, false if not
    */
@@ -223,10 +226,11 @@ const RecordVideo = () => {
     return status === 'granted';
   }
 
-  /**
+    /**
    * Save video to app storage, save VideoData object to database
    * @param path path of stored VisionCamera recording
    */
+    async function saveVideo(path: any) {
   async function saveVideo(path: any) {
     showLoader('Saving video...');
     const filePath = path.replace('file://', '');
@@ -263,13 +267,14 @@ const RecordVideo = () => {
           const returnCode = await session.getReturnCode();
 
           if (ReturnCode.isSuccess(returnCode)) {
-            console.log('Conversion success');
+            Alert.alert('Your recording has been saved');
+            navigation.navigate('Home');
             // if isConverted is for audio and not STT
             // video.isConverted = true;
           } else if (ReturnCode.isCancel(returnCode)) {
             console.log('Conversion canceled');
           } else {
-            console.error('Conversion failed');
+            Alert.alert('Conversion failed', 'There was an issue converting your video to audio.');
           }
           hideLoader();
           Alert.alert('Your recording has been saved');
@@ -277,15 +282,20 @@ const RecordVideo = () => {
           // getTranscript(fileName, saveDate[0], 'Bearer ' + getAuth());
         })
         .catch(err => {
-          console.log(err.message);
+          Alert.alert(
+            'File Move Error',
+            'There was an issue moving your recording. Please try again.',
+            [{ text: 'OK' }]
+          );
           navigation.navigate('Home');
         });
     } catch (err: any) {
-      console.error('Error during video saving or conversion:', err);
       Alert.alert(
+        'Save Error',
         'There was an issue saving your recording. Please try again.',
+        [{ text: 'OK' }]
       );
-      console.log(err.message);
+      // console.error(err);
     }
   }
   const keywordRef = [
