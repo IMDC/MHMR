@@ -45,7 +45,7 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
     '',
   );
-
+  const [doesVideoNeedAnalysis, setDoesVideoNeedAnalysis] = useState(false);
   // 1 = send to current video set, 2 = send to new video set
 
   const [visible, setVisible] = useState(false);
@@ -117,16 +117,19 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   async function handleSendToDashboard() {
     const state = await NetInfo.fetch();
-    if (state.isConnected) {
+    if (state.isConnected && doesVideoNeedAnalysis) {
       toggleDialog2();
-    } else {
+    } else if (
+      !state.isConnected ||
+      (state.isConnected && !doesVideoNeedAnalysis)
+    ) {
       navigation.navigate('Dashboard', {
         screen: 'Video Set Dashboard',
         params: {selectedVideos},
       });
       Alert.alert(
         'Added to Video Set',
-        'Your videos have been added to the Video Set!',
+        'Your videos have been added to the video set!',
       );
       handleSend('NO');
     }
@@ -409,6 +412,14 @@ const ViewRecordings = ({selected, setSelected}) => {
     ]);
   }, []);
 
+  //when selected = true, setSelectedVideos to be an empty set and uncheck all boxes
+
+  //create a useeffect that when selected = true, log teh status of selected in console
+  useEffect(() => {
+    setSelectedVideos(new Set());
+    setCheckedVideos(new Set());
+  }, [selected]);
+
   useEffect(() => {
     {
       setVideos(videosByDate);
@@ -539,6 +550,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                     'Video transcripts generated',
                     'Your transcripts have been generated, and your videos have been added to the video set!',
                   );
+                  setDoesVideoNeedAnalysis(false);
                 }}
               />
               <Dialog.Button
@@ -558,6 +570,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                     'Video transcripts generated and analyzed',
                     'Your transcripts have been generated and analyzed, and your videos have been added to the video set!',
                   );
+                  setDoesVideoNeedAnalysis(false);
                 }}
               />
             </Dialog.Actions>
@@ -1014,6 +1027,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         selectedVideos,
                                       );
                                       if (!isChecked) {
+                                        if (video.isConverted === false) {
+                                          setDoesVideoNeedAnalysis(true);
+                                        }
+                                        console.log(
+                                          'doesVideoNeedAnalysis:',
+                                          doesVideoNeedAnalysis,
+                                        );
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
@@ -1039,6 +1059,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                                         );
                                       } else {
                                         // If video is already checked, uncheck it and remove from selected videos
+                                        if (video.isConverted === false) {
+                                          setDoesVideoNeedAnalysis(false);
+                                        }
+                                        console.log(
+                                          'doesVideoNeedAnalysis:',
+                                          doesVideoNeedAnalysis,
+                                        );
                                         toggleVideoChecked(
                                           video._id.toString(),
                                         );
@@ -1307,22 +1334,47 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   selectedVideos,
                                 );
                                 if (!isChecked) {
+                                  if (video.isConverted === false) {
+                                    setDoesVideoNeedAnalysis(true);
+                                  }
                                   toggleVideoChecked(video._id.toString());
                                   updatedSelectedVideos.add(
                                     video._id.toHexString(),
                                   );
                                   setSelectedVideos(updatedSelectedVideos);
-                                  console.log('checked');
-                                } else if (isChecked) {
+
+                                  realm.write(() => {
+                                    video.isSelected = true;
+                                  });
+
+                                  console.log('checked', video.isSelected);
+                                  console.log(
+                                    'converted status',
+                                    video.filename,
+                                    video.isConverted,
+                                  );
+                                } else {
+                                  // If video is already checked, uncheck it and remove from selected videos
+                                  if (video.isConverted === false) {
+                                    setDoesVideoNeedAnalysis(false);
+                                  }
                                   toggleVideoChecked(video._id.toString());
                                   updatedSelectedVideos.delete(
                                     video._id.toHexString(),
                                   );
                                   setSelectedVideos(updatedSelectedVideos);
-                                  console.log('unchecked');
+                                  realm.write(() => {
+                                    video.isSelected = false;
+                                  });
                                 }
+                                console.log(
+                                  'doesVideoNeedAnalysis:',
+                                  doesVideoNeedAnalysis,
+                                );
                               }}
-                              wrapperStyle={{backgroundColor: 'transparent'}}
+                              wrapperStyle={{
+                                backgroundColor: 'transparent',
+                              }}
                               containerStyle={{
                                 backgroundColor: 'rgba(52, 52, 52, 0.4)',
                                 // opacity: 1,
