@@ -644,8 +644,7 @@ const ViewRecordings = ({selected, setSelected}) => {
         <ScrollView style={{marginTop: 5}} ref={scrollRef}>
           <TouchableOpacity
             style={{alignItems: 'center'}}
-            onPress={toggleDialog}>
-          </TouchableOpacity>
+            onPress={toggleDialog}></TouchableOpacity>
           <View
             style={{
               flexDirection: 'row',
@@ -972,14 +971,9 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                   return (
                     <View
-                      style={[
-                        viewValue == 1 ? null : styles.gridItem
-                      ]}
-                       key={video._id.toString()}>
-                      <View
-                        style={[
-                          viewValue == 1 ? styles.container : null
-                        ]}>
+                      style={[viewValue == 1 ? null : styles.gridItem]}
+                      key={video._id.toString()}>
+                      <View style={[viewValue == 1 ? styles.container : null]}>
                         <View
                           style={[
                             viewValue == 1
@@ -1080,11 +1074,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                         </View>
                         <View
                           style={[
+                            {flex: 1, flexDirection: 'column'},
                             viewValue == 1
                               ? styles.rightContainer
                               : styles.bottomContainer,
                           ]}>
-                          <View>
+                          <View style={{flex: 1}}>
                             <Text
                               style={{
                                 fontSize: 24,
@@ -1185,11 +1180,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                             </View>
                           </View>
                           {selected ? (
-                            <View
-                              style={[
-                                styles.buttonContainer,
-                                viewValue == 1 ? null : {padding: 5, },
-                              ]}>
+                            <View style={styles.buttonContainer}>
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 title="Review"
@@ -1271,7 +1262,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
-
     elevation: 2,
   },
 
@@ -1290,7 +1280,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     flexWrap: 'wrap',
-    // paddingLeft: 8,
     borderBottomColor: 'black',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'black',
@@ -1306,7 +1295,6 @@ const styles = StyleSheet.create({
   gridItem: {
     padding: 1,
     width: '50%',
-    // height: 410,
     borderColor: 'black',
     borderWidth: StyleSheet.hairlineWidth,
   },
@@ -1324,13 +1312,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   bottomContainer: {
+    flex: 1,
     paddingHorizontal: 10,
     justifyContent: 'space-between',
-    flex: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
-    alignSelf: 'center',
+    justifyContent: 'space-between',
+    padding: 5,
   },
   thumbnail: {
     height: 240,
@@ -1345,5 +1334,6 @@ const styles = StyleSheet.create({
     width: '30%',
   },
 });
+
 
 export default ViewRecordings;
