@@ -20,6 +20,7 @@ import VideoSetDropdown from '../components/videoSetDropdown';
 import * as Styles from '../assets/util/styles';
 import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
+import { useLoader } from '../components/loaderProvider';
 
 function Dashboard() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -32,7 +33,7 @@ function Dashboard() {
   const [inputText, setInputText] = useState('');
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
-
+  const {showLoader, hideLoader} = useLoader();
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',

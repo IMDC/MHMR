@@ -2,6 +2,7 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import axios, {AxiosError, AxiosRequestConfig} from 'axios';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+
 import {
   Alert,
   Dimensions,
@@ -38,8 +39,10 @@ import {useNetwork} from '../components/networkProvider';
 import {getAuth, getTranscript} from '../components/stt_api';
 import {sendToChatGPT} from '../components/chatgpt_api';
 import {useDropdownContext} from '../components/videoSetProvider';
+import {useLoader} from '../components/loaderProvider';
 
 const ViewRecordings = ({selected, setSelected}) => {
+  const {showLoader, hideLoader} = useLoader();
   const [selectedVideos, setSelectedVideos] = useState(new Set());
   const [videoSelectedFilename, setvideoSelectedFilename] = useState('');
   const [videoSelectedData, setVideoSelectedData] = useState<any | VideoData>(
@@ -82,6 +85,7 @@ const ViewRecordings = ({selected, setSelected}) => {
   }
 
   const processSelectedVideos = async () => {
+    showLoader('Processing videos...');
     const auth = await getAuth();
     const selectedVideos: Realm.Results<VideoData> = realm
       .objects<VideoData>('VideoData')
@@ -208,6 +212,7 @@ const ViewRecordings = ({selected, setSelected}) => {
         console.log(
           `Transcription successful for video ${video._id.toHexString()}`,
         );
+        hideLoader();
       } catch (error) {
         console.error(
           `Failed to process video ${video._id.toHexString()}:`,
@@ -228,7 +233,6 @@ const ViewRecordings = ({selected, setSelected}) => {
 
     if (state.isConnected && answer === 'YES') {
       console.log('Online and connected');
-      // processSelectedVideos();
     } else if (state.isConnected && answer === 'NO') {
       console.log('Online and connected, NO clicked');
     } else {
@@ -1334,6 +1338,5 @@ const styles = StyleSheet.create({
     width: '30%',
   },
 });
-
 
 export default ViewRecordings;

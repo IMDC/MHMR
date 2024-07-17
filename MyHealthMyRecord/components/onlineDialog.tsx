@@ -5,14 +5,17 @@ import {useRealm} from '../models/VideoData';
 import {getAuth, getTranscript} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
 import {VideoData} from '../models/VideoData';
+import { useLoader } from './loaderProvider';
 
 const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
+  const {showLoader, hideLoader} = useLoader();
   const realm = useRealm();
   const [selectedVideoCount, setSelectedVideoCount] = useState(0);
   const [inputText, setInputText] = useState('');
   const [videos, setVideos] = useState<any[]>([]);
 
   const processSelectedVideos = async () => {
+    showLoader('Processing videos...');
     const auth = await getAuth();
     const selectedVideos: Realm.Results<VideoData> = realm
       .objects<VideoData>('VideoData')
@@ -99,6 +102,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
         console.log(
           `Transcription successful for video ${video._id.toHexString()}`,
         );
+        hideLoader();
       } catch (error) {
         console.error(
           `Failed to process video ${video._id.toHexString()}:`,
