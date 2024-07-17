@@ -5,108 +5,19 @@ import {useRealm} from '../models/VideoData';
 import {getAuth, getTranscript} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
 import {VideoData} from '../models/VideoData';
+import { useLoader } from './loaderProvider';
+import { processVideos } from './processVideos';
 
 const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
+  const {showLoader, hideLoader} = useLoader();
   const realm = useRealm();
   const [selectedVideoCount, setSelectedVideoCount] = useState(0);
   const [inputText, setInputText] = useState('');
   const [videos, setVideos] = useState<any[]>([]);
+   const handleProcessVideos = async () => {
+     await processVideos(realm, videos, showLoader, hideLoader);
+   };
 
-  const processSelectedVideos = async () => {
-    const auth = await getAuth();
-    const selectedVideos: Realm.Results<VideoData> = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
-
-    console.log(`Found ${selectedVideos.length} videos to process.`);
-
-    for (const video of selectedVideos) {
-      const audioFileName = video.filename.replace('.mp4', '.wav');
-      console.log('audioFileName:', audioFileName);
-      console.log(
-        `Processing video ${video._id.toHexString()}: ${audioFileName}`,
-      );
-
-      try {
-        await getTranscript(
-          audioFileName,
-          video._id.toHexString(),
-          auth,
-          realm,
-        );
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-  };
-
-  async function handleYesAnalysis() {
-    const selectedVideos = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
-
-    for (const video of selectedVideos) {
-      const getTranscriptByFilename = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video ? video.transcript : '';
-      };
-
-      const getCheckedKeywords = filename => {
-        const video = videos.find(video => video.filename === filename);
-        if (video) {
-          const checkedKeywords = video.keywords
-            .map(key => JSON.parse(key))
-            .filter(obj => obj.checked)
-            .map(obj => obj.title);
-          return checkedKeywords;
-        }
-        return [];
-      };
-
-      const getCheckedLocations = filename => {
-        const video = videos.find(video => video.filename === filename);
-        if (video) {
-          const checkedLocations = video.locations
-            .map(key => JSON.parse(key))
-            .filter(obj => obj.checked)
-            .map(obj => obj.title);
-          return checkedLocations;
-        }
-        return [];
-      };
-
-      const transcript = getTranscriptByFilename(video.filename);
-      const keywords = getCheckedKeywords(video.filename).join(', ');
-      const locations = getCheckedLocations(video.filename).join(', ');
-
-      try {
-        const outputText = await sendToChatGPT(
-          video.filename,
-          transcript,
-          keywords,
-          locations,
-          realm,
-          video._id.toHexString(),
-          'bullet',
-        );
-        setInputText(outputText); // State update here
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-  }
 
   useEffect(() => {
     const selectedVideos = realm
@@ -159,8 +70,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
               onPress={async () => {
                 console.log('YES clicked!');
                 toggleOnlineDialog();
-                await processSelectedVideos();
-                await handleYesAnalysis();
+                await handleProcessVideos();
                 Alert.alert(
                   'Video Transcripts Generated and Analyzed',
                   'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',

@@ -22,7 +22,8 @@ import {
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../components/networkProvider';
-import { refresh } from '@react-native-community/netinfo';
+import {refresh} from '@react-native-community/netinfo';
+import {useLoader} from '../components/loaderProvider';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -51,6 +52,8 @@ const DataAnalysisTextSummary = () => {
     new Set(videoSetVideoIDs),
   );
   const [refreshSummary, setRefreshSummary] = useState(false);
+  const {showLoader, hideLoader} = useLoader();
+
   // useEffect to retrieve the video data of the selected video set
 
   useEffect(() => {
@@ -132,8 +135,10 @@ const DataAnalysisTextSummary = () => {
         if (
           transcriptEdited ||
           currentVideoSet.isSummaryGenerated === false ||
-          newVideosAdded || refreshSummary
+          newVideosAdded ||
+          refreshSummary
         ) {
+          showLoader('Generating video set summary...');
           const summary = await sendVideoSetToChatGPT(
             realm,
             videoSetVideoIDs,
@@ -158,6 +163,7 @@ const DataAnalysisTextSummary = () => {
             console.log('videoSetSummary Sentence:', summary[0]);
           }
           setTranscriptEdited(false);
+          hideLoader();
         }
         previousVideoSetVideoIDsRef.current = new Set(videoSetVideoIDs);
         setRefreshSummary(false);
@@ -176,89 +182,13 @@ const DataAnalysisTextSummary = () => {
     refreshSummary,
   ]);
 
-  //useEffect for updating transcript
-  // useEffect(() => {
-  //   videos.map(async video => {
-  //     if (!video) {
-  //       return null;
-  //     }
-  //     const updatedTranscript = video.transcript[0] || '';
-  //     // return {
-  //     //   ...video,
-  //   });
-  // }, []);
-
-  // useEffect(() => {
-  //   const regenerateSummaries = async () => {
-  //     if (currentVideoSet && transcriptsLoaded && !sentimentsGenerated) {
-  //       const summary = await sendVideoSetToChatGPT(
-  //         realm,
-  //         videoSetVideoIDs,
-  //         currentVideoSet,
-  //         reportFormat,
-  //       );
-
-  //       realm.write(() => {
-  //         const videoSetToUpdate = realm.objectForPrimaryKey(
-  //           'VideoSet',
-  //           currentVideoSet._id,
-  //         );
-  //         videoSetToUpdate.summaryAnalysis = summary;
-  //       });
-
-  //       setVideoSetSummary(summary);
-
-  //       const updatedVideos = await Promise.all(
-  //         videos.map(async video => {
-  //           if (!video) {
-  //             return null;
-  //           }
-  //           const updatedTranscript = video.transcript[0] || '';
-  //           const keywords = video.keywords
-  //             .map(key => JSON.parse(key))
-  //             .map(obj => obj.title)
-  //             .join(', ');
-  //           const locations = video.locations
-  //             .map(loc => JSON.parse(loc))
-  //             .map(obj => obj.title)
-  //             .join(', ');
-
-  //           const summary = await sendToChatGPT(
-  //             video.filename,
-  //             updatedTranscript,
-  //             keywords,
-  //             locations,
-  //             realm,
-  //             video._id.toString(),
-  //             reportFormat
-  //           );
-
-  //           return {
-  //             ...video,
-  //             gptTranscriptOutput: video.gptTranscriptOutput,
-  //             sentiment: await getSentimentFromChatGPT(
-  //               updatedTranscript,
-  //               realm,
-  //               video._id.toString(),
-  //             ),
-  //           };
-  //         }),
-  //       );
-
-  //       setVideos(updatedVideos.filter(Boolean));
-  //       setSentimentsGenerated(true);
-  //     }
-  //   };
-
-  //   regenerateSummaries();
-  // }, [reportFormat, sentimentsGenerated]);
-
   const handleEdit = video => {
     setEditingID(video._id);
     setDraftTranscript(video.transcript || '');
   };
 
   const handleSave = async () => {
+    showLoader('Saving transcript...');
     const updatedTranscript = draftTranscript;
     const sentimentLabel = await getSentimentFromChatGPT(
       updatedTranscript,
@@ -314,6 +244,7 @@ const DataAnalysisTextSummary = () => {
     setEditingID(null);
     setDraftTranscript('');
     setTranscriptEdited(true);
+   
   };
 
   const handleCancel = () => {
@@ -435,7 +366,11 @@ const DataAnalysisTextSummary = () => {
         {online && (
           <TouchableOpacity
             onPress={() => setRefreshSummary(!refreshSummary)}
-            style={{flexDirection: 'row', justifyContent: 'flex-end', opacity: 0.5}}>
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              opacity: 0.5,
+            }}>
             <Text
               style={{
                 color: 'black',

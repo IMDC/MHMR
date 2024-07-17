@@ -20,6 +20,8 @@ import VideoSetDropdown from '../components/videoSetDropdown';
 import * as Styles from '../assets/util/styles';
 import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
+import { useLoader } from '../components/loaderProvider';
+import { processVideos } from '../components/processVideos';
 
 function Dashboard() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -32,7 +34,7 @@ function Dashboard() {
   const [inputText, setInputText] = useState('');
   const videoData = useQuery<VideoData>('VideoData');
   const videoSets = useQuery<any>('VideoSet');
-
+  const {showLoader, hideLoader} = useLoader();
   const videosByDate = videoData.sorted('datetimeRecorded', true);
   const videosByIsConvertedAndSelected = videosByDate.filtered(
     'isConverted == false AND isSelected == true',
@@ -40,6 +42,10 @@ function Dashboard() {
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   var selectedSetVideos = [];
+
+ const handleProcessVideos = async () => {
+   await processVideos(realm, videos, showLoader, hideLoader);
+ };
 
   const {
     handleChange,
@@ -92,43 +98,39 @@ function Dashboard() {
       // then also add the selectedVideo ids to the videoSetVideoIDs array
 
       const selectedVideosArray = Array.from(selectedVideos);
-      setVideoSetVideoIDs(
-        Array.from(new Set([...videoSetVideoIDs, ...selectedVideosArray])),
+      const updatedVideoIDs = Array.from(
+        new Set([...videoSetVideoIDs, ...selectedVideosArray]),
       );
+      setVideoSetVideoIDs(updatedVideoIDs);
+
       selectedSetVideos = videoData.filter(video => {
         const objectId = new ObjectId(video._id);
-        return selectedVideosArray.some(selectedVideo =>
-          objectId.equals(selectedVideo),
-        );
+        return updatedVideoIDs.some(videoID => objectId.equals(videoID));
       });
 
-      const videoIDSet = new Set(videoSetVideoIDs);
-      const addToSelectedSetVideos = videoData.filter(video => {
-        if (!video._id) {
-          console.error('Video _id is undefined:', video);
-          return false;
-        }
-        return videoIDSet.has(video._id.toString());
-      });
-
-      selectedSetVideos.push(addToSelectedSetVideos[0]);
-      console.log('selected videos array:', selectedVideosArray);
-      setVideos(Array.from(new Set(selectedSetVideos)));
 
       // add these videos to the current video set if there is a selected video set
       realm.write(() => {
         currentVideoSet.videoIDs = Array.from(
           new Set([...currentVideoSet?.videoIDs, ...selectedVideosArray]),
         );
-        const videoIDsSet = new Set(currentVideoSet?.videoIDs);
+      
+        const updatedVideosInSet = videoData.filter(video => {
+          new Set(currentVideoSet?.videoIDs).has(video._id.toString());
+        });
+        setVideos(updatedVideosInSet);
 
-        setVideos(
-          videosByDate.filter(video => videoIDsSet.has(video._id.toString())),
-        );
         console.log('currentVideos:', currentVideos);
+        console.log('currentVideos.length:', currentVideos.length);
         console.log('NEW currentVideoSet.videoIDs:', currentVideoSet.videoIDs);
+
+        console.log('*'.repeat(40));
+        console.log('selectedSetVideos:', selectedSetVideos);
+        console.log('*'.repeat(40));
+
       });
 
+      
       setSendToVideoSet(0);
     } else if (sendToVideoSet == 2) {
       // Send to new video set
@@ -189,71 +191,6 @@ function Dashboard() {
     });
   };
 
-  async function handleYesAnalysis() {
-    const selectedVideos = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
-
-    for (const video of selectedVideos) {
-      const getTranscriptByFilename = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video ? video.transcript : '';
-      };
-
-      const getCheckedKeywords = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.keywords
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
-
-      const getCheckedLocations = (filename: string) => {
-        const video = videos.find(video => video.filename === filename);
-        return video
-          ? video.locations
-              .map(key => JSON.parse(key))
-              .filter(obj => obj.checked)
-              .map(obj => obj.title)
-          : [];
-      };
-
-      const transcript = getTranscriptByFilename(video.filename);
-      const keywords = getCheckedKeywords(video.filename).join(', ');
-      const locations = getCheckedLocations(video.filename).join(', ');
-
-      try {
-        console.log(
-          video.filename,
-          transcript,
-          realm,
-          video._id.toHexString(),
-          'bullet',
-        );
-        const outputText = await sendToChatGPT(
-          video.filename,
-          transcript,
-          keywords,
-          locations,
-          realm,
-          video._id.toHexString(),
-          'bullet',
-        );
-        setInputText(outputText);
-        console.log(
-          `Transcription successful for video ${video._id.toHexString()}`,
-        );
-      } catch (error) {
-        console.error(
-          `Failed to process video ${video._id.toHexString()}:`,
-          error,
-        );
-      }
-    }
-    Alert.alert('Your transcripts have been generated and analyzed.');
-  }
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
@@ -270,7 +207,7 @@ function Dashboard() {
             {
               text: 'YES',
               onPress: () => {
-                handleYesAnalysis();
+                handleProcessVideos();
                 console.log('YES Pressed');
               },
             },
@@ -487,7 +424,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding: 10,
-    
   },
   buttonContainer: {
     flexDirection: 'row',

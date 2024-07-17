@@ -12,6 +12,7 @@ import Realm from 'realm';
 import {createRealmContext} from '@realm/react';
 import {getAuth, getTranscript} from '../components/stt_api';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import {useLoader} from '../components/loaderProvider';
 
 const RecordVideo = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -23,6 +24,7 @@ const RecordVideo = () => {
   const devices: any = useCameraDevices(deviceType);
   //use front camera
   const device = devices[deviceDir];
+  const {showLoader, hideLoader} = useLoader();
 
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
@@ -226,6 +228,7 @@ const RecordVideo = () => {
    * @param path path of stored VisionCamera recording
    */
   async function saveVideo(path: any) {
+    showLoader('Saving video...');
     const filePath = path.replace('file://', '');
     const pathSegments = filePath.split('/');
     const fileName = pathSegments[pathSegments.length - 1];
@@ -268,7 +271,7 @@ const RecordVideo = () => {
           } else {
             console.error('Conversion failed');
           }
-
+          hideLoader();
           Alert.alert('Your recording has been saved');
           navigation.navigate('Home');
           // getTranscript(fileName, saveDate[0], 'Bearer ' + getAuth());

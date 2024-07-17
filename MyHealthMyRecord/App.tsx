@@ -37,6 +37,7 @@ import {Icon} from '@rneui/themed';
 import {getAuth} from './components/stt_api';
 import {NetworkProvider} from './components/networkProvider';
 import {VideoSetProvider} from './components/videoSetProvider';
+import { LoaderProvider } from './components/loaderProvider';
 import ManageVideoSet from './screens/manageVideoSet';
 import Video from 'react-native-video';
 
@@ -166,6 +167,7 @@ function App() {
   return (
     <RealmProvider>
       <NetworkProvider>
+        <LoaderProvider>
         <VideoSetProvider>
           <NavigationContainer>
             <Tab.Navigator
@@ -271,6 +273,7 @@ function App() {
             </Tab.Navigator>
           </NavigationContainer>
         </VideoSetProvider>
+        </LoaderProvider>
       </NetworkProvider>
     </RealmProvider>
   );
