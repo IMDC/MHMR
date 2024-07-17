@@ -45,7 +45,8 @@ const styles = StyleSheet.create({
     },
     modalText: {
         fontSize: 18,
-        marginVertical: 15,
+        marginTop: 15,
+        marginBottom: 5,
         textAlign: 'center',
     },
 });
