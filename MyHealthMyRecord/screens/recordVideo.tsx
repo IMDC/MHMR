@@ -230,7 +230,6 @@ const RecordVideo = () => {
    * Save video to app storage, save VideoData object to database
    * @param path path of stored VisionCamera recording
    */
-    async function saveVideo(path: any) {
   async function saveVideo(path: any) {
     showLoader('Saving video...');
     const filePath = path.replace('file://', '');
