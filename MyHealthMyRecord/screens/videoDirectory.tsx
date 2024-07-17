@@ -645,14 +645,6 @@ const ViewRecordings = ({selected, setSelected}) => {
           <TouchableOpacity
             style={{alignItems: 'center'}}
             onPress={toggleDialog}>
-            {/* <Text
-            style={{
-              fontSize: 16,
-              // paddingRight: 20,
-              color: 'black',
-            }}>
-            Delete all videos
-          </Text> */}
           </TouchableOpacity>
           <View
             style={{
@@ -952,591 +944,301 @@ const ViewRecordings = ({selected, setSelected}) => {
                 alwaysRenderSelectedItem={renderSelectedItem}
               />
             )}
-            {/* <View
-            style={{
-              flex: 1,
-              justifyContent: 'flex-start',
-              alignItems: 'flex-end',
-            }}></View> */}
-            {/* <Dropdown
-            data={viewData}
-            maxHeight={300}
-            style={{width: windowWidth / 6}}
-            placeholderStyle={styles.dropdownText}
-            selectedTextStyle={styles.dropdownText}
-            itemTextStyle={{textAlign: 'center'}}
-            labelField="label"
-            valueField="value"
-            value={viewValue}
-            onChange={item => {
-              setViewValue(item.value);
-              console.log(item.value);
-            }}
-          /> */}
           </View>
 
-          {viewValue == 1 && (
-            <View>
-              {videos !== null
-                ? videos.map((video: VideoData) => {
-                    const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
-                    const sentimentCounts = {}; // Create an object to keep track of sentiment counts
-                    const isChecked = checkedVideos.has(video._id.toString());
-                    video.emotionStickers.forEach((key: string) => {
-                      const sentiment = JSON.parse(key).sentiment;
+          <View style={[viewValue == 1 ? null : styles.gridContainer]}>
+            {videos !== null
+              ? videos.map((video: VideoData) => {
+                  const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
+                  const sentimentCounts = {}; // Create an object to keep track of sentiment counts
+                  const isChecked = checkedVideos.has(video._id.toString());
+                  video.emotionStickers.forEach((key: string) => {
+                    const sentiment = JSON.parse(key).sentiment;
 
-                      if (!sentimentCounts[sentiment]) {
-                        sentimentCounts[sentiment] = 1; // Initialize the count if not found
-                      } else {
-                        sentimentCounts[sentiment]++; // Increment the count
-                      }
-                    });
+                    if (!sentimentCounts[sentiment]) {
+                      sentimentCounts[sentiment] = 1; // Initialize the count if not found
+                    } else {
+                      sentimentCounts[sentiment]++; // Increment the count
+                    }
+                  });
 
-                    const isTranscriptEmpty = (video: VideoData) => {
-                      return (
-                        video.transcript === undefined ||
-                        video.transcript === ''
-                      );
-                    };
-
-                    const transcriptIsEmpty = isTranscriptEmpty(video);
-
+                  const isTranscriptEmpty = (video: VideoData) => {
                     return (
-                      <View key={video._id.toString()}>
-                        <View style={styles.container}>
-                          <View style={styles.thumbnail}>
-                            <ImageBackground
-                              style={{
-                                height: '100%',
-                                width: '100%',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                overflow: 'hidden',
-                              }}
-                              source={{
-                                uri:
-                                  'file://' +
-                                  MHMRfolderPath +
-                                  '/' +
-                                  video.filename,
-                              }}>
-                              {selected ? (
-                                <View></View>
-                              ) : (
-                                <View
-                                  style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    justifyContent: 'flex-start',
-                                    alignItems: 'flex-start',
-                                  }}>
-                                  <CheckBox
-                                    uncheckedColor="white"
-                                    checked={isChecked}
-                                    size={25}
-                                    onPress={() => {
-                                      const updatedSelectedVideos = new Set(
-                                        selectedVideos,
+                      video.transcript === undefined || video.transcript === ''
+                    );
+                  };
+
+                  const transcriptIsEmpty = isTranscriptEmpty(video);
+
+                  return (
+                    <View
+                      style={[
+                        viewValue == 1 ? null : styles.gridItem
+                      ]}
+                       key={video._id.toString()}>
+                      <View
+                        style={[
+                          viewValue == 1 ? styles.container : null
+                        ]}>
+                        <View
+                          style={[
+                            viewValue == 1
+                              ? styles.thumbnail
+                              : styles.gridThumbnail,
+                          ]}>
+                          <ImageBackground
+                            style={{
+                              height: '100%',
+                              width: '100%',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              overflow: 'hidden',
+                            }}
+                            source={{
+                              uri:
+                                'file://' +
+                                MHMRfolderPath +
+                                '/' +
+                                video.filename,
+                            }}>
+                            {selected ? (
+                              <View></View>
+                            ) : (
+                              <View
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  justifyContent: 'flex-start',
+                                  alignItems: 'flex-start',
+                                }}>
+                                <CheckBox
+                                  uncheckedColor="white"
+                                  checked={isChecked}
+                                  size={25}
+                                  onPress={() => {
+                                    const updatedSelectedVideos = new Set(
+                                      selectedVideos,
+                                    );
+                                    if (!isChecked) {
+                                      toggleVideoChecked(video._id.toString());
+                                      updatedSelectedVideos.add(
+                                        video._id.toHexString(),
                                       );
-                                      if (!isChecked) {
-                                        // if (video.isConverted === false) {
-                                        //   setDoesVideoNeedAnalysis(true);
-                                        // }
-                                        // console.log(
-                                        //   'doesVideoNeedAnalysis:',
-                                        //   doesVideoNeedAnalysis,
-                                        // );
-                                        toggleVideoChecked(
-                                          video._id.toString(),
-                                        );
-                                        updatedSelectedVideos.add(
-                                          video._id.toHexString(),
-                                        );
-                                        setSelectedVideos(
-                                          updatedSelectedVideos,
-                                        );
+                                      setSelectedVideos(updatedSelectedVideos);
 
-                                        realm.write(() => {
-                                          video.isSelected = true;
-                                        });
+                                      realm.write(() => {
+                                        video.isSelected = true;
+                                      });
 
-                                        console.log(
-                                          'checked',
-                                          video.isSelected,
-                                        );
-                                        console.log(
-                                          'converted status',
-                                          video.filename,
-                                          video.isConverted,
-                                        );
-                                      } else {
-                                        // If video is already checked, uncheck it and remove from selected videos
-                                        // if (video.isConverted === false) {
-                                        //   setDoesVideoNeedAnalysis(false);
-                                        // }
-                                        // console.log(
-                                        //   'doesVideoNeedAnalysis:',
-                                        //   doesVideoNeedAnalysis,
-                                        // );
-                                        toggleVideoChecked(
-                                          video._id.toString(),
-                                        );
-                                        updatedSelectedVideos.delete(
-                                          video._id.toHexString(),
-                                        );
-                                        setSelectedVideos(
-                                          updatedSelectedVideos,
-                                        );
-                                        realm.write(() => {
-                                          video.isSelected = false;
-                                        });
-                                      }
-                                    }}
-                                    wrapperStyle={{
-                                      backgroundColor: 'transparent',
-                                    }}
-                                    containerStyle={{
-                                      backgroundColor: 'rgba(52, 52, 52, 0.4)',
-                                      // opacity: 1,
-                                      borderRadius: 15,
-                                      marginLeft: 6,
-                                    }}
-                                  />
-                                </View>
-                              )}
-                              <TouchableOpacity
+                                      console.log('checked', video.isSelected);
+                                      console.log(
+                                        'converted status',
+                                        video.filename,
+                                        video.isConverted,
+                                      );
+                                    } else {
+                                      toggleVideoChecked(video._id.toString());
+                                      updatedSelectedVideos.delete(
+                                        video._id.toHexString(),
+                                      );
+                                      setSelectedVideos(updatedSelectedVideos);
+                                      realm.write(() => {
+                                        video.isSelected = false;
+                                      });
+                                    }
+                                  }}
+                                  wrapperStyle={{
+                                    backgroundColor: 'transparent',
+                                  }}
+                                  containerStyle={{
+                                    backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                                    // opacity: 1,
+                                    borderRadius: 15,
+                                    marginLeft: 6,
+                                  }}
+                                />
+                              </View>
+                            )}
+                            <TouchableOpacity
+                              onPress={() =>
+                                navigation.navigate('Fullscreen Video', {
+                                  id: video._id,
+                                })
+                              }>
+                              <Icon
+                                reverse
+                                name="play-sharp"
+                                type="ionicon"
+                                color="#1C3EAA"
+                                size={20}
+                              />
+                            </TouchableOpacity>
+                          </ImageBackground>
+                        </View>
+                        <View
+                          style={[
+                            viewValue == 1
+                              ? styles.rightContainer
+                              : styles.bottomContainer,
+                          ]}>
+                          <View>
+                            <Text
+                              style={{
+                                fontSize: 24,
+                                color: 'black',
+                                fontWeight: 'bold',
+                              }}>
+                              {video.title}
+                              {video.textComments.length !== 0 ? (
+                                <Icon
+                                  name="chatbox-ellipses"
+                                  type="ionicon"
+                                  color="black"
+                                  size={22}
+                                  style={{
+                                    alignSelf: 'flex-start',
+                                    paddingLeft: 5,
+                                  }}
+                                />
+                              ) : null}
+                            </Text>
+                            <Text style={{fontSize: 20}}>
+                              {video.datetimeRecorded?.toLocaleString()}
+                            </Text>
+                            {/* <Text>{video.filename}</Text> */}
+
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                              }}>
+                              {video.keywords.map((key: string) => {
+                                if (JSON.parse(key).checked) {
+                                  return (
+                                    <Chip
+                                      key={JSON.parse(key).title}
+                                      style={{
+                                        margin: 2,
+                                        backgroundColor: '#E1BE6A',
+                                      }}
+                                      textStyle={{fontSize: 16}}
+                                      mode="outlined"
+                                      compact={true}
+                                      icon={'tag'}>
+                                      {JSON.parse(key).title}
+                                    </Chip>
+                                  );
+                                }
+                              })}
+                              {video.locations.map((key: string) => {
+                                if (JSON.parse(key).checked) {
+                                  return (
+                                    <Chip
+                                      key={JSON.parse(key).title}
+                                      textStyle={{fontSize: 16}}
+                                      style={{
+                                        margin: 2,
+                                        backgroundColor: '#40B0A6',
+                                      }}
+                                      mode="outlined"
+                                      compact={true}
+                                      icon={'map-marker'}>
+                                      {JSON.parse(key).title}
+                                    </Chip>
+                                  );
+                                }
+                              })}
+                            </View>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                              }}>
+                              {video.emotionStickers.map(key => {
+                                const sentiment = JSON.parse(key).sentiment;
+                                const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
+
+                                if (!displayedSentiments.has(sentiment)) {
+                                  displayedSentiments.add(sentiment);
+                                  return (
+                                    <View style={{flexDirection: 'row'}}>
+                                      <Tooltip
+                                        title={`${sentiment} (${sentimentCounts[sentiment]})`}>
+                                        {imageSource && (
+                                          <Image
+                                            style={{height: 60, width: 60}}
+                                            source={imageSource}
+                                          />
+                                        )}
+                                      </Tooltip>
+                                      <Text style={{fontWeight: 'bold'}}>
+                                        {sentimentCounts[sentiment]}
+                                      </Text>
+                                    </View>
+                                  );
+                                }
+                                return null; // If sentiment has already been displayed, return null
+                              })}
+                            </View>
+                          </View>
+                          {selected ? (
+                            <View
+                              style={[
+                                styles.buttonContainer,
+                                viewValue == 1 ? null : {padding: 5, },
+                              ]}>
+                              <Button
+                                buttonStyle={styles.btnStyle}
+                                title="Review"
+                                radius={50}
                                 onPress={() =>
-                                  navigation.navigate('Fullscreen Video', {
+                                  navigation.navigate('Review Video Markups', {
                                     id: video._id,
                                   })
-                                }>
-                                <Icon
-                                  reverse
-                                  name="play-sharp"
-                                  type="ionicon"
-                                  color="#1C3EAA"
-                                  size={20}
-                                />
-                              </TouchableOpacity>
-                            </ImageBackground>
-                          </View>
-                          <View style={styles.rightContainer}>
-                            <View>
-                              <Text
-                                style={{
-                                  fontSize: 24,
-                                  color: 'black',
-                                  fontWeight: 'bold',
-                                }}>
-                                {video.title}
-
-                                {video.textComments.length !== 0 ? (
-                                  <Icon
-                                    name="chatbox-ellipses"
-                                    type="ionicon"
-                                    color="black"
-                                    size={22}
-                                    style={{
-                                      alignSelf: 'flex-start',
-                                      paddingLeft: 5,
-                                    }}
-                                  />
-                                ) : null}
-                              </Text>
-                              <Text style={{fontSize: 20}}>
-                                {video.datetimeRecorded?.toLocaleString()}
-                              </Text>
-                              {/* <Text>{video.filename}</Text> */}
-
+                                }
+                              />
                               <View
-                                style={{
-                                  flexDirection: 'row',
-                                  flexWrap: 'wrap',
-                                }}>
-                                {video.keywords.map((key: string) => {
-                                  if (JSON.parse(key).checked) {
-                                    return (
-                                      <Chip
-                                        key={JSON.parse(key).title}
-                                        style={{
-                                          margin: 2,
-                                          backgroundColor: '#E1BE6A',
-                                        }}
-                                        textStyle={{fontSize: 16}}
-                                        mode="outlined"
-                                        compact={true}
-                                        icon={'tag'}>
-                                        {JSON.parse(key).title}
-                                      </Chip>
-                                    );
-                                  }
-                                })}
-                                {video.locations.map((key: string) => {
-                                  if (JSON.parse(key).checked) {
-                                    return (
-                                      <Chip
-                                        key={JSON.parse(key).title}
-                                        textStyle={{fontSize: 16}}
-                                        style={{
-                                          margin: 2,
-                                          backgroundColor: '#40B0A6',
-                                        }}
-                                        mode="outlined"
-                                        compact={true}
-                                        icon={'map-marker'}>
-                                        {JSON.parse(key).title}
-                                      </Chip>
-                                    );
-                                  }
-                                })}
-                              </View>
+                                style={[
+                                  viewValue == 1 ? styles.space : {width: 15},
+                                ]}
+                              />
+                              <Button
+                                buttonStyle={styles.btnStyle}
+                                radius={50}
+                                title="Add or edit markups"
+                                onPress={() =>
+                                  navigation.navigate('Add or Edit Markups', {
+                                    id: video._id,
+                                  })
+                                }
+                              />
                               <View
-                                style={{
-                                  flexDirection: 'row',
-                                  flexWrap: 'wrap',
-                                }}>
-                                {video.emotionStickers.map(key => {
-                                  const sentiment = JSON.parse(key).sentiment;
-                                  const imageSource =
-                                    sentimentImages[sentiment]; // Get the image source based on sentiment
-
-                                  if (!displayedSentiments.has(sentiment)) {
-                                    displayedSentiments.add(sentiment);
-                                    return (
-                                      <View style={{flexDirection: 'row'}}>
-                                        <Tooltip
-                                          title={`${sentiment} (${sentimentCounts[sentiment]})`}>
-                                          {imageSource && (
-                                            <Image
-                                              style={{height: 60, width: 60}}
-                                              source={imageSource}
-                                            />
-                                          )}
-                                        </Tooltip>
-                                        <Text style={{fontWeight: 'bold'}}>
-                                          {sentimentCounts[sentiment]}
-                                        </Text>
-                                      </View>
-                                    );
-                                  }
-                                  return null; // If sentiment has already been displayed, return null
-                                })}
-                              </View>
+                                style={[
+                                  viewValue == 1 ? styles.space : {width: 15},
+                                ]}
+                              />
+                              <Button
+                                buttonStyle={styles.btnStyle}
+                                radius={50}
+                                title="Delete video"
+                                onPress={() =>
+                                  handleDeleteVideo(video, video.filename)
+                                }
+                              />
                             </View>
-
-                            {selected ? (
-                              <View style={styles.buttonContainer}>
-                                <Button
-                                  buttonStyle={styles.btnStyle}
-                                  title="Review"
-                                  radius={50}
-                                  onPress={() =>
-                                    navigation.navigate(
-                                      'Review Video Markups',
-                                      {
-                                        id: video._id,
-                                      },
-                                    )
-                                  }
-                                />
-                                <View style={styles.space} />
-                                <Button
-                                  buttonStyle={styles.btnStyle}
-                                  radius={50}
-                                  title="Add or edit markups"
-                                  onPress={() =>
-                                    navigation.navigate('Add or Edit Markups', {
-                                      id: video._id,
-                                    })
-                                  }
-                                />
-                                <View style={styles.space} />
-                                <Button
-                                  buttonStyle={styles.btnStyle}
-                                  radius={50}
-                                  title="Delete video"
-                                  onPress={() =>
-                                    handleDeleteVideo(video, video.filename)
-                                  }
-                                  // onPress={() => {
-                                  //   setVideoSelectedData(video);
-                                  //   setvideoSelectedFilename(video.filename);
-                                  //   toggleDialog1();
-                                  // }}
-                                />
-                              </View>
-                            ) : (
-                              <View></View>
-                            )}
-                          </View>
+                          ) : (
+                            <View></View>
+                          )}
                         </View>
                       </View>
-                    );
-                  })
-                : null}
-            </View>
-          )}
-
-          {/* grid view */}
-          {viewValue == 2 && (
-            <View style={styles.gridContainer}>
-              {videos.map((video: VideoData) => {
-                const isChecked = checkedVideos.has(video._id.toString());
-                const displayedSentiments = new Set(); // Create a Set to keep track of displayed sentiments
-                const sentimentCounts = {}; // Create an object to keep track of sentiment counts
-                video.emotionStickers.forEach((key: string) => {
-                  const sentiment = JSON.parse(key).sentiment;
-
-                  if (!sentimentCounts[sentiment]) {
-                    sentimentCounts[sentiment] = 1; // Initialize the count if not found
-                  } else {
-                    sentimentCounts[sentiment]++; // Increment the count
-                  }
-                });
-                return (
-                  <View style={styles.gridItem} key={video._id.toString()}>
-                    {!selected ? <View></View> : <View></View>}
-
-                    <View style={styles.gridThumbnail}>
-                      <ImageBackground
-                        style={{
-                          height: '100%',
-                          width: '100%',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          overflow: 'hidden',
-                        }}
-                        source={{
-                          uri:
-                            'file://' + MHMRfolderPath + '/' + video.filename,
-                        }}>
-                        <TouchableOpacity
-                          onPress={() =>
-                            navigation.navigate('Fullscreen Video', {
-                              id: video._id,
-                            })
-                          }>
-                          <Icon
-                            reverse
-                            name="play-sharp"
-                            type="ionicon"
-                            color="#1C3EAA"
-                            size={20}
-                          />
-                        </TouchableOpacity>
-                        {selected ? (
-                          <View></View>
-                        ) : (
-                          <View
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              justifyContent: 'flex-start',
-                              alignItems: 'flex-start',
-                            }}>
-                            <CheckBox
-                              uncheckedColor="white"
-                              checked={isChecked}
-                              size={25}
-                              onPress={() => {
-                                const updatedSelectedVideos = new Set(
-                                  selectedVideos,
-                                );
-                                if (!isChecked) {
-                                  if (video.isConverted === false) {
-                                    setDoesVideoNeedAnalysis(true);
-                                  }
-                                  toggleVideoChecked(video._id.toString());
-                                  updatedSelectedVideos.add(
-                                    video._id.toHexString(),
-                                  );
-                                  setSelectedVideos(updatedSelectedVideos);
-
-                                  realm.write(() => {
-                                    video.isSelected = true;
-                                  });
-
-                                  console.log('checked', video.isSelected);
-                                  console.log(
-                                    'converted status',
-                                    video.filename,
-                                    video.isConverted,
-                                  );
-                                } else {
-                                  // If video is already checked, uncheck it and remove from selected videos
-                                  if (video.isConverted === false) {
-                                    setDoesVideoNeedAnalysis(false);
-                                  }
-                                  toggleVideoChecked(video._id.toString());
-                                  updatedSelectedVideos.delete(
-                                    video._id.toHexString(),
-                                  );
-                                  setSelectedVideos(updatedSelectedVideos);
-                                  realm.write(() => {
-                                    video.isSelected = false;
-                                  });
-                                }
-                                console.log(
-                                  'doesVideoNeedAnalysis:',
-                                  doesVideoNeedAnalysis,
-                                );
-                              }}
-                              wrapperStyle={{
-                                backgroundColor: 'transparent',
-                              }}
-                              containerStyle={{
-                                backgroundColor: 'rgba(52, 52, 52, 0.4)',
-                                // opacity: 1,
-                                borderRadius: 15,
-                                marginLeft: 6,
-                              }}
-                            />
-                          </View>
-                        )}
-
-                        {/* <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate('Fullscreen Video', {
-                            id: video._id,
-                          })
-                        }>
-                        <Icon
-                          style={{height: 240, justifyContent: 'center'}}
-                          name="play-sharp"
-                          type="ionicon"
-                          color="black"
-                          size={40}
-                        />
-                      </TouchableOpacity> */}
-                      </ImageBackground>
                     </View>
-
-                    {/* bottom container */}
-                    <View
-                      style={{
-                        paddingLeft: 2,
-                        justifyContent: 'space-between',
-                        flex: 1,
-                      }}>
-                      <View>
-                        <Text
-                          style={{
-                            fontSize: 24,
-                            color: 'black',
-                            fontWeight: 'bold',
-                          }}>
-                          {video.title}
-                          {video.textComments.length !== 0 ? (
-                            <Icon
-                              name="chatbox-ellipses"
-                              type="ionicon"
-                              color="black"
-                              size={22}
-                              style={{
-                                alignSelf: 'flex-start',
-                                paddingLeft: 5,
-                              }}
-                            />
-                          ) : null}
-                          {video.emotionStickers.length !== 0 ? (
-                            <Icon
-                              name="happy"
-                              type="ionicon"
-                              color="black"
-                              size={22}
-                              style={{
-                                alignSelf: 'flex-start',
-                                paddingLeft: 5,
-                              }}
-                            />
-                          ) : null}
-                        </Text>
-                        <Text style={{fontSize: 20}}>
-                          {video.datetimeRecorded?.toLocaleString()}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          flexWrap: 'wrap',
-                        }}>
-                        {video.emotionStickers.map(key => {
-                          const sentiment = JSON.parse(key).sentiment;
-                          const imageSource = sentimentImages[sentiment]; // Get the image source based on sentiment
-
-                          if (!displayedSentiments.has(sentiment)) {
-                            displayedSentiments.add(sentiment);
-                            return (
-                              <View style={{flexDirection: 'row'}}>
-                                <Tooltip
-                                  title={`${sentiment} (${sentimentCounts[sentiment]})`}>
-                                  {imageSource && (
-                                    <Image
-                                      style={{height: 60, width: 60}}
-                                      source={imageSource}
-                                    />
-                                  )}
-                                </Tooltip>
-                                <Text style={{fontWeight: 'bold'}}>
-                                  {sentimentCounts[sentiment]}
-                                </Text>
-                              </View>
-                            );
-                          }
-                          return null; // If sentiment has already been displayed, return null
-                        })}
-                      </View>
-                    </View>
-                    {selected ? (
-                      <View style={[styles.buttonContainer, {padding: 5}]}>
-                        <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Review"
-                          radius={50}
-                          onPress={() =>
-                            navigation.navigate('Review Video Markups', {
-                              id: video._id,
-                            })
-                          }
-                        />
-                        <View style={{width: 15}} />
-                        <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Add or edit markups"
-                          radius={50}
-                          onPress={() =>
-                            navigation.navigate('Add or Edit Markups', {
-                              id: video._id,
-                            })
-                          }
-                        />
-                        <View style={{width: 15}} />
-                        <Button
-                          buttonStyle={styles.btnStyle}
-                          title="Delete video"
-                          radius={50}
-                          onPress={() => deleteVideo(video, video.filename)}
-                          // onPress={() => {
-                          //   setVideoSelectedData(video);
-                          //   setvideoSelectedFilename(video.filename);
-                          //   toggleDialog1();
-                          // }}
-                        />
-                      </View>
-                    ) : (
-                      <View></View>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          )}
+                  );
+                })
+              : null}
+          </View>
           <TouchableOpacity
             style={{alignItems: 'center'}}
             onPress={onPressTouch}>
@@ -1620,6 +1322,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding: 10,
+  },
+  bottomContainer: {
+    paddingHorizontal: 10,
+    justifyContent: 'space-between',
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
