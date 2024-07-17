@@ -100,7 +100,7 @@ function ManageVideosStack() {
     if (currentTime - lastAuthTime >= 60000) {
       // Check if 1 minute has passed since the last auth
       setSelected(!selected);
-      console.log('selected:', selected);
+      // console.log('selected:', selected);
       // Call the getAuth function and store the return in a variable
       setAuth(await getAuth());
       setLastAuthTime(currentTime); // Update lastAuthTime
@@ -139,7 +139,7 @@ function ManageVideosStack() {
                   radius={50}
                   onPress={() => {
                     setSelected(!selected);
-                    console.log('selected:', selected);
+                    // console.log('selected:', selected);
                     // handleAuth();
                   }}
                   // if selected = false, then change the button to say "Done"

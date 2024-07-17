@@ -40,7 +40,7 @@ import {getAuth, getTranscript} from '../components/stt_api';
 import {sendToChatGPT} from '../components/chatgpt_api';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useLoader} from '../components/loaderProvider';
-import { processVideos } from '../components/processVideos';
+import {processVideos} from '../components/processVideos';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const {showLoader, hideLoader} = useLoader();
@@ -56,9 +56,9 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
 
- const handleProcessVideos = async () => {
-   await processVideos(realm, videos, showLoader, hideLoader);
- };
+  const handleProcessVideos = async () => {
+    await processVideos(realm, videos, showLoader, hideLoader);
+  };
 
   const {
     handleChange,
@@ -88,7 +88,6 @@ const ViewRecordings = ({selected, setSelected}) => {
       ],
     );
   }
-
 
   async function handleSendToDashboard(selectedVideos: Set<string>) {
     const state = await NetInfo.fetch();
@@ -349,9 +348,9 @@ const ViewRecordings = ({selected, setSelected}) => {
       setVideos(videosByDate);
       // console.log(videoData
       // useAddToFile(selectedVideos);
-      console.log('selectedVideos:', selectedVideos);
+      // console.log('selectedVideos:', selectedVideos);
     }
-  }, [selectedVideos]);
+  }, []);
 
   onPressTouch = () => {
     scrollRef.current?.scrollTo({
@@ -489,7 +488,7 @@ const ViewRecordings = ({selected, setSelected}) => {
 
                   await handleSend('YES');
                   await handleProcessVideos();
-                
+
                   Alert.alert(
                     'Video transcripts generated and analyzed',
                     'Your transcripts have been generated and analyzed, and your videos have been added to the video set!',
@@ -986,9 +985,9 @@ const ViewRecordings = ({selected, setSelected}) => {
                             {flex: 1, flexDirection: 'column'},
                             viewValue == 1
                               ? styles.rightContainer
-                              : styles.bottomContainer,
+                              : styles.bottomContainer, {justifyContent: 'space-between'}
                           ]}>
-                          <View style={{flex: 1}}>
+                          <View>
                             <Text
                               style={{
                                 fontSize: 24,
@@ -1089,7 +1088,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                             </View>
                           </View>
                           {selected ? (
-                            <View style={styles.buttonContainer}>
+                            <View
+                              style={[
+                                styles.buttonContainer,
+                                viewValue == 1
+                                  ? null
+                                  : {flex: 1, alignContent: 'space-between'},
+                              ]}>
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 title="Review"
@@ -1100,11 +1105,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   })
                                 }
                               />
-                              <View
-                                style={[
-                                  viewValue == 1 ? styles.space : {width: 15},
-                                ]}
-                              />
+                              <View />
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 radius={50}
@@ -1115,11 +1116,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   })
                                 }
                               />
-                              <View
-                                style={[
-                                  viewValue == 1 ? styles.space : {width: 15},
-                                ]}
-                              />
+                              <View />
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 radius={50}
@@ -1222,22 +1219,22 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     flex: 1,
-    paddingHorizontal: 10,
+    padding: 5,
     justifyContent: 'space-between',
+    
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 5,
+    paddingVertical: 5,
+
   },
   thumbnail: {
     height: 240,
     width: '40%',
     padding: 4,
   },
-  space: {
-    width: 50,
-  },
+  space: {},
 
   sortValueStyle: {
     width: '30%',
