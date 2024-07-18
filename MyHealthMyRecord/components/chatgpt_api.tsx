@@ -108,45 +108,71 @@ export const sendVideoSetToChatGPT = async (
   selectedVideoSet,
   reportFormat,
 ) => {
-  const videoTranscripts = videoSetVideoIDs
-    .map(videoID => {
-      const objectId = new Realm.BSON.ObjectId(videoID);
-      const video = realm.objectForPrimaryKey('VideoData', objectId);
-      return video ? video.transcript : '';
-    })
-    .filter(transcript => transcript.trim());
-
-  if (!videoTranscripts.length) {
-    console.log('No videos selected for summarization');
+  let returnOutput: any[] = [];
+  const videoTranscripts = videoSetVideoIDs.map(videoID => {
+    const objectId = new Realm.BSON.ObjectId(videoID); // Ensure _id is a Realm ObjectId
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    return video ? video.transcript : '';
+  });
+  const isArrayEmptyOrOnlyEmptyStrings = arr => {
+    return arr.length === 0 || arr.every(item => item.trim() === '');
+  };
+  if (isArrayEmptyOrOnlyEmptyStrings(videoTranscripts)) {
     realm.write(() => {
       selectedVideoSet.isSummaryGenerated = false;
     });
+    console.log('No videos selected for summarization');
     return ['', ''];
-  }
+  } else {
+    console.log('Video Transcripts in Set:', videoTranscripts);
+    const combinedTranscripts = videoTranscripts.join(' ');
+    const transcriptWordCount = combinedTranscripts.split(' ').length;
+    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.3);
+    // console.log('combinedTranscripts:', combinedTranscripts);
 
-  const combinedTranscripts = videoTranscripts.join(' ');
-  const inputTexts = [
-    `Summarize the following user's selected video transcripts into a concise summary: "${combinedTranscripts}". Make the total word count of the summary less. Format the summary in sentence(s).`,
-    `Summarize the following user's selected video transcripts into a concise summary: "${combinedTranscripts}". Make the total word count of the summary less. Format the summary in bullet points using \u2022`,
-  ];
+    try {
+      // let inputTextBullet = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+      // let inputTextSentence = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+      let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+      let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+      const dataSentence = await connectToChatGPT(inputTextSentence);
+      if (dataSentence.choices && dataSentence.choices.length > 0) {
+        const outputText = dataSentence.choices[0].message.content;
 
-  const results = await Promise.all(
-    inputTexts.map(text => connectToChatGPT(text)),
-  );
+        realm.write(() => {
+          selectedVideoSet.summaryAnalysisSentence = outputText;
+          selectedVideoSet.isSummaryGenerated = true;
+          returnOutput.push(outputText);
+        });
 
-  realm.write(() => {
-    results.forEach((result, index) => {
-      if (result && result.choices && result.choices.length > 0) {
-        const content = result.choices[0].message.content;
-        if (index === 0) {
-          selectedVideoSet.summaryAnalysisSentence = content;
-        } else {
-          selectedVideoSet.summaryAnalysisBullet = content;
-        }
-        selectedVideoSet.isSummaryGenerated = true;
+        console.log(
+          'Set summary analysis in sentence form:',
+          selectedVideoSet.summaryAnalysisSentence,
+        );
+      } else {
+        throw new Error('Invalid response from ChatGPT API');
       }
-    });
-  });
 
-  return results.map(result => result?.choices[0]?.message.content || '');
+      const dataBullet = await connectToChatGPT(inputTextBullet);
+      if (dataBullet.choices && dataBullet.choices.length > 0) {
+        const outputText = dataBullet.choices[0].message.content;
+
+        realm.write(() => {
+          selectedVideoSet.summaryAnalysisBullet = outputText;
+          returnOutput.push(outputText);
+        });
+
+        console.log(
+          'Set summary analysis in bullet form:',
+          selectedVideoSet.summaryAnalysisBullet,
+        );
+      } else {
+        throw new Error('Invalid response from ChatGPT API');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+    console.log('Video Set returnOutput:', returnOutput);
+    return returnOutput;
+  }
 };
