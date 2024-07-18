@@ -15,13 +15,36 @@ import {
   Alert,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
+import {useNetwork} from '../components/networkProvider';
 //import test from '../assets/images/MHMRLogo_NOBG.png';
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
+import * as Styles from '../assets/util/styles';
 
 const Home = () => {
+  const {online} = useNetwork();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <>
+      {!online && (
+        <View
+          style={{
+            paddingHorizontal: 10,
+            paddingTop: 10,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+          }}>
+          <Icon
+            name="alert-circle-outline"
+            size={24}
+            type="ionicon"
+            color={Styles.MHMRBlue}
+            // style={{width: Styles.bottomNavIconSize}}
+          />
+          <Text style={{fontSize: 18, color: Styles.MHMRBlue}}>
+            You are offline.
+          </Text>
+        </View>
+      )}
       <View
         style={{
           // paddingTop: 50,

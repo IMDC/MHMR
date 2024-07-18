@@ -296,12 +296,20 @@ const ViewRecordings = ({selected, setSelected}) => {
 
   const deleteVideo = (deleteableVideo: VideoData, filename: string) => {
     var path = MHMRfolderPath + '/' + filename;
+    var audioFileName = filename.replace('.mp4', '.wav');
+    var audioPath = MHMRfolderPath + '/audio/' + audioFileName;
     //delete from storage
     return (
       RNFS.unlink(path)
         .then(() => {
           console.log('FILE DELETED FROM STORAGE');
-          //delete from db
+          RNFS.unlink(audioPath)
+            .then(() => {
+              console.log('AUDIO FILE DELETED FROM STORAGE');
+            })
+            .catch(err => {
+              console.log(err.message);
+            });
           realm.write(() => {
             realm.delete(deleteableVideo);
             console.log('FILE DELETED FROM DB');
@@ -985,7 +993,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                             {flex: 1, flexDirection: 'column'},
                             viewValue == 1
                               ? styles.rightContainer
-                              : styles.bottomContainer, {justifyContent: 'space-between'}
+                              : styles.bottomContainer,
+                            {justifyContent: 'space-between'},
                           ]}>
                           <View>
                             <Text
@@ -1221,13 +1230,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 5,
     justifyContent: 'space-between',
-    
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 5,
-
   },
   thumbnail: {
     height: 240,
