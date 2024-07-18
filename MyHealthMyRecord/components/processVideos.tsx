@@ -1,103 +1,56 @@
-import {useRealm} from '../models/VideoData';
-import {getAuth, getTranscript} from './stt_api';
-import {sendToChatGPT} from './chatgpt_api';
-import {VideoData} from '../models/VideoData';
-import {useLoader} from './loaderProvider';
+import {getAuth, getTranscript, processMultipleTranscripts} from './stt_api'; // Import transcription-related functions
+import {sendToChatGPT} from './chatgpt_api'; // Import chatGPT-related functions
+import Realm from 'realm';
+import {useLoader} from './loaderProvider'; // Assuming this provides showLoader and hideLoader
+import {VideoData} from '../models/VideoData'; // Assuming this sets up the Realm schema
 
 export const processVideos = async (realm, videos, showLoader, hideLoader) => {
-  await processSelectedVideos(realm, showLoader);
-  await handleYesAnalysis(realm, videos, showLoader, hideLoader);
-  console.log('Processing complete.');
-};
-
-const processSelectedVideos = async (realm, showLoader) => {
   showLoader('Processing videos...');
-  const auth = await getAuth();
-  const selectedVideos = realm
-    .objects<VideoData>('VideoData')
-    .filtered('isConverted == false AND isSelected == true');
+  try {
+    const auth = await getAuth();
+    const selectedVideos = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == false AND isSelected == true');
 
-  console.log(`Found ${selectedVideos.length} videos to process.`);
+    console.log(`Found ${selectedVideos.length} videos to process.`);
 
-  for (const video of selectedVideos) {
-    const audioFileName = video.filename.replace('.mp4', '.wav');
-    console.log('audioFileName:', audioFileName);
-    console.log(
-      `Processing video ${video._id.toHexString()}: ${audioFileName}`,
+    // Handle all transcriptions in a batch
+    await processMultipleTranscripts(selectedVideos, realm, auth);
+    console.log('All transcriptions complete.');
+
+    // Proceed with further processing if necessary
+    const analysisPromises = selectedVideos.map(video =>
+      handleYesAnalysis(video, videos, realm),
     );
 
-    try {
-      await getTranscript(audioFileName, video._id.toHexString(), auth, realm);
-      console.log(
-        `Transcription successful for video ${video._id.toHexString()}`,
-      );
-    } catch (error) {
-      console.error(
-        `Failed to process video ${video._id.toHexString()}:`,
-        error,
-      );
-    }
+    await Promise.all(analysisPromises);
+    console.log('All analyses complete.');
+  } catch (error) {
+    console.error('Failed during video processing:', error);
+  } finally {
+    hideLoader();
   }
 };
 
-const handleYesAnalysis = async (realm, videos, showLoader, hideLoader) => {
-  const selectedVideos = realm
-    .objects<VideoData>('VideoData')
-    .filtered('isConverted == false AND isSelected == true');
 
-  for (const video of selectedVideos) {
-    const getTranscriptByFilename = filename => {
-      const videoData = videos.find(video => video.filename === filename);
-      return videoData ? videoData.transcript : '';
-    };
+const handleYesAnalysis = async (video, videos, realm) => {
+  // Example of handling post-transcription analysis
+  const transcript = video.transcript; // Directly use the property if it's available
+  const keywords = video.keywords.join(', '); // Assuming keywords is an array
+  const locations = video.locations.join(', '); // Assuming locations is an array
 
-    const getCheckedKeywords = filename => {
-      const videoData = videos.find(video => video.filename === filename);
-      if (videoData) {
-        const checkedKeywords = videoData.keywords
-          .map(key => JSON.parse(key))
-          .filter(obj => obj.checked)
-          .map(obj => obj.title);
-        return checkedKeywords;
-      }
-      return [];
-    };
-
-    const getCheckedLocations = filename => {
-      const videoData = videos.find(video => video.filename === filename);
-      if (videoData) {
-        const checkedLocations = videoData.locations
-          .map(key => JSON.parse(key))
-          .filter(obj => obj.checked)
-          .map(obj => obj.title);
-        return checkedLocations;
-      }
-      return [];
-    };
-
-    const transcript = getTranscriptByFilename(video.filename);
-    const keywords = getCheckedKeywords(video.filename).join(', ');
-    const locations = getCheckedLocations(video.filename).join(', ');
-
-    try {
-      const outputText = await sendToChatGPT(
-        video.filename,
-        transcript,
-        keywords,
-        locations,
-        realm,
-        video._id.toHexString(),
-        'bullet',
-      );
-      console.log(
-        `Transcription successful for video ${video._id.toHexString()}`,
-      );
-      hideLoader();
-    } catch (error) {
-      console.error(
-        `Failed to process video ${video._id.toHexString()}:`,
-        error,
-      );
-    }
+  try {
+    await sendToChatGPT(
+      video.filename,
+      transcript,
+      keywords,
+      locations,
+      realm,
+      video._id.toHexString(),
+      'bullet',
+    );
+    console.log(`Analysis successful for video ${video._id.toHexString()}`);
+  } catch (error) {
+    console.error(`Failed to process video ${video._id.toHexString()}:`, error);
   }
 };
