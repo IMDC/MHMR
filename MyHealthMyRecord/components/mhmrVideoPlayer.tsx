@@ -399,31 +399,36 @@ const MHMRVideoPlayer = ({
   return (
     <View>
       {isFullscreen ? (
-        <SafeAreaView style={{width: windowWidth, height: windowHeight - 220}}>
-          <VideoPlayer
-            disableVolume={true}
-            videoRef={videoPlayerRef}
-            source={{uri: videoPath}}
-            paused={true}
-            disableBack={true}
-            toggleResizeModeOnFullscreen={true}
+        <View style={{height: '100%', width: '100%'}}>
+          <View
             style={{
-              width: Dimensions.get('window').width,
-              height: Dimensions.get('window').height - 220,
-            }}
-            showOnStart={true}
-            isFullscreen={true}
-            repeat={false}
-            onProgress={data => {
-              currentTime[0] = data.currentTime;
-            }}
-            onSeek={data => {
-              currentTime[0] = data.currentTime;
-            }}
-            onExitFullscreen={() => navigation.goBack()}
-            // disableSeekButtons={true}
-          />
-        </SafeAreaView>
+              flex: 1,
+            }}>
+            <VideoPlayer
+              disableVolume={true}
+              videoRef={videoPlayerRef}
+              source={{uri: videoPath}}
+              paused={true}
+              disableBack={true}
+              toggleResizeModeOnFullscreen={true}
+              style={{
+                width: Dimensions.get('window').width,
+                height: Dimensions.get('window').height,
+              }}
+              showOnStart={true}
+              isFullscreen={true}
+              repeat={false}
+              onProgress={data => {
+                currentTime[0] = data.currentTime;
+              }}
+              onSeek={data => {
+                currentTime[0] = data.currentTime;
+              }}
+              onExitFullscreen={() => navigation.goBack()}
+              // disableSeekButtons={true}
+            />
+          </View>
+        </View>
       ) : (
         <View
           style={{
