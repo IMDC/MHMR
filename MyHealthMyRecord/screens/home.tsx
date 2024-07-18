@@ -53,7 +53,14 @@ const Home = () => {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Image style={{height: 240, width: 240}} source={logo} />
+        <Image
+          resizeMode="contain"
+          style={{
+            height: Styles.windowHeight * 0.2,
+            width: Styles.windowWidth * 0.2,
+          }}
+          source={logo}
+        />
 
         <Text
           style={{

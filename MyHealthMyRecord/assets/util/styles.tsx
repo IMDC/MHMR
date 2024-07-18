@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {Dimensions, StyleSheet, PixelRatio} from 'react-native';
 
 /*---------- COLOURS ----------*/
 
@@ -13,6 +14,9 @@ export const NavBarGrey = '#DEDEE0';
 // bottom navigation bar
 export const bottomNavBarHeight = 70;
 export const bottomNavIconSize = 35;
+
+export const windowWidth = Dimensions.get('window').width;
+export const windowHeight = Dimensions.get('window').height;
 
 
 function Styles() {
