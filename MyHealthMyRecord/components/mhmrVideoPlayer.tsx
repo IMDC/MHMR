@@ -417,6 +417,7 @@ const MHMRVideoPlayer = ({
               }}
               showOnStart={true}
               isFullscreen={true}
+              disableFullscreen={true}
               repeat={false}
               onProgress={data => {
                 currentTime[0] = data.currentTime;
