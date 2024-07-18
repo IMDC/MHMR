@@ -39,16 +39,20 @@ export const getAuth = async () => {
   }
 };
 
-// Function to handle the transcription API call
-const transcribeAudio = async (body: any, auth: string) => {
-  return axios.post(
-    'https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize',
-    body,
-    {
-      headers: {Authorization: auth, 'Content-Type': 'audio/wav'},
-      params: {continuous: true},
+const transcribeAudio = async (
+  body: any,
+  auth: string,
+  model = 'en-US_Multimedia',
+) => {
+  const url = `https://api.au-syd.speech-to-text.watson.cloud.ibm.com/instances/08735c5f-70ad-44a9-8cae-dc286520aa53/v1/recognize?model=${model}`;
+  return axios.post(url, body, {
+    headers: {Authorization: auth, 'Content-Type': 'audio/wav'},
+    params: {
+      continuous: true,
+      max_alternatives: 3,
+      interim_results: false, // Set to true to see partial results
     },
-  );
+  });
 };
 
 // Function to get transcription for a single audio file
@@ -57,6 +61,7 @@ export const getTranscript = async (
   _id: string,
   auth: string,
   realm: Realm,
+  model = 'en-US_Multimedia',
 ) => {
   try {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
@@ -67,7 +72,7 @@ export const getTranscript = async (
       return {_id, transcript: '', confidence: 0};
     }
     const bufferData = Buffer.from(data, 'base64');
-    const response = await transcribeAudio(bufferData, auth);
+    const response = await transcribeAudio(bufferData, auth, model);
     const transcript =
       response.data.results[0]?.alternatives[0]?.transcript || '';
     const confidence =
@@ -112,6 +117,3 @@ export const processMultipleTranscripts = async (videoFiles, realm, auth) => {
     });
   });
 };
-
-
-
