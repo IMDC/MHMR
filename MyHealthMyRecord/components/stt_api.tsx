@@ -109,6 +109,9 @@ const transcribeAudio = async (
           Authorization: auth,
           'Content-Type': 'audio/wav',
         },
+        params: {
+          continuous: true,
+        }
       },
     );
 
@@ -124,7 +127,8 @@ const transcribeAudio = async (
       const video = realm.objectForPrimaryKey('VideoData', objectId);
 
       if (video) {
-        video.transcript = transcript;
+        const cleaned_transcript = transcript.replace('%HESITATION', '');
+        video.transcript = transcript.replace(/%HESITATION/g, '');
         console.log('Transcript:', video.transcript);
         console.log('Updated video with transcript');
       } else {
