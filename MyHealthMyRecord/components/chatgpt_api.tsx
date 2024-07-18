@@ -127,7 +127,7 @@ export const sendVideoSetToChatGPT = async (
     console.log('Video Transcripts in Set:', videoTranscripts);
     const combinedTranscripts = videoTranscripts.join(' ');
     const transcriptWordCount = combinedTranscripts.split(' ').length;
-    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.3);
+    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2);
     // console.log('combinedTranscripts:', combinedTranscripts);
 
     try {
