@@ -118,8 +118,9 @@ const AnnotationMenu = () => {
         styles.container,
         {
           minHeight: Math.round(windowHeight),
-          paddingBottom: 275,
+          paddingBottom: 200,
           paddingTop: 10,
+          justifyContent: 'space-around',
         },
       ]}>
       <View
@@ -132,9 +133,6 @@ const AnnotationMenu = () => {
             <TextInput
               ref={titleInput}
               style={styles.input}
-              inputStyle={{
-                fontSize: Styles.windowWidth > 768 ? 35 : 24,
-              }}
               //value={text}
               defaultValue={title}
               onChangeText={value => setTitle(value)}
@@ -159,7 +157,7 @@ const AnnotationMenu = () => {
           <TouchableOpacity
             style={styles.titleContainer}
             onPress={() => setIsEditingTitle(true)}>
-            <ScrollView horizontal>
+            <ScrollView horizontal style={{}}>
               <Text style={styles.videoTitle}> {title} </Text>
             </ScrollView>
             <Icon
@@ -360,11 +358,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   videoTitle: {
-    fontSize: 35,
+    
+    fontSize: Styles.windowWidth > 768 ? 35 : 24,
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     color: 'black',
     flexShrink: 1,
+    textAlign: 'center',
   },
   iconStyle: {
     marginLeft: 10,
