@@ -20,7 +20,7 @@ const RecordVideo = () => {
   const camera: any = useRef(null);
   const videoPlayer: any = useRef();
   const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
-  const [deviceDir, setDeviceDir] = useState('back');
+  const [deviceDir, setDeviceDir] = useState('front');
   const devices: any = useCameraDevices(deviceType);
   //use front camera
   const device = devices[deviceDir];
