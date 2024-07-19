@@ -13,10 +13,12 @@ export const processVideos = async (realm, videos, showLoader, hideLoader) => {
       .filtered('isConverted == false AND isSelected == true');
 
     console.log(`Found ${selectedVideos.length} videos to process.`);
+    showLoader(`Processing ${selectedVideos.length} videos...`);
 
     // Handle all transcriptions in a batch
     await processMultipleTranscripts(selectedVideos, realm, auth);
     console.log('All transcriptions complete.');
+    showLoader('Analyzing videos...');
 
     // Proceed with further processing if necessary
     const analysisPromises = selectedVideos.map(video =>
@@ -25,6 +27,7 @@ export const processVideos = async (realm, videos, showLoader, hideLoader) => {
 
     await Promise.all(analysisPromises);
     console.log('All analyses complete.');
+    showLoader('Videos processed successfully.');
   } catch (error) {
     console.error('Failed during video processing:', error);
   } finally {
