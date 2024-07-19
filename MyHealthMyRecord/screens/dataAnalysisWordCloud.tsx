@@ -14,9 +14,21 @@ const DataAnalysisWordCloud = () => {
   const [dropdownValue, setDropdownValue] = useState(null);
 
   const dropdownData = [
-    {label: 'Palette 1', value: 'IBM'},
-    {label: 'Palette 2', value: 'Wong'},
-    {label: 'Palette 3', value: 'Tol'},
+    {
+      label: 'Palette 1',
+      value: 'IBM',
+      colors: ['#648FFF', '#785EF0', '#DC267F', '#FE6100', '#FFB000'],
+    },
+    {
+      label: 'Palette 2',
+      value: 'Wong',
+      colors: ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'],
+    },
+    {
+      label: 'Palette 3',
+      value: 'Tol',
+      colors: ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'],
+    },
   ];
 
   const IBM_palette = [
@@ -102,6 +114,26 @@ const DataAnalysisWordCloud = () => {
     }
   }, [dropdownValue, barData.dataNoStop]);
 
+  const renderDropdownItem = item => {
+    return (
+      <View style={{flexDirection: 'row', alignItems: 'center', padding: 10}}>
+        {item.colors.map((color, index) => (
+          <View
+            key={index}
+            style={{
+              width: 20,
+              height: 20,
+              backgroundColor: color,
+              marginHorizontal: 2,
+              borderRadius: 2,
+            }}
+          />
+        ))}
+        <Text style={{marginLeft: 10}}>{item.label}</Text>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView>
       {barData.dataNoStop.length > 0 ? (
@@ -148,6 +180,7 @@ const DataAnalysisWordCloud = () => {
                 labelField="label"
                 valueField="value"
                 value={dropdownValue}
+                renderItem={renderDropdownItem}
                 onChange={item => setDropdownValue(item.value)}
               />
             </View>
