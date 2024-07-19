@@ -255,7 +255,7 @@ const DataAnalysisLineGraph = () => {
               <TouchableOpacity
                 onPress={scrollLeft}
                 style={styles.iconContainer}>
-                <Icon name="arrow-left" size={60} color="black" />
+                <Icon name="keyboard-arrow-left" size={40} color="black" />
               </TouchableOpacity>
               <ScrollView horizontal={true} ref={scrollViewRef}>
                 {periodValue == '1' && (
@@ -812,7 +812,7 @@ const DataAnalysisLineGraph = () => {
               <TouchableOpacity
                 onPress={scrollRight}
                 style={[styles.iconContainer, {right: 0}]}>
-                <Icon name="arrow-right" size={60} color="black" />
+                <Icon name="keyboard-arrow-right" size={40} color="black" />
               </TouchableOpacity>
             </View>
 
@@ -938,37 +938,29 @@ const DataAnalysisLineGraph = () => {
               />
             </View>
             {/* daily */}
-      
-              <View id="segmentDay-dropdown">
-                <Text style={{fontSize: 20}}>Select segment option: </Text>
-                <Dropdown
-                  data={
-                    periodValue == '1'
-                      ? segementDayOptions
-                      : segementMonthOptions
-                  }
-                  style={{
-                    width: '100%',
-                    paddingHorizontal: 20,
-                    backgroundColor: '#DBDBDB',
-                    borderRadius: 22,
-                  }}
-                  labelField="label"
-                  valueField="value"
-                  value={
-                    periodValue == '1'
-                      ? segementDay
-                      : segementMonth
-                  }
-                  onChange={item => {
-                    periodValue == '1'
-                      ? setSegementDayValue(item.value)
-                      : setSegementMonthValue(item.value);
-                   
-                  }}
-                />
-              </View>
-           
+
+            <View id="segmentDay-dropdown">
+              <Text style={{fontSize: 20}}>Select segment option: </Text>
+              <Dropdown
+                data={
+                  periodValue == '1' ? segementDayOptions : segementMonthOptions
+                }
+                style={{
+                  width: '100%',
+                  paddingHorizontal: 20,
+                  backgroundColor: '#DBDBDB',
+                  borderRadius: 22,
+                }}
+                labelField="label"
+                valueField="value"
+                value={periodValue == '1' ? segementDay : segementMonth}
+                onChange={item => {
+                  periodValue == '1'
+                    ? setSegementDayValue(item.value)
+                    : setSegementMonthValue(item.value);
+                }}
+              />
+            </View>
           </View>
         </View>
 
@@ -1010,9 +1002,7 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-    position: 'absolute',
-    top: '50%',
-    zIndex: 10,
+    justifyContent: 'center',
   },
 
   modalView: {
