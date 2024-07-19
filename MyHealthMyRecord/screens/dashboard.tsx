@@ -341,7 +341,7 @@ function Dashboard() {
                         <Text style={{fontSize: 20}}>
                           {video.datetimeRecorded?.toLocaleString()}
                         </Text>
-                        <View style={{flexDirection: 'row'}}>
+                        <ScrollView horizontal={true} style={{flexDirection: 'row'}}>
                           {video.keywords.map((key: string) => {
                             if (JSON.parse(key).checked) {
                               return (
@@ -378,7 +378,7 @@ function Dashboard() {
                               );
                             }
                           })}
-                        </View>
+                        </ScrollView>
                       </View>
                       <View></View>
                       <View style={styles.buttonContainer}>

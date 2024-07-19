@@ -232,619 +232,625 @@ const DataAnalysisLineGraph = () => {
 
   return (
     <ScrollView>
-      <View style={{paddingBottom:'10%'}}>
-      <View >
+      <View style={{paddingBottom: '10%'}}>
         <View>
-          <Text style={{padding: 20, fontSize: 20}}>
-            Word count of "{wordLabel}" over time
-          </Text>
-          <View
-            id="linegraph"
-            style={{height: 600, padding: 20, flexDirection: 'row'}}>
-            <YAxis
-              data={freqDayArray[date]}
-              yAccessor={({item}) => item.value}
-              style={{marginBottom: xAxisHeight}}
-              contentInset={verticalContentInset}
-              svg={axesSvg}
-              numberOfTicks={Math.max(
-                ...freqDayArray[date]?.map(item => item.value),
-              )}
-            />
-
-            <TouchableOpacity onPress={scrollLeft} style={styles.iconContainer}>
-              <Icon name="arrow-left" size={60} color="black" />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} ref={scrollViewRef}>
-              {periodValue == '1' && (
-                <View
-                  style={{
-                    flex: 1,
-                    marginLeft: 10,
-                    marginRight: 10,
-                    width:
-                      windowWidth > 768 ? windowWidth * 1.5 : windowWidth * 2,
-                  }}>
-                  <LineChart
-                    style={{flex: 1}}
-                    data={freqDayArray[date]}
-                    yAccessor={({item}) => item.value}
-                    xScale={scale.scaleTime}
-                    contentInset={verticalContentInset}
-                    svg={{
-                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                      strokeWidth: 5,
-                    }}>
-                    <Svg belowChart={true}>
-                      {segementDay == '12' && (
-                        <Rect
-                          x="0%"
-                          y="0"
-                          width="52%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                      )}
-                      {segementDay == '6' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                      {segementDay == '3' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="26%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="77%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                      {segementDay == '1' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="5.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="9.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="18%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="26.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="35%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="43.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="60.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="69%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="77.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="86%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="94.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                    </Svg>
-                    <Grid />
-                    <Dots />
-                  </LineChart>
-                  <XAxis
-                    style={{marginHorizontal: -40, height: xAxisHeight}}
-                    data={freqDayArray[0]}
-                    scale={scale.scaleTime}
-                    formatLabel={(value, index) =>
-                      hours[freqDayArray[0][index].label]
-                    }
-                    labelStyle={{margin: 5}}
-                    contentInset={{left: 50, right: 50}}
-                    svg={axesSvg}
-                  />
-                </View>
-              )}
-              {periodValue == '2' && (
-                <View
-                  style={{
-                    flex: 1,
-                    marginLeft: 10,
-                    marginRight: 10,
-                    width: windowWidth * 1.5,
-                  }}>
-                  <LineChart
-                    style={{flex: 1}}
-                    data={freqWeekArray[date]}
-                    yAccessor={({item}) => item.value}
-                    xScale={scale.scaleTime}
-                    contentInset={verticalContentInset}
-                    svg={{
-                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                      strokeWidth: 5,
-                    }}>
-                    <Svg belowChart={true}>
-                      {segementDay == '12' && (
-                        <Rect
-                          x="0%"
-                          y="0"
-                          width="52%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                      )}
-                      {segementDay == '6' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                      {segementDay == '3' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="26%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="77%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                      {segementDay == '1' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="5.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="9.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="18%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="26.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="35%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="43.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="60.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="69%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="77.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="86%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="94.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                    </Svg>
-                    <Grid />
-                    <Dots />
-                  </LineChart>
-                  <XAxis
-                    style={{marginHorizontal: -40, height: xAxisHeight}}
-                    data={freqWeekArray[0]}
-                    scale={scale.scaleTime}
-                    formatLabel={(value, index) =>
-                      weeks[freqWeekArray[0][index].label]
-                    }
-                    labelStyle={{margin: 5}}
-                    contentInset={{left: 50, right: 50}}
-                    svg={axesSvg}
-                  />
-                </View>
-              )}
-              {periodValue == '3' && (
-                <View
-                  style={{
-                    flex: 1,
-                    marginLeft: 10,
-                    marginRight: 10,
-                    width: windowWidth * 1.5,
-                  }}>
-                  <LineChart
-                    style={{flex: 1}}
-                    data={freqMonthArray[date]}
-                    yAccessor={({item}) => item.value}
-                    xScale={scale.scaleTime}
-                    contentInset={verticalContentInset}
-                    svg={{
-                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                      strokeWidth: 5,
-                    }}>
-                    <Svg belowChart={true}>
-                      {segementDay == '12' && (
-                        <Rect
-                          x="0%"
-                          y="0"
-                          width="52%"
-                          height="100%"
-                          fill="rgb(194, 200, 209)"
-                        />
-                      )}
-                      {segementDay == '6' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="26%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                      {segementDay == '3' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="26%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="77%"
-                            y="0"
-                            width="13%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                      {segementDay == '1' && (
-                        <>
-                          <Rect
-                            x="0%"
-                            y="0"
-                            width="5.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="9.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="18%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="26.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="35%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="43.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="52%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="60.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="69%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="77.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="86%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                          <Rect
-                            x="94.5%"
-                            y="0"
-                            width="4.25%"
-                            height="100%"
-                            fill="rgb(194, 200, 209)"
-                          />
-                        </>
-                      )}
-                    </Svg>
-                    <Grid />
-                    <Dots />
-                  </LineChart>
-                  <XAxis
-                    style={{marginHorizontal: -40, height: xAxisHeight}}
-                    data={freqMonthArray[0]}
-                    scale={scale.scaleTime}
-                    formatLabel={(value, index) =>
-                      months[freqMonthArray[0][index].label]
-                    }
-                    labelStyle={{margin: 5}}
-                    contentInset={{left: 50, right: 50}}
-                    svg={axesSvg}
-                  />
-                </View>
-              )}
-            </ScrollView>
-            <TouchableOpacity
-              onPress={scrollRight}
-              style={[styles.iconContainer, {right: 0}]}>
-              <Icon name="arrow-right" size={60} color="black" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={{height: '10%', width: '100%'}}>
+          <View>
+            <Text style={{padding: 20, fontSize: 20}}>
+              Word count of "{wordLabel}" over time
+            </Text>
             <View
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-evenly',
-              }}>
-              <Button
-                disabled={date == 0 ? true : false}
-                buttonStyle={styles.btnStyle}
-                title="Previous period"
-                color={Styles.MHMRBlue}
-                radius={50}
-                icon={{
-                  name: 'arrow-left',
-                  type: 'font-awesome',
-                  size: 15,
-                  color: 'white',
-                }}
-                onPress={() => {
-                  if (date > 0) {
-                    setDateValue(date - 1);
-                  } else {
-                    console.log('There is no previous date');
-                  }
-                }}
+              id="linegraph"
+              style={{height: 600, padding: 20, flexDirection: 'row'}}>
+              <YAxis
+                data={freqDayArray[date]}
+                yAccessor={({item}) => item.value}
+                style={{marginBottom: xAxisHeight}}
+                contentInset={verticalContentInset}
+                svg={axesSvg}
+                numberOfTicks={Math.max(
+                  ...freqDayArray[date]?.map(item => item.value),
+                )}
               />
-              {periodValue == '1' && (
+
+              <TouchableOpacity
+                onPress={scrollLeft}
+                style={styles.iconContainer}>
+                <Icon name="arrow-left" size={60} color="black" />
+              </TouchableOpacity>
+              <ScrollView horizontal={true} ref={scrollViewRef}>
+                {periodValue == '1' && (
+                  <View
+                    style={{
+                      flex: 1,
+                      marginLeft: 10,
+                      marginRight: 10,
+                      width:
+                        windowWidth > 768 ? windowWidth * 1.5 : windowWidth * 2,
+                    }}>
+                    <LineChart
+                      style={{flex: 1}}
+                      data={freqDayArray[date]}
+                      yAccessor={({item}) => item.value}
+                      xScale={scale.scaleTime}
+                      contentInset={verticalContentInset}
+                      svg={{
+                        stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                        strokeWidth: 5,
+                      }}>
+                      <Svg belowChart={true}>
+                        {segementDay == '12' && (
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="52%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        )}
+                        {segementDay == '6' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="26%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="26%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                        {segementDay == '3' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="26%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="77%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                        {segementDay == '1' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="5.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="9.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="18%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="26.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="35%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="43.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="60.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="69%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="77.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="86%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="94.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                      </Svg>
+                      <Grid />
+                      <Dots />
+                    </LineChart>
+                    <XAxis
+                      style={{marginHorizontal: -40, height: xAxisHeight}}
+                      data={freqDayArray[0]}
+                      scale={scale.scaleTime}
+                      formatLabel={(value, index) =>
+                        hours[freqDayArray[0][index].label]
+                      }
+                      labelStyle={{margin: 5}}
+                      contentInset={{left: 50, right: 50}}
+                      svg={axesSvg}
+                    />
+                  </View>
+                )}
+                {periodValue == '2' && (
+                  <View
+                    style={{
+                      flex: 1,
+                      marginLeft: 10,
+                      marginRight: 10,
+                      width: windowWidth * 1.5,
+                    }}>
+                    <LineChart
+                      style={{flex: 1}}
+                      data={freqWeekArray[date]}
+                      yAccessor={({item}) => item.value}
+                      xScale={scale.scaleTime}
+                      contentInset={verticalContentInset}
+                      svg={{
+                        stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                        strokeWidth: 5,
+                      }}>
+                      <Svg belowChart={true}>
+                        {segementDay == '12' && (
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="52%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        )}
+                        {segementDay == '6' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="26%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="26%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                        {segementDay == '3' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="26%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="77%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                        {segementDay == '1' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="5.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="9.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="18%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="26.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="35%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="43.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="60.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="69%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="77.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="86%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="94.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                      </Svg>
+                      <Grid />
+                      <Dots />
+                    </LineChart>
+                    <XAxis
+                      style={{marginHorizontal: -40, height: xAxisHeight}}
+                      data={freqWeekArray[0]}
+                      scale={scale.scaleTime}
+                      formatLabel={(value, index) =>
+                        weeks[freqWeekArray[0][index].label]
+                      }
+                      labelStyle={{margin: 5}}
+                      contentInset={{left: 50, right: 50}}
+                      svg={axesSvg}
+                    />
+                  </View>
+                )}
+                {periodValue == '3' && (
+                  <View
+                    style={{
+                      flex: 1,
+                      marginLeft: 10,
+                      marginRight: 10,
+                      width: windowWidth * 1.5,
+                    }}>
+                    <LineChart
+                      style={{flex: 1}}
+                      data={freqMonthArray[date]}
+                      yAccessor={({item}) => item.value}
+                      xScale={scale.scaleTime}
+                      contentInset={verticalContentInset}
+                      svg={{
+                        stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                        strokeWidth: 5,
+                      }}>
+                      <Svg belowChart={true}>
+                        {segementDay == '12' && (
+                          <Rect
+                            x="0%"
+                            y="0"
+                            width="52%"
+                            height="100%"
+                            fill="rgb(194, 200, 209)"
+                          />
+                        )}
+                        {segementDay == '6' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="26%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="26%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                        {segementDay == '3' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="26%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="77%"
+                              y="0"
+                              width="13%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                        {segementDay == '1' && (
+                          <>
+                            <Rect
+                              x="0%"
+                              y="0"
+                              width="5.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="9.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="18%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="26.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="35%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="43.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="52%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="60.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="69%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="77.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="86%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                            <Rect
+                              x="94.5%"
+                              y="0"
+                              width="4.25%"
+                              height="100%"
+                              fill="rgb(194, 200, 209)"
+                            />
+                          </>
+                        )}
+                      </Svg>
+                      <Grid />
+                      <Dots />
+                    </LineChart>
+                    <XAxis
+                      style={{marginHorizontal: -40, height: xAxisHeight}}
+                      data={freqMonthArray[0]}
+                      scale={scale.scaleTime}
+                      formatLabel={(value, index) =>
+                        months[freqMonthArray[0][index].label]
+                      }
+                      labelStyle={{margin: 5}}
+                      contentInset={{left: 50, right: 50}}
+                      svg={axesSvg}
+                    />
+                  </View>
+                )}
+              </ScrollView>
+              <TouchableOpacity
+                onPress={scrollRight}
+                style={[styles.iconContainer, {right: 0}]}>
+                <Icon name="arrow-right" size={60} color="black" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{height: '10%', width: '100%'}}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-evenly',
+                }}>
+                <Button
+                  disabled={date == 0 ? true : false}
+                  buttonStyle={styles.btnStyle}
+                  title="Previous period"
+                  color={Styles.MHMRBlue}
+                  radius={50}
+                  icon={{
+                    name: 'arrow-left',
+                    type: 'font-awesome',
+                    size: 15,
+                    color: 'white',
+                  }}
+                  onPress={() => {
+                    if (date > 0) {
+                      setDateValue(date - 1);
+                    } else {
+                      console.log('There is no previous date');
+                    }
+                  }}
+                />
+
                 <Dropdown
-                  data={dateOptionsForHours}
+                  data={
+                    periodValue == '1'
+                      ? dateOptionsForHours
+                      : dateOptionsForMonths
+                  }
                   maxHeight={300}
                   style={{
                     width: '40%',
@@ -861,104 +867,60 @@ const DataAnalysisLineGraph = () => {
                     setDateValue(item.value);
                   }}
                 />
-              )}
-
-              {periodValue == '3' && (
-                <Dropdown
-                  data={dateOptionsForMonths}
-                  maxHeight={300}
-                  style={{
-                    width: 400,
-                    paddingHorizontal: 20,
-                    backgroundColor: '#DBDBDB',
-                    borderRadius: 22,
+                <Button
+                  disabled={
+                    (periodValue == '1' &&
+                      date < dateOptionsForHours.length - 1) ||
+                    (periodValue == '2' &&
+                      date < dateOptionsForWeeks.length - 1) ||
+                    (periodValue == '3' &&
+                      date < dateOptionsForMonths.length - 1)
+                      ? false
+                      : true
+                  }
+                  title="Next period"
+                  buttonStyle={styles.btnStyle}
+                  color={Styles.MHMRBlue}
+                  radius={50}
+                  iconPosition="right"
+                  icon={{
+                    name: 'arrow-right',
+                    type: 'font-awesome',
+                    size: 15,
+                    color: 'white',
                   }}
-                  placeholderStyle={{fontSize: 20}}
-                  selectedTextStyle={{fontSize: 20}}
-                  labelField="label"
-                  valueField="value"
-                  value={date}
-                  onChange={item => {
-                    setDateValue(item.value);
+                  onPress={() => {
+                    if (
+                      date < dateOptionsForHours.length - 1 ||
+                      date < dateOptionsForMonths.length - 1
+                    ) {
+                      setDateValue(date + 1);
+                    } else {
+                      console.log('There is no next date');
+                    }
                   }}
                 />
-              )}
-
-              <Button
-                disabled={
-                  (periodValue == '1' &&
-                    date < dateOptionsForHours.length - 1) ||
-                  (periodValue == '2' &&
-                    date < dateOptionsForWeeks.length - 1) ||
-                  (periodValue == '3' && date < dateOptionsForMonths.length - 1)
-                    ? false
-                    : true
-                }
-                title="Next period"
-                buttonStyle={styles.btnStyle}
-                color={Styles.MHMRBlue}
-                radius={50}
-                iconPosition="right"
-                icon={{
-                  name: 'arrow-right',
-                  type: 'font-awesome',
-                  size: 15,
-                  color: 'white',
-                }}
-                onPress={() => {
-                  if (
-                    date < dateOptionsForHours.length - 1 ||
-                    date < dateOptionsForMonths.length - 1
-                  ) {
-                    setDateValue(date + 1);
-                  } else {
-                    console.log('There is no next date');
-                  }
-                }}
-              />
+              </View>
             </View>
           </View>
         </View>
-      </View>
-      <View>
-        <Text style={{fontSize: 25, marginLeft: '5%', marginTop: 5}}>
-          Filter and sort
-        </Text>
+        <View>
+          <Text style={{fontSize: 25, marginLeft: '5%', marginTop: 5}}>
+            Filter and sort
+          </Text>
 
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-evenly',
-          }}>
-          <View id="period-dropdown">
-            <Text style={{fontSize: 20}}>Select period: </Text>
-            <Dropdown
-              data={periodOptions}
-              maxHeight={300}
-              style={{
-                width: '100%',
-                paddingHorizontal: 20,
-                backgroundColor: '#DBDBDB',
-                borderRadius: 22,
-              }}
-              labelField="label"
-              valueField="value"
-              value={periodValue}
-              onChange={item => {
-                setPeriodValue(item.value);
-                console.log('item.label', item.label);
-                console.log('item.value', item.value);
-              }}
-            />
-          </View>
-          {/* daily */}
-          {periodValue == '1' && (
-            <View id="segmentDay-dropdown">
-              <Text style={{fontSize: 20}}>Select segment option: </Text>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-evenly',
+            }}>
+            <View id="period-dropdown">
+              <Text style={{fontSize: 20}}>Select period: </Text>
               <Dropdown
-                data={segementDayOptions}
+                data={periodOptions}
+                maxHeight={300}
                 style={{
                   width: '100%',
                   paddingHorizontal: 20,
@@ -967,83 +929,76 @@ const DataAnalysisLineGraph = () => {
                 }}
                 labelField="label"
                 valueField="value"
-                value={segementDay}
+                value={periodValue}
                 onChange={item => {
-                  setSegementDayValue(item.value);
+                  setPeriodValue(item.value);
+                  console.log('item.label', item.label);
+                  console.log('item.value', item.value);
                 }}
               />
             </View>
-          )}
-          {periodValue == '2' && (
-            <View id="segmentWeek-dropdown">
-              <Text style={{fontSize: 20}}>Select segment option: </Text>
-              <Dropdown
-                data={segementWeekOptions}
-                style={{
-                  width: 300,
-                  paddingHorizontal: 20,
-                  backgroundColor: '#DBDBDB',
-                  borderRadius: 22,
-                }}
-                labelField="label"
-                valueField="value"
-                value={segementWeek}
-                onChange={item => {
-                  setSegementWeekValue(item.value);
-                }}
-              />
-            </View>
-          )}
-          {periodValue == '3' && (
-            <View id="segmentMonth-dropdown">
-              <Text style={{fontSize: 20}}>Select segment option: </Text>
-              <Dropdown
-                data={segementMonthOptions}
-                style={{
-                  width: 300,
-                  paddingHorizontal: 20,
-                  backgroundColor: '#DBDBDB',
-                  borderRadius: 22,
-                }}
-                labelField="label"
-                valueField="value"
-                value={segementMonth}
-                onChange={item => {
-                  setSegementMonthValue(item.value);
-                }}
-              />
-            </View>
-          )}
+            {/* daily */}
+      
+              <View id="segmentDay-dropdown">
+                <Text style={{fontSize: 20}}>Select segment option: </Text>
+                <Dropdown
+                  data={
+                    periodValue == '1'
+                      ? segementDayOptions
+                      : segementMonthOptions
+                  }
+                  style={{
+                    width: '100%',
+                    paddingHorizontal: 20,
+                    backgroundColor: '#DBDBDB',
+                    borderRadius: 22,
+                  }}
+                  labelField="label"
+                  valueField="value"
+                  value={
+                    periodValue == '1'
+                      ? segementDay
+                      : segementMonth
+                  }
+                  onChange={item => {
+                    periodValue == '1'
+                      ? setSegementDayValue(item.value)
+                      : setSegementMonthValue(item.value);
+                   
+                  }}
+                />
+              </View>
+           
+          </View>
         </View>
-      </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalText}>View video(s) with this data</Text>
-          {videoIDs.map((video, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {
-                navigation.navigate('Fullscreen Video', {
-                  id: video?._id,
-                });
-                setModalVisible(false);
-              }}>
-              <Text style={styles.videoIDText}>{video?.title}</Text>
-            </TouchableOpacity>
-          ))}
-          <Button
-            title="Close"
-            color={Styles.MHMRBlue}
-            radius={50}
-            onPress={() => setModalVisible(false)}
-          />
-        </View>
-      </Modal>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>View video(s) with this data</Text>
+            {videoIDs.map((video, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  navigation.navigate('Fullscreen Video', {
+                    id: video?._id,
+                  });
+                  setModalVisible(false);
+                }}>
+                <Text style={styles.videoIDText}>{video?.title}</Text>
+              </TouchableOpacity>
+            ))}
+            <Button
+              title="Close"
+              color={Styles.MHMRBlue}
+              radius={50}
+              onPress={() => setModalVisible(false)}
+            />
+          </View>
+        </Modal>
       </View>
     </ScrollView>
   );

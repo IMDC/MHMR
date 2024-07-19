@@ -41,7 +41,7 @@ import {sendToChatGPT} from '../components/chatgpt_api';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useLoader} from '../components/loaderProvider';
 import {processVideos} from '../components/processVideos';
-import { windowWidth } from '../assets/util/styles';
+import {windowWidth} from '../assets/util/styles';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const {showLoader, hideLoader} = useLoader();
@@ -158,6 +158,7 @@ const ViewRecordings = ({selected, setSelected}) => {
     setVisible2(!visible2);
     console.log('visible2:', visible2);
   };
+
 
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -645,7 +646,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                       }}>
                       <Text
                         style={{
-                          textAlign: 'right',
+                          textAlign: 'center',
                           width: '100%',
                           paddingTop: 5,
                           fontSize: 18,
@@ -895,7 +896,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                                 selectedEmotionLabels,
                               );
 
-
                               const filteredVideos = videoData.filter(
                                 (video: {emotionStickers: any[]}) => {
                                   return selectedEmotionLabels.some(label => {
@@ -957,7 +957,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                     <View
                       style={[viewValue == 1 ? null : styles.gridItem]}
                       key={video._id.toString()}>
-                      <View style={[viewValue == 1 ? styles.container : null]}>
+                      <View
+                        style={[
+                          viewValue == 1
+                            ? styles.container
+                            : {justifyContent: 'flex-end'},
+                        ]}>
                         <View
                           style={[
                             viewValue == 1
@@ -1090,12 +1095,10 @@ const ViewRecordings = ({selected, setSelected}) => {
                             </Text>
                             {/* <Text>{video.filename}</Text> */}
                           </View>
-                          <View style={{ height: 35 }}>
-            
+                          <View>
                             <ScrollView
                               horizontal={true}
                               style={{
-                                flex: 1,
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
                               }}>
@@ -1169,14 +1172,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                               return null; // If sentiment has already been displayed, return null
                             })}
                           </ScrollView>
-
-                          {selected ? (
-                            <View
-                              style={[
-                                viewValue == 1
-                                  ? styles.buttonContainerList
-                                  : styles.buttonContainerGrid,
-                              ]}>
+                          {selected && viewValue == 1 ? (
+                            <View style={styles.buttonContainerList}>
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 title="Review"
@@ -1217,6 +1214,48 @@ const ViewRecordings = ({selected, setSelected}) => {
                           )}
                         </View>
                       </View>
+                      {selected && viewValue == 2 ? (
+                        <View style={styles.buttonContainerGrid}>
+                          <Button
+                            buttonStyle={styles.btnStyle}
+                            title="Review"
+                            radius={50}
+                            onPress={() =>
+                              navigation.navigate('Review Video Markups', {
+                                id: video._id,
+                              })
+                            }
+                          />
+                          <View />
+                          <Button
+                            buttonStyle={styles.btnStyle}
+                            radius={50}
+                            title={
+                              windowWidth > 768
+                                ? 'Add or edit markups'
+                                : 'Edit markups'
+                            }
+                            onPress={() =>
+                              navigation.navigate('Add or Edit Markups', {
+                                id: video._id,
+                              })
+                            }
+                          />
+                          <View />
+                          <Button
+                            buttonStyle={styles.btnStyle}
+                            radius={50}
+                            title={
+                              windowWidth > 768 ? 'Delete video' : 'Del. video'
+                            }
+                            onPress={() =>
+                              handleDeleteVideo(video, video.filename)
+                            }
+                          />
+                        </View>
+                      ) : (
+                        <View></View>
+                      )}
                     </View>
                   );
                 })
@@ -1304,7 +1343,6 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-
   },
 
   gridItem: {
@@ -1312,6 +1350,7 @@ const styles = StyleSheet.create({
     width: '50%',
     borderColor: 'black',
     borderWidth: StyleSheet.hairlineWidth,
+    justifyContent: 'space-evenly',
   },
   gridThumbnail: {
     height: 240,
@@ -1339,10 +1378,11 @@ const styles = StyleSheet.create({
   },
   buttonContainerGrid: {
     flex: 1,
+    paddingBottom: 5,
     flexDirection: 'row',
-    justifyContent: windowWidth > 768 ? 'space-evenly' : 'center',
-    flexWrap: windowWidth > 768 ? 'nowrap' : 'wrap',
-
+    justifyContent: windowWidth > 768 ? 'space-evenly' : 'space-evenly',
+    flexWrap: windowWidth > 768 ? 'nowrap' : 'nowrap',
+    alignItems: 'flex-end',
   },
   thumbnail: {
     height: 240,
