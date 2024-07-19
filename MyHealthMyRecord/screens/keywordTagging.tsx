@@ -68,7 +68,7 @@ const KeywordTagging = () => {
     const keywordSchema: any = {
       id: new Realm.BSON.ObjectId(),
       title: newKeyword,
-      checked: false,
+      checked: true,
     };
     parsedKeywords.push(keywordSchema);
     const newKeyword_s: any[] = [];
