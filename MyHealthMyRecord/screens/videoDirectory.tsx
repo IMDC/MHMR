@@ -431,13 +431,13 @@ const ViewRecordings = ({selected, setSelected}) => {
                 paddingHorizontal: 10,
               }}
               radius={50}
-              buttonStyle={[styles.btnStyle, {}]}
+              buttonStyle={[styles.btnStyle]}
               // onPress={handleSend}>
               onPress={() => {
                 setSendToVideoSet(1);
                 handleSendToDashboard(selectedVideos);
               }}>
-              <Text style={{color: 'white', fontSize: 25}}>
+              <Text style={{color: 'white', fontSize: 18}}>
                 Add {selectedVideos.size} video(s) to current video set
               </Text>
             </Button>
@@ -452,7 +452,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 setSendToVideoSet(2);
                 handleSendToDashboard(selectedVideos);
               }}>
-              <Text style={{color: 'white', fontSize: 25}}>
+              <Text style={{color: 'white', fontSize: 18}}>
                 Create new video set
               </Text>
             </Button>
