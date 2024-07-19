@@ -210,7 +210,6 @@ const ViewRecordings = ({selected, setSelected}) => {
     {label: 'Pain', value: 5},
     {label: 'Fever', value: 6},
     {label: 'Wellness', value: 7},
-    {label: 'Other', value: 8},
   ];
 
   const nameData = [
@@ -225,7 +224,6 @@ const ViewRecordings = ({selected, setSelected}) => {
     {label: 'Park', value: 4},
     {label: 'Indoors', value: 5},
     {label: 'Outdoors', value: 6},
-    {label: 'Other', value: 7},
   ];
 
   const emotionData = [
