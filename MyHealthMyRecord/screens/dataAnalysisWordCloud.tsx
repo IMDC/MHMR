@@ -4,6 +4,7 @@ import {Alert, SafeAreaView, Text, View} from 'react-native';
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { windowHeight, windowWidth } from '../assets/util/styles';
 
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -117,8 +118,8 @@ const DataAnalysisWordCloud = () => {
                   minFont: 40,
                   maxFont: 120,
                   fontOffset: 1,
-                  width: 700,
-                  height: 800,
+                  width: windowWidth * 0.5,
+                  height: windowHeight * 0.65,
                   fontFamily: 'Arial',
                 }}
               />
@@ -136,10 +137,10 @@ const DataAnalysisWordCloud = () => {
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
               <Dropdown
                 data={dropdownData}
-                maxHeight={400}
+                maxHeight={150}
                 style={{
                   height: 50,
-                  width: 600,
+                  width: '80%',
                   paddingHorizontal: 20,
                   backgroundColor: '#DBDBDB',
                   borderRadius: 22,

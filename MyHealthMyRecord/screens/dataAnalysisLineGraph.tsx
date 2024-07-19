@@ -19,6 +19,7 @@ import * as Styles from '../assets/util/styles';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useRealm} from '../models/VideoData';
+import {transparent} from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 const DataAnalysisLineGraph = () => {
   const [previousButtonState, setPreviousButtonState] = useState(false);
@@ -230,8 +231,9 @@ const DataAnalysisLineGraph = () => {
   };
 
   return (
-    <View>
-      <View style={{height: '87%'}}>
+    <ScrollView>
+      <View style={{paddingBottom:'10%'}}>
+      <View >
         <View>
           <Text style={{padding: 20, fontSize: 20}}>
             Word count of "{wordLabel}" over time
@@ -250,9 +252,7 @@ const DataAnalysisLineGraph = () => {
               )}
             />
 
-            <TouchableOpacity
-              onPress={scrollLeft}
-              style={{justifyContent: 'center'}}>
+            <TouchableOpacity onPress={scrollLeft} style={styles.iconContainer}>
               <Icon name="arrow-left" size={60} color="black" />
             </TouchableOpacity>
             <ScrollView horizontal={true} ref={scrollViewRef}>
@@ -262,7 +262,8 @@ const DataAnalysisLineGraph = () => {
                     flex: 1,
                     marginLeft: 10,
                     marginRight: 10,
-                    width: windowWidth * 1.5,
+                    width:
+                      windowWidth > 768 ? windowWidth * 1.5 : windowWidth * 2,
                   }}>
                   <LineChart
                     style={{flex: 1}}
@@ -808,7 +809,7 @@ const DataAnalysisLineGraph = () => {
             </ScrollView>
             <TouchableOpacity
               onPress={scrollRight}
-              style={{justifyContent: 'center'}}>
+              style={[styles.iconContainer, {right: 0}]}>
               <Icon name="arrow-right" size={60} color="black" />
             </TouchableOpacity>
           </View>
@@ -823,6 +824,7 @@ const DataAnalysisLineGraph = () => {
               }}>
               <Button
                 disabled={date == 0 ? true : false}
+                buttonStyle={styles.btnStyle}
                 title="Previous period"
                 color={Styles.MHMRBlue}
                 radius={50}
@@ -845,7 +847,7 @@ const DataAnalysisLineGraph = () => {
                   data={dateOptionsForHours}
                   maxHeight={300}
                   style={{
-                    width: 400,
+                    width: '40%',
                     paddingHorizontal: 20,
                     backgroundColor: '#DBDBDB',
                     borderRadius: 22,
@@ -893,6 +895,7 @@ const DataAnalysisLineGraph = () => {
                     : true
                 }
                 title="Next period"
+                buttonStyle={styles.btnStyle}
                 color={Styles.MHMRBlue}
                 radius={50}
                 iconPosition="right"
@@ -915,103 +918,102 @@ const DataAnalysisLineGraph = () => {
               />
             </View>
           </View>
+        </View>
+      </View>
+      <View>
+        <Text style={{fontSize: 25, marginLeft: '5%', marginTop: 5}}>
+          Filter and sort
+        </Text>
 
-          <Text style={{fontSize: 25, marginLeft: 20, marginTop: 20}}>
-            Filter and sort
-          </Text>
-
-          <View style={{height: '10%', width: '100%'}}>
-            <View
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-evenly',
+          }}>
+          <View id="period-dropdown">
+            <Text style={{fontSize: 20}}>Select period: </Text>
+            <Dropdown
+              data={periodOptions}
+              maxHeight={300}
               style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-evenly',
-              }}>
-              <View id="period-dropdown">
-                <Text style={{fontSize: 20}}>Select period: </Text>
-                <Dropdown
-                  data={periodOptions}
-                  maxHeight={300}
-                  style={{
-                    width: 300,
-                    paddingHorizontal: 20,
-                    backgroundColor: '#DBDBDB',
-                    borderRadius: 22,
-                  }}
-                  labelField="label"
-                  valueField="value"
-                  value={periodValue}
-                  onChange={item => {
-                    setPeriodValue(item.value);
-                    console.log('item.label', item.label);
-                    console.log('item.value', item.value);
-                  }}
-                />
-              </View>
-              {/* daily */}
-              {periodValue == '1' && (
-                <View id="segmentDay-dropdown">
-                  <Text style={{fontSize: 20}}>Select segment option: </Text>
-                  <Dropdown
-                    data={segementDayOptions}
-                    style={{
-                      width: 300,
-                      paddingHorizontal: 20,
-                      backgroundColor: '#DBDBDB',
-                      borderRadius: 22,
-                    }}
-                    labelField="label"
-                    valueField="value"
-                    value={segementDay}
-                    onChange={item => {
-                      setSegementDayValue(item.value);
-                    }}
-                  />
-                </View>
-              )}
-              {periodValue == '2' && (
-                <View id="segmentWeek-dropdown">
-                  <Text style={{fontSize: 20}}>Select segment option: </Text>
-                  <Dropdown
-                    data={segementWeekOptions}
-                    style={{
-                      width: 300,
-                      paddingHorizontal: 20,
-                      backgroundColor: '#DBDBDB',
-                      borderRadius: 22,
-                    }}
-                    labelField="label"
-                    valueField="value"
-                    value={segementWeek}
-                    onChange={item => {
-                      setSegementWeekValue(item.value);
-                    }}
-                  />
-                </View>
-              )}
-              {periodValue == '3' && (
-                <View id="segmentMonth-dropdown">
-                  <Text style={{fontSize: 20}}>Select segment option: </Text>
-                  <Dropdown
-                    data={segementMonthOptions}
-                    style={{
-                      width: 300,
-                      paddingHorizontal: 20,
-                      backgroundColor: '#DBDBDB',
-                      borderRadius: 22,
-                    }}
-                    labelField="label"
-                    valueField="value"
-                    value={segementMonth}
-                    onChange={item => {
-                      setSegementMonthValue(item.value);
-                    }}
-                  />
-                </View>
-              )}
-            </View>
+                width: '100%',
+                paddingHorizontal: 20,
+                backgroundColor: '#DBDBDB',
+                borderRadius: 22,
+              }}
+              labelField="label"
+              valueField="value"
+              value={periodValue}
+              onChange={item => {
+                setPeriodValue(item.value);
+                console.log('item.label', item.label);
+                console.log('item.value', item.value);
+              }}
+            />
           </View>
+          {/* daily */}
+          {periodValue == '1' && (
+            <View id="segmentDay-dropdown">
+              <Text style={{fontSize: 20}}>Select segment option: </Text>
+              <Dropdown
+                data={segementDayOptions}
+                style={{
+                  width: '100%',
+                  paddingHorizontal: 20,
+                  backgroundColor: '#DBDBDB',
+                  borderRadius: 22,
+                }}
+                labelField="label"
+                valueField="value"
+                value={segementDay}
+                onChange={item => {
+                  setSegementDayValue(item.value);
+                }}
+              />
+            </View>
+          )}
+          {periodValue == '2' && (
+            <View id="segmentWeek-dropdown">
+              <Text style={{fontSize: 20}}>Select segment option: </Text>
+              <Dropdown
+                data={segementWeekOptions}
+                style={{
+                  width: 300,
+                  paddingHorizontal: 20,
+                  backgroundColor: '#DBDBDB',
+                  borderRadius: 22,
+                }}
+                labelField="label"
+                valueField="value"
+                value={segementWeek}
+                onChange={item => {
+                  setSegementWeekValue(item.value);
+                }}
+              />
+            </View>
+          )}
+          {periodValue == '3' && (
+            <View id="segmentMonth-dropdown">
+              <Text style={{fontSize: 20}}>Select segment option: </Text>
+              <Dropdown
+                data={segementMonthOptions}
+                style={{
+                  width: 300,
+                  paddingHorizontal: 20,
+                  backgroundColor: '#DBDBDB',
+                  borderRadius: 22,
+                }}
+                labelField="label"
+                valueField="value"
+                value={segementMonth}
+                onChange={item => {
+                  setSegementMonthValue(item.value);
+                }}
+              />
+            </View>
+          )}
         </View>
       </View>
 
@@ -1042,11 +1044,22 @@ const DataAnalysisLineGraph = () => {
           />
         </View>
       </Modal>
-    </View>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  btnStyle: {
+    width: Styles.windowWidth * 0.22,
+  },
+
+  iconContainer: {
+    position: 'absolute',
+    top: '50%',
+    zIndex: 10,
+  },
+
   modalView: {
     margin: 20,
     backgroundColor: 'white',

@@ -60,7 +60,7 @@ const ReviewAnnotations = () => {
     <ScrollView>
       <View style={styles.container}>
         <Text style={styles.titleStyle}>{video.title}</Text>
-        <View style={styles.row}>
+        <ScrollView horizontal={true}  style={styles.row}>
           {video.keywords.map((key: string) => {
             if (JSON.parse(key).checked) {
               return (
@@ -97,7 +97,7 @@ const ReviewAnnotations = () => {
               );
             }
           })}
-        </View>
+        </ScrollView>
       </View>
 
       <View>
@@ -113,7 +113,7 @@ const ReviewAnnotations = () => {
 
       <View style={{paddingTop: 30, marginBottom: 40}}>
         <Button
-          buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
+          buttonStyle={{width: 200, height: 65, alignSelf: 'center'}}
           color="#1C3EAA"
           radius={50}
           title="Save changes"

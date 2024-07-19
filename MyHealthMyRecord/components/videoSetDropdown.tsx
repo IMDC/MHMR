@@ -124,13 +124,14 @@ const VideoSetDropdown = ({
         maxHeight={400}
         style={{
           height: 50,
-          width: 600,
+          width: '80%',
           paddingHorizontal: 20,
           backgroundColor: '#DBDBDB',
           borderRadius: 22,
         }}
         placeholderStyle={{fontSize: 22}}
         selectedTextStyle={{fontSize: 22}}
+        placeholder="Select video set"
         activeColor="#FFC745"
         labelField="label"
         valueField="value"
@@ -163,7 +164,12 @@ const VideoSetDropdown = ({
         </View>
       ) : (
         <View>
-          <View style={{flexDirection: 'row', paddingTop: 10}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingTop: 10,
+              justifyContent: 'center',
+            }}>
             {saveVideoSetBtn && (
               <Button
                 disabled={
@@ -175,11 +181,7 @@ const VideoSetDropdown = ({
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{
-                  width: 300,
-                  marginHorizontal: 30,
-                  marginVertical: 15,
-                }}
+                containerStyle={styles.btnContainer}
               />
             )}
             {clearVideoSetBtn && (
@@ -191,15 +193,16 @@ const VideoSetDropdown = ({
                 onPress={clearVideoSet}
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{
-                  width: 300,
-                  marginHorizontal: 30,
-                  marginVertical: 15,
-                }}
+                containerStyle={styles.btnContainer}
               />
             )}
           </View>
-          <View style={{flexDirection: 'row', paddingTop: 10}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingTop: 10,
+              justifyContent: 'center',
+            }}>
             {manageSetBtn && (
               <Button
                 disabled={!currentVideoSet || videoSetValue == null}
@@ -211,11 +214,7 @@ const VideoSetDropdown = ({
                 }
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{
-                  width: 300,
-                  marginHorizontal: 30,
-                  marginVertical: 10,
-                }}
+                containerStyle={styles.btnContainer}
               />
             )}
             {deleteAllVideoSetsBtn && (
@@ -224,17 +223,14 @@ const VideoSetDropdown = ({
                 onPress={deleteAllVideoSets}
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{
-                  width: 300,
-                  marginHorizontal: 30,
-                  marginVertical: 10,
-                }}
+                containerStyle={styles.btnContainer}
               />
             )}
           </View>
           {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
             <View style={{paddingBottom: 15}}>
-              <Text style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>
+              <Text
+                style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>
                 Warning! Current video set is not saved. Click 'Save video set'
                 to save it.{' '}
               </Text>
@@ -245,5 +241,14 @@ const VideoSetDropdown = ({
     </View>
   );
 };
+
+const styles = {
+  btnContainer: {
+    width: '35%',
+    marginHorizontal: 30,
+    marginVertical: '1%',
+  },
+};
+
 
 export default VideoSetDropdown;

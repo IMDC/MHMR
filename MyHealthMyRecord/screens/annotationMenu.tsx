@@ -1,5 +1,3 @@
-/*import React from 'react';
-import type { PropsWithChildren } from 'react';*/
 import {
   ParamListBase,
   useIsFocused,
@@ -10,17 +8,14 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useRef, useState} from 'react';
 import {
   LogBox,
-  NativeSyntheticEvent,
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
-  TextInputFocusEventData,
   View,
   useWindowDimensions,
 } from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
-import {VideoData, useObject, useRealm} from '../models/VideoData';
+import {useObject, useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 
 const AnnotationMenu = () => {
@@ -37,31 +32,6 @@ const AnnotationMenu = () => {
   const titleInput: any = useRef(null);
 
   const [title, setTitle] = React.useState(video.title);
-
-  const [keywordButtonColour, setKeywordButtonColour] = React.useState(
-    Styles.MHMRLightBlue,
-  );
-  const [keywordButtonType, setKeywordButtonType] =
-    React.useState('add-outline');
-  const [locationButtonColour, setLocationButtonColour] = React.useState(
-    Styles.MHMRLightBlue,
-  );
-  const [locationButtonType, setLocationButtonType] =
-    React.useState('add-outline');
-  const [commentButtonColour, setCommentButtonColour] = React.useState(
-    Styles.MHMRLightBlue,
-  );
-  const [commentButtonType, setCommentButtonType] =
-    React.useState('add-outline');
-  const [emotionButtonColour, setEmotionButtonColour] = React.useState(
-    Styles.MHMRLightBlue,
-  );
-  const [emotionButtonType, setEmotionButtonType] =
-    React.useState('add-outline');
-  const [painButtonType, setPainButtonType] = React.useState('add-outline');
-  const [painButtonColour, setPainButtonColour] = React.useState(
-    Styles.MHMRLightBlue,
-  );
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const updateVideoTitle = () => {
@@ -128,81 +98,54 @@ const AnnotationMenu = () => {
     ]);
   });
 
-  useEffect(() => {
-    if (isFocused) {
-      if (checkIfKeywordsAnnotated()) {
-        setKeywordButtonColour(Styles.MHMRBlue);
-        setKeywordButtonType('checkmark-outline');
-      } else {
-        setKeywordButtonColour(Styles.MHMRLightBlue);
-        setKeywordButtonType('add-outline');
-      }
-      if (checkIfLocationsAnnotated()) {
-        setLocationButtonColour(Styles.MHMRBlue);
-        setLocationButtonType('checkmark-outline');
-      } else {
-        setLocationButtonColour(Styles.MHMRLightBlue);
-        setLocationButtonType('add-outline');
-      }
-      if (checkIfCommentsAnnotated()) {
-        setCommentButtonColour(Styles.MHMRBlue);
-        setCommentButtonType('checkmark-outline');
-      } else {
-        setCommentButtonColour(Styles.MHMRLightBlue);
-        setCommentButtonType('add-outline');
-      }
-      if (checkIfEmotionsAnnotated()) {
-        setEmotionButtonColour(Styles.MHMRBlue);
-        setEmotionButtonType('checkmark-outline');
-      } else {
-        setEmotionButtonColour(Styles.MHMRLightBlue);
-        setEmotionButtonType('add-outline');
-      }
-      if (checkIfPainscaleAnnotated() || checkIfNumericPainScaleAnnotated()) {
-        setPainButtonColour(Styles.MHMRBlue);
-        setPainButtonType('checkmark-outline');
-      } else {
-        setPainButtonColour(Styles.MHMRLightBlue);
-        setPainButtonType('add-outline');
-      }
-    }
-  }, [
-    keywordButtonColour,
-    keywordButtonType,
-    locationButtonColour,
-    locationButtonType,
-    commentButtonColour,
-    commentButtonType,
-    isFocused,
-  ]);
-
   const windowHeight = useWindowDimensions().height;
 
   return (
     <SafeAreaView
       style={[
         styles.container,
-        {minHeight: Math.round(windowHeight), paddingBottom: 275},
+        {
+          minHeight: Math.round(windowHeight),
+          paddingBottom: 275,
+          paddingTop: 10,
+        },
       ]}>
-      <Input
-        ref={titleInput}
-        inputStyle={{fontSize: 35}}
-        //value={text}
-        defaultValue={title}
-        onChangeText={value => setTitle(value)}
-        onSubmitEditing={() => updateVideoTitle()}
-      />
-      <Text style={{fontSize: 24}}>
-        Select how you would like to start annotating your video:
-      </Text>
-      <View style={{paddingTop: 45}}>
+      <View style={{flexDirection: 'column', paddingHorizontal: '8%'}}>
+        <Input
+          ref={titleInput}
+          inputStyle={{fontSize: Styles.windowWidth > 768 ? 35 : 24}}
+          //value={text}
+          defaultValue={title}
+          onChangeText={value => setTitle(value)}
+          onSubmitEditing={() => updateVideoTitle()}
+        />
+        <Text style={{fontSize: Styles.windowWidth > 768 ? 26 : 18}}>
+          Select how you would like to start annotating your video:
+        </Text>
+      </View>
+
+      <View
+        style={{
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          paddingLeft: '20%',
+        }}>
         <View style={styles.selectionContainer}>
           <Icon
             reverse
-            name={painButtonType}
-            size={40}
+            name={
+              checkIfPainscaleAnnotated() || checkIfNumericPainScaleAnnotated()
+                ? 'checkmark-outline'
+                : 'add-outline'
+            }
+            size={Styles.windowHeight * 0.033}
             type="ionicon"
-            color={painButtonColour}
+            color={
+              checkIfPainscaleAnnotated() || checkIfNumericPainScaleAnnotated()
+                ? Styles.MHMRBlue
+                : Styles.MHMRLightBlue
+            }
             onPress={() => navigation.navigate('Painscale', {id})}
           />
           <Text style={styles.textStyle}>Adjust painscale</Text>
@@ -210,10 +153,16 @@ const AnnotationMenu = () => {
         <View style={styles.selectionContainer}>
           <Icon
             reverse
-            name={keywordButtonType}
-            size={40}
+            name={
+              checkIfKeywordsAnnotated() ? 'checkmark-outline' : 'add-outline'
+            }
+            size={Styles.windowHeight * 0.033}
             type={'ionicon'}
-            color={keywordButtonColour}
+            color={
+              checkIfKeywordsAnnotated()
+                ? Styles.MHMRBlue
+                : Styles.MHMRLightBlue
+            }
             onPress={() => navigation.navigate('Keywords', {id})}
           />
           <Text style={styles.textStyle}>Add keywords</Text>
@@ -221,10 +170,16 @@ const AnnotationMenu = () => {
         <View style={styles.selectionContainer}>
           <Icon
             reverse
-            name={locationButtonType}
-            size={40}
+            name={
+              checkIfLocationsAnnotated() ? 'checkmark-outline' : 'add-outline'
+            }
+            size={Styles.windowHeight * 0.033}
             type="ionicon"
-            color={locationButtonColour}
+            color={
+              checkIfLocationsAnnotated()
+                ? Styles.MHMRBlue
+                : Styles.MHMRLightBlue
+            }
             onPress={() => navigation.navigate('Location', {id})}
           />
           <Text style={styles.textStyle}>Add location</Text>
@@ -232,10 +187,16 @@ const AnnotationMenu = () => {
         <View style={styles.selectionContainer}>
           <Icon
             reverse
-            name={emotionButtonType}
-            size={40}
+            name={
+              checkIfEmotionsAnnotated() ? 'checkmark-outline' : 'add-outline'
+            }
+            size={Styles.windowHeight * 0.033}
             type="ionicon"
-            color={emotionButtonColour}
+            color={
+              checkIfEmotionsAnnotated()
+                ? Styles.MHMRBlue
+                : Styles.MHMRLightBlue
+            }
             onPress={() => {
               navigation.navigate('Emotion Tagging', {
                 id,
@@ -247,10 +208,16 @@ const AnnotationMenu = () => {
         <View style={styles.selectionContainer}>
           <Icon
             reverse
-            name={commentButtonType}
-            size={40}
+            name={
+              checkIfCommentsAnnotated() ? 'checkmark-outline' : 'add-outline'
+            }
+            size={Styles.windowHeight * 0.033}
             type="ionicon"
-            color={commentButtonColour}
+            color={
+              checkIfCommentsAnnotated()
+                ? Styles.MHMRBlue
+                : Styles.MHMRLightBlue
+            }
             onPress={() =>
               navigation.navigate('Text Comments', {
                 id,
@@ -262,8 +229,8 @@ const AnnotationMenu = () => {
       </View>
 
       <Button
-        containerStyle={{paddingTop: 100}}
-        buttonStyle={{width: 220, height: 75, alignSelf: 'center'}}
+        buttonStyle={{width: 200, height: 65, alignSelf: 'center'}}
+        size="lg"
         color="#1C3EAA"
         radius={50}
         title="Review markups"
@@ -280,8 +247,8 @@ const AnnotationMenu = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 75,
+    justifyContent: 'space-between',
+
   },
   textStyle: {
     alignSelf: 'center',

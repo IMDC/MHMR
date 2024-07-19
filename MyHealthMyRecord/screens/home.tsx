@@ -47,76 +47,65 @@ const Home = () => {
       )}
       <View
         style={{
-          // paddingTop: 50,
-          // padding: 100,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <Image
-          resizeMode="contain"
-          style={{
-            height: Styles.windowHeight * 0.2,
-            width: Styles.windowWidth * 0.2,
-          }}
-          source={logo}
-        />
-
-        <Text
-          style={{
-            fontSize: 44,
-            alignSelf: 'center',
-            color: 'black',
-            fontFamily: 'Poppins-Light',
-          }}>
-          MyHealthMyRecord
-        </Text>
-      </View>
-      <View
-        style={{
-          paddingTop: 250,
-          flexDirection: 'row',
-          alignItems: 'center',
+          flexDirection: 'column',
+          flex: 1,
           justifyContent: 'space-evenly',
         }}>
-        <View>
+        <View
+          id="title"
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Image
+            resizeMode="contain"
+            style={{
+              height: Styles.windowWidth * 0.2,
+              width: Styles.windowWidth * 0.2,
+            }}
+            source={logo}
+          />
+
+          <Text
+            style={{
+              fontSize: 44,
+              alignSelf: 'center',
+              color: 'black',
+              fontFamily: 'Poppins-Light',
+            }}>
+            MyHealthMyRecord
+          </Text>
+        </View>
+
+        <View
+          id="record button"
+          style={{
+            flex: 2,
+            paddingBottom: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Icon
             reverse
             name="videocam-outline"
-            size={60}
+            size={Styles.windowHeight * 0.05}
             type="ionicon"
             color="#1C3EAA"
             onPress={() => navigation.navigate('Record Video')}
           />
           <Text
             style={{
-              paddingTop: 15,
+              paddingTop: 5,
               fontSize: 22,
               textAlign: 'center',
+
               color: 'black',
             }}>
             Record a video
           </Text>
         </View>
-        {/* <View>
-          <Icon
-            reverse
-            name="image-outline"
-            size={60}
-            type="ionicon"
-            color="#1C3EAA"
-            onPress={() => navigation.navigate('View Recordings')}
-          />
-          <Text
-            style={{
-              paddingTop: 15,
-              fontSize: 22,
-              textAlign: 'center',
-              color: 'black',
-            }}>
-            View recordings
-          </Text>
-        </View> */}
       </View>
     </>
   );

@@ -21,6 +21,7 @@ import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
+import {windowHeight, windowWidth} from '../assets/util/styles';
 
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
 const angry = require('../assets/images/emojis/angry.png');
@@ -376,7 +377,10 @@ const MHMRVideoPlayer = ({
       };
       if (this.state.showDraggable) {
         return (
-          <View style={{position: 'absolute', paddingRight: 60}}>
+          <View
+            style={{
+              flexDirection: 'row',
+            }}>
             <Animated.View
               {...this.panResponder.panHandlers}
               style={[panStyle, styles.circle, {opacity: this.state.opacity}]}>
@@ -389,7 +393,11 @@ const MHMRVideoPlayer = ({
 
     render() {
       return (
-        <View style={{width: '20%', alignItems: 'center'}}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+          }}>
           {this.renderDraggable()}
         </View>
       );
@@ -397,7 +405,7 @@ const MHMRVideoPlayer = ({
   }
 
   return (
-    <View>
+    <ScrollView>
       {isFullscreen ? (
         <View style={{height: '100%', width: '100%'}}>
           <View
@@ -725,7 +733,7 @@ const MHMRVideoPlayer = ({
           </ScrollView>
         </SafeAreaView>
       </ScrollView>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -734,11 +742,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   draggableContainer: {
-    paddingBottom: 140,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    width: Dimensions.get('window').width,
+    // width: '100%',
     paddingHorizontal: 25,
   },
   draggableItem: {
@@ -746,11 +750,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ballContainer: {
-    height: 40,
+    paddingTop: '4%'
+    // height: '5%',
   },
   circle: {
-    width: 120,
-    height: 120,
+    // resizeMode: 'contain',
+    width: windowWidth * 0.18,
+    height: windowWidth * 0.18,
   },
   rightContainer: {
     flex: 1,
@@ -796,8 +802,9 @@ const styles = StyleSheet.create({
     marginRight: Dimensions.get('window').width / 1.5,
   },
   sticker: {
-    width: 120,
-    height: 120,
+    resizeMode: 'contain',
+    width: windowWidth * 0.18,
+    height: windowWidth * 0.18,
   },
   overlayTextForComment: {
     flex: 1,
