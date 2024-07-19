@@ -333,13 +333,7 @@ const RecordVideo = () => {
     {id: new Realm.BSON.ObjectID(), value: 3, title: 'School', checked: false},
     {id: new Realm.BSON.ObjectID(), value: 4, title: 'Park', checked: false},
     {id: new Realm.BSON.ObjectID(), value: 5, title: 'Indoors', checked: false},
-    {
-      id: new Realm.BSON.ObjectID(),
-      value: 6,
-      title: 'Outdoors',
-      checked: false,
-    },
-    {id: new Realm.BSON.ObjectID(), value: 7, title: 'Other', checked: false},
+    {id: new Realm.BSON.ObjectID(), value: 6, title: 'Outdoors', checked: false},
   ];
 
   const painscaleRef = [
