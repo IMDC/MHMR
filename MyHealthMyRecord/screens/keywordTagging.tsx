@@ -170,8 +170,8 @@ const KeywordTagging = () => {
       <Button
         radius={50}
         buttonStyle={{
-          width: 220,
-          height: 75,
+          width: 200,
+          height: 65,
           marginTop: 50,
           alignSelf: 'center',
         }}

@@ -20,8 +20,8 @@ import VideoSetDropdown from '../components/videoSetDropdown';
 import * as Styles from '../assets/util/styles';
 import {ObjectId} from 'bson';
 import {useDropdownContext} from '../components/videoSetProvider';
-import { useLoader } from '../components/loaderProvider';
-import { processVideos } from '../components/processVideos';
+import {useLoader} from '../components/loaderProvider';
+import {processVideos} from '../components/processVideos';
 
 function Dashboard() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -43,9 +43,9 @@ function Dashboard() {
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
   var selectedSetVideos = [];
 
- const handleProcessVideos = async () => {
-   await processVideos(realm, videos, showLoader, hideLoader);
- };
+  const handleProcessVideos = async () => {
+    await processVideos(realm, videos, showLoader, hideLoader);
+  };
 
   const {
     handleChange,
@@ -108,13 +108,12 @@ function Dashboard() {
         return updatedVideoIDs.some(videoID => objectId.equals(videoID));
       });
 
-
       // add these videos to the current video set if there is a selected video set
       realm.write(() => {
         currentVideoSet.videoIDs = Array.from(
           new Set([...currentVideoSet?.videoIDs, ...selectedVideosArray]),
         );
-      
+
         const updatedVideosInSet = videoData.filter(video => {
           new Set(currentVideoSet?.videoIDs).has(video._id.toString());
         });
@@ -127,10 +126,8 @@ function Dashboard() {
         console.log('*'.repeat(40));
         console.log('selectedSetVideos:', selectedSetVideos);
         console.log('*'.repeat(40));
-
       });
 
-      
       setSendToVideoSet(0);
     } else if (sendToVideoSet == 2) {
       // Send to new video set
@@ -190,7 +187,6 @@ function Dashboard() {
       setVideoSetDropdown([]);
     });
   };
-
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
@@ -259,17 +255,15 @@ function Dashboard() {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <View style={{flex: 1}}>
-            <VideoSetDropdown
-              videoSetDropdown={videoSetDropdown}
-              videoSets={realm.objects('VideoSet')}
-              saveVideoSetBtn={true}
-              clearVideoSetBtn={true}
-              deleteAllVideoSetsBtn={true}
-              manageSetBtn={true}
-              onVideoSetChange={handleVideoSelectionChange}
-            />
-          </View>
+          <VideoSetDropdown
+            videoSetDropdown={videoSetDropdown}
+            videoSets={realm.objects('VideoSet')}
+            saveVideoSetBtn={true}
+            clearVideoSetBtn={true}
+            deleteAllVideoSetsBtn={true}
+            manageSetBtn={true}
+            onVideoSetChange={handleVideoSelectionChange}
+          />
         </View>
         {videos !== null || videos !== undefined
           ? videos.map(video => {
@@ -347,7 +341,7 @@ function Dashboard() {
                         <Text style={{fontSize: 20}}>
                           {video.datetimeRecorded?.toLocaleString()}
                         </Text>
-                        <View style={{flexDirection: 'row'}}>
+                        <ScrollView horizontal={true} style={{flexDirection: 'row'}}>
                           {video.keywords.map((key: string) => {
                             if (JSON.parse(key).checked) {
                               return (
@@ -384,7 +378,7 @@ function Dashboard() {
                               );
                             }
                           })}
-                        </View>
+                        </ScrollView>
                       </View>
                       <View></View>
                       <View style={styles.buttonContainer}>

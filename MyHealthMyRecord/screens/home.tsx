@@ -15,78 +15,97 @@ import {
   Alert,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
+import {useNetwork} from '../components/networkProvider';
 //import test from '../assets/images/MHMRLogo_NOBG.png';
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
+import * as Styles from '../assets/util/styles';
 
 const Home = () => {
+  const {online} = useNetwork();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <>
-      <View
-        style={{
-          // paddingTop: 50,
-          // padding: 100,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <Image style={{height: 240, width: 240}} source={logo} />
-
-        <Text
+      {!online && (
+        <View
           style={{
-            fontSize: 44,
-            alignSelf: 'center',
-            color: 'black',
-            fontFamily: 'Poppins-Light',
+            paddingHorizontal: 10,
+            paddingTop: 10,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
           }}>
-          MyHealthMyRecord
-        </Text>
-      </View>
+          <Icon
+            name="alert-circle-outline"
+            size={24}
+            type="ionicon"
+            color={Styles.MHMRBlue}
+            // style={{width: Styles.bottomNavIconSize}}
+          />
+          <Text style={{fontSize: 18, color: Styles.MHMRBlue}}>
+            You are offline.
+          </Text>
+        </View>
+      )}
       <View
         style={{
-          paddingTop: 250,
-          flexDirection: 'row',
-          alignItems: 'center',
+          flexDirection: 'column',
+          flex: 1,
           justifyContent: 'space-evenly',
         }}>
-        <View>
+        <View
+          id="title"
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Image
+            resizeMode="contain"
+            style={{
+              height: Styles.windowWidth * 0.2,
+              width: Styles.windowWidth * 0.2,
+            }}
+            source={logo}
+          />
+
+          <Text
+            style={{
+              fontSize: 44,
+              alignSelf: 'center',
+              color: 'black',
+              fontFamily: 'Poppins-Light',
+            }}>
+            MyHealthMyRecord
+          </Text>
+        </View>
+
+        <View
+          id="record button"
+          style={{
+            flex: 2,
+            paddingBottom: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Icon
             reverse
             name="videocam-outline"
-            size={60}
+            size={Styles.windowHeight * 0.05}
             type="ionicon"
             color="#1C3EAA"
             onPress={() => navigation.navigate('Record Video')}
           />
           <Text
             style={{
-              paddingTop: 15,
+              paddingTop: 5,
               fontSize: 22,
               textAlign: 'center',
+
               color: 'black',
             }}>
             Record a video
           </Text>
         </View>
-        {/* <View>
-          <Icon
-            reverse
-            name="image-outline"
-            size={60}
-            type="ionicon"
-            color="#1C3EAA"
-            onPress={() => navigation.navigate('View Recordings')}
-          />
-          <Text
-            style={{
-              paddingTop: 15,
-              fontSize: 22,
-              textAlign: 'center',
-              color: 'black',
-            }}>
-            View recordings
-          </Text>
-        </View> */}
       </View>
     </>
   );

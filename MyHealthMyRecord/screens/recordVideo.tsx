@@ -163,8 +163,8 @@ const RecordVideo = () => {
         console.log('timeeee: ', timeOfRecording[0]);
         displayTime[1](timeOfRecording[0]);
 
-        // 5 second warning
-        if (timeOfRecording[0] >= maxLength[0] - 5)
+        // 10 second warning
+        if (timeOfRecording[0] >= maxLength[0] - 10)
           timeWarningMessage[1](
             maxLength[0] - timeOfRecording[0] + ' more seconds',
           );

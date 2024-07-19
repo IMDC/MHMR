@@ -18,24 +18,23 @@ async function connectToChatGPT(inputText) {
       }),
     });
     const data = await response.json();
-    // console.log('Response from ChatGPT API:', data); // Log the response
     return data;
   } catch (error) {
     console.error('Error:', error);
+    return null; // Handle null in calling function
   }
 }
 
 export const sendToChatGPT = async (
-  textFileName: string,
-  transcript: string,
-  keywords: string,
-  locations: string,
-  realm: Realm,
-  _id: string,
-  reportFormat: string,
+  textFileName,
+  transcript,
+  keywords,
+  locations,
+  realm,
+  _id,
+  reportFormat,
 ) => {
-  let returnOutput = [];
-  if (transcript === '') {
+  if (!transcript) {
     console.log('No transcript found. Saving empty transcript.');
     realm.write(() => {
       const objectId = new Realm.BSON.ObjectId(_id);
@@ -45,78 +44,62 @@ export const sendToChatGPT = async (
         video.transcript = '';
       }
     });
-    return; // Exit the function early
-  } else {
-    try {
-      const transcriptWordCount = transcript.split(' ').length;
-      const maxSummaryWords = Math.ceil(transcriptWordCount * 0.1);
-
-      let inputTextBullet = `Provide bullet points of the main topics discussed in this video transcript: (${transcript}). Format this in bullet points using \u2022`;
-      let inputTextSentence = `Summarize and overview the main topics covered in this video transcript: (${transcript}). Format this summary in sentences.`;
-      let sentimentInputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
-
-      const sentimentData = await connectToChatGPT(sentimentInputText);
-      if (sentimentData.choices && sentimentData.choices.length > 0) {
-        const sentiment = sentimentData.choices[0].message.content.trim();
-
-        realm.write(() => {
-          const objectId = new Realm.BSON.ObjectId(_id);
-          const video = realm.objectForPrimaryKey('VideoData', objectId);
-          if (video) {
-            console.log('Sentiment:', sentiment);
-            video.sentiment = sentiment;
-          }
-        });
-      }
-
-      const dataSentence = await connectToChatGPT(inputTextSentence);
-      if (dataSentence.choices && dataSentence.choices.length > 0) {
-        const outputText = dataSentence.choices[0].message.content;
-
-        realm.write(() => {
-          const objectId = new Realm.BSON.ObjectId(_id); // Ensure _id is a Realm ObjectId
-          const video = realm.objectForPrimaryKey('VideoData', objectId);
-
-          if (video) {
-            video.isConverted = true; // Mark the video as converted
-            video.tsOutputSentence = outputText;
-            console.log('individual transcript output in sentence form:', video.tsOutputSentence);
-            returnOutput.push(outputText);
-          } else {
-            console.log('No video found with ID:', _id);
-          }
-        });
-      } else {
-        throw new Error('Invalid response from ChatGPT API');
-      }
-
-      const dataBullet = await connectToChatGPT(inputTextBullet);
-      if (dataBullet.choices && dataBullet.choices.length > 0) {
-        const outputText = dataBullet.choices[0].message.content;
-
-        realm.write(() => {
-          const objectId = new Realm.BSON.ObjectId(_id); // Ensure _id is a Realm ObjectId
-          const video = realm.objectForPrimaryKey('VideoData', objectId);
-
-          if (video) {
-            video.isConverted = true; // Mark the video as converted
-            video.tsOutputBullet = outputText;
-            console.log('individual transcript output in bullet form:', video.tsOutputBullet);
-            returnOutput.push(outputText);
-          } else {
-            console.log('No video found with ID:', _id);
-          }
-        });
-      } else {
-        throw new Error('Invalid response from ChatGPT API');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      console.log('error found in sendToChatGPT function');
-    }
-    // console.log('returnOutput:', returnOutput);
-    return returnOutput;
+    return [];
   }
+
+  const inputTexts = [
+    `Provide bullet points of the main topics discussed in this video transcript: "${transcript}". Format this in bullet points using \u2022`,
+    `Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
+    `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`,
+  ];
+
+  const results = await Promise.all(
+    inputTexts.map(text => connectToChatGPT(text)),
+  );
+
+  const updates = results.map((result, index) => {
+    if (result && result.choices && result.choices.length > 0) {
+      const content = result.choices[0].message.content;
+      return {index, content: content.trim()};
+    }
+    return {index, content: null};
+  });
+
+  realm.write(() => {
+    const objectId = new Realm.BSON.ObjectId(_id);
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    if (video) {
+      updates.forEach(update => {
+        if (update.content !== null) {
+          if (update.index === 0) video.tsOutputBullet = update.content;
+          if (update.index === 1) video.tsOutputSentence = update.content;
+          if (update.index === 2) video.sentiment = update.content;
+        }
+      });
+      video.isConverted = true;
+    }
+  });
+
+  return updates.filter(u => u.content !== null).map(u => u.content);
+};
+
+export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
+  const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
+  const data = await connectToChatGPT(inputText);
+  if (data.choices && data.choices.length > 0) {
+    const sentiment = data.choices[0].message.content.trim();
+
+    realm.write(() => {
+      const objectId = new Realm.BSON.ObjectId(videoId);
+      const video = realm.objectForPrimaryKey('VideoData', objectId);
+      if (video) {
+        video.sentiment = sentiment;
+      }
+    });
+
+    return sentiment;
+  }
+  return 'Neutral';
 };
 
 export const sendVideoSetToChatGPT = async (
@@ -141,20 +124,17 @@ export const sendVideoSetToChatGPT = async (
     console.log('No videos selected for summarization');
     return ['', ''];
   } else {
-    console.log(
-      'Video Transcripts in Set:',
-      videoTranscripts,
-    );
+    console.log('Video Transcripts in Set:', videoTranscripts);
     const combinedTranscripts = videoTranscripts.join(' ');
     const transcriptWordCount = combinedTranscripts.split(' ').length;
-    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.3);
+    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2);
     // console.log('combinedTranscripts:', combinedTranscripts);
 
     try {
       // let inputTextBullet = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
       // let inputTextSentence = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
-       let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
-       let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+      let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+      let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
       const dataSentence = await connectToChatGPT(inputTextSentence);
       if (dataSentence.choices && dataSentence.choices.length > 0) {
         const outputText = dataSentence.choices[0].message.content;
@@ -195,23 +175,4 @@ export const sendVideoSetToChatGPT = async (
     console.log('Video Set returnOutput:', returnOutput);
     return returnOutput;
   }
-};
-
-export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
-  const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
-  const data = await connectToChatGPT(inputText);
-  if (data.choices && data.choices.length > 0) {
-    const sentiment = data.choices[0].message.content.trim();
-
-    realm.write(() => {
-      const objectId = new Realm.BSON.ObjectId(videoId);
-      const video = realm.objectForPrimaryKey('VideoData', objectId);
-      if (video) {
-        video.sentiment = sentiment;
-      }
-    });
-
-    return sentiment;
-  }
-  return 'Neutral';
 };

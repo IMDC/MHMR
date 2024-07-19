@@ -560,7 +560,7 @@ const DataAnalysis = () => {
             maxHeight={400}
             style={{
               height: 50,
-              width: 600,
+              width: '80%',
               paddingHorizontal: 20,
               backgroundColor: '#DBDBDB',
               borderRadius: 22,
