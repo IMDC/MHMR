@@ -21,7 +21,12 @@ import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
-import {windowHeight, windowWidth} from '../assets/util/styles';
+import {
+  bottomNavBarHeight,
+  screenHeight,
+  windowHeight,
+  windowWidth,
+} from '../assets/util/styles';
 
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
 const angry = require('../assets/images/emojis/angry.png');
@@ -409,7 +414,7 @@ const MHMRVideoPlayer = ({
   return (
     <ScrollView>
       {isFullscreen ? (
-        <View style={{height: '100%', width: '100%'}}>
+        <View style={{height: windowHeight, width: '100%'}}>
           <View
             style={{
               flex: 1,
@@ -419,12 +424,8 @@ const MHMRVideoPlayer = ({
               videoRef={videoPlayerRef}
               source={{uri: videoPath}}
               paused={true}
-              disableBack={true}
+              disableBack={false}
               toggleResizeModeOnFullscreen={true}
-              style={{
-                width: Dimensions.get('window').width,
-                height: Dimensions.get('window').height,
-              }}
               showOnStart={true}
               isFullscreen={true}
               disableFullscreen={true}
@@ -435,7 +436,7 @@ const MHMRVideoPlayer = ({
               onSeek={data => {
                 currentTime[0] = data.currentTime;
               }}
-              onExitFullscreen={() => navigation.goBack()}
+              onBack={() => navigation.goBack()}
               // disableSeekButtons={true}
             />
           </View>
@@ -823,7 +824,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ballContainer: {
-    paddingTop: '4%'
+    paddingTop: '4%',
     // height: '5%',
   },
   circle: {
