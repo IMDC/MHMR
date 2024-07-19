@@ -116,7 +116,8 @@ const DataAnalysisWordCloud = () => {
 
   const renderDropdownItem = item => {
     return (
-      <View style={{flexDirection: 'row', alignItems: 'center', padding: 10}}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+        <Text style={{ marginRight: 10 }}>{item.label}</Text>
         {item.colors.map((color, index) => (
           <View
             key={index}
@@ -129,7 +130,6 @@ const DataAnalysisWordCloud = () => {
             }}
           />
         ))}
-        <Text style={{marginLeft: 10}}>{item.label}</Text>
       </View>
     );
   };
