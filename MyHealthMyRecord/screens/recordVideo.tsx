@@ -256,7 +256,7 @@ const RecordVideo = () => {
     const saveDate = date.split(' GMT-');
     console.log(date, saveDate);
     try {
-      createVideoData(fileName, videoSource.duration, saveDate[0]);
+      const videoId = createVideoData(fileName, videoSource.duration, saveDate[0]);
       RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
         .then(async () => {
           console.log('File moved.');
@@ -267,7 +267,8 @@ const RecordVideo = () => {
 
           if (ReturnCode.isSuccess(returnCode)) {
             Alert.alert('Your recording has been saved');
-            navigation.navigate('Home');
+            hideLoader();
+            navigation.navigate('Manage Videos', { screen: 'Add or Edit Markups', params: { id: videoId } });
             // if isConverted is for audio and not STT
             // video.isConverted = true;
           } else if (ReturnCode.isCancel(returnCode)) {
@@ -275,10 +276,6 @@ const RecordVideo = () => {
           } else {
             Alert.alert('Conversion failed', 'There was an issue converting your video to audio.');
           }
-          hideLoader();
-          Alert.alert('Your recording has been saved');
-          navigation.navigate('Home');
-          // getTranscript(fileName, saveDate[0], 'Bearer ' + getAuth());
         })
         .catch(err => {
           Alert.alert(
@@ -377,31 +374,35 @@ const RecordVideo = () => {
     duration: number,
     saveDate: string,
   ) => {
+    const videoData = {
+      _id: new Realm.BSON.ObjectID(),
+      datetimeRecorded: new Date(),
+      title: saveDate,
+      filename: filename,
+      duration: duration,
+      textComments: [],
+      emotionStickers: [],
+      keywords: keywordInit,
+      locations: locationInit,
+      painScale: painscaleInit,
+      numericScale: 0,
+      isSelected: false,
+      isConverted: false,
+      isTranscribed: false,
+      transcript: '',
+      weekday: new Date().toString().split(' ')[0],
+      sentiment: '',
+      tsOutputBullet: '',
+      tsOutputSentence: '',
+      summaryAnalysisBullet: '',
+      summaryAnalysisSentence: '',
+    };
+
+    let videoId;
     realm.write(() => {
-      realm.create('VideoData', {
-        _id: new Realm.BSON.ObjectID(),
-        datetimeRecorded: new Date(),
-        title: saveDate,
-        filename: filename,
-        duration: duration,
-        textComments: [],
-        emotionStickers: [],
-        keywords: keywordInit,
-        locations: locationInit,
-        painScale: painscaleInit,
-        numericScale: 0,
-        isSelected: false,
-        isConverted: false,
-        isTranscribed: false,
-        transcript: '',
-        weekday: new Date().toString().split(' ')[0],
-        sentiment: '',
-        tsOutputBullet: '',
-        tsOutputSentence: '',
-        summaryAnalysisBullet: '',
-        summaryAnalysisSentence: '',
-      });
+      videoId = realm.create('VideoData', videoData)._id;
     });
+    return videoId;
   };
 
   return (

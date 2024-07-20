@@ -292,22 +292,26 @@ const AnnotationMenu = () => {
           <Text style={styles.textStyle}> Add text comments </Text>
         </View>
       </View>
-      <Button
-        buttonStyle={{
-          width: 200,
-          height: 65,
-          alignSelf: 'center',
-        }}
-        size="lg"
-        color="#1C3EAA"
-        radius={50}
-        title="Review markups"
-        onPress={() =>
-          navigation.navigate('Review Video Markups', {
-            id,
-          })
-        }
-      />
+      <View style={styles.buttonContainer}>
+        <Button
+          buttonStyle={styles.btnStyle}
+          size="lg"
+          radius={50}
+          title="Annotate later"
+          onPress={() => navigation.navigate('View Recordings')}
+        />
+        <Button
+          buttonStyle={styles.btnStyle}
+          size="lg"
+          radius={50}
+          title="Review markups"
+          onPress={() =>
+            navigation.navigate('Review Video Markups', {
+              id,
+            })
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -358,7 +362,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   videoTitle: {
-    
     fontSize: Styles.windowWidth > 768 ? 35 : 24,
     fontWeight: 'bold',
     textDecorationLine: 'underline',
@@ -372,6 +375,16 @@ const styles = StyleSheet.create({
   annotationText: {
     fontSize: 24,
     marginBottom: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '100%',
+  },
+  btnStyle: {
+    backgroundColor: '#1C3EAA',
+    width: 200,
+    height: 65,
   },
 });
 
