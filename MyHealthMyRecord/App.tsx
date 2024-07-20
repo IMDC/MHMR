@@ -187,12 +187,12 @@ function App() {
                   name="Analysis"
                   component={DataAnalysisStack}
                   tabBarShowLabel={false}
-                  options={{
+                  options={({ navigation }) => ({
                     headerShown: false,
                     tabBarLabel: 'Analysis',
                     headerStyle: {backgroundColor: Styles.NavBarGrey},
-                    tabBarIcon: () => (
-                      <Icon
+                    tabBarIcon: ({ focused }) => (
+                      <Icon onPress={() => navigation.navigate('Dashboard')}
                         name="bar-chart-outline"
                         size={Styles.bottomNavIconSize}
                         type="ionicon"
@@ -200,18 +200,18 @@ function App() {
                         style={{width: Styles.bottomNavIconSize}}
                       />
                     ),
-                  }}
+                  })}
                 />
 
                 <Tab.Screen
                   name="Dashboard"
                   component={DashboardStack}
-                  options={{
+                  options={({ navigation }) => ({
                     headerShown: false,
                     tabBarLabel: 'Dashboard',
                     headerStyle: {backgroundColor: Styles.NavBarGrey},
-                    tabBarIcon: () => (
-                      <Icon
+                    tabBarIcon: ({ focused }) => (
+                      <Icon onPress={() => navigation.navigate('Dashboard')}
                         name="albums-outline"
                         size={Styles.bottomNavIconSize}
                         type="ionicon"
@@ -219,17 +219,17 @@ function App() {
                         style={{width: Styles.bottomNavIconSize}}
                       />
                     ),
-                  }}
+                  })}
                 />
                 <Tab.Screen
                   name="MyHealthMyRecord"
                   component={StackNav}
                   tabBarShowLabel={false}
-                  options={{
+                  options={({ navigation }) => ({
                     headerShown: false,
                     tabBarLabel: 'MyHealthMyRecord',
-                    tabBarIcon: () => (
-                      <Icon
+                    tabBarIcon: ({ focused }) => (
+                      <Icon onPress={() => navigation.navigate('Home')}
                         name="home-outline"
                         size={Styles.bottomNavIconSize}
                         type="ionicon"
@@ -237,17 +237,17 @@ function App() {
                         style={{width: Styles.bottomNavIconSize}}
                       />
                     ),
-                  }}
+                  })}
                 />
                 <Tab.Screen
                   name="Manage Videos"
                   component={ManageVideosStack}
-                  options={{
+                  options={({ navigation }) => ({
                     headerShown: false,
                     tabBarLabel: 'Manage Videos',
                     headerStyle: {backgroundColor: Styles.NavBarGrey},
-                    tabBarIcon: () => (
-                      <Icon
+                    tabBarIcon: ({ focused }) => (
+                      <Icon onPress={() => navigation.navigate('Manage Videos')}
                         name="film-outline"
                         size={Styles.bottomNavIconSize}
                         type="ionicon"
@@ -255,16 +255,16 @@ function App() {
                         style={{width: Styles.bottomNavIconSize}}
                       />
                     ),
-                  }}
+                  })}
                 />
                 <Tab.Screen
                   name="Help"
                   component={Help}
-                  options={{
+                  options={({ navigation }) => ({
                     tabBarLabel: 'Help',
                     headerStyle: {backgroundColor: Styles.NavBarGrey},
                     tabBarIcon: () => (
-                      <Icon
+                      <Icon onPress={() => navigation.navigate('Help')}
                         name="information-circle-outline"
                         size={Styles.bottomNavIconSize}
                         type="ionicon"
@@ -272,7 +272,7 @@ function App() {
                         style={{width: Styles.bottomNavIconSize}}
                       />
                     ),
-                  }}
+                  })}
                 />
               </Tab.Navigator>
             </NavigationContainer>
