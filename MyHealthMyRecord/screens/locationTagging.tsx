@@ -51,7 +51,7 @@ const LocationTagging = () => {
     const locationSchema: any = {
       id: new Realm.BSON.ObjectId(),
       title: newLocation,
-      checked: false,
+      checked: true,
     };
     parsedLocations.push(locationSchema);
     const newLocation_s: any[] = [];
