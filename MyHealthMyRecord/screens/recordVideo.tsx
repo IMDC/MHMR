@@ -511,9 +511,23 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
+                  navigation.navigate('Home');
+                }}>
+                Exit without saving
+                <Icon
+                  name="exit-to-app"
+                  color="white"
+                  containerStyle={{ transform: [{ rotate: '180deg' }] }}
+                />
+              </Button>
+              <Button
+                buttonStyle={styles.btnStyle}
+                radius={'sm'}
+                type="solid"
+                onPress={() => {
                   setShowCamera(true);
                 }}>
-                Re-Record
+                Re-record
                 <Icon name="repeat" color="white" />
               </Button>
               <Button
@@ -525,7 +539,7 @@ const RecordVideo = () => {
                   saveVideo(videoSource.path);
                   setSaveBtnState(true);
                 }}>
-                Save Video
+                Save video
                 <Icon name="save" color="white" />
               </Button>
             </View>
