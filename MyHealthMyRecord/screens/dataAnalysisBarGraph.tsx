@@ -13,8 +13,9 @@ import {
   LogBox,
   Modal,
   StyleSheet,
+  FlatList,
 } from 'react-native';
-import {Button, Icon} from '@rneui/themed';
+import {Button, Icon, CheckBox} from '@rneui/themed';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
@@ -44,6 +45,10 @@ const DataAnalysisBarGraph = () => {
   );
   //const wordFreqBarGraphData = data.data;
 
+  const [filteredWordFreqBarGraphData, setFilteredWordFreqBarGraphData] = useState(
+    barData.dataNoStop,
+  );
+
   const realm = useRealm();
   //   const video: any = useObject('VideoData', id);
 
@@ -67,13 +72,13 @@ const DataAnalysisBarGraph = () => {
 
   /* on press functionality for word frequency bar graph */
   const [wordSelected, setWordSelected] = useState<number | null>(null);
-  const wordFreq = wordFreqBarGraphData.map((item, index) => ({
+  const wordFreq = filteredWordFreqBarGraphData.map((item, index) => ({
     y: item,
     svg: {
       onPressIn: () => {
-        console.log(wordFreqBarGraphData[index]);
+        console.log(filteredWordFreqBarGraphData[index]);
         setWordSelected(index);
-        const wordLabel = wordFreqBarGraphData[index].text;
+        const wordLabel = filteredWordFreqBarGraphData[index].text;
         const result = setLineGraphData(freqMaps, wordLabel);
         navigation.navigate('Line Graph', {
           word: wordLabel,
@@ -90,9 +95,9 @@ const DataAnalysisBarGraph = () => {
   /**
    * Labels on each bar with the frequency value for the vertical view
    */
-  const CUT_OFF_VER = wordFreqBarGraphData[0]?.value - 1;
+  const CUT_OFF_VER = filteredWordFreqBarGraphData[0]?.value - 1;
   const LabelsVertical = ({x, y, bandwidth, data}) =>
-    wordFreqBarGraphData.map((value, index) => (
+    filteredWordFreqBarGraphData.map((value, index) => (
       <svg.Text
         key={index}
         x={x(index) + bandwidth / 2 - 10}
@@ -109,21 +114,19 @@ const DataAnalysisBarGraph = () => {
   /**
    * Labels on each bar with the frequency value for the vertical view
    */
-  const CUT_OFF_HOR = wordFreqBarGraphData[0].value - 1;
-  const LabelsHorizontal = ({ x, y, bandwidth, data }) => (
-    wordFreqBarGraphData.map((value, index) => (
+  const CUT_OFF_HOR = filteredWordFreqBarGraphData[0].value - 1;
+  const LabelsHorizontal = ({x, y, bandwidth, data}) =>
+    filteredWordFreqBarGraphData.map((value, index) => (
       <svg.Text
         key={index}
         x={value.value > CUT_OFF_HOR ? x(value.value) - 30 : x(value.value) + 10}
         y={y(index) + (bandwidth / 2)}
         fontSize={14}
         fill={value.value > CUT_OFF_HOR ? 'white' : 'black'}
-        alignmentBaseline={'middle'}
-      >
+        alignmentBaseline={'middle'}>
         {value.value}
       </svg.Text>
-    ))
-  );
+    ));
 
   const isEnabledStopWords = false;
   const [isEnabledMedWords, setIsEnabledMedWords] = useState(true);
@@ -139,17 +142,18 @@ const DataAnalysisBarGraph = () => {
     } else {
       setWordFreqBarGraphData(barData.data);
     }
+    setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
   }
   useEffect(() => {
     updateData();
   }, [isEnabledMedWords]);
 
-   useEffect(() => {
-     LogBox.ignoreLogs([
-       'Non-serializable values were found in the navigation state.',
-     ]);
-   });
-  
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Non-serializable values were found in the navigation state.',
+    ]);
+  });
+
   const scrollLeft = () => {
     horizontalScrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
@@ -167,10 +171,13 @@ const DataAnalysisBarGraph = () => {
   };
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
+  const [selectedWords, setSelectedWords] = useState(
+    new Set(filteredWordFreqBarGraphData.map(item => item.text)),
+  );
 
-
-  const handleSentimentPress = async (sentiment) => {
+  const handleSentimentPress = async sentiment => {
     try {
       const videoIDsSet = new Set(currentVideoSet.videoIDs);
       const videos = await realm.objects('VideoData').filtered(`sentiment == "${sentiment}"`);
@@ -180,6 +187,23 @@ const DataAnalysisBarGraph = () => {
     } catch (error) {
       console.error('Error in handleSentimentPress:', error);
     }
+  };
+
+  const toggleWordSelection = word => {
+    const updatedSelection = new Set(selectedWords);
+    if (updatedSelection.has(word)) {
+      updatedSelection.delete(word);
+    } else {
+      updatedSelection.add(word);
+    }
+    setSelectedWords(updatedSelection);
+  };
+
+  const applyWordSelection = () => {
+    setFilteredWordFreqBarGraphData(
+      wordFreqBarGraphData.filter(item => selectedWords.has(item.text)),
+    );
+    setEditModalVisible(false);
   };
 
   return (
@@ -220,8 +244,8 @@ const DataAnalysisBarGraph = () => {
                       spacing={0.2}
                       formatLabel={value => value}
                       min={0}
-                      max={wordFreqBarGraphData[0]?.value}
-                      numberOfTicks={wordFreqBarGraphData[0]?.value}
+                      max={filteredWordFreqBarGraphData[0]?.value}
+                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value}
                       style={{height: 600}}
                       svg={{fontSize: 20}}
                     />
@@ -235,7 +259,7 @@ const DataAnalysisBarGraph = () => {
                         <BarChart
                           style={{
                             height: 600,
-                            width: wordFreqBarGraphData.length * 50,
+                            width: filteredWordFreqBarGraphData.length * 50,
                           }}
                           data={wordFreq}
                           yAccessor={({item}) => item.y.value}
@@ -243,7 +267,7 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                          numberOfTicks={filteredWordFreqBarGraphData[0]?.value}>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
@@ -252,9 +276,9 @@ const DataAnalysisBarGraph = () => {
                             height: 100,
                             marginTop: 0,
                             marginBottom: 20,
-                            width: wordFreqBarGraphData.length * 50,
+                            width: filteredWordFreqBarGraphData.length * 50,
                           }}
-                          data={wordFreqBarGraphData}
+                          data={filteredWordFreqBarGraphData}
                           scale={scale.scaleBand}
                           svg={{
                             fontSize: 18,
@@ -266,7 +290,7 @@ const DataAnalysisBarGraph = () => {
                             y: 5,
                           }}
                           formatLabel={(value, index) =>
-                            wordFreqBarGraphData[index].text
+                            filteredWordFreqBarGraphData[index].text
                           }
                         />
                       </View>
@@ -318,8 +342,8 @@ const DataAnalysisBarGraph = () => {
                       spacing={0.2}
                       formatLabel={value => value}
                       min={0}
-                      max={wordFreqBarGraphData[0]?.value}
-                      numberOfTicks={wordFreqBarGraphData[0]?.value}
+                      max={filteredWordFreqBarGraphData[0]?.value}
+                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value}
                       style={{ width: 600, marginLeft: 80 }}
                       svg={{ fontSize: 20 }}
                     />
@@ -331,25 +355,34 @@ const DataAnalysisBarGraph = () => {
                     <ScrollView
                       ref={verticalScrollViewRef}
                       style={{ height: '100%', flex: 1 }}
-                      contentContainerStyle={{ height: wordFreqBarGraphData.length * 50 }}
-                      nestedScrollEnabled={true}
-                    >
-                      <View style={{ flexDirection: 'row', flex: 1 }}>
+                      contentContainerStyle={{ height: filteredWordFreqBarGraphData.length * 50 }}
+                      nestedScrollEnabled={true}>
+                      <View style={{flexDirection: 'row', flex: 1}}>
                         <YAxis
-                          data={wordFreqBarGraphData}
+                          data={filteredWordFreqBarGraphData}
                           yAccessor={({ index }) => index}
                           scale={scale.scaleBand}
                           contentInset={{ top: 10, bottom: 10 }}
                           spacing={0.2}
-                          formatLabel={(value, index) => wordFreqBarGraphData[index].text}
+                          formatLabel={(value, index) =>
+                            filteredWordFreqBarGraphData[index].text
+                          }
                           svg={{ fontSize: 20, margin: 10 }}
                           min={0}
-                          max={wordFreqBarGraphData[0]?.value}
+                          max={filteredWordFreqBarGraphData[0]?.value}
                         />
                         <ScrollView horizontal={true} ref={horizontalScrollViewRef} nestedScrollEnabled={true}>
-                          <View style={{ height: wordFreqBarGraphData.length * 50, flexDirection: 'row', flex: 1 }}>
+                        <View
+                            style={{
+                              height: filteredWordFreqBarGraphData.length * 50,
+                              flexDirection: 'row',
+                              flex: 1,
+                            }}>
                             <BarChart
-                              style={{ height: wordFreqBarGraphData.length * 50, width: 600 }}
+                              style={{
+                                height: filteredWordFreqBarGraphData.length * 50,
+                                width: 600,
+                              }}
                               data={wordFreq}
                               horizontal={true}
                               yAccessor={({ item }) => item.y.value}
@@ -357,7 +390,7 @@ const DataAnalysisBarGraph = () => {
                               contentInset={{ top: 10, bottom: 10 }}
                               spacing={0.2}
                               gridMin={0}
-                              numberOfTicks={wordFreqBarGraphData[0]?.value}>
+                              numberOfTicks={filteredWordFreqBarGraphData[0]?.value}>
                               <Grid direction={Grid.Direction.VERTICAL} />
                               <LabelsHorizontal />
                             </BarChart>
@@ -417,6 +450,24 @@ const DataAnalysisBarGraph = () => {
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={toggleSwitchMedWords}
                   value={isEnabledMedWords}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginVertical: 10,
+                }}>
+                <Button
+                  title="Edit Words"
+                  onPress={() => setEditModalVisible(true)}
+                  color={Styles.MHMRBlue}
+                  radius={50}
+                  containerStyle={{
+                    width: 200,
+                    marginHorizontal: 30,
+                  }}
                 />
               </View>
             </View>
@@ -535,6 +586,38 @@ const DataAnalysisBarGraph = () => {
             color={Styles.MHMRBlue}
             radius={50}
             onPress={() => setModalVisible(false)}
+          />
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Select Words to Display</Text>
+          <FlatList
+            data={wordFreqBarGraphData}
+            renderItem={({item}) => (
+              <CheckBox
+                title={item.text}
+                checked={selectedWords.has(item.text)}
+                onPress={() => toggleWordSelection(item.text)}
+              />
+            )}
+            keyExtractor={item => item.text}
+          />
+          <Button
+            title="Apply"
+            color={Styles.MHMRBlue}
+            radius={50}
+            onPress={applyWordSelection}
+          />
+          <Button
+            title="Close"
+            color={Styles.MHMRBlue}
+            radius={50}
+            onPress={() => setEditModalVisible(false)}
           />
         </View>
       </Modal>
