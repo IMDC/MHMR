@@ -130,7 +130,7 @@ const DataAnalysisBarGraph = () => {
   const [isEnabledMedWords, setIsEnabledMedWords] = useState(true);
   const toggleSwitchMedWords = () =>
     setIsEnabledMedWords(previousState => !previousState);
-  
+
   function updateData() {
     if (!isEnabledMedWords && !isEnabledStopWords) {
       setWordFreqBarGraphData(barData.dataNone);
@@ -208,7 +208,7 @@ const DataAnalysisBarGraph = () => {
 
   const applyWordSelection = () => {
     setFilteredWordFreqBarGraphData(
-      wordFreqBarGraphData.filter(item => selectedWords.has(item.text)),
+      wordFreqBarGraphData.filter(item => !selectedWords.has(item.text)),
     );
     setEditModalVisible(false);
 
@@ -224,7 +224,7 @@ const DataAnalysisBarGraph = () => {
     if (currentVideoSet?.selectedWords?.length > 0) {
       const selectedWordsSet = new Set(currentVideoSet.selectedWords);
       setFilteredWordFreqBarGraphData(
-        wordFreqBarGraphData.filter(item => selectedWordsSet.has(item.text)),
+        wordFreqBarGraphData.filter(item => !selectedWordsSet.has(item.text)),
       );
     } else {
       setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
@@ -620,7 +620,7 @@ const DataAnalysisBarGraph = () => {
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}>
         <View style={styles.smallModalView}>
-          <Text style={styles.modalText}>Select Words to Display</Text>
+          <Text style={styles.modalText}>Select words to remove</Text>
           <FlatList
             data={wordFreqBarGraphData}
             renderItem={({item}) => (
