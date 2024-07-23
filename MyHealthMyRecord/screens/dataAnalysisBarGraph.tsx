@@ -440,6 +440,24 @@ const DataAnalysisBarGraph = () => {
                   marginVertical: 10,
                 }}>
                 <Button
+                  title="Edit Words"
+                  onPress={() => setEditModalVisible(true)}
+                  color={Styles.MHMRBlue}
+                  radius={50}
+                  containerStyle={{
+                    width: 200,
+                    marginHorizontal: 30,
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginVertical: 10,
+                }}>
+                <Button
                   title="Horizontal"
                   onPress={() => setBarGraphVertical(false)}
                   color={Styles.MHMRBlue}
@@ -474,24 +492,6 @@ const DataAnalysisBarGraph = () => {
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={toggleSwitchMedWords}
                   value={isEnabledMedWords}
-                />
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginVertical: 10,
-                }}>
-                <Button
-                  title="Edit Words"
-                  onPress={() => setEditModalVisible(true)}
-                  color={Styles.MHMRBlue}
-                  radius={50}
-                  containerStyle={{
-                    width: 200,
-                    marginHorizontal: 30,
-                  }}
                 />
               </View>
             </View>
