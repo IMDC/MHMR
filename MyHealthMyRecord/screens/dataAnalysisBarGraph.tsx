@@ -636,18 +636,22 @@ const DataAnalysisBarGraph = () => {
             numColumns={3}
             contentContainerStyle={styles.flatListContent}
           />
-          <Button
-            title="Apply"
-            color={Styles.MHMRBlue}
-            radius={50}
-            onPress={applyWordSelection}
-          />
-          <Button
-            title="Close"
-            color={Styles.MHMRBlue}
-            radius={50}
-            onPress={() => setEditModalVisible(false)}
-          />
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Apply"
+              color={Styles.MHMRBlue}
+              radius={50}
+              onPress={applyWordSelection}
+              containerStyle={styles.buttonStyle}
+            />
+            <Button
+              title="Close"
+              color={Styles.MHMRBlue}
+              radius={50}
+              onPress={() => setEditModalVisible(false)}
+              containerStyle={styles.buttonStyle}
+            />
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -705,6 +709,16 @@ const styles = StyleSheet.create({
   },
   flatListContent: {
     flexGrow: 1,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
+  buttonStyle: {
+    flex: 1,
+    marginHorizontal: 10,
   },
 });
 
