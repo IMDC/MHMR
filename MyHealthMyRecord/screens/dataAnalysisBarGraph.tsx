@@ -45,9 +45,7 @@ const DataAnalysisBarGraph = () => {
   );
   //const wordFreqBarGraphData = data.data;
 
-  const [filteredWordFreqBarGraphData, setFilteredWordFreqBarGraphData] = useState(
-    barData.dataNoStop,
-  );
+  const [filteredWordFreqBarGraphData, setFilteredWordFreqBarGraphData] = useState([]);
 
   const realm = useRealm();
   //   const video: any = useObject('VideoData', id);
@@ -64,7 +62,7 @@ const DataAnalysisBarGraph = () => {
 
   // array of length of max value in data (first index value) for yAxis
   const yTest = Array.from(
-    {length: wordFreqBarGraphData[0]?.value},
+    {length: filteredWordFreqBarGraphData[0]?.value || 0},
     (_, i) => i + 1,
   );
   //const yTest = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -95,7 +93,7 @@ const DataAnalysisBarGraph = () => {
   /**
    * Labels on each bar with the frequency value for the vertical view
    */
-  const CUT_OFF_VER = filteredWordFreqBarGraphData[0]?.value - 1;
+  const CUT_OFF_VER = (filteredWordFreqBarGraphData[0]?.value || 1) - 1;
   const LabelsVertical = ({x, y, bandwidth, data}) =>
     filteredWordFreqBarGraphData.map((value, index) => (
       <svg.Text
@@ -114,7 +112,7 @@ const DataAnalysisBarGraph = () => {
   /**
    * Labels on each bar with the frequency value for the vertical view
    */
-  const CUT_OFF_HOR = filteredWordFreqBarGraphData[0].value - 1;
+  const CUT_OFF_HOR = (filteredWordFreqBarGraphData[0]?.value || 1) - 1;
   const LabelsHorizontal = ({x, y, bandwidth, data}) =>
     filteredWordFreqBarGraphData.map((value, index) => (
       <svg.Text
@@ -174,7 +172,7 @@ const DataAnalysisBarGraph = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
   const [selectedWords, setSelectedWords] = useState(
-    new Set(filteredWordFreqBarGraphData.map(item => item.text)),
+    new Set(currentVideoSet?.selectedWords || []),
   );
 
   const handleSentimentPress = async sentiment => {
@@ -197,6 +195,14 @@ const DataAnalysisBarGraph = () => {
       updatedSelection.add(word);
     }
     setSelectedWords(updatedSelection);
+
+    // Update the database
+    realm.write(() => {
+      const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+      if (videoSet) {
+        videoSet.selectedWords = Array.from(updatedSelection);
+      }
+    });
   };
 
   const applyWordSelection = () => {
@@ -204,7 +210,25 @@ const DataAnalysisBarGraph = () => {
       wordFreqBarGraphData.filter(item => selectedWords.has(item.text)),
     );
     setEditModalVisible(false);
+
+    realm.write(() => {
+      const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+      if (videoSet) {
+        videoSet.selectedWords = Array.from(selectedWords);
+      }
+    });
   };
+
+  useEffect(() => {
+    if (currentVideoSet?.selectedWords?.length > 0) {
+      const selectedWordsSet = new Set(currentVideoSet.selectedWords);
+      setFilteredWordFreqBarGraphData(
+        wordFreqBarGraphData.filter(item => selectedWordsSet.has(item.text)),
+      );
+    } else {
+      setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
+    }
+  }, [currentVideoSet, wordFreqBarGraphData]);
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -244,8 +268,8 @@ const DataAnalysisBarGraph = () => {
                       spacing={0.2}
                       formatLabel={value => value}
                       min={0}
-                      max={filteredWordFreqBarGraphData[0]?.value}
-                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value}
+                      max={filteredWordFreqBarGraphData[0]?.value || 0}
+                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}
                       style={{height: 600}}
                       svg={{fontSize: 20}}
                     />
@@ -267,7 +291,7 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          numberOfTicks={filteredWordFreqBarGraphData[0]?.value}>
+                          numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
@@ -342,8 +366,8 @@ const DataAnalysisBarGraph = () => {
                       spacing={0.2}
                       formatLabel={value => value}
                       min={0}
-                      max={filteredWordFreqBarGraphData[0]?.value}
-                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value}
+                      max={filteredWordFreqBarGraphData[0]?.value || 0}
+                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}
                       style={{ width: 600, marginLeft: 80 }}
                       svg={{ fontSize: 20 }}
                     />
@@ -369,7 +393,7 @@ const DataAnalysisBarGraph = () => {
                           }
                           svg={{ fontSize: 20, margin: 10 }}
                           min={0}
-                          max={filteredWordFreqBarGraphData[0]?.value}
+                          max={filteredWordFreqBarGraphData[0]?.value || 0}
                         />
                         <ScrollView horizontal={true} ref={horizontalScrollViewRef} nestedScrollEnabled={true}>
                         <View
@@ -390,7 +414,7 @@ const DataAnalysisBarGraph = () => {
                               contentInset={{ top: 10, bottom: 10 }}
                               spacing={0.2}
                               gridMin={0}
-                              numberOfTicks={filteredWordFreqBarGraphData[0]?.value}>
+                              numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}>
                               <Grid direction={Grid.Direction.VERTICAL} />
                               <LabelsHorizontal />
                             </BarChart>

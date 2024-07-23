@@ -63,6 +63,7 @@ export class VideoSet extends Realm.Object<VideoSet> {
   summaryAnalysisBullet!: string;
   isSummaryGenerated!: boolean;
   reportFormat!: string;
+  selectedWords!: string[];
 
   static schema = {
     name: 'VideoSet',
@@ -79,7 +80,7 @@ export class VideoSet extends Realm.Object<VideoSet> {
       summaryAnalysisBullet: { type: 'string', default: '' },
       isSummaryGenerated: {type: 'bool', default: false},
       reportFormat: { type: 'string', default: 'bullet' },
-      
+      selectedWords: {type: 'string[]', default: []},
     },
   };
 }
