@@ -130,6 +130,7 @@ const DataAnalysisBarGraph = () => {
   const [isEnabledMedWords, setIsEnabledMedWords] = useState(true);
   const toggleSwitchMedWords = () =>
     setIsEnabledMedWords(previousState => !previousState);
+  
   function updateData() {
     if (!isEnabledMedWords && !isEnabledStopWords) {
       setWordFreqBarGraphData(barData.dataNone);
@@ -142,6 +143,7 @@ const DataAnalysisBarGraph = () => {
     }
     setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
   }
+
   useEffect(() => {
     updateData();
   }, [isEnabledMedWords]);
@@ -196,7 +198,6 @@ const DataAnalysisBarGraph = () => {
     }
     setSelectedWords(updatedSelection);
 
-    // Update the database
     realm.write(() => {
       const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
       if (videoSet) {
@@ -235,7 +236,7 @@ const DataAnalysisBarGraph = () => {
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
         <View style={{height: '100%'}}>
           <View id="bargraph" style={{flex: 1}}>
-            {barGraphVertical == true ? (
+            {barGraphVertical ? (
               <View id="bargraph-vertical" style={{flex: 1}}>
                 <Text
                   style={{
@@ -244,8 +245,7 @@ const DataAnalysisBarGraph = () => {
                     color: 'black',
                     fontWeight: 'bold',
                   }}>
-                  {currentVideoSet?.name} - Count of words mentioned in selected
-                  video set
+                  {currentVideoSet?.name} - Count of words mentioned in selected video set
                 </Text>
                 <View style={{flexDirection: 'row', flex: 1}}>
                   <View style={{width: 50, justifyContent: 'center'}}>
@@ -396,7 +396,7 @@ const DataAnalysisBarGraph = () => {
                           max={filteredWordFreqBarGraphData[0]?.value || 0}
                         />
                         <ScrollView horizontal={true} ref={horizontalScrollViewRef} nestedScrollEnabled={true}>
-                        <View
+                          <View
                             style={{
                               height: filteredWordFreqBarGraphData.length * 50,
                               flexDirection: 'row',
@@ -619,7 +619,7 @@ const DataAnalysisBarGraph = () => {
         transparent={true}
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}>
-        <View style={styles.modalView}>
+        <View style={styles.smallModalView}>
           <Text style={styles.modalText}>Select Words to Display</Text>
           <FlatList
             data={wordFreqBarGraphData}
@@ -628,9 +628,13 @@ const DataAnalysisBarGraph = () => {
                 title={item.text}
                 checked={selectedWords.has(item.text)}
                 onPress={() => toggleWordSelection(item.text)}
+                containerStyle={styles.checkboxContainer}
+                textStyle={styles.checkboxText}
               />
             )}
             keyExtractor={item => item.text}
+            numColumns={3}
+            contentContainerStyle={styles.flatListContent}
           />
           <Button
             title="Apply"
@@ -666,6 +670,22 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  smallModalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    maxHeight: Dimensions.get('window').height * 0.5,
+  },
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
@@ -676,6 +696,15 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     fontSize: 16,
     color: 'blue',
+  },
+  checkboxContainer: {
+    width: '30%',
+  },
+  checkboxText: {
+    fontSize: 14,
+  },
+  flatListContent: {
+    flexGrow: 1,
   },
 });
 
