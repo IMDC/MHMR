@@ -299,7 +299,7 @@ const DataAnalysisBarGraph = () => {
                           style={{
                             height: 100,
                             marginTop: 0,
-                            marginBottom: 20,
+                            marginBottom: 10,
                             width: filteredWordFreqBarGraphData.length * 50,
                           }}
                           data={filteredWordFreqBarGraphData}
@@ -327,7 +327,7 @@ const DataAnalysisBarGraph = () => {
                   </View>
                 </View>
                 <Text
-                  style={{textAlign: 'center', fontSize: 20, color: 'black'}}>
+                  style={{textAlign: 'center', fontSize: 20, color: 'black', marginTop: -50}}>
                   Word
                 </Text>
               </View>
@@ -500,7 +500,7 @@ const DataAnalysisBarGraph = () => {
             style={{
               borderBottomColor: 'black',
               borderBottomWidth: StyleSheet.hairlineWidth,
-              marginTop: 20,
+              marginTop: 30,
             }}
           />
           <View id="sentiment-bargraph" style={{flex: 1}}>
