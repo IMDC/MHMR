@@ -440,7 +440,7 @@ const DataAnalysisBarGraph = () => {
                   marginVertical: 10,
                 }}>
                 <Button
-                  title="Edit Words"
+                  title="Edit words"
                   onPress={() => setEditModalVisible(true)}
                   color={Styles.MHMRBlue}
                   radius={50}
@@ -500,6 +500,7 @@ const DataAnalysisBarGraph = () => {
             style={{
               borderBottomColor: 'black',
               borderBottomWidth: StyleSheet.hairlineWidth,
+              marginTop: 20,
             }}
           />
           <View id="sentiment-bargraph" style={{flex: 1}}>
