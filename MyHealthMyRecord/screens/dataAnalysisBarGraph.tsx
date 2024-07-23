@@ -327,7 +327,7 @@ const DataAnalysisBarGraph = () => {
                   </View>
                 </View>
                 <Text
-                  style={{textAlign: 'center', fontSize: 20, color: 'black', marginTop: -50}}>
+                  style={{textAlign: 'center', fontSize: 20, color: 'black', marginTop: -30}}>
                   Word
                 </Text>
               </View>
