@@ -4,7 +4,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {useDropdownContext} from './videoSetProvider';
 import {useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
-import {Button} from '@rneui/themed';
+import {Button, Dialog, Input} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
@@ -31,6 +31,9 @@ const VideoSetDropdown = ({
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
+  const [visible, setVisible] = useState(false);
+  const [dateTime, setDateTime] = useState('');
+  const [newVideoSetName, setNewVideoSetName] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   useEffect(() => {
@@ -45,13 +48,22 @@ const VideoSetDropdown = ({
     setLocalDropdown(formattedDropdown);
   }, [videoSets]);
 
+  const saveVideoSetBtnCllicked = () => {
+  };
+  
+  const toggleDialog = () => {
+      console.log('toggleDialog');
+      setVisible(!visible);
+    };
+
+
   const createVideoSet = (frequencyData, videoIDs) => {
     let newSet;
     realm.write(() => {
       newSet = realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
-        datetime: new Date(),
-        name: new Date().toString().split(' GMT-')[0],
+        datetime: new Date().toString().split(' GMT-')[0],
+        name: newVideoSetName,
         frequencyData: frequencyData,
         videoIDs: videoIDs,
         summaryAnalysisBullet: '',
@@ -116,6 +128,29 @@ const VideoSetDropdown = ({
         alignItems: 'center',
         justifyContent: 'center',
       }}>
+      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+        <Dialog.Title title="Name this video set:" />
+        <Input
+          inputStyle={{ fontSize: 35 }}
+          placeholder={dateTime}
+          // onChangeText={value => setNewKeyword(value)}
+          onChangeText={value => {
+            setNewVideoSetName(value)
+            console.log('New Video Set Name:', newVideoSetName);
+           }}
+        />
+        <Dialog.Actions>
+          <Dialog.Button
+            title="CONFIRM"
+            onPress={() => {
+
+              createVideoSet([], videoSetVideoIDs);
+              toggleDialog();
+            }}
+          />
+          <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
+        </Dialog.Actions>
+      </Dialog>
       <View style={{paddingBottom: 10}}>
         <Text style={{fontSize: 20}}>Select video set: </Text>
       </View>
@@ -176,8 +211,13 @@ const VideoSetDropdown = ({
                   videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
                 }
                 title="Save video set"
-                onPress={() => {
-                  createVideoSet([], videoSetVideoIDs);
+                // onPress={() => {
+                //   createVideoSet([], videoSetVideoIDs);
+                // }}
+                  onPress={() => {
+                    setDateTime(new Date().toString().split(' GMT-')[0]);
+                    setNewVideoSetName(new Date().toString().split(' GMT-')[0]);
+                  toggleDialog();
                 }}
                 color={Styles.MHMRBlue}
                 radius={50}
