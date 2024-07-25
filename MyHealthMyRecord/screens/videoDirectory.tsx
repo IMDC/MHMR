@@ -259,6 +259,11 @@ const ViewRecordings = ({selected, setSelected}) => {
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
 
+ const isVideoInSet = (video: VideoData) => {
+   const video_id = video._id.toHexString(); // Convert the video ID to a string
+   return videoSetVideoIDs.indexOf(video_id) !== -1; // Check if the video ID is in the video set
+ };
+
   const deleteAllVideoDataObjects = async () => {
     //delete videos from storage
     const MHMRfiles = RNFS.readDir(MHMRfolderPath);
@@ -995,52 +1000,74 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   justifyContent: 'flex-start',
                                   alignItems: 'flex-start',
                                 }}>
-                                <CheckBox
-                                  uncheckedColor="white"
-                                  checked={isChecked}
-                                  size={25}
-                                  onPress={() => {
-                                    const updatedSelectedVideos = new Set(
-                                      selectedVideos,
-                                    );
-                                    if (!isChecked) {
-                                      toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.add(
-                                        video._id.toHexString(),
+                                {isVideoInSet(video) ? ( // Check if video is in the video set
+                                  <View
+                                    style={{
+                                      backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                                      borderRadius: 15,
+                                      marginLeft: 6,
+                                    }}>
+                                      <Text style={{color: 'white', fontSize: 18, padding: 2, paddingHorizontal: 5,}}>Video already in set.</Text>
+                                    </View>
+                                ) : (
+                                  <CheckBox
+                                    uncheckedColor="white"
+                                    checked={isChecked}
+                                    size={25}
+                                    onPress={() => {
+                                      const updatedSelectedVideos = new Set(
+                                        selectedVideos,
                                       );
-                                      setSelectedVideos(updatedSelectedVideos);
+                                      if (!isChecked) {
+                                        toggleVideoChecked(
+                                          video._id.toString(),
+                                        );
+                                        updatedSelectedVideos.add(
+                                          video._id.toHexString(),
+                                        );
+                                        setSelectedVideos(
+                                          updatedSelectedVideos,
+                                        );
 
-                                      realm.write(() => {
-                                        video.isSelected = true;
-                                      });
+                                        realm.write(() => {
+                                          video.isSelected = true;
+                                        });
 
-                                      console.log('checked', video.isSelected);
-                                      console.log(
-                                        'converted status',
-                                        video.filename,
-                                        video.isConverted,
-                                      );
-                                    } else {
-                                      toggleVideoChecked(video._id.toString());
-                                      updatedSelectedVideos.delete(
-                                        video._id.toHexString(),
-                                      );
-                                      setSelectedVideos(updatedSelectedVideos);
-                                      realm.write(() => {
-                                        video.isSelected = false;
-                                      });
-                                    }
-                                  }}
-                                  wrapperStyle={{
-                                    backgroundColor: 'transparent',
-                                  }}
-                                  containerStyle={{
-                                    backgroundColor: 'rgba(52, 52, 52, 0.4)',
-                                    // opacity: 1,
-                                    borderRadius: 15,
-                                    marginLeft: 6,
-                                  }}
-                                />
+                                        console.log(
+                                          'checked',
+                                          video.isSelected,
+                                        );
+                                        console.log(
+                                          'converted status',
+                                          video.filename,
+                                          video.isConverted,
+                                        );
+                                      } else {
+                                        toggleVideoChecked(
+                                          video._id.toString(),
+                                        );
+                                        updatedSelectedVideos.delete(
+                                          video._id.toHexString(),
+                                        );
+                                        setSelectedVideos(
+                                          updatedSelectedVideos,
+                                        );
+                                        realm.write(() => {
+                                          video.isSelected = false;
+                                        });
+                                      }
+                                    }}
+                                    wrapperStyle={{
+                                      backgroundColor: 'transparent',
+                                    }}
+                                    containerStyle={{
+                                      backgroundColor: 'rgba(52, 52, 52, 0.4)',
+                                      // opacity: 1,
+                                      borderRadius: 15,
+                                      marginLeft: 6,
+                                    }}
+                                  />
+                                )}
                               </View>
                             )}
                             <TouchableOpacity
