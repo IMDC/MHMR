@@ -64,8 +64,14 @@ const RecordVideo = () => {
     async function getPermission() {
       const newCameraPermission = await Camera.requestCameraPermission();
       const microphonePermission = await Camera.requestMicrophonePermission();
-      if (newCameraPermission !== 'authorized' || microphonePermission !== 'authorized') {
-        Alert.alert('Permissions denied', 'Camera and microphone permissions are required.');
+      if (
+        newCameraPermission !== 'authorized' ||
+        microphonePermission !== 'authorized'
+      ) {
+        Alert.alert(
+          'Permissions denied',
+          'Camera and microphone permissions are required.',
+        );
       }
     }
     getPermission();
@@ -93,7 +99,7 @@ const RecordVideo = () => {
           Alert.alert(
             'Recording Error',
             'The recording failed because no valid data was produced. Please try again.',
-            [{ text: 'OK' }]
+            [{text: 'OK'}],
           );
           // console.error(error);
           navigation.navigate('Home');
@@ -132,7 +138,7 @@ const RecordVideo = () => {
         Alert.alert(
           'Stop Recording Error',
           'Failed to stop the recording. Please try again.',
-          [{ text: 'OK' }]
+          [{text: 'OK'}],
         );
         // console.error(error);
       }
@@ -207,7 +213,7 @@ const RecordVideo = () => {
     return <Text>Camera not available</Text>;
   }
 
-    /**
+  /**
    * Check if device has permissions to read external storage and cameraroll
    * @returns boolean - true if permission granted, false if not
    */
@@ -226,7 +232,7 @@ const RecordVideo = () => {
     return status === 'granted';
   }
 
-    /**
+  /**
    * Save video to app storage, save VideoData object to database
    * @param path path of stored VisionCamera recording
    */
@@ -256,7 +262,11 @@ const RecordVideo = () => {
     const saveDate = date.split(' GMT-');
     console.log(date, saveDate);
     try {
-      const videoId = createVideoData(fileName, videoSource.duration, saveDate[0]);
+      const videoId = createVideoData(
+        fileName,
+        videoSource.duration,
+        saveDate[0],
+      );
       RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
         .then(async () => {
           console.log('File moved.');
@@ -266,22 +276,50 @@ const RecordVideo = () => {
           const returnCode = await session.getReturnCode();
 
           if (ReturnCode.isSuccess(returnCode)) {
-            Alert.alert('Your recording has been saved');
+            Alert.alert(
+              'Your recording has been saved.',
+              'Would you like to record another or markup video?',
+              [
+                {
+                  text: 'Exit to Home',
+                  onPress: () => console.log(navigation.navigate('Home')),
+                },
+                {
+                  text: 'Record Another',
+                  onPress: () => {
+                    setShowCamera(true);
+                  },
+                },
+                {
+                  text: 'Markup video',
+                  onPress: () => {
+                    navigation.navigate('Manage Videos', {
+                      screen: 'Add or Edit Markups',
+                      params: {id: videoId},
+                    });
+                    setShowCamera(true);
+                  },
+                },
+              ],
+            );
             hideLoader();
-            navigation.navigate('Manage Videos', { screen: 'Add or Edit Markups', params: { id: videoId } });
-            // if isConverted is for audio and not STT
+            //
             // video.isConverted = true;
           } else if (ReturnCode.isCancel(returnCode)) {
             console.log('Conversion canceled');
           } else {
-            Alert.alert('Conversion failed', 'There was an issue converting your video to audio.');
+            hideLoader();
+            Alert.alert(
+              'Conversion failed',
+              'There was an issue converting your video to audio.',
+            );
           }
         })
         .catch(err => {
           Alert.alert(
             'File Move Error',
             'There was an issue moving your recording. Please try again.',
-            [{ text: 'OK' }]
+            [{text: 'OK'}],
           );
           navigation.navigate('Home');
         });
@@ -289,7 +327,7 @@ const RecordVideo = () => {
       Alert.alert(
         'Save Error',
         'There was an issue saving your recording. Please try again.',
-        [{ text: 'OK' }]
+        [{text: 'OK'}],
       );
       // console.error(err);
     }
@@ -330,7 +368,12 @@ const RecordVideo = () => {
     {id: new Realm.BSON.ObjectID(), value: 3, title: 'School', checked: false},
     {id: new Realm.BSON.ObjectID(), value: 4, title: 'Park', checked: false},
     {id: new Realm.BSON.ObjectID(), value: 5, title: 'Indoors', checked: false},
-    {id: new Realm.BSON.ObjectID(), value: 6, title: 'Outdoors', checked: false},
+    {
+      id: new Realm.BSON.ObjectID(),
+      value: 6,
+      title: 'Outdoors',
+      checked: false,
+    },
   ];
 
   const painscaleRef = [
@@ -517,7 +560,7 @@ const RecordVideo = () => {
                 <Icon
                   name="exit-to-app"
                   color="white"
-                  containerStyle={{ transform: [{ rotate: '180deg' }] }}
+                  containerStyle={{transform: [{rotate: '180deg'}]}}
                 />
               </Button>
               <Button
@@ -537,7 +580,7 @@ const RecordVideo = () => {
                 type="solid"
                 onPress={() => {
                   saveVideo(videoSource.path);
-                  setSaveBtnState(true);
+                  // setSaveBtnState(true);
                 }}>
                 Save video
                 <Icon name="save" color="white" />
