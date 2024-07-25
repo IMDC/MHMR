@@ -435,7 +435,11 @@ const DataAnalysis = () => {
           alignItems: 'center',
         }}>
         <Button
-          disabled={videoSetValue === ''}
+          disabled={
+            videoSetValue == null ||
+            (videoSetVideoIDs.length === 0 &&
+              (videoSetValue == null || videoSetValue.length === 0))
+          }
           onPress={() =>
             navigation.navigate('Bar Graph', {
               data: barData,
@@ -461,7 +465,11 @@ const DataAnalysis = () => {
           Bar Graph
         </Button>
         <Button
-          disabled={videoSetValue === ''}
+          disabled={
+            videoSetValue == null ||
+            (videoSetVideoIDs.length === 0 &&
+              (videoSetValue == null || videoSetValue.length === 0))
+          }
           onPress={() => {
             setModalVisible(true);
             console.log('-------------------------data', data);
@@ -485,7 +493,11 @@ const DataAnalysis = () => {
           Line Graph
         </Button>
         <Button
-          disabled={videoSetValue === ''}
+          disabled={
+            videoSetValue == null ||
+            (videoSetVideoIDs.length === 0 &&
+              (videoSetValue == null || videoSetValue.length === 0))
+          }
           onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -505,7 +517,11 @@ const DataAnalysis = () => {
           Word Cloud
         </Button>
         <Button
-          disabled={videoSetValue === ''}
+          disabled={
+            videoSetValue == null ||
+            (videoSetVideoIDs.length === 0 &&
+              (videoSetValue == null || videoSetValue.length === 0))
+          }
           onPress={() => navigation.navigate('Text Report')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
