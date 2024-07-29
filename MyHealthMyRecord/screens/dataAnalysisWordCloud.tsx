@@ -5,13 +5,14 @@ import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import { windowHeight, windowWidth } from '../assets/util/styles';
+import { useWordList } from '../components/wordListProvider';
 
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
-  const barData = route.params?.data || {};
+  const { wordList } = useWordList(); 
 
-  const [updatedData, setUpdatedData] = useState(barData.dataNoStop || []);
+  const [updatedData, setUpdatedData] = useState(wordList || []);
   const [dropdownValue, setDropdownValue] = useState(null);
 
   const dropdownData = [
@@ -87,14 +88,14 @@ const DataAnalysisWordCloud = () => {
   };
 
   useEffect(() => {
-    if (!(barData.dataNoStop.length > 0)) {
+    if (!(wordList.length > 0)) {
       Alert.alert(
         'Cannot create word cloud',
         'There are not enough words found in your videos to create a word cloud with. Try adding more videos with audio to your video set.',
         [{text: 'OK', onPress: () => navigation.goBack()}],
       );
     } else {
-      const validatedData = validateData(barData.dataNoStop);
+      const validatedData = validateData(wordList);
       console.log('validatedData:', validatedData);
       setUpdatedData(validatedData);
 
@@ -108,12 +109,12 @@ const DataAnalysisWordCloud = () => {
         } else if (dropdownValue === 'Tol') {
           newPalette = tol_palette;
         }
-        if (barData.dataNoStop) {
-          setUpdatedData(addPalette(barData.dataNoStop, newPalette));
+        if (wordList) {
+          setUpdatedData(addPalette(wordList, newPalette));
         }
       }
     }
-  }, [dropdownValue, barData.dataNoStop]);
+  }, [dropdownValue, wordList]);
 
   const renderDropdownItem = item => {
     return (
@@ -137,7 +138,7 @@ const DataAnalysisWordCloud = () => {
 
   return (
     <SafeAreaView>
-      {barData.dataNoStop.length > 0 ? (
+      {wordList.length > 0 ? (
         <View>
           <View style={{flexDirection: 'column'}}>
             <View style={{justifyContent: 'center', alignItems: 'center'}}>

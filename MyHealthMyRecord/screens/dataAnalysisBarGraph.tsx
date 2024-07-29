@@ -24,6 +24,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import {useSetLineGraphData} from '../components/lineGraphData';
 import { useDropdownContext } from '../components/videoSetProvider';
+import { useWordList } from '../components/wordListProvider';
 
 const setLineGraphData = useSetLineGraphData();
 
@@ -51,6 +52,7 @@ const DataAnalysisBarGraph = () => {
   //   const video: any = useObject('VideoData', id);
 
   const { currentVideoSet } = useDropdownContext();
+  const { updateWordList } = useWordList();
 
   /* ======================================================================= */
   // bar graph stuff below
@@ -142,6 +144,7 @@ const DataAnalysisBarGraph = () => {
       setWordFreqBarGraphData(barData.data);
     }
     setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
+    updateWordList(wordFreqBarGraphData);
   }
 
   useEffect(() => {
@@ -218,6 +221,7 @@ const DataAnalysisBarGraph = () => {
         videoSet.selectedWords = Array.from(selectedWords);
       }
     });
+    updateWordList(filteredWordFreqBarGraphData);
   };
 
   useEffect(() => {
