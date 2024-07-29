@@ -134,17 +134,19 @@ const DataAnalysisBarGraph = () => {
     setIsEnabledMedWords(previousState => !previousState);
 
   function updateData() {
+    let newWordFreqBarGraphData;
     if (!isEnabledMedWords && !isEnabledStopWords) {
-      setWordFreqBarGraphData(barData.dataNone);
+      newWordFreqBarGraphData = barData.dataNone;
     } else if (!isEnabledStopWords) {
-      setWordFreqBarGraphData(barData.dataNoStop);
+      newWordFreqBarGraphData = barData.dataNoStop;
     } else if (!isEnabledMedWords) {
-      setWordFreqBarGraphData(barData.dataNoMed);
+      newWordFreqBarGraphData = barData.dataNoMed;
     } else {
-      setWordFreqBarGraphData(barData.data);
+      newWordFreqBarGraphData = barData.data;
     }
-    setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
-    updateWordList(wordFreqBarGraphData);
+    setWordFreqBarGraphData(newWordFreqBarGraphData);
+    setFilteredWordFreqBarGraphData(newWordFreqBarGraphData);
+    updateWordList(newWordFreqBarGraphData);
   }
 
   useEffect(() => {
