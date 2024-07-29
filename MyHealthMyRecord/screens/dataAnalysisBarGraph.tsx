@@ -212,10 +212,8 @@ const DataAnalysisBarGraph = () => {
   };
 
   const applyWordSelection = () => {
-    setFilteredWordFreqBarGraphData(
-      wordFreqBarGraphData.filter(item => !selectedWords.has(item.text)),
-    );
-    setEditModalVisible(false);
+    const filteredData = wordFreqBarGraphData.filter(item => !selectedWords.has(item.text));
+    setFilteredWordFreqBarGraphData(filteredData);
 
     realm.write(() => {
       const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
@@ -223,7 +221,8 @@ const DataAnalysisBarGraph = () => {
         videoSet.selectedWords = Array.from(selectedWords);
       }
     });
-    updateWordList(filteredWordFreqBarGraphData);
+    updateWordList(filteredData);
+    setEditModalVisible(false);
   };
 
   useEffect(() => {

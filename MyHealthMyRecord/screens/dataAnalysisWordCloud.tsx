@@ -110,7 +110,7 @@ const DataAnalysisWordCloud = () => {
           newPalette = tol_palette;
         }
         if (wordList) {
-          setUpdatedData(addPalette(wordList, newPalette));
+          setUpdatedData(addPalette(validatedData, newPalette));
         }
       }
     }
