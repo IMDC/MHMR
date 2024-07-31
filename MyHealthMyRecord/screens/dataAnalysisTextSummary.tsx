@@ -24,6 +24,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../components/networkProvider';
 import {refresh} from '@react-native-community/netinfo';
 import {useLoader} from '../components/loaderProvider';
+import { useWordList } from '../components/wordListProvider';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -39,6 +40,7 @@ const DataAnalysisTextSummary = () => {
   const [editingID, setEditingID] = useState(null);
   const [draftTranscript, setDraftTranscript] = useState('');
   const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
+  const { updateWordList } = useWordList();
   const [generatedOutput, setGeneratedOutput] = useState('');
   const realm = useRealm();
   const [videoSet, setVideoSet] = useState(null);
@@ -244,7 +246,14 @@ const DataAnalysisTextSummary = () => {
     setEditingID(null);
     setDraftTranscript('');
     setTranscriptEdited(true);
-   
+
+    const allWords = updatedVideos.flatMap(video => video.transcript.split(' '));
+    const wordFreqMap = allWords.reduce((map, word) => {
+      map[word] = (map[word] || 0) + 1;
+      return map;
+    }, {});
+    const wordListData = Object.entries(wordFreqMap).map(([word, count]) => ({text: word, value: count}));
+    updateWordList(wordListData);
   };
 
   const handleCancel = () => {
