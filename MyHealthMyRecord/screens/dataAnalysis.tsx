@@ -449,7 +449,7 @@ const DataAnalysis = () => {
           }
           titleStyle={{fontSize: 40}}
           containerStyle={{
-            width: 400,
+            width: Styles.windowHeight * 0.4,
             marginHorizontal: 30,
             marginVertical: 10,
           }}
@@ -477,7 +477,7 @@ const DataAnalysis = () => {
           }}
           titleStyle={{fontSize: 40}}
           containerStyle={{
-            width: 400,
+            width: Styles.windowHeight * 0.4,
             marginHorizontal: 30,
             marginVertical: 10,
           }}
@@ -501,7 +501,7 @@ const DataAnalysis = () => {
           onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
-            width: 400,
+            width: Styles.windowHeight * 0.4,
             marginHorizontal: 30,
             marginVertical: 10,
           }}
@@ -525,7 +525,7 @@ const DataAnalysis = () => {
           onPress={() => navigation.navigate('Text Report')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
-            width: 400,
+            width: Styles.windowHeight * 0.4,
             marginHorizontal: 30,
             marginVertical: 10,
           }}

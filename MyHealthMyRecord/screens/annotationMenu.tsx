@@ -18,7 +18,7 @@ import {
   TextInput,
   TextInputFocusEventData,
 } from 'react-native';
-import {Button, Icon, Input, } from '@rneui/themed';
+import {Button, Icon, Input} from '@rneui/themed';
 import {useObject, useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 
@@ -113,13 +113,13 @@ const AnnotationMenu = () => {
   const windowHeight = useWindowDimensions().height;
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         {
-          minHeight: Math.round(windowHeight),
-          paddingBottom: 200,
-          paddingTop: 10,
+          // minHeight: Math.round(windowHeight),
+          // paddingBottom: 200,
+          // paddingTop: 10,
           justifyContent: 'space-around',
         },
       ]}>
@@ -157,7 +157,7 @@ const AnnotationMenu = () => {
           <TouchableOpacity
             style={styles.titleContainer}
             onPress={() => setIsEditingTitle(true)}>
-            <ScrollView horizontal style={{}}>
+            <ScrollView horizontal style={{width: 20}}>
               <Text style={styles.videoTitle}> {title} </Text>
             </ScrollView>
             <Icon
@@ -312,7 +312,7 @@ const AnnotationMenu = () => {
           }
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -343,6 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: '2%',
     flexWrap: 'wrap',
+    
   },
   editTitleContainer: {
     flexDirection: 'row',
