@@ -64,6 +64,8 @@ export class VideoSet extends Realm.Object<VideoSet> {
   isSummaryGenerated!: boolean;
   reportFormat!: string;
   selectedWords!: string[];
+  earliestVideoDateTime!: Date;
+  latestVideoDateTime!: Date;
 
   static schema = {
     name: 'VideoSet',
@@ -81,6 +83,8 @@ export class VideoSet extends Realm.Object<VideoSet> {
       isSummaryGenerated: {type: 'bool', default: false},
       reportFormat: { type: 'string', default: 'bullet' },
       selectedWords: {type: 'string[]', default: []},
+      earliestVideoDateTime: {type: 'date', default: new Date()},
+      latestVideoDateTime: {type: 'date', default: new Date()},
     },
   };
 }

@@ -283,7 +283,10 @@ const RecordVideo = () => {
                 {
                   text: 'View Recordings',
                   onPress: () => {
-                    navigation.navigate('View Recordings' );
+                   navigation.navigate('Manage Videos', {
+                     screen: 'View Recordings',
+                
+                   });
                     setShowCamera(true);
                   },
                 },
