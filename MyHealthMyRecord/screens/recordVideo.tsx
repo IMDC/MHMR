@@ -687,14 +687,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     alignSelf: 'center',
-    backgroundColor: 'white',
     borderRadius: 20,
     padding: 10,
   },
   extendButton: {
     backgroundColor: '#1C3EAA',
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 50,
   },
   extendButtonText: {
     color: 'white',
