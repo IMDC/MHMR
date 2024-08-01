@@ -1,26 +1,19 @@
 import React, {useEffect, useState} from 'react';
-import { ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
-import { Alert, Dimensions, FlatList, Modal, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {Alert, SafeAreaView, Text, View} from 'react-native';
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import Styles, { windowHeight, windowWidth } from '../assets/util/styles';
+import { windowHeight, windowWidth } from '../assets/util/styles';
 import { useWordList } from '../components/wordListProvider';
-import { CheckBox, Button } from '@rneui/themed';
-import { useRealm } from '../models/VideoData';
-import { useDropdownContext } from '../components/videoSetProvider';
 
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
-  const { wordList, updateWordList } = useWordList();
-  const realm = useRealm();
-  const { currentVideoSet } = useDropdownContext();
+  const { wordList } = useWordList(); 
 
   const [updatedData, setUpdatedData] = useState(wordList || []);
   const [dropdownValue, setDropdownValue] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedWords, setSelectedWords] = useState(new Set(currentVideoSet?.selectedWords || []));
 
   const dropdownData = [
     {
@@ -123,55 +116,24 @@ const DataAnalysisWordCloud = () => {
     }
   }, [dropdownValue, wordList]);
 
-  useEffect(() => {
-    if (currentVideoSet?.selectedWords?.length > 0) {
-      const selectedWordsSet = new Set(currentVideoSet.selectedWords);
-      setSelectedWords(selectedWordsSet);
-    } else {
-      setSelectedWords(new Set());
-    }
-  }, [currentVideoSet]);
-
-  const renderDropdownItem = item => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
-      <Text style={{ marginRight: 10 }}>{item.label}</Text>
-      {item.colors.map((color, index) => (
-        <View
-          key={index}
-          style={{
-            width: 20,
-            height: 20,
-            backgroundColor: color,
-            marginHorizontal: 2,
-            borderRadius: 2,
-          }}
-        />
-      ))}
-    </View>
-  );
-
-  const toggleWordSelection = word => {
-    const updatedSelection = new Set(selectedWords);
-    if (updatedSelection.has(word)) {
-      updatedSelection.delete(word);
-    } else {
-      updatedSelection.add(word);
-    }
-    setSelectedWords(updatedSelection);
-  };
-
-  const applyWordSelection = () => {
-    const filteredData = wordList.filter(item => !selectedWords.has(item.text));
-    setUpdatedData(filteredData);
-
-    realm.write(() => {
-      const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
-      if (videoSet) {
-        videoSet.selectedWords = Array.from(selectedWords);
-      }
-    });
-    updateWordList(filteredData);
-    setModalVisible(false);
+  const renderDropdownItem = item => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+        <Text style={{ marginRight: 10 }}>{item.label}</Text>
+        {item.colors.map((color, index) => (
+          <View
+            key={index}
+            style={{
+              width: 20,
+              height: 20,
+              backgroundColor: color,
+              marginHorizontal: 2,
+              borderRadius: 2,
+            }}
+          />
+        ))}
+      </View>
+    );
   };
 
   return (
@@ -185,12 +147,13 @@ const DataAnalysisWordCloud = () => {
                 options={{
                   words: updatedData,
                   verticalEnabled: true,
-                  rotateRatio: 0.5,
-                  minFont: 40,
-                  maxFont: 120,
+                  rotateRatio: 0.3,
+                  minFont: windowHeight * 0.04,
+                  maxFont: windowHeight * 0.08,
                   fontOffset: 1,
-                  width: windowWidth * 0.5,
+                  width: windowWidth,
                   height: windowHeight * 0.65,
+
                   fontFamily: 'Arial',
                 }}
               />
@@ -208,6 +171,7 @@ const DataAnalysisWordCloud = () => {
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
               <Dropdown
                 data={dropdownData}
+                dropdownPosition="top"
                 maxHeight={150}
                 style={{
                   height: 50,
@@ -224,127 +188,13 @@ const DataAnalysisWordCloud = () => {
                 onChange={item => setDropdownValue(item.value)}
               />
             </View>
-            <View style={styles.buttonContainer}>
-              <Button
-                title="Edit words"
-                onPress={() => setModalVisible(true)}
-                color={Styles.MHMRBlue}
-                radius={50}
-                containerStyle={styles.buttonStyle}
-              />
-            </View>
           </View>
         </View>
       ) : (
         <View></View>
       )}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.smallModalView}>
-          <Text style={styles.modalText}>Select words to remove</Text>
-          <FlatList
-            data={wordList}
-            renderItem={({ item }) => (
-              <CheckBox
-                title={item.text}
-                checked={selectedWords.has(item.text)}
-                onPress={() => toggleWordSelection(item.text)}
-                containerStyle={styles.checkboxContainer}
-                textStyle={styles.checkboxText}
-              />
-            )}
-            keyExtractor={item => item.text}
-            numColumns={3}
-            contentContainerStyle={styles.flatListContent}
-          />
-          <View style={styles.buttonContainer}>
-          <Button
-              title="Apply"
-              color={Styles.MHMRBlue}
-              radius={50}
-              onPress={applyWordSelection}
-              containerStyle={styles.buttonStyle}
-            />
-            <Button
-              title="Close"
-              onPress={() => setModalVisible(false)}
-              color={Styles.MHMRBlue}
-              radius={50}
-              containerStyle={styles.buttonStyle}
-            />
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  smallModalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    maxHeight: Dimensions.get('window').height * 0.5,
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  videoIDText: {
-    marginVertical: 10,
-    fontSize: 16,
-    color: 'blue',
-  },
-  checkboxContainer: {
-    width: '30%',
-  },
-  checkboxText: {
-    fontSize: 14,
-  },
-  flatListContent: {
-    flexGrow: 1,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 20,
-  },
-  buttonStyle: {
-    flex: 1,
-    marginHorizontal: 10,
-  },
-});
 
 export default DataAnalysisWordCloud;
