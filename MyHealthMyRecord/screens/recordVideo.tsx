@@ -37,6 +37,7 @@ const RecordVideo = () => {
   // max length of recording allowed in seconds
   const maxLength = 60;
   const [timeWarningMessage, setTimeWarningMessage] = useState('');
+  const [showExtendButton, setShowExtendButton] = useState(false);
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
 
@@ -153,6 +154,12 @@ const RecordVideo = () => {
     setEnableTimer(false);
     setTimeLeft(maxLength);
     setTimeWarningMessage('');
+    setShowExtendButton(false);
+  };
+
+  const extendTime = () => {
+    setTimeLeft(prevTimeLeft => prevTimeLeft + 60);
+    setShowExtendButton(false);
   };
 
   /* timer */
@@ -161,12 +168,14 @@ const RecordVideo = () => {
       timerRef.current = setInterval(() => {
         setTimeLeft(prevTimeLeft => {
           const newTimeLeft = prevTimeLeft - 1;
-          if (newTimeLeft <= 10) {
+          if (newTimeLeft <= 10 && newTimeLeft > 0) {
             setTimeWarningMessage(`${newTimeLeft} more seconds`);
-          }
-          if (newTimeLeft <= 0) {
+          } else if (newTimeLeft <= 0) {
             stopRecodingHandler();
             clearInterval(timerRef.current);
+          }
+          if (newTimeLeft <= 15 && newTimeLeft > 0) {
+            setShowExtendButton(true);
           }
           return newTimeLeft;
         });
@@ -460,6 +469,15 @@ const RecordVideo = () => {
           {timeWarningMessage != '' ? (
             <Text style={styles.timeWarning}>{timeWarningMessage}</Text>
           ) : null}
+          {showExtendButton && (
+            <View style={styles.extendButtonContainer}>
+              <TouchableOpacity
+                style={styles.extendButton}
+                onPress={extendTime}>
+                <Text style={styles.extendButtonText}>Need more time?</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -664,6 +682,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     top: 100,
     padding: 10,
+  },
+  extendButtonContainer: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 10,
+  },
+  extendButton: {
+    backgroundColor: '#1C3EAA',
+    padding: 10,
+    borderRadius: 10,
+  },
+  extendButtonText: {
+    color: 'white',
+    fontSize: 18,
   },
 });
 
