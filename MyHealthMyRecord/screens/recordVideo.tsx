@@ -40,6 +40,7 @@ const RecordVideo = () => {
   const [showExtendButton, setShowExtendButton] = useState(false);
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
+  const [timerExtended, setTimerExtended] = useState(false);
 
   const [videoSource, setVideoSource] = useState<any | string>('');
 
@@ -107,6 +108,7 @@ const RecordVideo = () => {
       setRecordingInProgress(true);
       setTimeLeft(maxLength);
       setEnableTimer(true);
+      setTimerExtended(false);
     }
   };
 
@@ -155,11 +157,15 @@ const RecordVideo = () => {
     setTimeLeft(maxLength);
     setTimeWarningMessage('');
     setShowExtendButton(false);
+    setTimerExtended(false);
   };
 
   const extendTime = () => {
-    setTimeLeft(prevTimeLeft => prevTimeLeft + 60);
-    setShowExtendButton(false);
+    if (!timerExtended) {
+      setTimeLeft(prevTimeLeft => prevTimeLeft + 60);
+      setShowExtendButton(false);
+      setTimerExtended(true);
+    }
   };
 
   /* timer */
@@ -174,7 +180,7 @@ const RecordVideo = () => {
             stopRecodingHandler();
             clearInterval(timerRef.current);
           }
-          if (newTimeLeft <= 15 && newTimeLeft > 0) {
+          if (newTimeLeft <= 15 && newTimeLeft > 0 && !timerExtended) {
             setShowExtendButton(true);
           }
           return newTimeLeft;
