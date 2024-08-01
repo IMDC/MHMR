@@ -5,7 +5,7 @@ import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
 import {PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
-import {Icon, Button} from '@rneui/themed';
+import {Icon, Button, Dialog, Input} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
 import {useQuery, useRealm} from '../models/VideoData';
 import Realm from 'realm';
@@ -43,6 +43,9 @@ const RecordVideo = () => {
   const [enableTimer, setEnableTimer] = useState(false);
 
   const [videoSource, setVideoSource] = useState<any | string>('');
+  const [dateTime, setDateTime] = useState('');
+  const [newVideoName, setNewVideoName] = useState('');
+  const [visible, setVisible] = useState(false);
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
@@ -52,6 +55,11 @@ const RecordVideo = () => {
    */
   const makeDirectory = async (folderPath: string) => {
     await RNFS.mkdir(folderPath); //create a new folder on folderPath
+  };
+
+  const toggleDialog = () => {
+    console.log('toggleDialog');
+    setVisible(!visible);
   };
 
   const realm = useRealm();
@@ -283,10 +291,9 @@ const RecordVideo = () => {
                 {
                   text: 'View Recordings',
                   onPress: () => {
-                   navigation.navigate('Manage Videos', {
-                     screen: 'View Recordings',
-                
-                   });
+                    navigation.navigate('Manage Videos', {
+                      screen: 'View Recordings',
+                    });
                     setShowCamera(true);
                   },
                 },
@@ -425,8 +432,8 @@ const RecordVideo = () => {
   ) => {
     const videoData = {
       _id: new Realm.BSON.ObjectID(),
-      datetimeRecorded: new Date(),
-      title: saveDate,
+      datetimeRecorded: dateTime,
+      title: newVideoName,
       filename: filename,
       duration: duration,
       textComments: [],
@@ -456,6 +463,28 @@ const RecordVideo = () => {
 
   return (
     <View style={styles.container}>
+      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+        <Dialog.Title title="Name this video:" />
+        <Input
+          inputStyle={{fontSize: 35}}
+          placeholder={dateTime}
+          // onChangeText={value => setNewKeyword(value)}
+          onChangeText={value => {
+            setNewVideoName(value);
+            console.log('New Video Set Name:', newVideoName);
+          }}
+        />
+        <Dialog.Actions>
+          <Dialog.Button
+            title="CONFIRM"
+            onPress={() => {
+              saveVideo(videoSource.path);
+              toggleDialog();
+            }}
+          />
+          <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
+        </Dialog.Actions>
+      </Dialog>
       {showCamera ? (
         <>
           <Camera
@@ -585,7 +614,10 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
-                  saveVideo(videoSource.path);
+                  setDateTime(new Date().toString().split(' GMT-')[0]);
+                  setNewVideoName(new Date().toString().split(' GMT-')[0]);
+                  toggleDialog();
+                  // saveVideo(videoSource.path);
                   // setSaveBtnState(true);
                 }}>
                 Save video

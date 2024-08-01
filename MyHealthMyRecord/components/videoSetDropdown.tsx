@@ -37,12 +37,6 @@ const VideoSetDropdown = ({
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const videoData = useQuery<VideoData>('VideoData');
 
-  interface Item {
-    date: string;
-    time: string;
-    videoCount: number;
-    dateRange: string;
-  }
 
   useEffect(() => {
     // console.log(currentVideoSet);
