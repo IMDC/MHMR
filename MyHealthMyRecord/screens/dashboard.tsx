@@ -114,6 +114,23 @@ function Dashboard() {
           new Set([...currentVideoSet?.videoIDs, ...selectedVideosArray]),
         );
 
+        // if the earliest video date is greater than the new video date, update the earliest video date
+        if (
+          currentVideoSet.earliestVideoDateTime >
+          selectedSetVideos[0].datetimeRecorded
+        ) {
+          currentVideoSet.earliestVideoDateTime =
+            selectedSetVideos[0].datetimeRecorded;
+        }
+        // if the latest video date is less than the new video date, update the latest video date
+        if (
+          currentVideoSet.latestVideoDateTime <
+          selectedSetVideos[selectedSetVideos.length - 1].datetimeRecorded
+        ) {
+          currentVideoSet.latestVideoDateTime =
+            selectedSetVideos[selectedSetVideos.length - 1].datetimeRecorded;
+        }
+
         const updatedVideosInSet = videoData.filter(video => {
           new Set(currentVideoSet?.videoIDs).has(video._id.toString());
         });
@@ -341,7 +358,9 @@ function Dashboard() {
                         <Text style={{fontSize: 20}}>
                           {video.datetimeRecorded?.toLocaleString()}
                         </Text>
-                        <ScrollView horizontal={true} style={{flexDirection: 'row'}}>
+                        <ScrollView
+                          horizontal={true}
+                          style={{flexDirection: 'row'}}>
                           {video.keywords.map((key: string) => {
                             if (JSON.parse(key).checked) {
                               return (

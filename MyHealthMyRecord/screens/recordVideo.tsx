@@ -281,8 +281,14 @@ const RecordVideo = () => {
               'Would you like to record another or markup video?',
               [
                 {
-                  text: 'Exit to Home',
-                  onPress: () => console.log(navigation.navigate('Home')),
+                  text: 'View Recordings',
+                  onPress: () => {
+                   navigation.navigate('Manage Videos', {
+                     screen: 'View Recordings',
+                
+                   });
+                    setShowCamera(true);
+                  },
                 },
                 {
                   text: 'Record Another',

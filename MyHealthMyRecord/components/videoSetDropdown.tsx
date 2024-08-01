@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, Alert} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useDropdownContext} from './videoSetProvider';
-import {useRealm} from '../models/VideoData';
+import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 import {Button, Dialog, Input} from '@rneui/themed';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
@@ -27,7 +27,7 @@ const VideoSetDropdown = ({
     setCurrentVideoSet,
     currentVideoSet,
     isVideoSetSaved,
-    handleDeleteSet
+    handleDeleteSet,
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
@@ -35,29 +35,41 @@ const VideoSetDropdown = ({
   const [dateTime, setDateTime] = useState('');
   const [newVideoSetName, setNewVideoSetName] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const videoData = useQuery<VideoData>('VideoData');
 
   useEffect(() => {
     // console.log(currentVideoSet);
     // console.log(videoSetVideoIDs.length);
     // console.log(isVideoSetSaved)
     const formattedDropdown = videoSets.map(set => ({
-      label: set.name,
+      label: `${set.name} | ${
+        set.earliestVideoDateTime.toLocaleString().split(',')[0]
+      } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
       value: set._id.toString(),
       id: set._id,
     }));
     setLocalDropdown(formattedDropdown);
   }, [videoSets]);
 
-  const saveVideoSetBtnCllicked = () => {
-  };
-  
-  const toggleDialog = () => {
-      console.log('toggleDialog');
-      setVisible(!visible);
-    };
+  const saveVideoSetBtnCllicked = () => {};
 
+  const toggleDialog = () => {
+    console.log('toggleDialog');
+    setVisible(!visible);
+  };
 
   const createVideoSet = (frequencyData, videoIDs) => {
+    // create a realm array of videos by mapping through the videoIDs
+    let videoIDsArray = videoIDs.map(id =>
+      realm.objects('VideoData').find(video => video._id.toString() === id),
+    );
+
+    console.log('videoIDsArray:', videoIDsArray);
+
+    let firstVideoDateTime = videoIDsArray[0].datetimeRecorded;
+
+    let lastVideoDateTime =
+      videoIDsArray[videoIDsArray.length - 1].datetimeRecorded;
     let newSet;
     realm.write(() => {
       newSet = realm.create('VideoSet', {
@@ -69,11 +81,15 @@ const VideoSetDropdown = ({
         summaryAnalysisBullet: '',
         summaryAnalysisSentence: '',
         isSummaryGenerated: false,
+        earliestVideoDateTime: firstVideoDateTime,
+        latestVideoDateTime: lastVideoDateTime,
       });
 
       const updatedVideoSets = realm.objects('VideoSet');
       const updatedDropdown = updatedVideoSets.map(set => ({
-        label: set.name,
+        label: `${set.name} | ${
+          set.earliestVideoDateTime.toLocaleString().split(',')[0]
+        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
         value: set._id.toString(),
         id: set._id,
       }));
@@ -105,10 +121,11 @@ const VideoSetDropdown = ({
     );
   };
 
-
   const refreshDropdown = () => {
     const updatedDropdown = videoSets.map(set => ({
-      label: set.name,
+      label: `${set.name} | ${
+        set.earliestVideoDateTime.toLocaleString().split(',')[0]
+      } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
       value: set._id.toString(),
       id: set._id,
     }));
@@ -131,19 +148,18 @@ const VideoSetDropdown = ({
       <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
         <Dialog.Title title="Name this video set:" />
         <Input
-          inputStyle={{ fontSize: 35 }}
+          inputStyle={{fontSize: 35}}
           placeholder={dateTime}
           // onChangeText={value => setNewKeyword(value)}
           onChangeText={value => {
-            setNewVideoSetName(value)
+            setNewVideoSetName(value);
             console.log('New Video Set Name:', newVideoSetName);
-           }}
+          }}
         />
         <Dialog.Actions>
           <Dialog.Button
             title="CONFIRM"
             onPress={() => {
-
               createVideoSet([], videoSetVideoIDs);
               toggleDialog();
             }}
@@ -214,9 +230,9 @@ const VideoSetDropdown = ({
                 // onPress={() => {
                 //   createVideoSet([], videoSetVideoIDs);
                 // }}
-                  onPress={() => {
-                    setDateTime(new Date().toString().split(' GMT-')[0]);
-                    setNewVideoSetName(new Date().toString().split(' GMT-')[0]);
+                onPress={() => {
+                  setDateTime(new Date().toString().split(' GMT-')[0]);
+                  setNewVideoSetName(new Date().toString().split(' GMT-')[0]);
                   toggleDialog();
                 }}
                 color={Styles.MHMRBlue}
@@ -289,6 +305,5 @@ const styles = {
     marginVertical: '1%',
   },
 };
-
 
 export default VideoSetDropdown;

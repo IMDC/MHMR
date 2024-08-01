@@ -147,12 +147,13 @@ const DataAnalysisWordCloud = () => {
                 options={{
                   words: updatedData,
                   verticalEnabled: true,
-                  rotateRatio: 0.5,
-                  minFont: 40,
-                  maxFont: 120,
+                  rotateRatio: 0.3,
+                  minFont: windowHeight * 0.04,
+                  maxFont: windowHeight * 0.08,
                   fontOffset: 1,
-                  width: windowWidth * 0.5,
+                  width: windowWidth,
                   height: windowHeight * 0.65,
+
                   fontFamily: 'Arial',
                 }}
               />
@@ -170,6 +171,7 @@ const DataAnalysisWordCloud = () => {
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
               <Dropdown
                 data={dropdownData}
+                dropdownPosition="top"
                 maxHeight={150}
                 style={{
                   height: 50,
