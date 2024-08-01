@@ -4,7 +4,7 @@ import { Alert, Dimensions, FlatList, Modal, SafeAreaView, StyleSheet, Text, Vie
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import { windowHeight, windowWidth } from '../assets/util/styles';
+import Styles, { windowHeight, windowWidth } from '../assets/util/styles';
 import { useWordList } from '../components/wordListProvider';
 import { CheckBox, Button } from '@rneui/themed';
 import { useRealm } from '../models/VideoData';
@@ -228,7 +228,7 @@ const DataAnalysisWordCloud = () => {
               <Button
                 title="Edit words"
                 onPress={() => setModalVisible(true)}
-                color="#841584"
+                color={Styles.MHMRBlue}
                 radius={50}
                 containerStyle={styles.buttonStyle}
               />
@@ -261,20 +261,20 @@ const DataAnalysisWordCloud = () => {
             numColumns={3}
             contentContainerStyle={styles.flatListContent}
           />
-          <View style={styles.modalButtonContainer}>
-            <Button
+          <View style={styles.buttonContainer}>
+          <Button
               title="Apply"
-              onPress={applyWordSelection}
-              color="#841584"
+              color={Styles.MHMRBlue}
               radius={50}
-              containerStyle={styles.modalButtonStyle}
+              onPress={applyWordSelection}
+              containerStyle={styles.buttonStyle}
             />
             <Button
               title="Close"
               onPress={() => setModalVisible(false)}
-              color="#841584"
+              color={Styles.MHMRBlue}
               radius={50}
-              containerStyle={styles.modalButtonStyle}
+              containerStyle={styles.buttonStyle}
             />
           </View>
         </View>
@@ -342,16 +342,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonStyle: {
-    flex: 1,
-    marginHorizontal: 10,
-  },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 20,
-  },
-  modalButtonStyle: {
     flex: 1,
     marginHorizontal: 10,
   },
