@@ -33,12 +33,10 @@ const RecordVideo = () => {
   // ref for timer interval
   const timerRef: any = useRef(null);
   // for timer interval
-  const timeOfRecording = useState(0);
-  // taken from timeOfRecording, used for display
-  const displayTime = useState(0);
+  const [timeLeft, setTimeLeft] = useState(60);
   // max length of recording allowed in seconds
-  const maxLength = useState(60);
-  const timeWarningMessage = useState('');
+  const maxLength = 60;
+  const [timeWarningMessage, setTimeWarningMessage] = useState('');
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
 
@@ -106,7 +104,7 @@ const RecordVideo = () => {
         },
       });
       setRecordingInProgress(true);
-      timeOfRecording[0] = 0;
+      setTimeLeft(maxLength);
       setEnableTimer(true);
     }
   };
@@ -153,41 +151,33 @@ const RecordVideo = () => {
     setRecordingInProgress(false);
     setRecordingPaused(false);
     setEnableTimer(false);
-    displayTime[1](0);
-    timeWarningMessage[1]('');
+    setTimeLeft(maxLength);
+    setTimeWarningMessage('');
   };
 
   /* timer */
   useEffect(() => {
-    console.log(enableTimer, timerRef.current, '----enable timer 1');
     if (enableTimer) {
       timerRef.current = setInterval(() => {
-        const time = timeOfRecording[0] + 1;
-        console.log(enableTimer, timerRef.current, time, '----enable timer 2');
-
-        timeOfRecording[0] = time;
-        console.log('timeeee: ', timeOfRecording[0]);
-        displayTime[1](timeOfRecording[0]);
-
-        // 10 second warning
-        if (timeOfRecording[0] >= maxLength[0] - 10)
-          timeWarningMessage[1](
-            maxLength[0] - timeOfRecording[0] + ' more seconds',
-          );
-
-        // stop recording once max time limit is reached
-        if (maxLength[0] > 0 && time >= maxLength[0]) {
-          stopRecodingHandler();
-          clearInterval(timerRef.current);
-          console.log(enableTimer, timerRef.current, '----enable timer 3');
-        }
+        setTimeLeft(prevTimeLeft => {
+          const newTimeLeft = prevTimeLeft - 1;
+          if (newTimeLeft <= 10) {
+            setTimeWarningMessage(`${newTimeLeft} more seconds`);
+          }
+          if (newTimeLeft <= 0) {
+            stopRecodingHandler();
+            clearInterval(timerRef.current);
+          }
+          return newTimeLeft;
+        });
       }, 1000);
     } else {
       stopRecodingHandler();
       clearInterval(timerRef.current);
-      console.log(enableTimer, timerRef.current, '----enable timer 4');
     }
-    console.log('.........................................ss', enableTimer);
+    return () => {
+      clearInterval(timerRef.current);
+    };
   }, [enableTimer]);
 
   /**
@@ -466,9 +456,9 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-          <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
-          {timeWarningMessage[0] != '' ? (
-            <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
+          <Text style={styles.timer}>{secondsToHms(timeLeft)}</Text>
+          {timeWarningMessage != '' ? (
+            <Text style={styles.timeWarning}>{timeWarningMessage}</Text>
           ) : null}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
@@ -638,7 +628,6 @@ const styles = StyleSheet.create({
     height: 80,
     width: 80,
     borderRadius: 40,
-    //ADD backgroundColor COLOR GREY
     backgroundColor: '#B2BEB5',
     alignSelf: 'center',
     borderWidth: 4,
