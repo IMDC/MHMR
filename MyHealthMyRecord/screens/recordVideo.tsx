@@ -475,7 +475,7 @@ const RecordVideo = () => {
           {timeWarningMessage != '' ? (
             <Text style={styles.timeWarning}>{timeWarningMessage}</Text>
           ) : null}
-          {showExtendButton && (
+          {showExtendButton && !timerExtended && (
             <View style={styles.extendButtonContainer}>
               <TouchableOpacity
                 style={styles.extendButton}
