@@ -483,6 +483,12 @@ const RecordVideo = () => {
               <TouchableOpacity
                 style={styles.extendButton}
                 onPress={extendTime}>
+                <Icon
+                  name="timer"
+                  size={20}
+                  color="white"
+                  style={styles.extendButtonIcon}
+                />
                 <Text style={styles.extendButtonText}>Extend timer once</Text>
               </TouchableOpacity>
             </View>
@@ -703,6 +709,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C3EAA',
     padding: 10,
     borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  extendButtonIcon: {
+    marginRight: 5,
   },
   extendButtonText: {
     color: 'white',
