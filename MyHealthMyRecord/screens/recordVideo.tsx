@@ -483,7 +483,7 @@ const RecordVideo = () => {
               <TouchableOpacity
                 style={styles.extendButton}
                 onPress={extendTime}>
-                <Text style={styles.extendButtonText}>Need more time?</Text>
+                <Text style={styles.extendButtonText}>Extend timer once</Text>
               </TouchableOpacity>
             </View>
           )}
