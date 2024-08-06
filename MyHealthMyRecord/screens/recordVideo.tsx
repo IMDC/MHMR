@@ -109,6 +109,8 @@ const RecordVideo = () => {
       setTimeLeft(maxLength);
       setEnableTimer(true);
       setTimerExtended(false);
+      setTimeWarningMessage('');
+      setShowExtendButton(false);
     }
   };
 
@@ -165,6 +167,7 @@ const RecordVideo = () => {
       setTimeLeft(prevTimeLeft => prevTimeLeft + 60);
       setShowExtendButton(false);
       setTimerExtended(true);
+      setTimeWarningMessage('');
     }
   };
 
@@ -193,7 +196,7 @@ const RecordVideo = () => {
     return () => {
       clearInterval(timerRef.current);
     };
-  }, [enableTimer]);
+  }, [enableTimer, timerExtended]);
 
   /**
    * format timestamp from seconds to 00:00:00
