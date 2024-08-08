@@ -23,6 +23,8 @@ import {useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
 import {
   bottomNavBarHeight,
+  heightNoTabs,
+  navbarHeight,
   screenHeight,
   windowHeight,
   windowWidth,
@@ -414,7 +416,7 @@ const MHMRVideoPlayer = ({
   return (
     <ScrollView>
       {isFullscreen ? (
-        <View style={{height: windowHeight, width: '100%'}}>
+        <View style={{ height: screenHeight, width: '100%'}}>
           <View
             style={{
               flex: 1,

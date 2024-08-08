@@ -37,12 +37,13 @@ const VideoSetDropdown = ({
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const videoData = useQuery<VideoData>('VideoData');
 
+
   useEffect(() => {
     // console.log(currentVideoSet);
     // console.log(videoSetVideoIDs.length);
     // console.log(isVideoSetSaved)
     const formattedDropdown = videoSets.map(set => ({
-      label: `${set.name} | ${
+      label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
         set.earliestVideoDateTime.toLocaleString().split(',')[0]
       } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
       value: set._id.toString(),
@@ -87,7 +88,9 @@ const VideoSetDropdown = ({
 
       const updatedVideoSets = realm.objects('VideoSet');
       const updatedDropdown = updatedVideoSets.map(set => ({
-        label: `${set.name} | ${
+        label: `${set.name}\n\nVideo Count: ${
+          set.videoIDs.length
+        }\nDate Range: ${
           set.earliestVideoDateTime.toLocaleString().split(',')[0]
         } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
         value: set._id.toString(),
@@ -110,6 +113,8 @@ const VideoSetDropdown = ({
     refreshDropdown();
   };
 
+  
+
   const deleteAllVideoSets = () => {
     Alert.alert(
       'Delete Video Set',
@@ -123,7 +128,7 @@ const VideoSetDropdown = ({
 
   const refreshDropdown = () => {
     const updatedDropdown = videoSets.map(set => ({
-      label: `${set.name} | ${
+      label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
         set.earliestVideoDateTime.toLocaleString().split(',')[0]
       } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
       value: set._id.toString(),
