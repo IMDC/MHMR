@@ -445,7 +445,7 @@ const DataAnalysisBarGraph = () => {
                   marginVertical: 10,
                 }}>
                 <Button
-                  title="Edit words"
+                  title="Select words"
                   onPress={() => setEditModalVisible(true)}
                   color={Styles.MHMRBlue}
                   radius={50}

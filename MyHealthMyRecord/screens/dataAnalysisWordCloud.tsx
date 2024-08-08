@@ -211,7 +211,7 @@ const DataAnalysisWordCloud = () => {
             </View>
             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
               <Button
-                title="Edit words"
+                title="Select words"
                 onPress={() => setEditModalVisible(true)}
                 color={Styles.MHMRBlue}
                 radius={50}
