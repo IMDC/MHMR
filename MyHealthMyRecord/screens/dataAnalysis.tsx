@@ -423,6 +423,7 @@ const DataAnalysis = () => {
           clearVideoSetBtn={false}
           deleteAllVideoSetsBtn={false}
           manageSetBtn={false}
+          keepViewBtn={true}
           onVideoSetChange={handleVideoSelectionChange}
         />
       </View>
