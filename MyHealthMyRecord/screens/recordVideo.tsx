@@ -7,20 +7,23 @@ import {PermissionsAndroid, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 import {Icon, Button, Dialog, Input} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {useQuery, useRealm} from '../models/VideoData';
+import {useQuery, useRealm, VideoData} from '../models/VideoData';
 import Realm from 'realm';
 import {createRealmContext} from '@realm/react';
 import {getAuth, getTranscript} from '../components/stt_api';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {useLoader} from '../components/loaderProvider';
+import {useDropdownContext} from '../components/videoSetProvider';
 
 const RecordVideo = () => {
+  const {videoSetVideoIDs} = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [saveBtnState, setSaveBtnState] = useState(false);
   const camera: any = useRef(null);
   const videoPlayer: any = useRef();
   const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
   const [deviceDir, setDeviceDir] = useState('front');
+  const [newVideoSetName, setNewVideoSetName] = useState('');
   const devices: any = useCameraDevices(deviceType);
   //use front camera
   const device = devices[deviceDir];
@@ -29,7 +32,7 @@ const RecordVideo = () => {
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
-
+  const [createdVideoSetBool, setCreatedVideoSetBool] = useState(false);
   // ref for timer interval
   const timerRef: any = useRef(null);
   // for timer interval
@@ -46,6 +49,7 @@ const RecordVideo = () => {
   const [dateTime, setDateTime] = useState('');
   const [newVideoName, setNewVideoName] = useState('');
   const [visible, setVisible] = useState(false);
+  const [setNameVisible, setSetNameVisible] = useState(false);
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
@@ -62,8 +66,29 @@ const RecordVideo = () => {
     setVisible(!visible);
   };
 
+  const toggleSetNameDialog = () => {
+    console.log('toggleSetNameDialog');
+    setSetNameVisible(!setNameVisible);
+  };
+
   const realm = useRealm();
   const result = useQuery('VideoData');
+
+  const getVideoNameCount = (baseName: string) => {
+    const videos = realm
+      .objects('VideoData')
+      .filtered(`title BEGINSWITH "${baseName}"`);
+    return videos.length; // This returns the number of videos that start with the base name
+  };
+
+  const checkNameDuplicate = (name: string) => {
+    const video = realm.objects('VideoData').filtered(`title == "${name}"`);
+    if (video.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   //console.log("result:", result);
   //const videodatas = useMemo(() => result.sorted("datetimeRecorded"), [result]);
   //console.log("videodatas:", videodatas);
@@ -85,7 +110,7 @@ const RecordVideo = () => {
     getPermission();
     //testing state for videoSource to make sure it's being updated right after video is recorded, test later and if it updates fine without this if condition we can delete it
     if (videoSource != '') {
-      console.log('?', videoSource.path);
+      // console.log('?', videoSource.path);
     }
     makeDirectory(MHMRfolderPath);
     makeDirectory(MHMRfolderPath + '/audio');
@@ -286,26 +311,52 @@ const RecordVideo = () => {
           if (ReturnCode.isSuccess(returnCode)) {
             Alert.alert(
               'Your recording has been saved.',
-              'Would you like to record another or markup video?',
+              'Would you like to record another video and create a video set or markup video?',
               [
                 {
                   text: 'View Recordings',
                   onPress: () => {
+                    if (createdVideoSetBool == true) {
+                      realm.write(() => {
+                        videoSetVideoIDs.push(videoId);
+                      });
+                    }
                     navigation.navigate('Manage Videos', {
                       screen: 'View Recordings',
                     });
                     setShowCamera(true);
                   },
                 },
+
                 {
-                  text: 'Record Another',
+                  text: createdVideoSetBool
+                    ? 'Record Another' // If true
+                    : 'Record Another and Create Set', // If false
                   onPress: () => {
+                    if (createdVideoSetBool === false) {
+                      setDateTime(new Date().toString().split(' GMT-')[0]);
+                      setNewVideoSetName(
+                        new Date().toString().split(' GMT-')[0],
+                      );
+                      toggleSetNameDialog();
+                    }
+
                     setShowCamera(true);
+
+                    // Add newly created video to video set within a Realm write transaction
+                    realm.write(() => {
+                      videoSetVideoIDs.push(videoId);
+                    });
                   },
                 },
                 {
                   text: 'Markup video',
                   onPress: () => {
+                    if (createdVideoSetBool == true) {
+                      realm.write(() => {
+                        videoSetVideoIDs.push(videoId);
+                      });
+                    }
                     navigation.navigate('Manage Videos', {
                       screen: 'Add or Edit Markups',
                       params: {id: videoId},
@@ -425,6 +476,48 @@ const RecordVideo = () => {
   painscaleRef.map(pain => painscaleInit.push(JSON.stringify(pain)));
   weekdayRef.map(day => weekdayInit.push(JSON.stringify(day)));
 
+  const createVideoSet = (frequencyData, videoIDs) => {
+    // create a realm array of videos by mapping through the videoIDs
+    let videoIDsArray = videoIDs.map(id =>
+      realm.objects('VideoData').find(video => video._id.toString() === id),
+    );
+
+    console.log('videoIDsArray:', videoIDsArray);
+
+    //  let firstVideoDateTime = videoIDsArray[0].datetimeRecorded;
+
+    //  let lastVideoDateTime =
+    //    videoIDsArray[videoIDsArray.length - 1].datetimeRecorded;
+    let newSet;
+    realm.write(() => {
+      newSet = realm.create('VideoSet', {
+        _id: new Realm.BSON.ObjectID(),
+        datetime: new Date().toString().split(' GMT-')[0],
+        name: newVideoSetName,
+        frequencyData: frequencyData,
+        videoIDs: videoIDs,
+        summaryAnalysisBullet: '',
+        summaryAnalysisSentence: '',
+        isSummaryGenerated: false,
+        earliestVideoDateTime: dateTime,
+        latestVideoDateTime: dateTime,
+      });
+
+      const updatedVideoSets = realm.objects('VideoSet');
+      const updatedDropdown = updatedVideoSets.map(set => ({
+        label: `${set.name}\n\nVideo Count: ${
+          set.videoIDs.length
+        }\nDate Range: ${
+          set.earliestVideoDateTime.toLocaleString().split(',')[0]
+        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
+        value: set._id.toString(),
+        id: set._id,
+      }));
+
+      const newVideoSetValue = newSet._id.toString();
+    });
+  };
+
   const createVideoData = (
     filename: string,
     duration: number,
@@ -468,18 +561,53 @@ const RecordVideo = () => {
         <Input
           inputStyle={{fontSize: 35}}
           placeholder={dateTime}
-          // onChangeText={value => setNewKeyword(value)}
           onChangeText={value => {
-            setNewVideoName(value);
-            console.log('New Video Set Name:', newVideoName);
+            setNewVideoName(value); // Update state with user input
           }}
         />
         <Dialog.Actions>
           <Dialog.Button
             title="CONFIRM"
             onPress={() => {
-              saveVideo(videoSource.path);
-              toggleDialog();
+              const currentVideoName = newVideoName.trim() || dateTime; // Fallback to dateTime if newVideoName is empty
+              if (!checkNameDuplicate(currentVideoName)) {
+                saveVideo(videoSource.path);
+                setSaveBtnState(true);
+                toggleDialog();
+              } else {
+                Alert.alert(
+                  `There is already a video named "${currentVideoName}".`,
+                  'Please rename the video.',
+                  [
+                    {
+                      text: 'OK',
+                    },
+                  ],
+                );
+              }
+            }}
+          />
+          <Dialog.Button title="CANCEL" onPress={toggleDialog} />
+        </Dialog.Actions>
+      </Dialog>
+
+      <Dialog isVisible={setNameVisible} onBackdropPress={toggleSetNameDialog}>
+        <Dialog.Title title="Name this video set:" />
+        <Input
+          inputStyle={{fontSize: 35}}
+          placeholder={dateTime}
+          // onChangeText={value => setNewKeyword(value)}
+          onChangeText={value => {
+            setNewVideoSetName(value);
+            console.log('New Video Set Name:', newVideoSetName);
+          }}
+        />
+        <Dialog.Actions>
+          <Dialog.Button
+            title="CONFIRM"
+            onPress={() => {
+              createVideoSet([], videoSetVideoIDs);
+              toggleSetNameDialog();
             }}
           />
           <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
@@ -499,6 +627,13 @@ const RecordVideo = () => {
           {timeWarningMessage[0] != '' ? (
             <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
           ) : null}
+          {createdVideoSetBool ? (
+            <View style={{justifyContent: 'flex-end'}}>
+              <Text>Creating videos for video set: </Text>
+            </View>
+          ) : (
+            <View></View>
+          )}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>

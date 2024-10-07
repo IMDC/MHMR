@@ -37,7 +37,6 @@ const VideoSetDropdown = ({
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const videoData = useQuery<VideoData>('VideoData');
 
-
   useEffect(() => {
     // console.log(currentVideoSet);
     // console.log(videoSetVideoIDs.length);
@@ -113,7 +112,14 @@ const VideoSetDropdown = ({
     refreshDropdown();
   };
 
-  
+  const checkSetNameDuplicate = (name: string) => {
+    const video = realm.objects('VideoSet').filtered(`name == "${name}"`);
+    if (video.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const deleteAllVideoSets = () => {
     Alert.alert(
@@ -165,8 +171,16 @@ const VideoSetDropdown = ({
           <Dialog.Button
             title="CONFIRM"
             onPress={() => {
-              createVideoSet([], videoSetVideoIDs);
-              toggleDialog();
+              if (!checkSetNameDuplicate(newVideoSetName)) {
+                createVideoSet([], videoSetVideoIDs);
+                toggleDialog();
+              } else {
+                Alert.alert(
+                  'Error',
+                  'Video set name already exists. Please choose a different name.',
+                );
+                [{text: 'OK'}];
+              }
             }}
           />
           <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
