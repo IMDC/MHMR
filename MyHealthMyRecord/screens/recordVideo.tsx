@@ -15,6 +15,9 @@ import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {useLoader} from '../components/loaderProvider';
 import {useDropdownContext} from '../components/videoSetProvider';
 
+import VideoSetDropdown from '../components/videoSetDropdown';
+import { useDropdownContext } from '../components/videoSetProvider';
+{}
 const RecordVideo = () => {
   const {videoSetVideoIDs} = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -28,7 +31,8 @@ const RecordVideo = () => {
   //use front camera
   const device = devices[deviceDir];
   const {showLoader, hideLoader} = useLoader();
-
+  const videoSets = useQuery<any>('VideoSet');
+  const [videos, setVideos] = useState<VideoData[]>([]);
   const [showCamera, setShowCamera] = useState(true);
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
@@ -49,7 +53,49 @@ const RecordVideo = () => {
   const [dateTime, setDateTime] = useState('');
   const [newVideoName, setNewVideoName] = useState('');
   const [visible, setVisible] = useState(false);
-  const [setNameVisible, setSetNameVisible] = useState(false);
+  const [addToVideoSetPromptVisible, setAddToVideoSetPromptVisible] = useState(false);
+
+  
+  const handleNewSetNameChange = (name) => {
+    setNewVideoSetName(name); // Update state when name changes
+  };
+
+  
+
+  const handleConfirm = () => {
+    if (videoSetValue === 'create_new' && newVideoSetName) {
+
+      
+      realm.write(() => {
+        realm.create('VideoSet', {
+          _id: new Realm.BSON.ObjectID(), // Generate new ID
+          datetime: new Date().toString().split(' GMT-')[0],
+          name: newVideoSetName, // Use captured name
+          videoIDs: [], // Empty list for now
+          summaryAnalysisBullet: '',
+        summaryAnalysisSentence: '',
+        isSummaryGenerated: false,
+        });
+      });
+      console.log(`New Video Set ${newVideoSetName} created!`);
+    }
+
+    // Close the dialog after saving or if it's an existing set
+    toggleSetPromptDialog();
+  };
+
+  const handleVideoSelectionChange = (selectedId: string) => {
+    if (!selectedId) {
+      setSelectedVideoSet(undefined);
+      setVideos([]);
+      return;
+    }
+    const selectedSet = videoSets.find(
+      set => set._id.toString() === selectedId,
+    );
+    setSelectedVideoSet(selectedSet);
+  };
+   const [setNameVisible, setSetNameVisible] = useState(false);
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
@@ -70,6 +116,11 @@ const RecordVideo = () => {
     console.log('toggleSetNameDialog');
     setSetNameVisible(!setNameVisible);
   };
+
+  const toggleSetPromptDialog = () => {
+    console.log('toggleSetPromptDialog');
+    setAddToVideoSetPromptVisible(!addToVideoSetPromptVisible);
+  }
 
   const realm = useRealm();
   const result = useQuery('VideoData');
@@ -329,18 +380,8 @@ const RecordVideo = () => {
                 },
 
                 {
-                  text: createdVideoSetBool
-                    ? 'Record Another' // If true
-                    : 'Record Another and Create Set', // If false
-                  onPress: () => {
-                    if (createdVideoSetBool === false) {
-                      setDateTime(new Date().toString().split(' GMT-')[0]);
-                      setNewVideoSetName(
-                        new Date().toString().split(' GMT-')[0],
-                      );
-                      toggleSetNameDialog();
-                    }
-
+                  text: 'Record Another',
+                  onPress: () => { toggleSetPromptDialog(); 
                     setShowCamera(true);
 
                     // Add newly created video to video set within a Realm write transaction
@@ -598,8 +639,8 @@ const RecordVideo = () => {
           placeholder={dateTime}
           // onChangeText={value => setNewKeyword(value)}
           onChangeText={value => {
-            setNewVideoSetName(value);
-            console.log('New Video Set Name:', newVideoSetName);
+            setNewVideoName(value);
+            console.log('New video name:', newVideoName);
           }}
         />
         <Dialog.Actions>
@@ -611,6 +652,30 @@ const RecordVideo = () => {
             }}
           />
           <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
+        </Dialog.Actions>
+      </Dialog>
+
+      <Dialog isVisible={addToVideoSetPromptVisible} onBackdropPress={toggleSetPromptDialog}>
+        <Dialog.Title title="Would you like to add this video to a set?" />
+
+        <VideoSetDropdown
+            videoSetDropdown={videoSetDropdown}
+            videoSets={realm.objects('VideoSet')}
+            saveVideoSetBtn={false}
+            clearVideoSetBtn={false}
+            deleteAllVideoSetsBtn={false}
+            manageSetBtn={false}
+            keepViewBtn={false}
+            onVideoSetChange={handleVideoSelectionChange}
+            onNewSetNameChange={handleNewSetNameChange} 
+          />
+        <Dialog.Actions>
+          <Dialog.Button
+            title="CONFIRM"
+            onPress={handleConfirm}
+          />
+          
+          <Dialog.Button title="CANCEL" onPress={() => toggleSetPromptDialog()} />
         </Dialog.Actions>
       </Dialog>
       {showCamera ? (

@@ -199,13 +199,6 @@ function Dashboard() {
     setSelectedVideoSet(selectedSet);
   };
 
-  const handleDeleteAllVideoSets = () => {
-    realm.write(() => {
-      const allVideoSets = realm.objects('VideoSet');
-      realm.delete(allVideoSets);
-      setVideoSetDropdown([]);
-    });
-  };
 
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
@@ -281,6 +274,7 @@ function Dashboard() {
             clearVideoSetBtn={true}
             deleteAllVideoSetsBtn={true}
             manageSetBtn={true}
+            keepViewBtn={false}
             onVideoSetChange={handleVideoSelectionChange}
           />
         </View>
