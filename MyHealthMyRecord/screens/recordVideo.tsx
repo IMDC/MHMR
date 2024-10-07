@@ -16,8 +16,7 @@ import {useLoader} from '../components/loaderProvider';
 import {useDropdownContext} from '../components/videoSetProvider';
 
 import VideoSetDropdown from '../components/videoSetDropdown';
-import { useDropdownContext } from '../components/videoSetProvider';
-{}
+
 const RecordVideo = () => {
   const {videoSetVideoIDs} = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
