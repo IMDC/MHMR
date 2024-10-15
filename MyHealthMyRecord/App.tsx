@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Button} from '@rneui/themed';
 import 'react-native-get-random-values';
 import {RealmProvider} from './models/VideoData';
@@ -179,6 +179,7 @@ function App() {
                 <Tab.Navigator
                   initialRouteName="MyHealthMyRecord"
                   screenOptions={{
+                    tabBarActiveTintColor: Styles.MHMRBlue,
                     tabBarShowLabel: false,
                     tabBarStyle: {
                       height: Styles.bottomNavBarHeight,
@@ -191,8 +192,12 @@ function App() {
                     tabBarShowLabel={false}
                     options={{
                       headerShown: false,
+                      tabBarShowLabel: true,
                       tabBarLabel: 'Analysis',
-                      headerStyle: {backgroundColor: Styles.NavBarGrey},
+                      tabBarLabelStyle: {
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                      },
                       tabBarIcon: () => (
                         <Icon
                           name="bar-chart-outline"
@@ -210,8 +215,13 @@ function App() {
                     component={DashboardStack}
                     options={{
                       headerShown: false,
+                      tabBarShowLabel: true,
                       tabBarLabel: 'Dashboard',
-                      headerStyle: {backgroundColor: Styles.NavBarGrey},
+                      tabBarLabelStyle: {
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                      },
+                      
                       tabBarIcon: () => (
                         <Icon
                           name="albums-outline"
@@ -226,10 +236,14 @@ function App() {
                   <Tab.Screen
                     name="MyHealthMyRecord"
                     component={StackNav}
-                    tabBarShowLabel={false}
                     options={{
                       headerShown: false,
-                      tabBarLabel: 'MyHealthMyRecord',
+                      tabBarShowLabel: true,
+                      tabBarLabel: 'Home',
+                      tabBarLabelStyle: {
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                      },
                       tabBarIcon: () => (
                         <Icon
                           name="home-outline"
@@ -246,8 +260,12 @@ function App() {
                     component={ManageVideosStack}
                     options={{
                       headerShown: false,
+                      tabBarShowLabel: true,
                       tabBarLabel: 'Manage Videos',
-                      headerStyle: {backgroundColor: Styles.NavBarGrey},
+                      tabBarLabelStyle: {
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                      },
                       tabBarIcon: () => (
                         <Icon
                           name="film-outline"
@@ -255,6 +273,7 @@ function App() {
                           type="ionicon"
                           color={Styles.MHMRBlue}
                           style={{width: Styles.bottomNavIconSize}}
+                          
                         />
                       ),
                     }}
@@ -263,8 +282,13 @@ function App() {
                     name="Help"
                     component={Help}
                     options={{
+                      headerShown: false,
+                      tabBarShowLabel: true,
                       tabBarLabel: 'Help',
-                      headerStyle: {backgroundColor: Styles.NavBarGrey},
+                      tabBarLabelStyle: {
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                      },
                       tabBarIcon: () => (
                         <Icon
                           name="information-circle-outline"
@@ -284,6 +308,14 @@ function App() {
       </NetworkProvider>
     </RealmProvider>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  customLabelStyle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+});
 
 export default App;
