@@ -14,13 +14,17 @@ import {getAuth, getTranscript} from '../components/stt_api';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {useLoader} from '../components/loaderProvider';
 import {useDropdownContext} from '../components/videoSetProvider';
-
 import VideoSetDropdown from '../components/videoSetDropdown';
 
 const RecordVideo = () => {
-  const {videoSetVideoIDs} = useDropdownContext();
+  const {
+    videoSetVideoIDs,
+    videoSetDropdown,
+    videoSetValue,
+  } = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [saveBtnState, setSaveBtnState] = useState(false);
+  const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
   const camera: any = useRef(null);
   const videoPlayer: any = useRef();
   const [deviceType, setDeviceType] = useState<any | null>(null); // use default lense at startup
@@ -52,19 +56,15 @@ const RecordVideo = () => {
   const [dateTime, setDateTime] = useState('');
   const [newVideoName, setNewVideoName] = useState('');
   const [visible, setVisible] = useState(false);
-  const [addToVideoSetPromptVisible, setAddToVideoSetPromptVisible] = useState(false);
+  const [addToVideoSetPromptVisible, setAddToVideoSetPromptVisible] =
+    useState(false);
 
-  
-  const handleNewSetNameChange = (name) => {
+  const handleNewSetNameChange = (name: React.SetStateAction<string>) => {
     setNewVideoSetName(name); // Update state when name changes
   };
 
-  
-
   const handleConfirm = () => {
     if (videoSetValue === 'create_new' && newVideoSetName) {
-
-      
       realm.write(() => {
         realm.create('VideoSet', {
           _id: new Realm.BSON.ObjectID(), // Generate new ID
@@ -72,8 +72,8 @@ const RecordVideo = () => {
           name: newVideoSetName, // Use captured name
           videoIDs: [], // Empty list for now
           summaryAnalysisBullet: '',
-        summaryAnalysisSentence: '',
-        isSummaryGenerated: false,
+          summaryAnalysisSentence: '',
+          isSummaryGenerated: false,
         });
       });
       console.log(`New Video Set ${newVideoSetName} created!`);
@@ -84,17 +84,25 @@ const RecordVideo = () => {
   };
 
   const handleVideoSelectionChange = (selectedId: string) => {
-    if (!selectedId) {
+    const selectedSet = videoSets.find(
+      set => set._id.toString() === selectedId,
+    );
+
+    if (selectedId === 'create_new') {
+      setSelectedVideoSet('create_new');
+      setVideos([]);
+    } else if (selectedId === 'none') {
+      setSelectedVideoSet('none');
+      setVideos([]);
+    } else if (selectedId) {
+      setSelectedVideoSet(selectedSet);
+    } else {
       setSelectedVideoSet(undefined);
       setVideos([]);
       return;
     }
-    const selectedSet = videoSets.find(
-      set => set._id.toString() === selectedId,
-    );
-    setSelectedVideoSet(selectedSet);
   };
-   const [setNameVisible, setSetNameVisible] = useState(false);
+  const [setNameVisible, setSetNameVisible] = useState(false);
 
   const MHMRfolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
 
@@ -119,7 +127,7 @@ const RecordVideo = () => {
   const toggleSetPromptDialog = () => {
     console.log('toggleSetPromptDialog');
     setAddToVideoSetPromptVisible(!addToVideoSetPromptVisible);
-  }
+  };
 
   const realm = useRealm();
   const result = useQuery('VideoData');
@@ -319,121 +327,152 @@ const RecordVideo = () => {
    * Save video to app storage, save VideoData object to database
    * @param path path of stored VisionCamera recording
    */
-  async function saveVideo(path: any) {
+  async function saveVideo(path: any, selectedVideoSet: any) {
     showLoader('Saving video...');
     const filePath = path.replace('file://', '');
     const pathSegments = filePath.split('/');
     const fileName = pathSegments[pathSegments.length - 1];
     const audioFileName = fileName.replace('.mp4', '.wav');
-    const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
+    const audioFolderPath = `${RNFS.DocumentDirectoryPath}/MHMR/audio`;
 
     const audioFolderExists = await RNFS.exists(audioFolderPath);
     if (!audioFolderExists) {
       await RNFS.mkdir(audioFolderPath);
     }
 
-    // delete console logs later
-    console.log(filePath);
-    // ex. /data/user/0/com.myhealthmyrecord/cache/VisionCamera-20230606_1208147672158123173592211.mp4
-    console.log(pathSegments);
-    // ex. ["", "data", "user", "0", "com.myhealthmyrecord", "cache", "VisionCamera-20230606_1208147672158123173592211.mp4"]
-    console.log(fileName);
-    // ex. VisionCamera-20230606_1208147672158123173592211.mp4
-
-    // RNFS.DocumentDirectoryPath is /data/user/0/com.myhealthmyrecord/files
     const date = new Date().toString();
     const saveDate = date.split(' GMT-');
-    console.log(date, saveDate);
+
     try {
       const videoId = createVideoData(
         fileName,
         videoSource.duration,
         saveDate[0],
       );
-      RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`)
-        .then(async () => {
-          console.log('File moved.');
-          // convert to audio
-          const ffmpegCommand = `-i ${MHMRfolderPath}/${fileName} -ar 16000 -ac 1 -vn -acodec pcm_s16le ${audioFolderPath}/${audioFileName}`;
-          const session = await FFmpegKit.execute(ffmpegCommand);
-          const returnCode = await session.getReturnCode();
 
-          if (ReturnCode.isSuccess(returnCode)) {
-            Alert.alert(
-              'Your recording has been saved.',
-              'Would you like to record another video and create a video set or markup video?',
-              [
-                {
-                  text: 'View Recordings',
-                  onPress: () => {
-                    if (createdVideoSetBool == true) {
-                      realm.write(() => {
-                        videoSetVideoIDs.push(videoId);
-                      });
-                    }
-                    navigation.navigate('Manage Videos', {
-                      screen: 'View Recordings',
+      // Move the video file to your designated folder
+      await RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`);
+      console.log('File moved.');
+
+      // Check if user has selected "Create New" for video set
+      if (selectedVideoSet === 'create_new') {
+        // Prompt the user to enter a name for the new set
+        Alert.prompt(
+          'Create New Video Set',
+          'Enter a name for your new video set:',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'OK',
+              onPress: setName => {
+                if (setName && setName.trim()) {
+                  // Create the new video set in Realm
+                  realm.write(() => {
+                    const newSet = realm.create('VideoSet', {
+                      id: new Realm.BSON.ObjectID(),
+                      name: setName,
+                      createdAt: new Date(),
+                      videoIDs: [videoId],
                     });
-                    setShowCamera(true);
-                  },
-                },
 
-                {
-                  text: 'Record Another',
-                  onPress: () => { toggleSetPromptDialog(); 
-                    setShowCamera(true);
-
-                    // Add newly created video to video set within a Realm write transaction
+                    // Video is added to the newly created set
+                    console.log('New video set created:', newSet.name);
+                    // Adds video to the new set
                     realm.write(() => {
-                      videoSetVideoIDs.push(videoId);
-                    });
-                  },
-                },
-                {
-                  text: 'Markup video',
-                  onPress: () => {
-                    if (createdVideoSetBool == true) {
-                      realm.write(() => {
-                        videoSetVideoIDs.push(videoId);
-                      });
-                    }
-                    navigation.navigate('Manage Videos', {
-                      screen: 'Add or Edit Markups',
-                      params: {id: videoId},
-                    });
-                    setShowCamera(true);
-                  },
-                },
-              ],
-            );
-            hideLoader();
-            //
-            // video.isConverted = true;
-          } else if (ReturnCode.isCancel(returnCode)) {
-            console.log('Conversion canceled');
-          } else {
-            hideLoader();
-            Alert.alert(
-              'Conversion failed',
-              'There was an issue converting your video to audio.',
-            );
-          }
-        })
-        .catch(err => {
-          Alert.alert(
-            'File Move Error',
-            'There was an issue moving your recording. Please try again.',
-            [{text: 'OK'}],
-          );
-          navigation.navigate('Home');
-        });
-    } catch (err: any) {
+                      newSet.videoIDs.push(videoId);
+                    })
+                  });
+
+                  // Navigate or show appropriate response after creating set
+                  Alert.alert('Video saved to new set', setName);
+                } else {
+                  Alert.alert('Error', 'Set name cannot be empty.');
+                }
+              },
+            },
+          ],
+        );
+      } else if (selectedVideoSet === 'none') {
+        // Save video normally if no set is selected
+        console.log('No set selected. Saving video normally');
+        
+
+
+      }
+      else {
+        // Add the video to the selected video set if it's not "create_new" or "none"
+        if (selectedVideoSet) {
+          realm.write(() => {
+            //convert videoId to string
+            const videoIdString = videoId?.toString();
+            selectedVideoSet.videoIDs.push(videoIdString);
+          });
+          Alert.alert('Video saved to selected set', selectedVideoSet.name);
+        }
+      }
+
+      // Convert to audio using FFmpeg
+      const ffmpegCommand = `-i ${MHMRfolderPath}/${fileName} -ar 16000 -ac 1 -vn -acodec pcm_s16le ${audioFolderPath}/${audioFileName}`;
+      const session = await FFmpegKit.execute(ffmpegCommand);
+      const returnCode = await session.getReturnCode();
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        console.log('Conversion successful.');
+        hideLoader();
+        Alert.alert(
+          'Your recording has been saved.',
+          'Would you like to record another video and create a video set or markup video?',
+          [
+            {
+              text: 'View Recordings',
+              onPress: () => {
+                if (createdVideoSetBool == true) {
+                  realm.write(() => {
+                    videoSetVideoIDs.push(videoId);
+                  });
+                }
+                navigation.navigate('Manage Videos', {
+                  screen: 'View Recordings',
+                });
+                setShowCamera(true);
+              },
+            },
+
+            {
+              text: 'Record Another',
+              onPress: () => {
+                toggleSetPromptDialog();
+                setShowCamera(true);
+              }
+            },
+            {
+              text: 'Markup Video',
+              onPress: () => {
+                navigation.navigate('Add or Edit Markups', {
+                  videoId: videoId,
+                });
+              },
+            },
+          ],
+        );
+      } else {
+        hideLoader();
+        Alert.alert(
+          'Conversion failed',
+          'There was an issue converting your video to audio.',
+        );
+      }
+    } catch (err) {
+      hideLoader();
       Alert.alert(
         'Save Error',
         'There was an issue saving your recording. Please try again.',
         [{text: 'OK'}],
       );
-      // console.error(err);
+      console.error(err);
     }
   }
   const keywordRef = [
@@ -611,7 +650,7 @@ const RecordVideo = () => {
             onPress={() => {
               const currentVideoName = newVideoName.trim() || dateTime; // Fallback to dateTime if newVideoName is empty
               if (!checkNameDuplicate(currentVideoName)) {
-                saveVideo(videoSource.path);
+                saveVideo(videoSource.path, selectedVideoSet);
                 setSaveBtnState(true);
                 toggleDialog();
               } else {
@@ -654,31 +693,34 @@ const RecordVideo = () => {
         </Dialog.Actions>
       </Dialog>
 
-      <Dialog isVisible={addToVideoSetPromptVisible} onBackdropPress={toggleSetPromptDialog}>
+      <Dialog
+        isVisible={addToVideoSetPromptVisible}
+        onBackdropPress={toggleSetPromptDialog}>
         <Dialog.Title title="Would you like to add this video to a set?" />
 
         <VideoSetDropdown
-            videoSetDropdown={videoSetDropdown}
-            videoSets={realm.objects('VideoSet')}
-            saveVideoSetBtn={false}
-            clearVideoSetBtn={false}
-            deleteAllVideoSetsBtn={false}
-            manageSetBtn={false}
-            keepViewBtn={false}
-            onVideoSetChange={handleVideoSelectionChange}
-            onNewSetNameChange={handleNewSetNameChange} 
-          />
+          videoSetDropdown={videoSetDropdown}
+          videoSets={realm.objects('VideoSet')}
+          saveVideoSetBtn={false}
+          clearVideoSetBtn={false}
+          deleteAllVideoSetsBtn={false}
+          manageSetBtn={false}
+          keepViewBtn={false}
+          onVideoSetChange={handleVideoSelectionChange}
+          onNewSetNameChange={handleNewSetNameChange}
+          plainDropdown={false}
+        />
         <Dialog.Actions>
+          <Dialog.Button title="CONFIRM" onPress={handleConfirm} />
+
           <Dialog.Button
-            title="CONFIRM"
-            onPress={handleConfirm}
+            title="CANCEL"
+            onPress={() => toggleSetPromptDialog()}
           />
-          
-          <Dialog.Button title="CANCEL" onPress={() => toggleSetPromptDialog()} />
         </Dialog.Actions>
       </Dialog>
       {showCamera ? (
-        <>
+        <View style={{width: '100%', height: '100%', alignItems: 'center'}}>
           <Camera
             ref={camera}
             style={StyleSheet.absoluteFill}
@@ -687,17 +729,35 @@ const RecordVideo = () => {
             video={true}
             audio={true}
           />
-          <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
-          {timeWarningMessage[0] != '' ? (
-            <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
-          ) : null}
-          {createdVideoSetBool ? (
-            <View style={{justifyContent: 'flex-end'}}>
-              <Text>Creating videos for video set: </Text>
+          <View style={{flexDirection: 'column', alignItems: 'center'}}>
+            {/* Timer */}
+            <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
+
+            {/* Time Warning Message */}
+            {timeWarningMessage[0] != '' ? (
+              <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
+            ) : null}
+
+            {/* Video Set Dropdown */}
+            <View style={styles.setContainer}>
+              <View style={styles.topBox}>
+                <Text style={styles.label}>Adding to:</Text>
+                <VideoSetDropdown
+                  videoSetDropdown={videoSetDropdown}
+                  videoSets={realm.objects('VideoSet')}
+                  saveVideoSetBtn={false}
+                  clearVideoSetBtn={false}
+                  deleteAllVideoSetsBtn={false}
+                  manageSetBtn={false}
+                  keepViewBtn={false}
+                  onVideoSetChange={handleVideoSelectionChange}
+                  onNewSetNameChange={handleNewSetNameChange}
+                  plainDropdown={true}
+                />
+              </View>
             </View>
-          ) : (
-            <View></View>
-          )}
+          </View>
+
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -710,33 +770,8 @@ const RecordVideo = () => {
                     size={40}
                     type="font-awesome"
                     color="white"
-                    // onPress={() => {
-                    //   stopRecodingHandler();
-                    // }}
                   />
                 </TouchableOpacity>
-                {/* 
-                {recordingPaused ? (
-                  <Icon
-                    name="play"
-                    size={40}
-                    type="font-awesome"
-                    color="white"
-                    onPress={() => {
-                      resumeRecodingHandler();
-                    }}
-                  />
-                ) : (
-                  <Icon
-                    name="pause"
-                    size={40}
-                    type="font-awesome"
-                    color="white"
-                    onPress={() => {
-                      pauseRecodingHandler();
-                    }}
-                  />
-                )} */}
               </>
             ) : (
               <>
@@ -765,7 +800,7 @@ const RecordVideo = () => {
               </>
             )}
           </View>
-        </>
+        </View>
       ) : (
         <>
           {videoSource !== '' ? (
@@ -854,9 +889,7 @@ const styles = StyleSheet.create({
   },
   topContainer: {
     position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    wisth:'100%',
     top: 0,
     padding: 20,
   },
@@ -889,11 +922,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     opacity: 0.5,
     borderRadius: 50,
-    position: 'absolute',
     justifyContent: 'center',
-    alignItems: 'center',
-    top: 10,
     padding: 15,
+    textAlign: 'center',
+    marginVertical: 10,
   },
   timeWarning: {
     color: 'orange',
@@ -901,11 +933,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     opacity: 0.5,
     borderRadius: 50,
-    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    top: 100,
     padding: 10,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  setContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  topBox: {
+    width: '60%',
+    backgroundColor: 'white',
+    opacity: 0.5,
+    borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    marginVertical: 5,
+    height: 'auto',
+  },
+  label: {
+    fontSize: 18,
+    marginRight: 10,
   },
 });
 

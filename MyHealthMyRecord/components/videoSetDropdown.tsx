@@ -18,6 +18,7 @@ const VideoSetDropdown = ({
   manageSetBtn,
   onVideoSetChange,
   onNewSetNameChange,
+  plainDropdown,
 }) => {
   const {
     handleChange,
@@ -48,6 +49,11 @@ const VideoSetDropdown = ({
         value: "create_new",
         id: "create_new",
       }] : []),
+      ...(plainDropdown ? [{
+        label: "None",
+        value: "none",
+        id: "none",
+      }] : []),
       ...videoSets.map(set => ({
         label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
           set.earliestVideoDateTime.toLocaleString().split(',')[0]
@@ -58,7 +64,10 @@ const VideoSetDropdown = ({
     ];
     
     setLocalDropdown(formattedDropdown);
-  }, [videoSets]);
+  }, [videoSets, plainDropdown]);
+  
+
+  
 
   const toggleDialog = () => {
     console.log('toggleDialog');
@@ -176,6 +185,7 @@ const VideoSetDropdown = ({
         alignItems: 'center',
         justifyContent: 'center',
       }}>
+        {plainDropdown === false &&  (
       <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
         <Dialog.Title title="Name this video set:" />
         <Input
@@ -205,10 +215,10 @@ const VideoSetDropdown = ({
           />
           <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
         </Dialog.Actions>
-      </Dialog>
-      <View style={{paddingBottom: 10}}>
+      </Dialog>)}
+      {plainDropdown === false && (<View style={{paddingBottom: 10}}>
         <Text style={{fontSize: 20}}>Select video set: </Text>
-      </View>
+      </View>)}
       <Dropdown
         data={localDropdown}
         maxHeight={400}
@@ -242,7 +252,7 @@ const VideoSetDropdown = ({
        {saveVideoSetBtn === false &&
       clearVideoSetBtn === false &&
       manageSetBtn === false &&
-      deleteAllVideoSetsBtn === false && videoSetValue === 'create_new' && (
+      deleteAllVideoSetsBtn === false && videoSetValue === 'create_new' &&  plainDropdown === false && (
           <View style={{paddingTop: 20, width: '80%', flexDirection: 'column'}}>
             <Text>Name this video set:</Text>
            <Input
@@ -342,7 +352,7 @@ const VideoSetDropdown = ({
               />
             )}
           </View>
-          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
+          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false &&  (
             <View style={{paddingBottom: 15}}>
               <Text
                 style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>

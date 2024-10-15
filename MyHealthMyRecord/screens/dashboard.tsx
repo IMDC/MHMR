@@ -276,6 +276,7 @@ function Dashboard() {
             manageSetBtn={true}
             keepViewBtn={false}
             onVideoSetChange={handleVideoSelectionChange}
+            plainDropdown={false}
           />
         </View>
         {videos !== null || videos !== undefined
