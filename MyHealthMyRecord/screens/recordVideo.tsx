@@ -21,6 +21,8 @@ const RecordVideo = () => {
     videoSetVideoIDs,
     videoSetDropdown,
     videoSetValue,
+    setVideoSetValue,
+    handleNewSet,
   } = useDropdownContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [saveBtnState, setSaveBtnState] = useState(false);
@@ -40,6 +42,7 @@ const RecordVideo = () => {
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
   const [createdVideoSetBool, setCreatedVideoSetBool] = useState(false);
+
   // ref for timer interval
   const timerRef: any = useRef(null);
   // for timer interval
@@ -89,8 +92,10 @@ const RecordVideo = () => {
     );
 
     if (selectedId === 'create_new') {
+      setDateTime(new Date().toString().split(' GMT-')[0]);
       setSelectedVideoSet('create_new');
       setVideos([]);
+      toggleSetNameDialog();
     } else if (selectedId === 'none') {
       setSelectedVideoSet('none');
       setVideos([]);
@@ -354,57 +359,55 @@ const RecordVideo = () => {
       await RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`);
       console.log('File moved.');
 
-      // Check if user has selected "Create New" for video set
-      if (selectedVideoSet === 'create_new') {
-        // Prompt the user to enter a name for the new set
-        Alert.prompt(
-          'Create New Video Set',
-          'Enter a name for your new video set:',
-          [
-            {
-              text: 'Cancel',
-              style: 'cancel',
-            },
-            {
-              text: 'OK',
-              onPress: setName => {
-                if (setName && setName.trim()) {
-                  // Create the new video set in Realm
-                  realm.write(() => {
-                    const newSet = realm.create('VideoSet', {
-                      id: new Realm.BSON.ObjectID(),
-                      name: setName,
-                      createdAt: new Date(),
-                      videoIDs: [videoId],
-                    });
+      // // Check if user has selected "Create New" for video set
+      // if (selectedVideoSet === 'create_new') {
+      //   // Prompt the user to enter a name for the new set
+      //   Alert.prompt(
+      //     'Create New Video Set',
+      //     'Enter a name for your new video set:',
+      //     [
+      //       {
+      //         text: 'Cancel',
+      //         style: 'cancel',
+      //       },
+      //       {
+      //         text: 'OK',
+      //         onPress: setName => {
+      //           if (setName && setName.trim()) {
+      //             // Create the new video set in Realm
+      //             realm.write(() => {
+      //               const newSet = realm.create('VideoSet', {
+      //                 id: new Realm.BSON.ObjectID(),
+      //                 name: setName,
+      //                 createdAt: new Date(),
+      //                 videoIDs: [videoId],
+      //               });
 
-                    // Video is added to the newly created set
-                    console.log('New video set created:', newSet.name);
-                    // Adds video to the new set
-                    realm.write(() => {
-                      newSet.videoIDs.push(videoId);
-                    })
-                  });
+      //               // Video is added to the newly created set
+      //               console.log('New video set created:', newSet.name);
+      //               // Adds video to the new set
+      //               realm.write(() => {
+      //                 newSet.videoIDs.push(videoId);
+      //               });
+      //             });
 
-                  // Navigate or show appropriate response after creating set
-                  Alert.alert('Video saved to new set', setName);
-                } else {
-                  Alert.alert('Error', 'Set name cannot be empty.');
-                }
-              },
-            },
-          ],
-        );
-      } else if (selectedVideoSet === 'none') {
+      //             // Navigate or show appropriate response after creating set
+      //             Alert.alert('Video saved to new set', setName);
+      //           } else {
+      //             Alert.alert('Error', 'Set name cannot be empty.');
+      //           }
+      //         },
+      //       },
+      //     ],
+      //   );
+      // } else
+      if (selectedVideoSet === 'none') {
         // Save video normally if no set is selected
         console.log('No set selected. Saving video normally');
-        
-
-
-      }
-      else {
+      } else {
         // Add the video to the selected video set if it's not "create_new" or "none"
         if (selectedVideoSet) {
+          console.log('Selected video set:', selectedVideoSet.name);
           realm.write(() => {
             //convert videoId to string
             const videoIdString = videoId?.toString();
@@ -446,7 +449,7 @@ const RecordVideo = () => {
               onPress: () => {
                 toggleSetPromptDialog();
                 setShowCamera(true);
-              }
+              },
             },
             {
               text: 'Markup Video',
@@ -556,17 +559,13 @@ const RecordVideo = () => {
   weekdayRef.map(day => weekdayInit.push(JSON.stringify(day)));
 
   const createVideoSet = (frequencyData, videoIDs) => {
-    // create a realm array of videos by mapping through the videoIDs
+    // Create a realm array of videos by mapping through the videoIDs
     let videoIDsArray = videoIDs.map(id =>
       realm.objects('VideoData').find(video => video._id.toString() === id),
     );
 
     console.log('videoIDsArray:', videoIDsArray);
 
-    //  let firstVideoDateTime = videoIDsArray[0].datetimeRecorded;
-
-    //  let lastVideoDateTime =
-    //    videoIDsArray[videoIDsArray.length - 1].datetimeRecorded;
     let newSet;
     realm.write(() => {
       newSet = realm.create('VideoSet', {
@@ -582,6 +581,7 @@ const RecordVideo = () => {
         latestVideoDateTime: dateTime,
       });
 
+      // Update the dropdown value (if necessary)
       const updatedVideoSets = realm.objects('VideoSet');
       const updatedDropdown = updatedVideoSets.map(set => ({
         label: `${set.name}\n\nVideo Count: ${
@@ -594,7 +594,11 @@ const RecordVideo = () => {
       }));
 
       const newVideoSetValue = newSet._id.toString();
+      setVideoSetValue(newVideoSetValue);
+      handleNewSet(newSet); // Call the function to handle new set logic
     });
+
+    return newSet;
   };
 
   const createVideoData = (
@@ -675,21 +679,23 @@ const RecordVideo = () => {
         <Input
           inputStyle={{fontSize: 35}}
           placeholder={dateTime}
-          // onChangeText={value => setNewKeyword(value)}
           onChangeText={value => {
-            setNewVideoName(value);
-            console.log('New video name:', newVideoName);
+            setNewVideoSetName(value);
+            console.log('New Video Set Name:', value); // Log the new name as it changes
           }}
         />
         <Dialog.Actions>
           <Dialog.Button
             title="CONFIRM"
-            onPress={() => {
-              createVideoSet([], videoSetVideoIDs);
-              toggleSetNameDialog();
+            onPress={async () => {
+              console.log('Creating video set with name:', newVideoSetName);
+              const newSet = createVideoSet([], videoSetVideoIDs); // Create the new set
+              setSelectedVideoSet(newSet); // Set the new set as the selected one
+              console.log('Newly Created Video Set:', newSet); // Log the newly created set
+              toggleSetNameDialog(); 
             }}
           />
-          <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
+          <Dialog.Button title="CANCEL" onPress={() => toggleSetNameDialog()} />
         </Dialog.Actions>
       </Dialog>
 
@@ -889,7 +895,7 @@ const styles = StyleSheet.create({
   },
   topContainer: {
     position: 'absolute',
-    wisth:'100%',
+    wisth: '100%',
     top: 0,
     padding: 20,
   },
