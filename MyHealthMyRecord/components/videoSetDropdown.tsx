@@ -13,9 +13,12 @@ const VideoSetDropdown = ({
   videoSets,
   saveVideoSetBtn,
   clearVideoSetBtn,
+  keepViewBtn,
   deleteAllVideoSetsBtn,
   manageSetBtn,
   onVideoSetChange,
+  onNewSetNameChange,
+  plainDropdown,
 }) => {
   const {
     handleChange,
@@ -31,28 +34,40 @@ const VideoSetDropdown = ({
   } = useDropdownContext();
   const realm = useRealm();
   const [localDropdown, setLocalDropdown] = useState(videoSetDropdown);
+  const route = useRoute();
   const [visible, setVisible] = useState(false);
   const [dateTime, setDateTime] = useState('');
   const [newVideoSetName, setNewVideoSetName] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const videoData = useQuery<VideoData>('VideoData');
 
-
   useEffect(() => {
-    // console.log(currentVideoSet);
-    // console.log(videoSetVideoIDs.length);
-    // console.log(isVideoSetSaved)
-    const formattedDropdown = videoSets.map(set => ({
-      label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
-        set.earliestVideoDateTime.toLocaleString().split(',')[0]
-      } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
-      value: set._id.toString(),
-      id: set._id,
-    }));
+    const shouldShowCreateNew = route.name === 'Record Video';
+    const formattedDropdown = [
+      ...(shouldShowCreateNew ? [{
+        label: "+ Create New",
+        value: "create_new",
+        id: "create_new",
+      }] : []),
+      ...(plainDropdown ? [{
+        label: "None",
+        value: "none",
+        id: "none",
+      }] : []),
+      ...videoSets.map(set => ({
+        label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+          set.earliestVideoDateTime.toLocaleString().split(',')[0]
+        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
+        value: set._id.toString(),
+        id: set._id,
+      })),
+    ];
+    
     setLocalDropdown(formattedDropdown);
-  }, [videoSets]);
+  }, [videoSets, plainDropdown]);
+  
 
-  const saveVideoSetBtnCllicked = () => {};
+  
 
   const toggleDialog = () => {
     console.log('toggleDialog');
@@ -87,16 +102,21 @@ const VideoSetDropdown = ({
       });
 
       const updatedVideoSets = realm.objects('VideoSet');
-      const updatedDropdown = updatedVideoSets.map(set => ({
-        label: `${set.name}\n\nVideo Count: ${
-          set.videoIDs.length
-        }\nDate Range: ${
-          set.earliestVideoDateTime.toLocaleString().split(',')[0]
-        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
-        value: set._id.toString(),
-        id: set._id,
-      }));
-
+      const updatedDropdown = [
+        {
+          label: "+ Create New",
+          value: "create_new",
+          id: "create_new",
+        },
+        ...updatedVideoSets.map(set => ({
+          label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+            set.earliestVideoDateTime.toLocaleString().split(',')[0]
+          } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
+          value: set._id.toString(),
+          id: set._id,
+        })),
+      ];
+      
       setLocalDropdown(updatedDropdown);
 
       const newVideoSetValue = newSet._id.toString();
@@ -113,7 +133,14 @@ const VideoSetDropdown = ({
     refreshDropdown();
   };
 
-  
+  const checkSetNameDuplicate = (name: string) => {
+    const video = realm.objects('VideoSet').filtered(`name == "${name}"`);
+    if (video.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const deleteAllVideoSets = () => {
     Alert.alert(
@@ -127,15 +154,24 @@ const VideoSetDropdown = ({
   };
 
   const refreshDropdown = () => {
-    const updatedDropdown = videoSets.map(set => ({
-      label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
-        set.earliestVideoDateTime.toLocaleString().split(',')[0]
-      } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
-      value: set._id.toString(),
-      id: set._id,
-    }));
+    const updatedDropdown = [
+      {
+        label: "+ Create New",
+        value: "create_new",
+        id: "create_new",
+      },
+      ...videoSets.map(set => ({
+        label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+          set.earliestVideoDateTime.toLocaleString().split(',')[0]
+        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
+        value: set._id.toString(),
+        id: set._id,
+      })),
+    ];
+  
     setLocalDropdown(updatedDropdown);
-    if (updatedDropdown.length === 0) {
+  
+    if (updatedDropdown.length === 1) {  
       setVideoSetValue(null);
       setVideoSetVideoIDs([]);
       onVideoSetChange(null);
@@ -145,11 +181,11 @@ const VideoSetDropdown = ({
   return (
     <View
       style={{
-        height: '100%',
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
+        {plainDropdown === false &&  (
       <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
         <Dialog.Title title="Name this video set:" />
         <Input
@@ -165,16 +201,24 @@ const VideoSetDropdown = ({
           <Dialog.Button
             title="CONFIRM"
             onPress={() => {
-              createVideoSet([], videoSetVideoIDs);
-              toggleDialog();
+              if (!checkSetNameDuplicate(newVideoSetName)) {
+                createVideoSet([], videoSetVideoIDs);
+                toggleDialog();
+              } else {
+                Alert.alert(
+                  'Error',
+                  'Video set name already exists. Please choose a different name.',
+                );
+                [{text: 'OK'}];
+              }
             }}
           />
           <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
         </Dialog.Actions>
-      </Dialog>
-      <View style={{paddingBottom: 10}}>
+      </Dialog>)}
+      {plainDropdown === false && (<View style={{paddingBottom: 10}}>
         <Text style={{fontSize: 20}}>Select video set: </Text>
-      </View>
+      </View>)}
       <Dropdown
         data={localDropdown}
         maxHeight={400}
@@ -191,6 +235,8 @@ const VideoSetDropdown = ({
         activeColor="#FFC745"
         labelField="label"
         valueField="value"
+        search
+        searchPlaceholder="Search..."
         value={videoSetValue}
         onChange={item => {
           setCurrentVideoSet(
@@ -202,10 +248,28 @@ const VideoSetDropdown = ({
           onVideoSetChange(item.value);
         }}
       />
+     {/*when dropdown value is equal to create new*/}
+       {saveVideoSetBtn === false &&
+      clearVideoSetBtn === false &&
+      manageSetBtn === false &&
+      deleteAllVideoSetsBtn === false && videoSetValue === 'create_new' &&  plainDropdown === false && (
+          <View style={{paddingTop: 20, width: '80%', flexDirection: 'column'}}>
+            <Text>Name this video set:</Text>
+           <Input
+          inputStyle={{fontSize: 35}}
+          placeholder={dateTime}
+          onChangeText={value => {
+            setNewVideoSetName(value); // Captures local state
+            onNewSetNameChange(value); // Pass value to parent
+            console.log('New Video Set Name:', newVideoSetName);
+          }}
+        />
+              </View>
+       )}      
       {saveVideoSetBtn === false &&
       clearVideoSetBtn === false &&
       manageSetBtn === false &&
-      deleteAllVideoSetsBtn === false ? (
+      deleteAllVideoSetsBtn === false && keepViewBtn === true ? (
         <View style={{flexDirection: 'row', paddingTop: 30}}>
           <Button
             title="View videos in video set"
@@ -288,7 +352,7 @@ const VideoSetDropdown = ({
               />
             )}
           </View>
-          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
+          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false &&  (
             <View style={{paddingBottom: 15}}>
               <Text
                 style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>

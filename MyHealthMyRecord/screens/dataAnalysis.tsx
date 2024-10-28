@@ -413,6 +413,7 @@ const DataAnalysis = () => {
     <View style={{flexDirection: 'column', flex: 1}}>
       <View
         style={{
+          marginTop: 5,
           height: '30%',
           width: '100%',
         }}>
@@ -423,7 +424,9 @@ const DataAnalysis = () => {
           clearVideoSetBtn={false}
           deleteAllVideoSetsBtn={false}
           manageSetBtn={false}
+          keepViewBtn={true}
           onVideoSetChange={handleVideoSelectionChange}
+          plainDropdown={false}
         />
       </View>
 
