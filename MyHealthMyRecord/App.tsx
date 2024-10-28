@@ -193,7 +193,7 @@ function App() {
                     options={{
                       headerShown: false,
                       tabBarShowLabel: true,
-                      tabBarLabel: 'Analysis',
+                      tabBarLabel: 'Data Analysis',
                       tabBarLabelStyle: {
                         fontSize: 14,
                         fontWeight: 'bold',
@@ -218,8 +218,10 @@ function App() {
                       tabBarShowLabel: true,
                       tabBarLabel: 'Dashboard',
                       tabBarLabelStyle: {
+                        
                         fontSize: 14,
                         fontWeight: 'bold',
+                        
                       },
                       
                       tabBarIcon: () => (

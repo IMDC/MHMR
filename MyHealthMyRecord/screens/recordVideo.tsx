@@ -692,7 +692,7 @@ const RecordVideo = () => {
               const newSet = createVideoSet([], videoSetVideoIDs); // Create the new set
               setSelectedVideoSet(newSet); // Set the new set as the selected one
               console.log('Newly Created Video Set:', newSet); // Log the newly created set
-              toggleSetNameDialog(); 
+              toggleSetNameDialog();
             }}
           />
           <Dialog.Button title="CANCEL" onPress={() => toggleSetNameDialog()} />
@@ -748,18 +748,20 @@ const RecordVideo = () => {
             <View style={styles.setContainer}>
               <View style={styles.topBox}>
                 <Text style={styles.label}>Adding to:</Text>
-                <VideoSetDropdown
-                  videoSetDropdown={videoSetDropdown}
-                  videoSets={realm.objects('VideoSet')}
-                  saveVideoSetBtn={false}
-                  clearVideoSetBtn={false}
-                  deleteAllVideoSetsBtn={false}
-                  manageSetBtn={false}
-                  keepViewBtn={false}
-                  onVideoSetChange={handleVideoSelectionChange}
-                  onNewSetNameChange={handleNewSetNameChange}
-                  plainDropdown={true}
-                />
+                <View style={{width: '60%', flex: 1,}}>
+                  <VideoSetDropdown
+                    videoSetDropdown={videoSetDropdown}
+                    videoSets={realm.objects('VideoSet')}
+                    saveVideoSetBtn={false}
+                    clearVideoSetBtn={false}
+                    deleteAllVideoSetsBtn={false}
+                    manageSetBtn={false}
+                    keepViewBtn={false}
+                    onVideoSetChange={handleVideoSelectionChange}
+                    onNewSetNameChange={handleNewSetNameChange}
+                    plainDropdown={true}
+                  />
+                </View>
               </View>
             </View>
           </View>
@@ -961,7 +963,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 15,
     marginVertical: 5,
-    height: 'auto',
+    
   },
   label: {
     fontSize: 18,
