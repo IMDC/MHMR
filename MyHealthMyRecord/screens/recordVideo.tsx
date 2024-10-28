@@ -47,14 +47,14 @@ const RecordVideo = () => {
   // ref for timer interval
   const timerRef: any = useRef(null);
   // for timer interval
-  const timeOfRecording = useState(0);
-  // taken from timeOfRecording, used for display
-  const displayTime = useState(0);
+  const [timeLeft, setTimeLeft] = useState(60);
   // max length of recording allowed in seconds
-  const maxLength = useState(60);
-  const timeWarningMessage = useState('');
+  const maxLength = 60;
+  const [timeWarningMessage, setTimeWarningMessage] = useState('');
+  const [showExtendButton, setShowExtendButton] = useState(false);
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
+  const [timerExtended, setTimerExtended] = useState(false);
 
   const [videoSource, setVideoSource] = useState<any | string>('');
   const [dateTime, setDateTime] = useState('');
@@ -209,8 +209,11 @@ const RecordVideo = () => {
         },
       });
       setRecordingInProgress(true);
-      timeOfRecording[0] = 0;
+      setTimeLeft(maxLength);
       setEnableTimer(true);
+      setTimerExtended(false);
+      setTimeWarningMessage('');
+      setShowExtendButton(false);
     }
   };
 
@@ -256,42 +259,47 @@ const RecordVideo = () => {
     setRecordingInProgress(false);
     setRecordingPaused(false);
     setEnableTimer(false);
-    displayTime[1](0);
-    timeWarningMessage[1]('');
+    setTimeLeft(maxLength);
+    setTimeWarningMessage('');
+    setShowExtendButton(false);
+    setTimerExtended(false);
+  };
+
+  const extendTime = () => {
+    if (!timerExtended) {
+      setTimeLeft(prevTimeLeft => prevTimeLeft + 60);
+      setShowExtendButton(false);
+      setTimerExtended(true);
+      setTimeWarningMessage('');
+    }
   };
 
   /* timer */
   useEffect(() => {
-    console.log(enableTimer, timerRef.current, '----enable timer 1');
     if (enableTimer) {
       timerRef.current = setInterval(() => {
-        const time = timeOfRecording[0] + 1;
-        console.log(enableTimer, timerRef.current, time, '----enable timer 2');
-
-        timeOfRecording[0] = time;
-        console.log('timeeee: ', timeOfRecording[0]);
-        displayTime[1](timeOfRecording[0]);
-
-        // 10 second warning
-        if (timeOfRecording[0] >= maxLength[0] - 10)
-          timeWarningMessage[1](
-            maxLength[0] - timeOfRecording[0] + ' more seconds',
-          );
-
-        // stop recording once max time limit is reached
-        if (maxLength[0] > 0 && time >= maxLength[0]) {
-          stopRecodingHandler();
-          clearInterval(timerRef.current);
-          console.log(enableTimer, timerRef.current, '----enable timer 3');
-        }
+        setTimeLeft(prevTimeLeft => {
+          const newTimeLeft = prevTimeLeft - 1;
+          if (newTimeLeft <= 10 && newTimeLeft > 0) {
+            setTimeWarningMessage(`${newTimeLeft} more seconds`);
+          } else if (newTimeLeft <= 0) {
+            stopRecodingHandler();
+            clearInterval(timerRef.current);
+          }
+          if (newTimeLeft <= 15 && newTimeLeft > 0 && !timerExtended) {
+            setShowExtendButton(true);
+          }
+          return newTimeLeft;
+        });
       }, 1000);
     } else {
       stopRecodingHandler();
       clearInterval(timerRef.current);
-      console.log(enableTimer, timerRef.current, '----enable timer 4');
     }
-    console.log('.........................................ss', enableTimer);
-  }, [enableTimer]);
+    return () => {
+      clearInterval(timerRef.current);
+    };
+  }, [enableTimer, timerExtended]);
 
   /**
    * format timestamp from seconds to 00:00:00
@@ -834,7 +842,25 @@ const RecordVideo = () => {
               </View>
             )}
           </View> */}
-
+          <Text style={styles.timer}>{secondsToHms(timeLeft)}</Text>
+          {timeWarningMessage != '' ? (
+            <Text style={styles.timeWarning}>{timeWarningMessage}</Text>
+          ) : null}
+          {showExtendButton && !timerExtended && (
+            <View style={styles.extendButtonContainer}>
+              <TouchableOpacity
+                style={styles.extendButton}
+                onPress={extendTime}>
+                <Icon
+                  name="timer"
+                  size={20}
+                  color="white"
+                  style={styles.extendButtonIcon}
+                />
+                <Text style={styles.extendButtonText}>Extend timer once</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
@@ -1044,6 +1070,27 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     marginRight: 10,
+  },
+  extendButtonContainer: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
+    borderRadius: 20,
+    padding: 10,
+  },
+  extendButton: {
+    backgroundColor: '#1C3EAA',
+    padding: 10,
+    borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  extendButtonIcon: {
+    marginRight: 5,
+  },
+  extendButtonText: {
+    color: 'white',
+    fontSize: 18,
   },
 });
 
