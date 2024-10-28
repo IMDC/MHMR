@@ -752,97 +752,40 @@ const RecordVideo = () => {
           />
           <View style={{flexDirection: 'column', alignItems: 'center'}}>
             {/* Timer */}
-            <Text style={styles.timer}>{secondsToHms(displayTime[0])}</Text>
-
-            {/* Time Warning Message */}
-            {timeWarningMessage[0] != '' ? (
-              <Text style={styles.timeWarning}>{timeWarningMessage[0]}</Text>
-            ) : null}
-
-            {/* Video Set Dropdown */}
-            {videoSetOverlayVisible && (
-              <View style={styles.setContainer}>
-                <View style={styles.topBox}>
-                  <Text style={styles.label}>Adding to:</Text>
-                  <View style={{width: '60%', height: '60%', flex: 1}}>
-                    <VideoSetDropdown
-                      videoSetDropdown={videoSetDropdown}
-                      videoSets={realm.objects('VideoSet')}
-                      saveVideoSetBtn={false}
-                      clearVideoSetBtn={false}
-                      deleteAllVideoSetsBtn={false}
-                      manageSetBtn={false}
-                      keepViewBtn={false}
-                      onVideoSetChange={handleVideoSelectionChange}
-                      onNewSetNameChange={handleNewSetNameChange}
-                      plainDropdown={true}
-                    />
-                  </View>
-                  <Icon
-                    name="close"
-                    size={30}
-                    type="ionicon"
-                    color="black"
-                    onPress={() => {
-                      toggleVideoSetOverlay();
-                    }}/>
-                </View>
-              </View>
-            )}
+            <Text style={styles.timer}>{secondsToHms(timeLeft)}</Text>
           </View>
-          {/* <View style={styles.buttonContainer}>
-            {!recordingInProgress && (
-              <View>
+
+          {/* Video Set Dropdown */}
+          {videoSetOverlayVisible && (
+            <View style={styles.setContainer}>
+              <View style={styles.topBox}>
+                <Text style={styles.label}>Adding to:</Text>
+                <View style={{width: '60%', height: '60%', flex: 1}}>
+                  <VideoSetDropdown
+                    videoSetDropdown={videoSetDropdown}
+                    videoSets={realm.objects('VideoSet')}
+                    saveVideoSetBtn={false}
+                    clearVideoSetBtn={false}
+                    deleteAllVideoSetsBtn={false}
+                    manageSetBtn={false}
+                    keepViewBtn={false}
+                    onVideoSetChange={handleVideoSelectionChange}
+                    onNewSetNameChange={handleNewSetNameChange}
+                    plainDropdown={true}
+                  />
+                </View>
                 <Icon
-                  name="albums-outline"
-                  size={40}
+                  name="close"
+                  size={30}
                   type="ionicon"
-                  color="white"
+                  color="black"
                   onPress={() => {
-                    if (deviceDir == 'back') {
-                      setDeviceDir('front');
-                    } else {
-                      setDeviceDir('back');
-                    }
+                    toggleVideoSetOverlay();
                   }}
                 />
               </View>
-            )}
-            <TouchableOpacity
-              onPress={() => {
-                if (recordingInProgress) {
-                  stopRecodingHandler();
-                } else {
-                  StartRecodingHandler();
-                  setSaveBtnState(false);
-                }
-              }}>
-              <Icon
-                name={recordingInProgress ? 'stop' : 'ellipse'}
-                size={60}
-                type="ionicon"
-                color="white"
-              />
-            </TouchableOpacity>
-            {!recordingInProgress && (
-              <View>
-                <Icon
-                  name="camera-reverse-outline"
-                  size={40}
-                  type="ionicon"
-                  color="white"
-                  onPress={() => {
-                    if (deviceDir == 'back') {
-                      setDeviceDir('front');
-                    } else {
-                      setDeviceDir('back');
-                    }
-                  }}
-                />
-              </View>
-            )}
-          </View> */}
-          <Text style={styles.timer}>{secondsToHms(timeLeft)}</Text>
+            </View>
+          )}
           {timeWarningMessage != '' ? (
             <Text style={styles.timeWarning}>{timeWarningMessage}</Text>
           ) : null}
