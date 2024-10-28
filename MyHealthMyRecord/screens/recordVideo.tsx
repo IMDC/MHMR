@@ -98,9 +98,6 @@ const RecordVideo = () => {
       setSelectedVideoSet('create_new');
       setVideos([]);
       toggleSetNameDialog();
-    } else if (selectedId === 'none') {
-      setSelectedVideoSet('none');
-      setVideos([]);
     } else if (selectedId) {
       setSelectedVideoSet(selectedSet);
     } else {
@@ -1013,6 +1010,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     marginRight: 10,
+    color: 'black',
   },
   extendButtonContainer: {
     position: 'absolute',

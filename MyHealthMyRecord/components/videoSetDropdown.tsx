@@ -49,11 +49,6 @@ const VideoSetDropdown = ({
         value: "create_new",
         id: "create_new",
       }] : []),
-      ...(plainDropdown ? [{
-        label: "None",
-        value: "none",
-        id: "none",
-      }] : []),
       ...videoSets.map(set => ({
         label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
           set.earliestVideoDateTime.toLocaleString().split(',')[0]
