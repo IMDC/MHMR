@@ -756,7 +756,7 @@ const RecordVideo = () => {
               <View style={styles.setContainer}>
                 <View style={styles.topBox}>
                   <Text style={styles.label}>Adding to:</Text>
-                  <View style={{width: '60%', flex: 1}}>
+                  <View style={{width: '60%', height: '60%', flex: 1}}>
                     <VideoSetDropdown
                       videoSetDropdown={videoSetDropdown}
                       videoSets={realm.objects('VideoSet')}
