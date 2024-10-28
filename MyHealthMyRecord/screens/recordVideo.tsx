@@ -3,7 +3,7 @@ import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import {PermissionsAndroid, Platform} from 'react-native';
+import {PermissionsAndroid, Platform, Touchable} from 'react-native';
 import RNFS from 'react-native-fs';
 import {Icon, Button, Dialog, Input} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
@@ -15,6 +15,7 @@ import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {useLoader} from '../components/loaderProvider';
 import {useDropdownContext} from '../components/videoSetProvider';
 import VideoSetDropdown from '../components/videoSetDropdown';
+import {screenWidth} from '../assets/util/styles';
 
 const RecordVideo = () => {
   const {
@@ -61,6 +62,7 @@ const RecordVideo = () => {
   const [visible, setVisible] = useState(false);
   const [addToVideoSetPromptVisible, setAddToVideoSetPromptVisible] =
     useState(false);
+  const [videoSetOverlayVisible, setVideoSetOverlayVisible] = useState(false);
 
   const handleNewSetNameChange = (name: React.SetStateAction<string>) => {
     setNewVideoSetName(name); // Update state when name changes
@@ -123,6 +125,11 @@ const RecordVideo = () => {
     console.log('toggleDialog');
     setVisible(!visible);
   };
+
+  const toggleVideoSetOverlay = () => {
+    console.log('toggleVideoSetOverlay');
+    setVideoSetOverlayVisible(!videoSetOverlayVisible);
+  }
 
   const toggleSetNameDialog = () => {
     console.log('toggleSetNameDialog');
@@ -745,31 +752,95 @@ const RecordVideo = () => {
             ) : null}
 
             {/* Video Set Dropdown */}
-            <View style={styles.setContainer}>
-              <View style={styles.topBox}>
-                <Text style={styles.label}>Adding to:</Text>
-                <View style={{width: '60%', flex: 1,}}>
-                  <VideoSetDropdown
-                    videoSetDropdown={videoSetDropdown}
-                    videoSets={realm.objects('VideoSet')}
-                    saveVideoSetBtn={false}
-                    clearVideoSetBtn={false}
-                    deleteAllVideoSetsBtn={false}
-                    manageSetBtn={false}
-                    keepViewBtn={false}
-                    onVideoSetChange={handleVideoSelectionChange}
-                    onNewSetNameChange={handleNewSetNameChange}
-                    plainDropdown={true}
-                  />
+            {videoSetOverlayVisible && (
+              <View style={styles.setContainer}>
+                <View style={styles.topBox}>
+                  <Text style={styles.label}>Adding to:</Text>
+                  <View style={{width: '60%', flex: 1}}>
+                    <VideoSetDropdown
+                      videoSetDropdown={videoSetDropdown}
+                      videoSets={realm.objects('VideoSet')}
+                      saveVideoSetBtn={false}
+                      clearVideoSetBtn={false}
+                      deleteAllVideoSetsBtn={false}
+                      manageSetBtn={false}
+                      keepViewBtn={false}
+                      onVideoSetChange={handleVideoSelectionChange}
+                      onNewSetNameChange={handleNewSetNameChange}
+                      plainDropdown={true}
+                    />
+                  </View>
+                  <Icon
+                    name="close"
+                    size={30}
+                    type="ionicon"
+                    color="black"
+                    onPress={() => {
+                      toggleVideoSetOverlay();
+                    }}/>
                 </View>
               </View>
-            </View>
+            )}
           </View>
+          {/* <View style={styles.buttonContainer}>
+            {!recordingInProgress && (
+              <View>
+                <Icon
+                  name="albums-outline"
+                  size={40}
+                  type="ionicon"
+                  color="white"
+                  onPress={() => {
+                    if (deviceDir == 'back') {
+                      setDeviceDir('front');
+                    } else {
+                      setDeviceDir('back');
+                    }
+                  }}
+                />
+              </View>
+            )}
+            <TouchableOpacity
+              onPress={() => {
+                if (recordingInProgress) {
+                  stopRecodingHandler();
+                } else {
+                  StartRecodingHandler();
+                  setSaveBtnState(false);
+                }
+              }}>
+              <Icon
+                name={recordingInProgress ? 'stop' : 'ellipse'}
+                size={60}
+                type="ionicon"
+                color="white"
+              />
+            </TouchableOpacity>
+            {!recordingInProgress && (
+              <View>
+                <Icon
+                  name="camera-reverse-outline"
+                  size={40}
+                  type="ionicon"
+                  color="white"
+                  onPress={() => {
+                    if (deviceDir == 'back') {
+                      setDeviceDir('front');
+                    } else {
+                      setDeviceDir('back');
+                    }
+                  }}
+                />
+              </View>
+            )}
+          </View> */}
 
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
+                <View></View>
                 <TouchableOpacity
+                  style={{alignSelf: 'center', justifyContent: 'center'}}
                   onPress={() => {
                     stopRecodingHandler();
                   }}>
@@ -780,29 +851,41 @@ const RecordVideo = () => {
                     color="white"
                   />
                 </TouchableOpacity>
+                <View></View>
               </>
             ) : (
               <>
-                <View style={styles.swapButton}>
+                <View style={{}}>
                   <Icon
-                    name="camera-reverse-outline"
+                    name="add-outline"
                     size={40}
                     type="ionicon"
                     color="white"
                     onPress={() => {
-                      if (deviceDir == 'back') {
-                        setDeviceDir('front');
-                      } else {
-                        setDeviceDir('back');
-                      }
+                      toggleVideoSetOverlay();
                     }}
                   />
+                  {/* <Text style={{color: 'white', alignSelf:'center'}}>Add to Video Set</Text> */}
                 </View>
+
                 <TouchableOpacity
                   style={styles.camButton}
                   onPress={() => {
                     StartRecodingHandler();
                     setSaveBtnState(false);
+                  }}
+                />
+                <Icon
+                  name="camera-reverse-outline"
+                  size={40}
+                  type="ionicon"
+                  color="white"
+                  onPress={() => {
+                    if (deviceDir == 'back') {
+                      setDeviceDir('front');
+                    } else {
+                      setDeviceDir('back');
+                    }
                   }}
                 />
               </>
@@ -883,21 +966,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.2)',
     flexDirection: 'row',
     position: 'absolute',
-    alignItems: 'center',
-    width: '100%',
     bottom: 0,
-    padding: 20,
-    justifyContent: 'space-evenly',
-  },
-  swapButton: {
-    position: 'absolute',
-    justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
+    width: screenWidth,
+    padding: 20,
+    justifyContent: 'space-between',
   },
   topContainer: {
     position: 'absolute',
-    wisth: '100%',
+    width: '100%',
     top: 0,
     padding: 20,
   },
@@ -907,10 +984,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   camButton: {
+    absolute: 0,
     height: 80,
     width: 80,
     borderRadius: 40,
-    //ADD backgroundColor COLOR GREY
     backgroundColor: '#B2BEB5',
     alignSelf: 'center',
     borderWidth: 4,
@@ -963,7 +1040,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 15,
     marginVertical: 5,
-    
   },
   label: {
     fontSize: 18,
