@@ -6,7 +6,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 const sections = [
-  { title: "Video Sets" },
+  { title: "Video Sets " },
   { title: "Data Viewing" },
   { title: "Adding Data" }
 ];
@@ -25,7 +25,8 @@ function Help() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Help</Text>
+      <Text style={styles.title}>Help Center</Text>
+      <View style={styles.titleUnderline} />
 
       <View style={styles.toc}>
         {sections.map((section, index) => (
@@ -144,27 +145,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#f5f5f5',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+    color: '#333',
+  },
+  titleUnderline: {
+    height: 2,
+    backgroundColor: '#ccc',
     marginBottom: 16,
+    marginHorizontal: 50,
   },
   toc: {
     marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tocItem: {
     fontSize: 18,
-    color: 'blue',
+    color: '#007BFF',
     marginBottom: 8,
   },
   section: {
     marginBottom: 24,
+    padding: 8,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#333',
   },
   subsection: {
     marginLeft: 16,
@@ -174,24 +201,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: '#555',
   },
   screenshot: {
     width: '100%',
     height: 200,
     resizeMode: 'contain',
     marginVertical: 10,
+    borderRadius: 8,
   },
   screenshotLarge: {
     width: '100%',
     height: 240,
     resizeMode: 'contain',
     marginVertical: 15,
+    borderRadius: 8,
   },
   screenshotTall: {
     width: '100%',
     height: 300,
     resizeMode: 'contain',
     marginVertical: 10,
+    borderRadius: 8,
   },
   tocItemContainer: {
     flexDirection: 'row',
@@ -201,7 +232,7 @@ const styles = StyleSheet.create({
   },
   arrow: {
     fontSize: 18,
-    color: 'blue',
+    color: '#007BFF',
     marginRight: 8,
     width: 20,
     textAlign: 'center',
