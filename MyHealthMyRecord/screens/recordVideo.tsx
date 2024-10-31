@@ -459,7 +459,6 @@ const RecordVideo = () => {
             {
               text: 'Record Another',
               onPress: () => {
-                toggleSetPromptDialog();
                 setShowCamera(true);
               },
             },
@@ -721,7 +720,6 @@ const RecordVideo = () => {
           videoSets={realm.objects('VideoSet')}
           saveVideoSetBtn={false}
           clearVideoSetBtn={false}
-          deleteAllVideoSetsBtn={false}
           manageSetBtn={false}
           keepViewBtn={false}
           onVideoSetChange={handleVideoSelectionChange}
@@ -763,7 +761,6 @@ const RecordVideo = () => {
                     videoSets={realm.objects('VideoSet')}
                     saveVideoSetBtn={false}
                     clearVideoSetBtn={false}
-                    deleteAllVideoSetsBtn={false}
                     manageSetBtn={false}
                     keepViewBtn={false}
                     onVideoSetChange={handleVideoSelectionChange}

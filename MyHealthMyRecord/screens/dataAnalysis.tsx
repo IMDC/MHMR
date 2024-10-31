@@ -422,7 +422,6 @@ const DataAnalysis = () => {
           videoSets={realm.objects('VideoSet')}
           saveVideoSetBtn={false}
           clearVideoSetBtn={false}
-          deleteAllVideoSetsBtn={false}
           manageSetBtn={false}
           keepViewBtn={true}
           onVideoSetChange={handleVideoSelectionChange}

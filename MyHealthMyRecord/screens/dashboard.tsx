@@ -272,7 +272,6 @@ function Dashboard() {
             videoSets={realm.objects('VideoSet')}
             saveVideoSetBtn={true}
             clearVideoSetBtn={true}
-            deleteAllVideoSetsBtn={true}
             manageSetBtn={true}
             keepViewBtn={false}
             onVideoSetChange={handleVideoSelectionChange}
