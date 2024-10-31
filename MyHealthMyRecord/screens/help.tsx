@@ -6,9 +6,9 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 const sections = [
-  { title: "Video Sets " },
-  { title: "Data Viewing" },
-  { title: "Adding Data" }
+  { title: "Video Sets Creation/Management " },
+  { title: "How To View Your Data" },
+  { title: "Adding Markups To My Videos" }
 ];
 
 function Help() {
@@ -68,7 +68,7 @@ function Help() {
                         source={require('../assets/images/add4.png')}
                         style={styles.screenshotLarge}
                       />
-                      <Text>5. Type your set a name and confirm.</Text>
+                      <Text>5. Give your set a name and confirm.</Text>
                     </Subsection>
                     <Subsection title="How to Manage Video Sets">
                       <Text>To remove videos or delete a set:</Text>
@@ -89,7 +89,7 @@ function Help() {
                 )}
                 {index === 1 && (
                   <Subsection title="How to See Data?">
-                    <Text>Your data are displayed in various formats, including graphs and texts.</Text>
+                    <Text>Your data is displayed in various formats, including graphs and texts.</Text>
                     <Subsection title="Why can't I see graphs?">
                       <Text>If you can't see graphs:</Text>
                       <Text>• Connect with our researchers during the weekly in-person meetings to view the data for your video sets.</Text>
