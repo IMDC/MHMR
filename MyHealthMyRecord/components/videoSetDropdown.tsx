@@ -14,7 +14,6 @@ const VideoSetDropdown = ({
   saveVideoSetBtn,
   clearVideoSetBtn,
   keepViewBtn,
-  deleteAllVideoSetsBtn,
   manageSetBtn,
   onVideoSetChange,
   onNewSetNameChange,
@@ -48,11 +47,6 @@ const VideoSetDropdown = ({
         label: "+ Create New",
         value: "create_new",
         id: "create_new",
-      }] : []),
-      ...(plainDropdown ? [{
-        label: "None",
-        value: "none",
-        id: "none",
       }] : []),
       ...videoSets.map(set => ({
         label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
@@ -142,16 +136,6 @@ const VideoSetDropdown = ({
     }
   };
 
-  const deleteAllVideoSets = () => {
-    Alert.alert(
-      'Delete Video Set',
-      'Are you sure you want to delete ALL video sets?',
-      [
-        {text: 'OK', onPress: () => handleDeleteSet(realm.objects('VideoSet'))},
-        {text: 'Cancel', style: 'cancel'},
-      ],
-    );
-  };
 
   const refreshDropdown = () => {
     const updatedDropdown = [
@@ -252,7 +236,7 @@ const VideoSetDropdown = ({
        {saveVideoSetBtn === false &&
       clearVideoSetBtn === false &&
       manageSetBtn === false &&
-      deleteAllVideoSetsBtn === false && videoSetValue === 'create_new' &&  plainDropdown === false && (
+     videoSetValue === 'create_new' &&  plainDropdown === false && (
           <View style={{paddingTop: 20, width: '80%', flexDirection: 'column'}}>
             <Text>Name this video set:</Text>
            <Input
@@ -268,8 +252,7 @@ const VideoSetDropdown = ({
        )}      
       {saveVideoSetBtn === false &&
       clearVideoSetBtn === false &&
-      manageSetBtn === false &&
-      deleteAllVideoSetsBtn === false && keepViewBtn === true ? (
+      manageSetBtn === false && keepViewBtn === true ? (
         <View style={{flexDirection: 'row', paddingTop: 30}}>
           <Button
             title="View videos in video set"
@@ -342,15 +325,7 @@ const VideoSetDropdown = ({
                 containerStyle={styles.btnContainer}
               />
             )}
-            {deleteAllVideoSetsBtn && (
-              <Button
-                title="Delete all video sets"
-                onPress={deleteAllVideoSets}
-                color={Styles.MHMRBlue}
-                radius={50}
-                containerStyle={styles.btnContainer}
-              />
-            )}
+           
           </View>
           {videoSetVideoIDs.length != 0 && isVideoSetSaved === false &&  (
             <View style={{paddingBottom: 15}}>
