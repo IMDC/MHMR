@@ -68,6 +68,7 @@ export class VideoSet extends Realm.Object<VideoSet> {
   latestVideoDateTime!: Date;
   isAnalyzed!: boolean;
 
+
   static schema = {
     name: 'VideoSet',
     primaryKey: '_id',

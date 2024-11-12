@@ -14,6 +14,7 @@ export const VideoSetProvider = ({children}) => {
   const [isVideoSetSaved, setIsVideoSetSaved] = useState(Boolean);
 
   const handleChange = (value, videoSets) => {
+    console.log('handleChange clicked')
     setSendToVideoSet(0);
     setVideoSetValue(value);
     const selectedSet = videoSets.find(set => set._id.toString() === value);

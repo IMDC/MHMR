@@ -30,6 +30,7 @@ import {color} from '@rneui/base';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {stopWords, medWords} from '../assets/util/words';
 import {useSetLineGraphData} from '../components/lineGraphData';
+import { useWordList } from '../components/wordListProvider';
 
 const DataAnalysis = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -60,6 +61,7 @@ const DataAnalysis = () => {
   const [data, setData] = useState<any>([]);
   const [selectedWord, setSelectedWord] = useState('');
   const [noStopWords, setNoStopWords] = useState<any>([]);
+ const {updateWordList, wordList} = useWordList();
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
@@ -319,8 +321,12 @@ const DataAnalysis = () => {
       dataNoMed: barNoMed,
       dataNone: barNone,
     });
+    
     setRouteFreqMaps(freqMapsWithInfo);
     setFreqMapsWithInfo([]);
+    updateWordList(barNone);
+    console.log('--------------------------wordList:', wordList);
+    console.log('**************************wordList.length:', wordList.length);
   }
 
   /* ------------------------------ LINE GRAPH FREQUENCY ------------------------------ */
