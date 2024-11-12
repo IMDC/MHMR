@@ -559,7 +559,7 @@ const DataAnalysis = () => {
         }}>
         {!currentVideoSet?.isAnalyzed && (
           <TouchableOpacity style={{flexDirection: 'row'}} onPress={
-            () => Alert.alert('Please analyze the video set first.', 'You must analyze the video set before you can view the data analysis. Video set can only be analyzed when connected to the internet')
+            () => Alert.alert('Please analyze the video set first.', 'You must analyze the video set before you can view the data analysis. Video set can only be analyzed when connected to the internet.')
           } >
             <Icon
               name="alert-circle-outline"
