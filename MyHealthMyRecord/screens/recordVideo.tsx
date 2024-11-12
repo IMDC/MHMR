@@ -899,7 +899,24 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
-                  navigation.navigate('Home');
+                  Alert.alert(
+                    'Discard video?',
+                    'Are you sure you want to discard this video?',
+                    [
+                      {
+                        text: 'Yes',
+                        onPress: () => {
+                          setShowCamera(true);
+                          setSaveBtnState(false);
+                          
+                        },
+                      },
+                      {
+                        text: 'No',
+                        onPress: () => {},
+                      },
+                    ],
+                  );
                 }}>
                 Exit without saving
                 <Icon
