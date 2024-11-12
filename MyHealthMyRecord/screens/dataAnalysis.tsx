@@ -436,6 +436,30 @@ const DataAnalysis = () => {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
+                  <Button
+          disabled={
+            videoSetValue == null ||
+            (videoSetVideoIDs.length === 0 &&
+              (videoSetValue == null || videoSetValue.length === 0))
+          }
+          onPress={() => navigation.navigate('Text Report')}
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: Styles.windowHeight * 0.4,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'file-alt',
+            type: 'font-awesome-5',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Text Report
+        </Button>
         <Button
           disabled={
             videoSetValue == null ||
@@ -518,30 +542,7 @@ const DataAnalysis = () => {
           radius={50}>
           Word Cloud
         </Button>
-        <Button
-          disabled={
-            videoSetValue == null ||
-            (videoSetVideoIDs.length === 0 &&
-              (videoSetValue == null || videoSetValue.length === 0))
-          }
-          onPress={() => navigation.navigate('Text Report')}
-          titleStyle={{fontSize: 40}}
-          containerStyle={{
-            width: Styles.windowHeight * 0.4,
-            marginHorizontal: 30,
-            marginVertical: 10,
-          }}
-          iconRight={true}
-          icon={{
-            name: 'file-alt',
-            type: 'font-awesome-5',
-            size: 40,
-            color: 'white',
-          }}
-          color={Styles.MHMRBlue}
-          radius={50}>
-          Text Report
-        </Button>
+
         {/* <Button
           disabled={true}
           onPress={() => navigation.navigate('Text Graph')}

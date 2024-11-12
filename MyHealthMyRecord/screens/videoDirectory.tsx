@@ -1102,6 +1102,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                 fontWeight: 'bold',
                               }}>
                               {video.title}
+                              
                               {video.textComments.length !== 0 ? (
                                 <Icon
                                   name="chatbox-ellipses"
@@ -1118,7 +1119,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                             <Text style={{fontSize: 20}}>
                               {video.datetimeRecorded?.toLocaleString()}
                             </Text>
-                            {/* <Text>{video.filename}</Text> */}
+                            <Text>{video._id.toHexString()}</Text>
+                            
                           </View>
                           <View>
                             <ScrollView
@@ -1218,11 +1220,12 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     ? 'Add or edit markups'
                                     : 'Edit markups'
                                 }
-                                onPress={() =>
+                                onPress={() =>{
                                   navigation.navigate('Add or Edit Markups', {
                                     id: video._id,
                                   })
-                                }
+                                  console.log('video id:', video._id)
+                                }}
                               />
                               <View />
                               <Button

@@ -23,8 +23,9 @@ import {Rect} from 'react-native-svg';
 import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../assets/util/styles';
 import {useSetLineGraphData} from '../components/lineGraphData';
-import { useDropdownContext } from '../components/videoSetProvider';
-import { useWordList } from '../components/wordListProvider';
+import {useDropdownContext} from '../components/videoSetProvider';
+import {useWordList} from '../components/wordListProvider';
+import {Alert} from 'react-native';
 
 const setLineGraphData = useSetLineGraphData();
 
@@ -33,7 +34,6 @@ const DataAnalysisBarGraph = () => {
   const route = useRoute();
   const barData = route.params?.data;
   const sentimentData = route.params?.sentimentData;
-
 
   const transformedFreqMaps = route.params?.freqMaps.map(freqMap => ({
     ...freqMap,
@@ -46,13 +46,14 @@ const DataAnalysisBarGraph = () => {
   );
   //const wordFreqBarGraphData = data.data;
 
-  const [filteredWordFreqBarGraphData, setFilteredWordFreqBarGraphData] = useState([]);
+  const [filteredWordFreqBarGraphData, setFilteredWordFreqBarGraphData] =
+    useState([]);
 
   const realm = useRealm();
   //   const video: any = useObject('VideoData', id);
 
-  const { currentVideoSet } = useDropdownContext();
-  const { updateWordList } = useWordList();
+  const {currentVideoSet} = useDropdownContext();
+  const {updateWordList} = useWordList();
 
   /* ======================================================================= */
   // bar graph stuff below
@@ -64,11 +65,13 @@ const DataAnalysisBarGraph = () => {
 
   // array of length of max value in data (first index value) for yAxis
   const yTest = Array.from(
-    {length: filteredWordFreqBarGraphData[0]?.value || 0},
-    (_, i) => i + 1,
+    {
+      length: filteredWordFreqBarGraphData.length > 0 && filteredWordFreqBarGraphData[0].value 
+        ? filteredWordFreqBarGraphData[0].value 
+        : 0
+    },
+    (_, i) => i + 1
   );
-  //const yTest = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-  //const yTest = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
   /* on press functionality for word frequency bar graph */
   const [wordSelected, setWordSelected] = useState<number | null>(null);
@@ -119,8 +122,10 @@ const DataAnalysisBarGraph = () => {
     filteredWordFreqBarGraphData.map((value, index) => (
       <svg.Text
         key={index}
-        x={value.value > CUT_OFF_HOR ? x(value.value) - 30 : x(value.value) + 10}
-        y={y(index) + (bandwidth / 2)}
+        x={
+          value.value > CUT_OFF_HOR ? x(value.value) - 30 : x(value.value) + 10
+        }
+        y={y(index) + bandwidth / 2}
         fontSize={14}
         fill={value.value > CUT_OFF_HOR ? 'white' : 'black'}
         alignmentBaseline={'middle'}>
@@ -185,8 +190,12 @@ const DataAnalysisBarGraph = () => {
   const handleSentimentPress = async sentiment => {
     try {
       const videoIDsSet = new Set(currentVideoSet.videoIDs);
-      const videos = await realm.objects('VideoData').filtered(`sentiment == "${sentiment}"`);
-      const filteredVideos = videos.filter(video => videoIDsSet.has(video._id.toString()));
+      const videos = await realm
+        .objects('VideoData')
+        .filtered(`sentiment == "${sentiment}"`);
+      const filteredVideos = videos.filter(video =>
+        videoIDsSet.has(video._id.toString()),
+      );
       setVideoIDs(filteredVideos);
       setModalVisible(true);
     } catch (error) {
@@ -204,7 +213,10 @@ const DataAnalysisBarGraph = () => {
     setSelectedWords(updatedSelection);
 
     realm.write(() => {
-      const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+      const videoSet = realm.objectForPrimaryKey(
+        'VideoSet',
+        currentVideoSet._id,
+      );
       if (videoSet) {
         videoSet.selectedWords = Array.from(updatedSelection);
       }
@@ -212,11 +224,16 @@ const DataAnalysisBarGraph = () => {
   };
 
   const applyWordSelection = () => {
-    const filteredData = wordFreqBarGraphData.filter(item => !selectedWords.has(item.text));
+    const filteredData = wordFreqBarGraphData.filter(
+      item => !selectedWords.has(item.text),
+    );
     setFilteredWordFreqBarGraphData(filteredData);
 
     realm.write(() => {
-      const videoSet = realm.objectForPrimaryKey('VideoSet', currentVideoSet._id);
+      const videoSet = realm.objectForPrimaryKey(
+        'VideoSet',
+        currentVideoSet._id,
+      );
       if (videoSet) {
         videoSet.selectedWords = Array.from(selectedWords);
       }
@@ -226,13 +243,21 @@ const DataAnalysisBarGraph = () => {
   };
 
   useEffect(() => {
-    if (currentVideoSet?.selectedWords?.length > 0) {
-      const selectedWordsSet = new Set(currentVideoSet.selectedWords);
-      setFilteredWordFreqBarGraphData(
-        wordFreqBarGraphData.filter(item => !selectedWordsSet.has(item.text)),
-      );
+    if (yTest.length !== undefined) {
+      if (currentVideoSet && currentVideoSet.selectedWords?.length > 0) {
+        const selectedWordsSet = new Set(currentVideoSet.selectedWords);
+        setFilteredWordFreqBarGraphData(
+          wordFreqBarGraphData.filter(item => !selectedWordsSet.has(item.text)),
+        );
+      } else {
+        setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
+      }
     } else {
-      setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
+      Alert.alert(
+        'Cannot create graphs',
+        'No data available for this video set. Please add more videos to the video set.',
+        [{text: 'OK', onPress: () => navigation.goBack()}],
+      );
     }
   }, [currentVideoSet, wordFreqBarGraphData]);
 
@@ -250,7 +275,8 @@ const DataAnalysisBarGraph = () => {
                     color: 'black',
                     fontWeight: 'bold',
                   }}>
-                  {currentVideoSet?.name} - Count of words mentioned in selected video set
+                  {currentVideoSet?.name} - Count of words mentioned in selected
+                  video set
                 </Text>
                 <View style={{flexDirection: 'row', flex: 1}}>
                   <View style={{width: 50, justifyContent: 'center'}}>
@@ -274,14 +300,20 @@ const DataAnalysisBarGraph = () => {
                       formatLabel={value => value}
                       min={0}
                       max={filteredWordFreqBarGraphData[0]?.value || 0}
-                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}
+                      numberOfTicks={
+                        filteredWordFreqBarGraphData[0]?.value || 0
+                      }
                       style={{height: 600}}
                       svg={{fontSize: 20}}
                     />
                     <TouchableOpacity
                       onPress={scrollLeft}
                       style={{justifyContent: 'center'}}>
-                      <Icon name="keyboard-arrow-left" size={40} color="black" />
+                      <Icon
+                        name="keyboard-arrow-left"
+                        size={40}
+                        color="black"
+                      />
                     </TouchableOpacity>
                     <ScrollView horizontal={true} ref={horizontalScrollViewRef}>
                       <View>
@@ -296,7 +328,9 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}>
+                          numberOfTicks={
+                            filteredWordFreqBarGraphData[0]?.value || 0
+                          }>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
@@ -327,12 +361,21 @@ const DataAnalysisBarGraph = () => {
                     <TouchableOpacity
                       onPress={scrollRight}
                       style={{justifyContent: 'center'}}>
-                      <Icon name="keyboard-arrow-right" size={40} color="black" />
+                      <Icon
+                        name="keyboard-arrow-right"
+                        size={40}
+                        color="black"
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
                 <Text
-                  style={{textAlign: 'center', fontSize: 20, color: 'black', marginTop: -30}}>
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 20,
+                    color: 'black',
+                    marginTop: -30,
+                  }}>
                   Word
                 </Text>
               </View>
@@ -345,10 +388,16 @@ const DataAnalysisBarGraph = () => {
                     color: 'black',
                     fontWeight: 'bold',
                   }}>
-                  {currentVideoSet?.name} - Count of words mentioned in selected video set
+                  {currentVideoSet?.name} - Count of words mentioned in selected
+                  video set
                 </Text>
-                <View style={{ flexDirection: 'row', height: 800, paddingVertical: 16 }}>
-                  <View style={{ justifyContent: 'center', marginRight: 10 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    height: 800,
+                    paddingVertical: 16,
+                  }}>
+                  <View style={{justifyContent: 'center', marginRight: 10}}>
                     <Text
                       style={{
                         textAlign: 'center',
@@ -360,47 +409,60 @@ const DataAnalysisBarGraph = () => {
                       Word
                     </Text>
                   </View>
-                  <View style={{ flexDirection: 'column', height: 800 }}>
-                    <Text style={{ textAlign: 'center', fontSize: 20, color: 'black', marginBottom: 10 }}>
+                  <View style={{flexDirection: 'column', height: 800}}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontSize: 20,
+                        color: 'black',
+                        marginBottom: 10,
+                      }}>
                       Count
                     </Text>
                     <XAxis
                       data={yTest}
-                      xAccessor={({ index }) => index}
-                      contentInset={{ left: 10, right: 10 }}
+                      xAccessor={({index}) => index}
+                      contentInset={{left: 10, right: 10}}
                       spacing={0.2}
                       formatLabel={value => value}
                       min={0}
                       max={filteredWordFreqBarGraphData[0]?.value || 0}
-                      numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}
-                      style={{ width: 600, marginLeft: 80 }}
-                      svg={{ fontSize: 20 }}
+                      numberOfTicks={
+                        filteredWordFreqBarGraphData[0]?.value || 0
+                      }
+                      style={{width: 600, marginLeft: 80}}
+                      svg={{fontSize: 20}}
                     />
                     <TouchableOpacity
                       onPress={scrollUp}
-                      style={{ alignItems: 'center' }}>
+                      style={{alignItems: 'center'}}>
                       <Icon name="keyboard-arrow-up" size={60} color="black" />
                     </TouchableOpacity>
                     <ScrollView
                       ref={verticalScrollViewRef}
-                      style={{ height: '100%', flex: 1 }}
-                      contentContainerStyle={{ height: filteredWordFreqBarGraphData.length * 50 }}
+                      style={{height: '100%', flex: 1}}
+                      contentContainerStyle={{
+                        height: filteredWordFreqBarGraphData.length * 50,
+                      }}
                       nestedScrollEnabled={true}>
                       <View style={{flexDirection: 'row', flex: 1}}>
                         <YAxis
                           data={filteredWordFreqBarGraphData}
-                          yAccessor={({ index }) => index}
+                          yAccessor={({index}) => index}
                           scale={scale.scaleBand}
-                          contentInset={{ top: 10, bottom: 10 }}
+                          contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           formatLabel={(value, index) =>
                             filteredWordFreqBarGraphData[index].text
                           }
-                          svg={{ fontSize: 20, margin: 10 }}
+                          svg={{fontSize: 20, margin: 10}}
                           min={0}
                           max={filteredWordFreqBarGraphData[0]?.value || 0}
                         />
-                        <ScrollView horizontal={true} ref={horizontalScrollViewRef} nestedScrollEnabled={true}>
+                        <ScrollView
+                          horizontal={true}
+                          ref={horizontalScrollViewRef}
+                          nestedScrollEnabled={true}>
                           <View
                             style={{
                               height: filteredWordFreqBarGraphData.length * 50,
@@ -409,17 +471,22 @@ const DataAnalysisBarGraph = () => {
                             }}>
                             <BarChart
                               style={{
-                                height: filteredWordFreqBarGraphData.length * 50,
+                                height:
+                                  filteredWordFreqBarGraphData.length * 50,
                                 width: 600,
                               }}
                               data={wordFreq}
                               horizontal={true}
-                              yAccessor={({ item }) => item.y.value}
-                              svg={{ fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)' }}
-                              contentInset={{ top: 10, bottom: 10 }}
+                              yAccessor={({item}) => item.y.value}
+                              svg={{
+                                fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)',
+                              }}
+                              contentInset={{top: 10, bottom: 10}}
                               spacing={0.2}
                               gridMin={0}
-                              numberOfTicks={filteredWordFreqBarGraphData[0]?.value || 0}>
+                              numberOfTicks={
+                                filteredWordFreqBarGraphData[0]?.value || 0
+                              }>
                               <Grid direction={Grid.Direction.VERTICAL} />
                               <LabelsHorizontal />
                             </BarChart>
@@ -429,8 +496,12 @@ const DataAnalysisBarGraph = () => {
                     </ScrollView>
                     <TouchableOpacity
                       onPress={scrollDown}
-                      style={{ alignItems: 'center' }}>
-                      <Icon name="keyboard-arrow-down" size={60} color="black" />
+                      style={{alignItems: 'center'}}>
+                      <Icon
+                        name="keyboard-arrow-down"
+                        size={60}
+                        color="black"
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -584,7 +655,13 @@ const DataAnalysisBarGraph = () => {
               }}
               contentInset={{left: 50, right: 50}}
             />
-            <Text style={{textAlign: 'center', fontSize: 20, color: 'black', marginBottom: 15}}>
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 20,
+                color: 'black',
+                marginBottom: 15,
+              }}>
               Feeling
             </Text>
           </View>
