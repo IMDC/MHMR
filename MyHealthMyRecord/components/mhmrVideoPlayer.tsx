@@ -414,402 +414,423 @@ const MHMRVideoPlayer = ({
   }
 
   return (
-    <ScrollView>
+    <>
       {isFullscreen ? (
-        <View style={{ height: screenHeight, width: '100%'}}>
-          <View
-            style={{
-              flex: 1,
-            }}>
-            <VideoPlayer
-              disableVolume={true}
-              videoRef={videoPlayerRef}
-              source={{uri: videoPath}}
-              paused={true}
-              disableBack={false}
-              toggleResizeModeOnFullscreen={true}
-              showOnStart={true}
-              isFullscreen={true}
-              disableFullscreen={true}
-              repeat={false}
-              onProgress={data => {
-                currentTime[0] = data.currentTime;
-              }}
-              onSeek={data => {
-                currentTime[0] = data.currentTime;
-              }}
-              onBack={() => navigation.goBack()}
-              // disableSeekButtons={true}
-            />
-          </View>
-        </View>
-      ) : (
-        <View
-          style={{
-            width: windowWidth,
-            height: windowHeight / 2.5,
-            paddingHorizontal: 15,
-            paddingTop: 15,
-          }}>
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'black',
+          zIndex: 1000,
+        }}>
           <VideoPlayer
             disableVolume={true}
             videoRef={videoPlayerRef}
             source={{uri: videoPath}}
             paused={true}
-            disableBack={true}
+            disableBack={false}
             toggleResizeModeOnFullscreen={true}
             showOnStart={true}
-            disableSeekButtons={true}
-            style={{width: Dimensions.get('window').width, height: 300}}
+            isFullscreen={true}
+            disableFullscreen={true}
+            repeat={false}
             resizeMode="contain"
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
             onProgress={data => {
               currentTime[0] = data.currentTime;
             }}
             onSeek={data => {
               currentTime[0] = data.currentTime;
             }}
-            onEnterFullscreen={() =>
-              navigation.navigate('Fullscreen Video', {
-                id: video._id,
-              })
-            }
-            isFullscreen={isFullscreen}
+            onBack={() => navigation.goBack()}
           />
+          {/* Keep overlays visible in fullscreen */}
+          {emotionView && overlaySticker[0] !== '' && (
+            <Image
+              style={[styles.overlayText, styles.overlaySticker]}
+              source={overlaySticker[0]}
+            />
+          )}
+          {commentView && overlayComment[0] !== '' && (
+            <View style={[styles.overlayText, styles.overlayTextForComment]}>
+              <Text style={{width: 100}}>{overlayComment[0]}</Text>
+            </View>
+          )}
         </View>
-      )}
-
-      {emotionView && overlaySticker[0] !== '' && (
-        <Image
-          style={[styles.overlayText, styles.overlaySticker]}
-          source={overlaySticker[0]}
-        />
-      )}
-      {commentView && overlayComment[0] !== '' && (
-        <View
-          style={[
-            styles.overlayText,
-            styles.overlayTextForComment,
-            // {position: 'absolute', top: 10, left: 10},
-          ]}>
-          <Text style={{width: 100}}>{overlayComment[0]}</Text>
-        </View>
-      )}
-
-      {commentConsole && (
-        <>
-          <Input
-            ref={input}
-            containerStyle={{paddingHorizontal: 25, paddingTop: 35}}
-            multiline={true}
-            placeholder="Enter comment here..."
-            style={{padding: 15}}
-            rightIcon={
-              <Icon
-                name="send"
-                onPress={() => {
-                  addComment();
-                  console.log('------', currentTime[0], newTimestamp);
-                }}
-              />
-            }
-            onChangeText={value => {
-              newComment[0] = value;
-              newTimestamp[0] = currentTime[0];
-              console.log('pause at change', currentTime[0]);
-            }}
-            onFocus={() => videoPlayerRef.current.pause()}
-          />
-        </>
-      )}
-      {emotionConsole && (
-        <View>
-          <View style={styles.ballContainer} />
-          <View style={[styles.row, styles.draggableContainer]}>
-            <Draggable id="smile" source={smile} />
-            <Draggable id="neutral" source={neutral} />
-            <Draggable id="worried" source={worried} />
-            <Draggable id="sad" source={sad} />
-            <Draggable id="angry" source={angry} />
+      ) : (
+        <ScrollView>
+          <View
+            style={{
+              width: windowWidth,
+              height: windowHeight / 2.5,
+              paddingHorizontal: 15,
+              paddingTop: 15,
+            }}>
+            <VideoPlayer
+              disableVolume={true}
+              videoRef={videoPlayerRef}
+              source={{uri: videoPath}}
+              paused={true}
+              disableBack={true}
+              toggleResizeModeOnFullscreen={true}
+              showOnStart={true}
+              disableSeekButtons={true}
+              style={{width: Dimensions.get('window').width, height: 300}}
+              resizeMode="contain"
+              onProgress={data => {
+                currentTime[0] = data.currentTime;
+              }}
+              onSeek={data => {
+                currentTime[0] = data.currentTime;
+              }}
+              onEnterFullscreen={() =>
+                navigation.navigate('Fullscreen Video', {
+                  id: video._id,
+                })
+              }
+              isFullscreen={isFullscreen}
+            />
           </View>
-        </View>
-      )}
-      <ScrollView>
-        <SafeAreaView>
-          <ScrollView style={styles.container}>
-            {commentView && !isFullscreen && (
-              <>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={{flexDirection: 'row'}}>
-                    <Text style={[styles.headerStyle, {paddingRight: 5}]}>
-                      Comments
-                    </Text>
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        paddingTop: 15,
-                        alignSelf: 'center',
-                      }}
-                      onPress={() => setCommentsVisible(!commentsVisible)}>
-                      <Text style={{fontSize: 16}}>
-                        {commentsVisible ? 'Hide' : 'Show'}
-                      </Text>
 
-                      {/* <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show +</Text> */}
-                      <Icon
-                        name={
-                          commentsVisible
-                            ? 'keyboard-arrow-up'
-                            : 'keyboard-arrow-down'
-                        }
-                      />
-                    </TouchableOpacity>
-                  </View>
+          {emotionView && overlaySticker[0] !== '' && (
+            <Image
+              style={[styles.overlayText, styles.overlaySticker]}
+              source={overlaySticker[0]}
+            />
+          )}
+          {commentView && overlayComment[0] !== '' && (
+            <View
+              style={[
+                styles.overlayText,
+                styles.overlayTextForComment,
+                // {position: 'absolute', top: 10, left: 10},
+              ]}>
+              <Text style={{width: 100}}>{overlayComment[0]}</Text>
+            </View>
+          )}
 
-                  {isDeleteBtnVisible && (
-                    <TouchableOpacity
-                      style={{justifyContent: 'center'}}
-                      onPress={() => toggleEditBtnVisible()}>
-                      <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
-                    </TouchableOpacity>
-                  )}
-                  {isEditBtnVisible && (
-                    <TouchableOpacity
-                      style={{justifyContent: 'center'}}
-                      onPress={() => toggleDeleteBtnVisibile()}>
-                      <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-                {commentsVisible && (
-                  <View>
-                    {parsedComments.length != 0 ? (
-                      parsedComments.map((c, i) => (
-                        <View
-                          ref={el => {
-                            commentRef.current[i] = el;
-                          }}
-                          key={c.id}
-                          style={[styles.commentContainer, styles.row]}>
-                          <Dialog
-                            isVisible={visible}
-                            onBackdropPress={toggleDialog}>
-                            <Dialog.Title title="Edit text" />
-                            <Input
-                              ref={commentEditInput}
-                              inputStyle={{fontSize: 35}}
-                              defaultValue={commentSelectedText}
-                              onChangeText={value => setCommentEdit(value)}
-                              onSubmitEditing={() => {
-                                editComment(commentSelectedID);
-                                toggleDialog();
-                              }}
-                            />
-                            <Dialog.Actions>
-                              <Dialog.Button
-                                title="CONFIRM"
-                                onPress={() => {
-                                  editComment(commentSelectedID);
-                                  toggleDialog();
-                                }}
-                              />
-                              <Dialog.Button
-                                title="CANCEL"
-                                onPress={toggleDialog}
-                              />
-                            </Dialog.Actions>
-                          </Dialog>
-                          <View style={styles.row}>
-                            <TouchableOpacity
-                              onPress={() => seekToTimestamp(c.timestamp)}>
-                              <Text key={c.id} style={styles.textStyle}>
-                                {secondsToHms(c.timestamp)} - {c.text}
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                          <View style={styles.rightContainer}>
-                            {isDeleteBtnVisible && (
-                              <View style={{flexDirection: 'row'}}>
-                                <TouchableOpacity
-                                  style={{
-                                    alignSelf: 'flex-end',
-                                    marginRight: 10,
-                                  }}
-                                  onPress={() => {
-                                    setCommentSelectedText(c.text);
-                                    setCommentSelectedID(c.id);
-                                    toggleDialog();
-                                  }}>
-                                  <Icon
-                                    name="pencil"
-                                    type="font-awesome"
-                                    size={24}
-                                    color="#1C3EAA"
-                                  />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                  style={{alignSelf: 'flex-end'}}
-                                  onPress={() => deleteComment(c.id)}>
-                                  <Icon
-                                    name="delete"
-                                    size={24}
-                                    color="#cf7f11"
-                                  />
-                                </TouchableOpacity>
-                              </View>
-                            )}
-                          </View>
-                        </View>
-                      ))
-                    ) : (
-                      // <Text>No comments added </Text>
-                      <View>
-                        {!commentConsole ? (
-                          <TouchableOpacity
-                            onPress={() =>
-                              navigation.navigate('Text Comments', {
-                                id: videoID,
-                              })
-                            }>
-                            <Text
-                              style={{
-                                fontSize: 20,
-                                paddingTop: 10,
-                                color: 'blue',
-                              }}>
-                              No comments added. Click to add a comment.
-                            </Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <Text style={{fontSize: 20, paddingTop: 10}}>
-                            No comments added.
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                )}
-              </>
-            )}
-            {emotionView && !isFullscreen && (
-              <View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={{flexDirection: 'row'}}>
-                    <Text style={[styles.headerStyle, {paddingRight: 5}]}>
-                      Emotion stickers
-                    </Text>
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        paddingTop: 15,
-                        alignSelf: 'center',
-                      }}
-                      onPress={() => setEmotionVisible(!emotionVisible)}>
-                      <Text style={{fontSize: 16}}>
-                        {emotionVisible ? 'Hide' : 'Show'}
-                      </Text>
-
-                      <Icon
-                        name={
-                          emotionVisible
-                            ? 'keyboard-arrow-up'
-                            : 'keyboard-arrow-down'
-                        }
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {isDeleteBtnVisible && (
-                    <TouchableOpacity
-                      style={{justifyContent: 'center'}}
-                      onPress={() => toggleEditBtnVisible()}>
-                      <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
-                    </TouchableOpacity>
-                  )}
-                  {isEditBtnVisible && (
-                    <TouchableOpacity
-                      style={{justifyContent: 'center'}}
-                      onPress={() => toggleDeleteBtnVisibile()}>
-                      <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-                {emotionVisible && (
-                  <View>
-                    {parsedStickers.length != 0 ? (
-                      parsedStickers.map((s: any, i) => (
-                        <View
-                          ref={el => {
-                            stickerRef.current[i] = el;
-                          }}
-                          key={s.id}
-                          style={[styles.commentContainer, styles.row]}>
-                          <View style={styles.row}>
-                            <TouchableOpacity
-                              onPress={() => seekToTimestamp(s.timestamp)}>
-                              <Text style={styles.textStyle}>
-                                {secondsToHms(s.timestamp)} - {s.sentiment}
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                          <View style={styles.rightContainer}>
-                            {isDeleteBtnVisible && (
-                              <View>
-                                <TouchableOpacity
-                                  style={{alignSelf: 'flex-end'}}
-                                  onPress={() => deleteSticker(s.id)}>
-                                  <Icon
-                                    name="delete"
-                                    size={24}
-                                    color="#cf7f11"
-                                  />
-                                </TouchableOpacity>
-                              </View>
-                            )}
-                          </View>
-                        </View>
-                      ))
-                    ) : (
-                      <View>
-                        {!emotionConsole ? (
-                          <TouchableOpacity
-                            onPress={() =>
-                              navigation.navigate('Emotion Tagging', {
-                                id: videoID,
-                              })
-                            }>
-                            <Text
-                              style={{
-                                fontSize: 20,
-                                paddingTop: 10,
-                                color: 'blue',
-                              }}>
-                              No emotion stickers added. Click to add a emotion
-                              stickers.
-                            </Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <Text style={{fontSize: 20, paddingTop: 10}}>
-                            No emotion stickers added.
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                )}
+          {commentConsole && (
+            <>
+              <Input
+                ref={input}
+                containerStyle={{paddingHorizontal: 25, paddingTop: 35}}
+                multiline={true}
+                placeholder="Enter comment here..."
+                style={{padding: 15}}
+                rightIcon={
+                  <Icon
+                    name="send"
+                    onPress={() => {
+                      addComment();
+                      console.log('------', currentTime[0], newTimestamp);
+                    }}
+                  />
+                }
+                onChangeText={value => {
+                  newComment[0] = value;
+                  newTimestamp[0] = currentTime[0];
+                  console.log('pause at change', currentTime[0]);
+                }}
+                onFocus={() => videoPlayerRef.current.pause()}
+              />
+            </>
+          )}
+          {emotionConsole && (
+            <View>
+              <View style={styles.ballContainer} />
+              <View style={[styles.row, styles.draggableContainer]}>
+                <Draggable id="smile" source={smile} />
+                <Draggable id="neutral" source={neutral} />
+                <Draggable id="worried" source={worried} />
+                <Draggable id="sad" source={sad} />
+                <Draggable id="angry" source={angry} />
               </View>
-            )}
+            </View>
+          )}
+          <ScrollView>
+            <SafeAreaView>
+              <ScrollView style={styles.container}>
+                {commentView && !isFullscreen && (
+                  <>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}>
+                      <View style={{flexDirection: 'row'}}>
+                        <Text style={[styles.headerStyle, {paddingRight: 5}]}>
+                          Comments
+                        </Text>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            paddingTop: 15,
+                            alignSelf: 'center',
+                          }}
+                          onPress={() => setCommentsVisible(!commentsVisible)}>
+                          <Text style={{fontSize: 16}}>
+                            {commentsVisible ? 'Hide' : 'Show'}
+                          </Text>
+
+                          {/* <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show +</Text> */}
+                          <Icon
+                            name={
+                              commentsVisible
+                                ? 'keyboard-arrow-up'
+                                : 'keyboard-arrow-down'
+                            }
+                          />
+                        </TouchableOpacity>
+                      </View>
+
+                      {isDeleteBtnVisible && (
+                        <TouchableOpacity
+                          style={{justifyContent: 'center'}}
+                          onPress={() => toggleEditBtnVisible()}>
+                          <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
+                        </TouchableOpacity>
+                      )}
+                      {isEditBtnVisible && (
+                        <TouchableOpacity
+                          style={{justifyContent: 'center'}}
+                          onPress={() => toggleDeleteBtnVisibile()}>
+                          <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    {commentsVisible && (
+                      <View>
+                        {parsedComments.length != 0 ? (
+                          parsedComments.map((c, i) => (
+                            <View
+                              ref={el => {
+                                commentRef.current[i] = el;
+                              }}
+                              key={c.id}
+                              style={[styles.commentContainer, styles.row]}>
+                              <Dialog
+                                isVisible={visible}
+                                onBackdropPress={toggleDialog}>
+                                <Dialog.Title title="Edit text" />
+                                <Input
+                                  ref={commentEditInput}
+                                  inputStyle={{fontSize: 35}}
+                                  defaultValue={commentSelectedText}
+                                  onChangeText={value => setCommentEdit(value)}
+                                  onSubmitEditing={() => {
+                                    editComment(commentSelectedID);
+                                    toggleDialog();
+                                  }}
+                                />
+                                <Dialog.Actions>
+                                  <Dialog.Button
+                                    title="CONFIRM"
+                                    onPress={() => {
+                                      editComment(commentSelectedID);
+                                      toggleDialog();
+                                    }}
+                                  />
+                                  <Dialog.Button
+                                    title="CANCEL"
+                                    onPress={toggleDialog}
+                                  />
+                                </Dialog.Actions>
+                              </Dialog>
+                              <View style={styles.row}>
+                                <TouchableOpacity
+                                  onPress={() => seekToTimestamp(c.timestamp)}>
+                                  <Text key={c.id} style={styles.textStyle}>
+                                    {secondsToHms(c.timestamp)} - {c.text}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                              <View style={styles.rightContainer}>
+                                {isDeleteBtnVisible && (
+                                  <View style={{flexDirection: 'row'}}>
+                                    <TouchableOpacity
+                                      style={{
+                                        alignSelf: 'flex-end',
+                                        marginRight: 10,
+                                      }}
+                                      onPress={() => {
+                                        setCommentSelectedText(c.text);
+                                        setCommentSelectedID(c.id);
+                                        toggleDialog();
+                                      }}>
+                                      <Icon
+                                        name="pencil"
+                                        type="font-awesome"
+                                        size={24}
+                                        color="#1C3EAA"
+                                      />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                      style={{alignSelf: 'flex-end'}}
+                                      onPress={() => deleteComment(c.id)}>
+                                      <Icon
+                                        name="delete"
+                                        size={24}
+                                        color="#cf7f11"
+                                      />
+                                    </TouchableOpacity>
+                                  </View>
+                                )}
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          // <Text>No comments added </Text>
+                          <View>
+                            {!commentConsole ? (
+                              <TouchableOpacity
+                                onPress={() =>
+                                  navigation.navigate('Text Comments', {
+                                    id: videoID,
+                                  })
+                                }>
+                                <Text
+                                  style={{
+                                    fontSize: 20,
+                                    paddingTop: 10,
+                                    color: 'blue',
+                                  }}>
+                                  No comments added. Click to add a comment.
+                                </Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <Text style={{fontSize: 20, paddingTop: 10}}>
+                                No comments added.
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    )}
+                  </>
+                )}
+                {emotionView && !isFullscreen && (
+                  <View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}>
+                      <View style={{flexDirection: 'row'}}>
+                        <Text style={[styles.headerStyle, {paddingRight: 5}]}>
+                          Emotion stickers
+                        </Text>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            paddingTop: 15,
+                            alignSelf: 'center',
+                          }}
+                          onPress={() => setEmotionVisible(!emotionVisible)}>
+                          <Text style={{fontSize: 16}}>
+                            {emotionVisible ? 'Hide' : 'Show'}
+                          </Text>
+
+                          <Icon
+                            name={
+                              emotionVisible
+                                ? 'keyboard-arrow-up'
+                                : 'keyboard-arrow-down'
+                            }
+                          />
+                        </TouchableOpacity>
+                      </View>
+
+                      {isDeleteBtnVisible && (
+                        <TouchableOpacity
+                          style={{justifyContent: 'center'}}
+                          onPress={() => toggleEditBtnVisible()}>
+                          <Text style={{fontSize: 16, marginRight: 25}}>Done</Text>
+                        </TouchableOpacity>
+                      )}
+                      {isEditBtnVisible && (
+                        <TouchableOpacity
+                          style={{justifyContent: 'center'}}
+                          onPress={() => toggleDeleteBtnVisibile()}>
+                          <Text style={{fontSize: 16, marginRight: 25}}>Edit</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    {emotionVisible && (
+                      <View>
+                        {parsedStickers.length != 0 ? (
+                          parsedStickers.map((s: any, i) => (
+                            <View
+                              ref={el => {
+                                stickerRef.current[i] = el;
+                              }}
+                              key={s.id}
+                              style={[styles.commentContainer, styles.row]}>
+                              <View style={styles.row}>
+                                <TouchableOpacity
+                                  onPress={() => seekToTimestamp(s.timestamp)}>
+                                  <Text style={styles.textStyle}>
+                                    {secondsToHms(s.timestamp)} - {s.sentiment}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                              <View style={styles.rightContainer}>
+                                {isDeleteBtnVisible && (
+                                  <View>
+                                    <TouchableOpacity
+                                      style={{alignSelf: 'flex-end'}}
+                                      onPress={() => deleteSticker(s.id)}>
+                                      <Icon
+                                        name="delete"
+                                        size={24}
+                                        color="#cf7f11"
+                                      />
+                                    </TouchableOpacity>
+                                  </View>
+                                )}
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          <View>
+                            {!emotionConsole ? (
+                              <TouchableOpacity
+                                onPress={() =>
+                                  navigation.navigate('Emotion Tagging', {
+                                    id: videoID,
+                                  })
+                                }>
+                                <Text
+                                  style={{
+                                    fontSize: 20,
+                                    paddingTop: 10,
+                                    color: 'blue',
+                                  }}>
+                                  No emotion stickers added. Click to add a emotion
+                                  stickers.
+                                </Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <Text style={{fontSize: 20, paddingTop: 10}}>
+                                No emotion stickers added.
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                )}
+              </ScrollView>
+            </SafeAreaView>
           </ScrollView>
-        </SafeAreaView>
-      </ScrollView>
-    </ScrollView>
+        </ScrollView>
+      )}
+    </>
   );
 };
 
