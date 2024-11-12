@@ -226,7 +226,7 @@ const DataAnalysisWordCloud = () => {
       ) : (
         <View></View>
       )}
-      <Modal
+      {/* <Modal
         animationType="slide"
         transparent={true}
         visible={editModalVisible}
@@ -265,7 +265,7 @@ const DataAnalysisWordCloud = () => {
             />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </SafeAreaView>
   );
 };
