@@ -209,7 +209,7 @@ const DataAnalysisWordCloud = () => {
                 onChange={item => setDropdownValue(item.value)}
               />
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
+            {/* <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
               <Button
                 title="Select words"
                 onPress={() => setEditModalVisible(true)}
@@ -220,7 +220,7 @@ const DataAnalysisWordCloud = () => {
                   marginHorizontal: 30,
                 }}
               />
-            </View>
+            </View> */}
           </View>
         </View>
       ) : (
@@ -234,7 +234,7 @@ const DataAnalysisWordCloud = () => {
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Select words to remove</Text>
           <FlatList
-            data={updatedData}
+            data={}
             renderItem={({item}) => (
               <CheckBox
                 title={item.text}
