@@ -1,5 +1,9 @@
 import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {ParamListBase, useNavigation} from '@react-navigation/native';
+import {
+  ParamListBase,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
@@ -15,7 +19,11 @@ import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {useLoader} from '../components/loaderProvider';
 import {useDropdownContext} from '../components/videoSetProvider';
 import VideoSetDropdown from '../components/videoSetDropdown';
-import {screenWidth} from '../assets/util/styles';
+import {
+  bottomNavBarHeight,
+  NavBarGrey,
+  screenWidth,
+} from '../assets/util/styles';
 
 const RecordVideo = () => {
   const {
@@ -130,6 +138,8 @@ const RecordVideo = () => {
 
   const toggleSetNameDialog = () => {
     console.log('toggleSetNameDialog');
+    setNewVideoSetName(new Date().toString().split(' GMT-')[0]);
+    console.log('dateTime:', dateTime); 
     setSetNameVisible(!setNameVisible);
   };
 
@@ -159,6 +169,24 @@ const RecordVideo = () => {
   //console.log("result:", result);
   //const videodatas = useMemo(() => result.sorted("datetimeRecorded"), [result]);
   //console.log("videodatas:", videodatas);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Hide the tab bar
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {display: 'none'},
+      });
+      return () => {
+        // Restore the tab bar
+        navigation.getParent()?.setOptions({
+          tabBarStyle: {
+            height: bottomNavBarHeight,
+            backgroundColor: NavBarGrey,
+          },
+        });
+      };
+    }, [navigation]),
+  );
 
   useEffect(() => {
     async function getPermission() {
@@ -391,7 +419,7 @@ const RecordVideo = () => {
             const videoIdString = videoId?.toString();
             selectedVideoSet.videoIDs.push(videoIdString);
           });
-          Alert.alert('Video saved to selected set', selectedVideoSet.name);
+         
         }
       }
 
@@ -672,6 +700,7 @@ const RecordVideo = () => {
           placeholder={dateTime}
           onChangeText={value => {
             setNewVideoSetName(value);
+
             console.log('New Video Set Name:', value); // Log the new name as it changes
           }}
         />
@@ -679,14 +708,27 @@ const RecordVideo = () => {
           <Dialog.Button
             title="CONFIRM"
             onPress={async () => {
-              console.log('Creating video set with name:', newVideoSetName);
-              const newSet = createVideoSet([], videoSetVideoIDs); // Create the new set
-              setSelectedVideoSet(newSet); // Set the new set as the selected one
-              console.log('Newly Created Video Set:', newSet); // Log the newly created set
-              toggleSetNameDialog();
+              if(newVideoSetName == '') {
+                setNewVideoSetName(dateTime);
+                const newSet = createVideoSet([], videoSetVideoIDs);
+
+                setSelectedVideoSet(newSet);
+
+                console.log('Newly Created Video Set:', newSet); // Log the newly created set
+                toggleSetNameDialog();
+              }
+              else {
+                const newSet = createVideoSet([], videoSetVideoIDs);
+
+                setSelectedVideoSet(newSet);
+
+                console.log('Newly Created Video Set:', newSet); // Log the newly created set
+                toggleSetNameDialog();
+              }
+              
             }}
           />
-          <Dialog.Button title="CANCEL" onPress={() => toggleSetNameDialog()} />
+          <Dialog.Button title="CANCEL" onPress={toggleSetNameDialog} />
         </Dialog.Actions>
       </Dialog>
 
@@ -857,7 +899,24 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
-                  navigation.navigate('Home');
+                  Alert.alert(
+                    'Discard video?',
+                    'Are you sure you want to discard this video?',
+                    [
+                      {
+                        text: 'Yes',
+                        onPress: () => {
+                          setShowCamera(true);
+                          setSaveBtnState(false);
+                          
+                        },
+                      },
+                      {
+                        text: 'No',
+                        onPress: () => {},
+                      },
+                    ],
+                  );
                 }}>
                 Exit without saving
                 <Icon
