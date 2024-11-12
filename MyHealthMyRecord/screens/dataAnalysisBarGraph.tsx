@@ -151,7 +151,7 @@ const DataAnalysisBarGraph = () => {
     }
     setWordFreqBarGraphData(newWordFreqBarGraphData);
     setFilteredWordFreqBarGraphData(newWordFreqBarGraphData);
-    updateWordList(newWordFreqBarGraphData);
+    // updateWordList(newWordFreqBarGraphData);
   }
 
   useEffect(() => {

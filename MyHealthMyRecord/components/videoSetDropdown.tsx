@@ -182,40 +182,43 @@ const VideoSetDropdown = ({
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        {plainDropdown === false &&  (
-      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
-        <Dialog.Title title="Name this video set:" />
-        <Input
-          inputStyle={{fontSize: 35}}
-          placeholder={dateTime}
-          // onChangeText={value => setNewKeyword(value)}
-          onChangeText={value => {
-            setNewVideoSetName(value);
-            console.log('New Video Set Name:', newVideoSetName);
-          }}
-        />
-        <Dialog.Actions>
-          <Dialog.Button
-            title="CONFIRM"
-            onPress={() => {
-              if (!checkSetNameDuplicate(newVideoSetName)) {
-                createVideoSet([], videoSetVideoIDs);
-                toggleDialog();
-              } else {
-                Alert.alert(
-                  'Error',
-                  'Video set name already exists. Please choose a different name.',
-                );
-                [{text: 'OK'}];
-              }
+      {plainDropdown === false && (
+        <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+          <Dialog.Title title="Name this video set:" />
+          <Input
+            inputStyle={{fontSize: 35}}
+            placeholder={dateTime}
+            // onChangeText={value => setNewKeyword(value)}
+            onChangeText={value => {
+              setNewVideoSetName(value);
+              console.log('New Video Set Name:', newVideoSetName);
             }}
           />
-          <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
-        </Dialog.Actions>
-      </Dialog>)}
-      {plainDropdown === false && (<View style={{paddingBottom: 10}}>
-        <Text style={{fontSize: 20}}>Select video set: </Text>
-      </View>)}
+          <Dialog.Actions>
+            <Dialog.Button
+              title="CONFIRM"
+              onPress={() => {
+                if (!checkSetNameDuplicate(newVideoSetName)) {
+                  createVideoSet([], videoSetVideoIDs);
+                  toggleDialog();
+                } else {
+                  Alert.alert(
+                    'Error',
+                    'Video set name already exists. Please choose a different name.',
+                  );
+                  [{text: 'OK'}];
+                }
+              }}
+            />
+            <Dialog.Button title="CANCEL" onPress={() => toggleDialog()} />
+          </Dialog.Actions>
+        </Dialog>
+      )}
+      {plainDropdown === false && (
+        <View style={{paddingBottom: 10}}>
+          <Text style={{fontSize: 20}}>Select video set: </Text>
+        </View>
+      )}
       <Dropdown
         data={localDropdown}
         maxHeight={400}
@@ -245,27 +248,29 @@ const VideoSetDropdown = ({
           onVideoSetChange(item.value);
         }}
       />
-     {/*when dropdown value is equal to create new*/}
-       {saveVideoSetBtn === false &&
-      clearVideoSetBtn === false &&
-      manageSetBtn === false &&
-     videoSetValue === 'create_new' &&  plainDropdown === false && (
+      {/*when dropdown value is equal to create new*/}
+      {saveVideoSetBtn === false &&
+        clearVideoSetBtn === false &&
+        manageSetBtn === false &&
+        videoSetValue === 'create_new' &&
+        plainDropdown === false && (
           <View style={{paddingTop: 20, width: '80%', flexDirection: 'column'}}>
             <Text>Name this video set:</Text>
-           <Input
-          inputStyle={{fontSize: 35}}
-          placeholder={dateTime}
-          onChangeText={value => {
-            setNewVideoSetName(value); // Captures local state
-            onNewSetNameChange(value); // Pass value to parent
-            console.log('New Video Set Name:', newVideoSetName);
-          }}
-        />
-              </View>
-       )}      
+            <Input
+              inputStyle={{fontSize: 35}}
+              placeholder={dateTime}
+              onChangeText={value => {
+                setNewVideoSetName(value); // Captures local state
+                onNewSetNameChange(value); // Pass value to parent
+                console.log('New Video Set Name:', newVideoSetName);
+              }}
+            />
+          </View>
+        )}
       {saveVideoSetBtn === false &&
       clearVideoSetBtn === false &&
-      manageSetBtn === false && keepViewBtn === true ? (
+      manageSetBtn === false &&
+      keepViewBtn === true ? (
         <View style={{flexDirection: 'row', paddingTop: 30}}>
           <Button
             title="View videos in video set"
@@ -338,9 +343,8 @@ const VideoSetDropdown = ({
                 containerStyle={styles.btnContainer}
               />
             )}
-           
           </View>
-          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false &&  (
+          {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
             <View style={{paddingBottom: 15}}>
               <Text
                 style={{fontSize: 20, color: '#C70039', textAlign: 'center'}}>
@@ -349,6 +353,8 @@ const VideoSetDropdown = ({
               </Text>
             </View>
           )}
+
+
         </View>
       )}
     </View>

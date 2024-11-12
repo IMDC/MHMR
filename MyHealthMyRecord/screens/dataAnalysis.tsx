@@ -15,8 +15,10 @@ import {
   Dimensions,
   Modal,
   StyleSheet,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
-import {Button} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import Svg, * as svg from 'react-native-svg';
 import * as scale from 'd3-scale';
@@ -30,6 +32,7 @@ import {color} from '@rneui/base';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {stopWords, medWords} from '../assets/util/words';
 import {useSetLineGraphData} from '../components/lineGraphData';
+import { useWordList } from '../components/wordListProvider';
 
 const DataAnalysis = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -60,6 +63,7 @@ const DataAnalysis = () => {
   const [data, setData] = useState<any>([]);
   const [selectedWord, setSelectedWord] = useState('');
   const [noStopWords, setNoStopWords] = useState<any>([]);
+ const {updateWordList, wordList} = useWordList();
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
@@ -319,8 +323,12 @@ const DataAnalysis = () => {
       dataNoMed: barNoMed,
       dataNone: barNone,
     });
+    
     setRouteFreqMaps(freqMapsWithInfo);
     setFreqMapsWithInfo([]);
+    updateWordList(barNone);
+    console.log('--------------------------wordList:', wordList);
+    console.log('**************************wordList.length:', wordList.length);
   }
 
   /* ------------------------------ LINE GRAPH FREQUENCY ------------------------------ */
@@ -542,6 +550,29 @@ const DataAnalysis = () => {
           radius={50}>
           Word Cloud
         </Button>
+      </View>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          left: Styles.screenWidth / 3,
+        }}>
+        {!currentVideoSet?.isAnalyzed && (
+          <TouchableOpacity style={{flexDirection: 'row'}} onPress={
+            () => Alert.alert('Please analyze the video set first.', 'You must analyze the video set before you can view the data analysis. Video set can only be analyzed when connected to the internet')
+          } >
+            <Icon
+              name="alert-circle-outline"
+              size={24}
+              type="ionicon"
+              color='gray'
+              // style={{width: Styles.bottomNavIconSize}}
+            />
+            <Text style={{fontSize: 20, color: 'gray', textAlign: 'center'}}>
+              Why can't I click anything?
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Modal
         animationType="slide"
