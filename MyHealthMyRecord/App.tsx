@@ -41,14 +41,18 @@ import { LoaderProvider } from './components/loaderProvider';
 import ManageVideoSet from './screens/manageVideoSet';
 import Video from 'react-native-video';
 import { WordListProvider } from './components/wordListProvider';
+import { useNetwork } from './components/networkProvider';
+import OfflineAlert from './components/offlineAlert';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
+
 
 function StackNav() {
   return (
     <Stack.Navigator
       initialRouteName="Home"
+
       screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Record Video" component={RecordVideo} />
@@ -148,6 +152,7 @@ function ManageVideosStack() {
   );
 }
 function App() {
+  const {online} = useNetwork();
   return (
     <RealmProvider>
       <NetworkProvider>
@@ -155,6 +160,7 @@ function App() {
           <VideoSetProvider>
             <WordListProvider>
               <NavigationContainer>
+                <OfflineAlert />
                 <Tab.Navigator
                   initialRouteName="MyHealthMyRecord"
                   screenOptions={{
@@ -197,12 +203,10 @@ function App() {
                       tabBarShowLabel: true,
                       tabBarLabel: 'Dashboard',
                       tabBarLabelStyle: {
-                        
                         fontSize: 14,
                         fontWeight: 'bold',
-                        
                       },
-                      
+
                       tabBarIcon: () => (
                         <Icon
                           name="albums-outline"
@@ -254,7 +258,6 @@ function App() {
                           type="ionicon"
                           color={Styles.MHMRBlue}
                           style={{width: Styles.bottomNavIconSize}}
-                          
                         />
                       ),
                     }}
