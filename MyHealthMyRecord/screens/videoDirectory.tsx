@@ -1119,8 +1119,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                             <Text style={{fontSize: 20}}>
                               {video.datetimeRecorded?.toLocaleString()}
                             </Text>
-                            <Text>{video._id.toHexString()}</Text>
-                            
                           </View>
                           <View>
                             <ScrollView
