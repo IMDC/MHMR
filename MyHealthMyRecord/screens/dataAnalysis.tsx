@@ -73,10 +73,6 @@ const DataAnalysis = () => {
   const id = route.params?.id;
 
   const realm = useRealm();
-  //const video: any = useObject('VideoData', id);
-
-  //console.log(videosByDate);
-  // console.log('**********************************************************');
 
   useEffect(() => {
     if (isFocused) {
@@ -438,6 +434,32 @@ const DataAnalysis = () => {
         }}>
         <Button
           disabled={
+            !currentVideoSet?.isAnalyzed ||
+            videoSetValue == null ||
+            (videoSetVideoIDs.length === 0 &&
+              (videoSetValue == null || videoSetValue.length === 0))
+          }
+          onPress={() => navigation.navigate('Text Report')}
+          titleStyle={{fontSize: 40}}
+          containerStyle={{
+            width: Styles.windowHeight * 0.4,
+            marginHorizontal: 30,
+            marginVertical: 10,
+          }}
+          iconRight={true}
+          icon={{
+            name: 'file-alt',
+            type: 'font-awesome-5',
+            size: 40,
+            color: 'white',
+          }}
+          color={Styles.MHMRBlue}
+          radius={50}>
+          Text Report
+        </Button>
+        <Button
+          disabled={
+            !currentVideoSet?.isAnalyzed ||
             videoSetValue == null ||
             (videoSetVideoIDs.length === 0 &&
               (videoSetValue == null || videoSetValue.length === 0))
@@ -468,6 +490,7 @@ const DataAnalysis = () => {
         </Button>
         <Button
           disabled={
+            !currentVideoSet?.isAnalyzed ||
             videoSetValue == null ||
             (videoSetVideoIDs.length === 0 &&
               (videoSetValue == null || videoSetValue.length === 0))
@@ -496,6 +519,7 @@ const DataAnalysis = () => {
         </Button>
         <Button
           disabled={
+            !currentVideoSet?.isAnalyzed ||
             videoSetValue == null ||
             (videoSetVideoIDs.length === 0 &&
               (videoSetValue == null || videoSetValue.length === 0))
@@ -518,50 +542,6 @@ const DataAnalysis = () => {
           radius={50}>
           Word Cloud
         </Button>
-        <Button
-          disabled={
-            videoSetValue == null ||
-            (videoSetVideoIDs.length === 0 &&
-              (videoSetValue == null || videoSetValue.length === 0))
-          }
-          onPress={() => navigation.navigate('Text Report')}
-          titleStyle={{fontSize: 40}}
-          containerStyle={{
-            width: Styles.windowHeight * 0.4,
-            marginHorizontal: 30,
-            marginVertical: 10,
-          }}
-          iconRight={true}
-          icon={{
-            name: 'file-alt',
-            type: 'font-awesome-5',
-            size: 40,
-            color: 'white',
-          }}
-          color={Styles.MHMRBlue}
-          radius={50}>
-          Text Report
-        </Button>
-        {/* <Button
-          disabled={true}
-          onPress={() => navigation.navigate('Text Graph')}
-          titleStyle={{fontSize: 40}}
-          containerStyle={{
-            width: 400,
-            marginHorizontal: 30,
-            marginVertical: 10,
-          }}
-          iconRight={true}
-          icon={{
-            name: 'project-diagram',
-            type: 'font-awesome-5',
-            size: 40,
-            color: 'white',
-          }}
-          color={Styles.MHMRBlue}
-          radius={50}>
-          Text Graph
-        </Button> */}
       </View>
       <Modal
         animationType="slide"

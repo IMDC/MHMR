@@ -81,6 +81,16 @@ const VideoSetDropdown = ({
     let lastVideoDateTime =
       videoIDsArray[videoIDsArray.length - 1].datetimeRecorded;
     let newSet;
+    // filter videos in video id for isConverted == false, if > 0 then set isAnalyzed to false
+    const unconvertedVideos = videoIDsArray.filter(
+      video => video.isConverted === false,
+    );
+
+    const convertedVideos = videoIDsArray.filter(
+      video => video.isConverted === true,
+    );
+
+    
     realm.write(() => {
       newSet = realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
@@ -93,7 +103,10 @@ const VideoSetDropdown = ({
         isSummaryGenerated: false,
         earliestVideoDateTime: firstVideoDateTime,
         latestVideoDateTime: lastVideoDateTime,
+        isAnalyzed: unconvertedVideos.length === 0 || convertedVideos.length > 0,
       });
+
+      console.log('New Video Set Analyzed?:', newSet.isAnalyzed);
 
       const updatedVideoSets = realm.objects('VideoSet');
       const updatedDropdown = [

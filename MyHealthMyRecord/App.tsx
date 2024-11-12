@@ -41,14 +41,18 @@ import { LoaderProvider } from './components/loaderProvider';
 import ManageVideoSet from './screens/manageVideoSet';
 import Video from 'react-native-video';
 import { WordListProvider } from './components/wordListProvider';
+import { useNetwork } from './components/networkProvider';
+import OfflineAlert from './components/offlineAlert';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
+
 
 function StackNav() {
   return (
     <Stack.Navigator
       initialRouteName="Home"
+
       screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Record Video" component={RecordVideo} />
@@ -75,7 +79,8 @@ function DashboardStack() {
   return (
     <Stack.Navigator
       initialRouteName="Dashboard"
-      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}
+      >
       <Stack.Screen name="Video Set Dashboard" component={Dashboard} />
       <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
@@ -85,30 +90,8 @@ function DashboardStack() {
 
 function ManageVideosStack() {
   const [selected, setSelected] = useState(true);
-  const [auth, setAuth] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  // useEffect(() => {
-  //   console.log('View Recordings component mounted');
-  //   setSelected(true);
-  //   console.log('selected after reset:', selected);
-  // }, []);
-
-  const [lastAuthTime, setLastAuthTime] = useState(0);
-
-  const handleAuth = async () => {
-    const currentTime = Date.now();
-    if (currentTime - lastAuthTime >= 60000) {
-      // Check if 1 minute has passed since the last auth
-      setSelected(!selected);
-      // console.log('selected:', selected);
-      // Call the getAuth function and store the return in a variable
-      setAuth(await getAuth());
-      setLastAuthTime(currentTime); // Update lastAuthTime
-    } else {
-      console.log('Auth already performed within the last minute.');
-    }
-  };
   return (
     <Stack.Navigator
       initialRouteName="Manage Videos"
@@ -169,6 +152,7 @@ function ManageVideosStack() {
   );
 }
 function App() {
+  const {online} = useNetwork();
   return (
     <RealmProvider>
       <NetworkProvider>
@@ -176,6 +160,7 @@ function App() {
           <VideoSetProvider>
             <WordListProvider>
               <NavigationContainer>
+                <OfflineAlert />
                 <Tab.Navigator
                   initialRouteName="MyHealthMyRecord"
                   screenOptions={{
@@ -218,12 +203,10 @@ function App() {
                       tabBarShowLabel: true,
                       tabBarLabel: 'Dashboard',
                       tabBarLabelStyle: {
-                        
                         fontSize: 14,
                         fontWeight: 'bold',
-                        
                       },
-                      
+
                       tabBarIcon: () => (
                         <Icon
                           name="albums-outline"
@@ -275,7 +258,6 @@ function App() {
                           type="ionicon"
                           color={Styles.MHMRBlue}
                           style={{width: Styles.bottomNavIconSize}}
-                          
                         />
                       ),
                     }}

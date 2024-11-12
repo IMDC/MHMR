@@ -4,8 +4,9 @@ import Realm from 'realm';
 import {useLoader} from './loaderProvider'; // Assuming this provides showLoader and hideLoader
 import {VideoData} from '../models/VideoData'; // Assuming this sets up the Realm schema
 
-export const processVideos = async (realm, videos, showLoader, hideLoader) => {
+export const processVideos = async (realm, videos, showLoader, hideLoader, isBatchSetAnalysis) => {
   showLoader('Processing videos...');
+  
   try {
     const auth = await getAuth();
     const selectedVideos = realm
@@ -22,7 +23,7 @@ export const processVideos = async (realm, videos, showLoader, hideLoader) => {
 
     // Proceed with further processing if necessary
     const analysisPromises = selectedVideos.map(video =>
-      handleYesAnalysis(video, videos, realm),
+      handleYesAnalysis(video, videos, realm, isBatchSetAnalysis),
     );
 
     await Promise.all(analysisPromises);
@@ -36,7 +37,7 @@ export const processVideos = async (realm, videos, showLoader, hideLoader) => {
 };
 
 
-const handleYesAnalysis = async (video, videos, realm) => {
+const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
   // Example of handling post-transcription analysis
   const transcript = video.transcript; // Directly use the property if it's available
   const keywords = video.keywords.join(', '); // Assuming keywords is an array
@@ -53,6 +54,16 @@ const handleYesAnalysis = async (video, videos, realm) => {
       'bullet',
     );
     console.log(`Analysis successful for video ${video._id.toHexString()}`);
+if (isBatchSetAnalysis) {
+  // Mark the video set as analyzed
+  await realm.write(() => {
+    realm.objects('VideoSet').forEach(videoSet => {
+      videoSet.isAnalyzed = true;
+      console.log(`Video set ${videoSet._id.toHexString()} analyzed.`);
+    });
+  });
+}
+    
   } catch (error) {
     console.error(`Failed to process video ${video._id.toHexString()}:`, error);
   }

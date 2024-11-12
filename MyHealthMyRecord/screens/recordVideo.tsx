@@ -126,7 +126,7 @@ const RecordVideo = () => {
   const toggleVideoSetOverlay = () => {
     console.log('toggleVideoSetOverlay');
     setVideoSetOverlayVisible(!videoSetOverlayVisible);
-  }
+  };
 
   const toggleSetNameDialog = () => {
     console.log('toggleSetNameDialog');
@@ -367,52 +367,18 @@ const RecordVideo = () => {
         saveDate[0],
       );
 
+      console.log('videoId after creation:', videoId);
+
+      if (!videoId) {
+        throw new Error(
+          'Failed to create video data. videoId is null or undefined.',
+        );
+      }
+
       // Move the video file to your designated folder
       await RNFS.moveFile(filePath, `${MHMRfolderPath}/${fileName}`);
       console.log('File moved.');
 
-      // // Check if user has selected "Create New" for video set
-      // if (selectedVideoSet === 'create_new') {
-      //   // Prompt the user to enter a name for the new set
-      //   Alert.prompt(
-      //     'Create New Video Set',
-      //     'Enter a name for your new video set:',
-      //     [
-      //       {
-      //         text: 'Cancel',
-      //         style: 'cancel',
-      //       },
-      //       {
-      //         text: 'OK',
-      //         onPress: setName => {
-      //           if (setName && setName.trim()) {
-      //             // Create the new video set in Realm
-      //             realm.write(() => {
-      //               const newSet = realm.create('VideoSet', {
-      //                 id: new Realm.BSON.ObjectID(),
-      //                 name: setName,
-      //                 createdAt: new Date(),
-      //                 videoIDs: [videoId],
-      //               });
-
-      //               // Video is added to the newly created set
-      //               console.log('New video set created:', newSet.name);
-      //               // Adds video to the new set
-      //               realm.write(() => {
-      //                 newSet.videoIDs.push(videoId);
-      //               });
-      //             });
-
-      //             // Navigate or show appropriate response after creating set
-      //             Alert.alert('Video saved to new set', setName);
-      //           } else {
-      //             Alert.alert('Error', 'Set name cannot be empty.');
-      //           }
-      //         },
-      //       },
-      //     ],
-      //   );
-      // } else
       if (selectedVideoSet === 'none') {
         // Save video normally if no set is selected
         console.log('No set selected. Saving video normally');
@@ -465,9 +431,19 @@ const RecordVideo = () => {
             {
               text: 'Markup Video',
               onPress: () => {
-                navigation.navigate('Add or Edit Markups', {
-                  videoId: videoId,
-                });
+                console.log('videoId before navigation:', videoId);
+                if (videoId) {
+                  navigation.navigate('Manage Videos', {
+                    screen: 'Add or Edit Markups',
+                    params: {id: videoId},
+                  });
+                } else {
+                  console.error('videoId is null or undefined');
+                  Alert.alert(
+                    'Error',
+                    'Unable to navigate due to missing video ID.',
+                  );
+                }
               },
             },
           ],
@@ -645,6 +621,10 @@ const RecordVideo = () => {
     realm.write(() => {
       videoId = realm.create('VideoData', videoData)._id;
     });
+
+    console.log('VideoData created:', videoData);
+    console.log('Generated videoId:', videoId);
+
     return videoId;
   };
 

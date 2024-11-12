@@ -5,8 +5,8 @@ import {useRealm} from '../models/VideoData';
 import {getAuth, getTranscript} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
 import {VideoData} from '../models/VideoData';
-import { useLoader } from './loaderProvider';
-import { processVideos } from './processVideos';
+import {useLoader} from './loaderProvider';
+import {processVideos} from './processVideos';
 
 const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
   const {showLoader, hideLoader} = useLoader();
@@ -14,10 +14,9 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
   const [selectedVideoCount, setSelectedVideoCount] = useState(0);
   const [inputText, setInputText] = useState('');
   const [videos, setVideos] = useState<any[]>([]);
-   const handleProcessVideos = async () => {
-     await processVideos(realm, videos, showLoader, hideLoader);
-   };
-
+  const handleProcessVideos = async () => {
+    await processVideos(realm, videos, showLoader, hideLoader, true);
+  };
 
   useEffect(() => {
     const selectedVideos = realm
@@ -71,6 +70,7 @@ const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {
                 console.log('YES clicked!');
                 toggleOnlineDialog();
                 await handleProcessVideos();
+                // Set all video sets to isAnalyzed = true
                 Alert.alert(
                   'Video Transcripts Generated and Analyzed',
                   'Your transcripts have been generated and analyzed, and your videos have been added to the Video Set!',
