@@ -1,5 +1,9 @@
 import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {ParamListBase, useNavigation, useFocusEffect} from '@react-navigation/native';
+import {
+  ParamListBase,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
@@ -15,8 +19,11 @@ import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {useLoader} from '../components/loaderProvider';
 import {useDropdownContext} from '../components/videoSetProvider';
 import VideoSetDropdown from '../components/videoSetDropdown';
-import {screenWidth} from '../assets/util/styles';
-
+import {
+  bottomNavBarHeight,
+  NavBarGrey,
+  screenWidth,
+} from '../assets/util/styles';
 
 const RecordVideo = () => {
   const {
@@ -56,20 +63,6 @@ const RecordVideo = () => {
   // for starting and stopping timer
   const [enableTimer, setEnableTimer] = useState(false);
   const [timerExtended, setTimerExtended] = useState(false);
-
-  const resetCamera = () => {
-    // Reset any state associated with the camera
-    setShowCamera(false);
-    setDeviceType(null); // Re-initialize the camera device type
-    setDeviceDir('front'); // Set the camera direction to front or back
-    setRecordingInProgress(false); // Reset recording status
-    setRecordingPaused(false);
-    setVideoSource(null); // Clear the video source
-    setTimeLeft(maxLength); // Reset the timer
-    setTimeWarningMessage(''); // Clear warning messages
-    setShowExtendButton(false); // Hide the extend button
-    setTimerExtended(false); // Reset the timer extension state
-  };
 
   const [videoSource, setVideoSource] = useState<any | string>('');
   const [dateTime, setDateTime] = useState('');
@@ -175,37 +168,23 @@ const RecordVideo = () => {
   //const videodatas = useMemo(() => result.sorted("datetimeRecorded"), [result]);
   //console.log("videodatas:", videodatas);
 
-  // when camera is null, reset it
-
   useFocusEffect(
     React.useCallback(() => {
       // Hide the tab bar
       navigation.getParent()?.setOptions({
         tabBarStyle: {display: 'none'},
       });
-
       return () => {
         // Restore the tab bar
         navigation.getParent()?.setOptions({
-          tabBarStyle: {display: 'flex'},
+          tabBarStyle: {
+            height: bottomNavBarHeight,
+            backgroundColor: NavBarGrey,
+          },
         });
       };
     }, [navigation]),
   );
-
-
-  useEffect(() => {
-    return () => {
-      if (camera.current) {
-        // Clean up camera when the component unmounts
-        camera.current.stopRecording();
-        camera.current.pauseRecording();
-        setRecordingInProgress(false);
-        setRecordingPaused(false);
-        setShowCamera(false); // Hide camera
-      }
-    };
-  }, []);
 
   useEffect(() => {
     async function getPermission() {
@@ -223,6 +202,9 @@ const RecordVideo = () => {
     }
     getPermission();
     //testing state for videoSource to make sure it's being updated right after video is recorded, test later and if it updates fine without this if condition we can delete it
+    if (videoSource != '') {
+      // console.log('?', videoSource.path);
+    }
     makeDirectory(MHMRfolderPath);
     makeDirectory(MHMRfolderPath + '/audio');
     makeDirectory(MHMRfolderPath + '/dashboard');
