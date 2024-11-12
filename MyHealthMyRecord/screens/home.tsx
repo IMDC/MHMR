@@ -25,7 +25,7 @@ const Home = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   return (
     <>
-      {!online && (
+      {/* {!online && (
         <View
           style={{
             paddingHorizontal: 10,
@@ -44,7 +44,7 @@ const Home = () => {
             You are offline.
           </Text>
         </View>
-      )}
+      )} */}
       <View
         style={{
           flexDirection: 'column',

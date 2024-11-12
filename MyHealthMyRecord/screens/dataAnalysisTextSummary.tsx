@@ -521,15 +521,17 @@ const DataAnalysisTextSummary = () => {
                             styles.buttonContainer,
                             {justifyContent: 'center'},
                           ]}>
-                          <View style={styles.buttonWrapper}>
-                            <Button
-                              buttonStyle={{width: 150}}
-                              radius={50}
-                              title="Edit transcript"
-                              onPress={() => handleEdit(video)}
-                              color={Styles.MHMRBlue}
-                            />
-                          </View>
+                          {online && (
+                            <View style={styles.buttonWrapper}>
+                              <Button
+                                buttonStyle={{width: 150}}
+                                radius={50}
+                                title="Edit transcript"
+                                onPress={() => handleEdit(video)}
+                                color={Styles.MHMRBlue}
+                              />
+                            </View>
+                          )}
                         </View>
                         <View style={{alignSelf: 'center'}}></View>
                       </View>

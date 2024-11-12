@@ -4,7 +4,7 @@ import {Alert, SafeAreaView, Text, View, Modal, TouchableOpacity, StyleSheet, Fl
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import Styles, { windowHeight, windowWidth } from '../assets/util/styles';
+import * as Styles from '../assets/util/styles';
 import { useWordList } from '../components/wordListProvider';
 import { Button, CheckBox } from '@rneui/themed';
 
@@ -89,7 +89,7 @@ const DataAnalysisWordCloud = () => {
   };
 
   useEffect(() => {
-    if (!(wordList.length > 0)) {
+    if ((wordList.length < 2)) {
       Alert.alert(
         'Cannot create word cloud',
         'There are not enough words found in your videos to create a word cloud with. Try adding more videos with audio to your video set.',
@@ -159,7 +159,7 @@ const DataAnalysisWordCloud = () => {
 
   return (
     <SafeAreaView>
-      {wordList.length > 0 ? (
+      {wordList.length > 1 ? (
         <View>
           <View style={{flexDirection: 'column'}}>
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
@@ -169,11 +169,11 @@ const DataAnalysisWordCloud = () => {
                   words: updatedData,
                   verticalEnabled: true,
                   rotateRatio: 0.3,
-                  minFont: windowHeight * 0.04,
-                  maxFont: windowHeight * 0.08,
+                  minFont: Styles.windowHeight * 0.04,
+                  maxFont: Styles.windowHeight * 0.08,
                   fontOffset: 1,
-                  width: windowWidth,
-                  height: windowHeight * 0.65,
+                  width: Styles.windowWidth,
+                  height: Styles.windowHeight * 0.65,
 
                   fontFamily: 'Arial',
                 }}

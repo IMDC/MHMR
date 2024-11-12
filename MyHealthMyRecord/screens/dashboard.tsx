@@ -23,6 +23,7 @@ import {useDropdownContext} from '../components/videoSetProvider';
 import {useLoader} from '../components/loaderProvider';
 import {processVideos} from '../components/processVideos';
 
+
 function Dashboard() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
@@ -44,7 +45,7 @@ function Dashboard() {
   var selectedSetVideos = [];
 
   const handleProcessVideos = async () => {
-    await processVideos(realm, videos, showLoader, hideLoader);
+    await processVideos(realm, videos, showLoader, hideLoader, true);
   };
 
   const {
