@@ -875,7 +875,8 @@ const styles = StyleSheet.create({
   overlaySticker: {
     width: 100,
     height: 100,
-    marginRight: Dimensions.get('window').width / 1.5,
+    marginLeft: Dimensions.get('window').width / 1.5,
+    marginRight: 20,
   },
   sticker: {
     resizeMode: 'contain',
