@@ -58,7 +58,7 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [visible2, setVisible2] = useState(false);
 
   const handleProcessVideos = async () => {
-    await processVideos(realm, videos, showLoader, hideLoader);
+    await processVideos(realm, videos, showLoader, hideLoader, false);
   };
 
   const {

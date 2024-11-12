@@ -44,7 +44,7 @@ function Dashboard() {
   var selectedSetVideos = [];
 
   const handleProcessVideos = async () => {
-    await processVideos(realm, videos, showLoader, hideLoader);
+    await processVideos(realm, videos, showLoader, hideLoader, true);
   };
 
   const {
