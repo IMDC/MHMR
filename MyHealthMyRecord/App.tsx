@@ -165,6 +165,7 @@ function App() {
                   initialRouteName="MyHealthMyRecord"
                   screenOptions={{
                     tabBarActiveTintColor: Styles.MHMRBlue,
+                    tabBarInactiveTintColor: 'gray',
                     tabBarShowLabel: false,
                     tabBarStyle: {
                       height: Styles.bottomNavBarHeight,
@@ -183,12 +184,12 @@ function App() {
                         fontSize: 14,
                         fontWeight: 'bold',
                       },
-                      tabBarIcon: () => (
+                      tabBarIcon: ({color}) => (
                         <Icon
                           name="bar-chart-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
-                          color={Styles.MHMRBlue}
+                          color={color}
                           style={{width: Styles.bottomNavIconSize}}
                         />
                       ),
@@ -207,12 +208,12 @@ function App() {
                         fontWeight: 'bold',
                       },
 
-                      tabBarIcon: () => (
+                      tabBarIcon: ({color}) => (
                         <Icon
                           name="albums-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
-                          color={Styles.MHMRBlue}
+                          color={color}
                           style={{width: Styles.bottomNavIconSize}}
                         />
                       ),
@@ -229,12 +230,12 @@ function App() {
                         fontSize: 14,
                         fontWeight: 'bold',
                       },
-                      tabBarIcon: () => (
+                      tabBarIcon: ({color}) => (
                         <Icon
                           name="home-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
-                          color={Styles.MHMRBlue}
+                          color={color}
                           style={{width: Styles.bottomNavIconSize}}
                         />
                       ),
@@ -251,12 +252,12 @@ function App() {
                         fontSize: 14,
                         fontWeight: 'bold',
                       },
-                      tabBarIcon: () => (
+                      tabBarIcon: ({color}) => (
                         <Icon
                           name="film-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
-                          color={Styles.MHMRBlue}
+                          color={color}
                           style={{width: Styles.bottomNavIconSize}}
                         />
                       ),
@@ -273,12 +274,12 @@ function App() {
                         fontSize: 14,
                         fontWeight: 'bold',
                       },
-                      tabBarIcon: () => (
+                      tabBarIcon: ({color}) => (
                         <Icon
                           name="information-circle-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
-                          color={Styles.MHMRBlue}
+                          color={color}
                           style={{width: Styles.bottomNavIconSize}}
                         />
                       ),
