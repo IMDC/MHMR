@@ -8,6 +8,7 @@ import {
   View,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from 'react-native';
 import {useRealm} from '../models/VideoData';
 import RNFS from 'react-native-fs';
@@ -53,6 +54,13 @@ const DataAnalysisTextSummary = () => {
   );
   const [refreshSummary, setRefreshSummary] = useState(false);
   const {showLoader, hideLoader} = useLoader();
+
+  //useEffect to give alert and nvigatie back when videoset is undefined/invalidated or null
+  useEffect(() => {
+    if (!currentVideoSet) {
+      navigation.goBack();
+    }
+  }, [currentVideoSet, navigation]);
 
   // useEffect to retrieve the video data of the selected video set
 
@@ -151,8 +159,10 @@ const DataAnalysisTextSummary = () => {
               'VideoSet',
               currentVideoSet._id,
             );
+            if (videoSetToUpdate) {
             videoSetToUpdate.summaryAnalysisSentence = summary[0];
             videoSetToUpdate.summaryAnalysisBullet = summary[1];
+            }
           });
 
           if (reportFormat === 'bullet') {
@@ -383,21 +393,23 @@ const DataAnalysisTextSummary = () => {
           </TouchableOpacity>
         )}
         <Text style={[styles.title, {textAlign: 'center'}]}>
-          {videoSet?.name} - Video set summary
+          {videoSet && videoSet.name
+            ? `${videoSet.name} - Video set summary`
+            : 'Video set summary'}
         </Text>
         <View
           style={{
             padding: 10,
           }}>
           <Text style={styles.output}>
-            {currentVideoSet.summaryAnalysisBullet === '' ||
-            currentVideoSet.summaryAnalysisSentence === ''
+            {currentVideoSet?.summaryAnalysisBullet === '' ||
+            currentVideoSet?.summaryAnalysisSentence === ''
               ? 'Summary has not been generated yet.'
               : reportFormat === 'bullet'
-              ? currentVideoSet.summaryAnalysisBullet
-              : currentVideoSet.summaryAnalysisSentence}
+              ? currentVideoSet?.summaryAnalysisBullet
+              : currentVideoSet?.summaryAnalysisSentence}
             <Text style={{fontWeight: 'bold'}}>
-              {!online && currentVideoSet.isSummaryGenerated === false
+              {!online && currentVideoSet?.isSummaryGenerated === false
                 ? 'Your device is currently offline. Your video set summary cannot be generated without internet connection. '
                 : ''}
             </Text>
