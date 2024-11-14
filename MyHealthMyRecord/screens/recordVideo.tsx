@@ -465,6 +465,7 @@ const RecordVideo = () => {
                     screen: 'Add or Edit Markups',
                     params: {id: videoId},
                   });
+                  setShowCamera(true);
                 } else {
                   console.error('videoId is null or undefined');
                   Alert.alert(
