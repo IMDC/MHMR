@@ -172,7 +172,7 @@ const DataAnalysisWordCloud = () => {
                   minFont: Styles.windowHeight * 0.02,
                   maxFont: Styles.windowHeight * 0.05,
                   fontOffset: 0.5,
-                  width: Styles.windowWidth * 0.95,
+                  width: Styles.windowWidth * 0.96,
                   height: Styles.windowHeight * 0.65,
                   padding: 2,
                   fontFamily: 'Arial',
