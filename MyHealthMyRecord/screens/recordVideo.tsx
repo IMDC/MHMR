@@ -845,7 +845,7 @@ const RecordVideo = () => {
               </>
             ) : (
               <>
-                <View style={{}}>
+                <View>
                   <Icon
                     name="add-outline"
                     size={40}
@@ -976,7 +976,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     alignItems: 'center',
-    width: screenWidth,
+    width: '100%',
     padding: 20,
     justifyContent: 'space-between',
   },
@@ -992,7 +992,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   camButton: {
-    absolute: 0,
     height: 80,
     width: 80,
     borderRadius: 40,
