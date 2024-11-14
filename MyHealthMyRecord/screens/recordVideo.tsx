@@ -51,7 +51,7 @@ const RecordVideo = () => {
   const [recordingInProgress, setRecordingInProgress] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
   const [createdVideoSetBool, setCreatedVideoSetBool] = useState(false);
-
+  const [paused, setPaused] = useState(false);
   // ref for timer interval
   const timerRef: any = useRef(null);
   // for timer interval
@@ -139,7 +139,7 @@ const RecordVideo = () => {
   const toggleSetNameDialog = () => {
     console.log('toggleSetNameDialog');
     setNewVideoSetName(new Date().toString().split(' GMT-')[0]);
-    console.log('dateTime:', dateTime); 
+    console.log('dateTime:', dateTime);
     setSetNameVisible(!setNameVisible);
   };
 
@@ -265,6 +265,7 @@ const RecordVideo = () => {
         await camera.current.stopRecording();
         console.log('Recording stopped successfully');
         resetRecording();
+        setPaused(false);
       } catch (error) {
         Alert.alert(
           'Stop Recording Error',
@@ -419,7 +420,6 @@ const RecordVideo = () => {
             const videoIdString = videoId?.toString();
             selectedVideoSet.videoIDs.push(videoIdString);
           });
-         
         }
       }
 
@@ -690,7 +690,13 @@ const RecordVideo = () => {
               }
             }}
           />
-          <Dialog.Button title="CANCEL" onPress={toggleDialog} />
+          <Dialog.Button
+            title="CANCEL"
+            onPress={() => {
+              toggleDialog();
+              setPaused(false);
+            }}
+          />
         </Dialog.Actions>
       </Dialog>
 
@@ -709,7 +715,7 @@ const RecordVideo = () => {
           <Dialog.Button
             title="CONFIRM"
             onPress={async () => {
-              if(newVideoSetName == '') {
+              if (newVideoSetName == '') {
                 setNewVideoSetName(dateTime);
                 const newSet = createVideoSet([], videoSetVideoIDs);
 
@@ -717,8 +723,7 @@ const RecordVideo = () => {
 
                 console.log('Newly Created Video Set:', newSet); // Log the newly created set
                 toggleSetNameDialog();
-              }
-              else {
+              } else {
                 const newSet = createVideoSet([], videoSetVideoIDs);
 
                 setSelectedVideoSet(newSet);
@@ -726,7 +731,6 @@ const RecordVideo = () => {
                 console.log('Newly Created Video Set:', newSet); // Log the newly created set
                 toggleSetNameDialog();
               }
-              
             }}
           />
           <Dialog.Button title="CANCEL" onPress={toggleSetNameDialog} />
@@ -884,7 +888,7 @@ const RecordVideo = () => {
             <Video
               ref={ref => (videoPlayer.current = ref)}
               source={{uri: videoSource.path}} // path in cache where vision camera stores video
-              paused={false} // make it start
+              paused={paused} // make it start
               style={styles.backgroundVideo}
               repeat={true}
               controls={true}
@@ -900,6 +904,7 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
+                  setPaused(true);
                   Alert.alert(
                     'Discard video?',
                     'Are you sure you want to discard this video?',
@@ -909,7 +914,6 @@ const RecordVideo = () => {
                         onPress: () => {
                           setShowCamera(true);
                           setSaveBtnState(false);
-                          
                         },
                       },
                       {
@@ -942,6 +946,7 @@ const RecordVideo = () => {
                 radius={'sm'}
                 type="solid"
                 onPress={() => {
+                  setPaused(true);
                   setDateTime(new Date().toString().split(' GMT-')[0]);
                   setNewVideoName(new Date().toString().split(' GMT-')[0]);
                   toggleDialog();
