@@ -168,13 +168,13 @@ const DataAnalysisWordCloud = () => {
                 options={{
                   words: updatedData,
                   verticalEnabled: true,
-                  rotateRatio: 0.3,
-                  minFont: Styles.windowHeight * 0.04,
-                  maxFont: Styles.windowHeight * 0.08,
-                  fontOffset: 1,
-                  width: Styles.windowWidth,
+                  rotateRatio: 0.5,
+                  minFont: Styles.windowHeight * 0.02,
+                  maxFont: Styles.windowHeight * 0.05,
+                  fontOffset: 0.5,
+                  width: Styles.windowWidth * 0.95,
                   height: Styles.windowHeight * 0.65,
-
+                  padding: 2,
                   fontFamily: 'Arial',
                 }}
               />
