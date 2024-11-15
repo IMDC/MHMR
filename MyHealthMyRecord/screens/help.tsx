@@ -48,16 +48,16 @@ function Help() {
                     </Subsection>
                     <Subsection title="How to Create and Add Videos to a Set">
                       <Text>To create a new video set and add videos:</Text>
-                      <Text>1. Go to the "View Recordings" tab.</Text>
+                      <Text>1. Go to the "Manage Videos" tab.</Text>
                       <Text>2. Tap the "Select Videos" button.</Text>
                       <Image 
                         source={require('../assets/images/add1.png')}
-                        style={styles.screenshot}
+                        style={{ width: '100%', resizeMode: 'contain' }}
                       />
                       <Text>3. Tap the videos you want to add to a set.</Text>
                       <Image 
                         source={require('../assets/images/add2.png')}
-                        style={styles.screenshot}
+                        style={{ width: '100%', resizeMode: 'contain' }}
                       />
                       <Text>4. Tap the "Create new video set" button.</Text>
                       <Image 
@@ -72,7 +72,7 @@ function Help() {
                     </Subsection>
                     <Subsection title="How to Manage Video Sets">
                       <Text>To remove videos or delete a set:</Text>
-                      <Text>1. Go to the "View Recordings" tab.</Text>
+                      <Text>1. Go to the "Manage Videos" tab.</Text>
                       <Text>2. Tap the "Manage Video Set" button.</Text>
                       <Image 
                         source={require('../assets/images/removing1.png')}
@@ -103,7 +103,7 @@ function Help() {
                     <Text>You can add various types of data to enhance your videos.</Text>
                     <Subsection title="How to add or edit markups to your videos?">
                       <Text>To add markups to your videos:</Text>
-                      <Text>1. Tap on view recordings tab</Text>
+                      <Text>1. Tap on Manage Videos tab</Text>
                       <Text>2. Tap the "Add or edit markups" button on the video you want to annotate.</Text>
                       <Image 
                         source={require('../assets/images/markups1.png')}

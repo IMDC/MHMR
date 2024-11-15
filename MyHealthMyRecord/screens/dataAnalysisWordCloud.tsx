@@ -168,13 +168,13 @@ const DataAnalysisWordCloud = () => {
                 options={{
                   words: updatedData,
                   verticalEnabled: true,
-                  rotateRatio: 0.3,
-                  minFont: Styles.windowHeight * 0.04,
-                  maxFont: Styles.windowHeight * 0.08,
-                  fontOffset: 1,
-                  width: Styles.windowWidth,
+                  rotateRatio: 0.5,
+                  minFont: Styles.windowHeight * 0.02,
+                  maxFont: Styles.windowHeight * 0.05,
+                  fontOffset: 0.5,
+                  width: Styles.windowWidth * 0.96,
                   height: Styles.windowHeight * 0.65,
-
+                  padding: 2,
                   fontFamily: 'Arial',
                 }}
               />
@@ -209,7 +209,7 @@ const DataAnalysisWordCloud = () => {
                 onChange={item => setDropdownValue(item.value)}
               />
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
+            {/* <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
               <Button
                 title="Select words"
                 onPress={() => setEditModalVisible(true)}
@@ -220,13 +220,13 @@ const DataAnalysisWordCloud = () => {
                   marginHorizontal: 30,
                 }}
               />
-            </View>
+            </View> */}
           </View>
         </View>
       ) : (
         <View></View>
       )}
-      <Modal
+      {/* <Modal
         animationType="slide"
         transparent={true}
         visible={editModalVisible}
@@ -234,7 +234,7 @@ const DataAnalysisWordCloud = () => {
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Select words to remove</Text>
           <FlatList
-            data={updatedData}
+            data={}
             renderItem={({item}) => (
               <CheckBox
                 title={item.text}
@@ -265,7 +265,7 @@ const DataAnalysisWordCloud = () => {
             />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </SafeAreaView>
   );
 };

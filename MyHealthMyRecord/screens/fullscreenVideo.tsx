@@ -1,6 +1,6 @@
 import {useRoute} from '@react-navigation/native';
 import React, {useEffect} from 'react';
-import {LogBox, View} from 'react-native';
+import {LogBox, View, StatusBar} from 'react-native';
 import MHMRVideoPlayer from '../components/mhmrVideoPlayer';
 import {useFocusEffect} from '@react-navigation/native';
 import {BottomTabBar} from '@react-navigation/bottom-tabs';
@@ -31,7 +31,13 @@ const FullscreenVideo = ({navigation}) => {
   const route: any = useRoute();
   const id = route.params?.id;
   return (
-    <View>
+    <View style={{
+      flex: 1,
+      width: '100%',
+      height: '100%',
+
+    }}>
+      <StatusBar hidden />
       <MHMRVideoPlayer
         videoID={id}
         emotionConsole={false}

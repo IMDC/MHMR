@@ -57,7 +57,7 @@ const EmotionTagging = () => {
   const realm = useRealm();
   const video: any = useObject('VideoData', id);
 
-  const videoPlayerRef: any = useRef<Video>(null);
+  const videoPlayerRef: any = useRef<typeof Video>(null);
 
 
   return (
@@ -70,8 +70,10 @@ const EmotionTagging = () => {
         commentView={false}
         isFullscreen={false}
       />
+      <TouchableOpacity style={styles.saveButton} onPress={() => {}}>
+        <Text style={styles.saveButtonText}>Save</Text>
+      </TouchableOpacity>
     </View>
- 
   );
 };
 
@@ -134,6 +136,20 @@ const styles = StyleSheet.create({
   sticker: {
     width: 100,
     height: 100,
+  },
+  saveButton: {
+    backgroundColor: '#0047AB',
+    padding: 12,
+    borderRadius: 25,
+    margin: 16,
+    alignItems: 'center',
+    width: 140,
+    alignSelf: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
