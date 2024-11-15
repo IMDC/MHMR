@@ -52,12 +52,12 @@ function Help() {
                       <Text>2. Tap the "Select Videos" button.</Text>
                       <Image 
                         source={require('../assets/images/add1.png')}
-                        style={styles.screenshot}
+                        style={{ width: '100%', resizeMode: 'contain' }}
                       />
                       <Text>3. Tap the videos you want to add to a set.</Text>
                       <Image 
                         source={require('../assets/images/add2.png')}
-                        style={styles.screenshot}
+                        style={{ width: '100%', resizeMode: 'contain' }}
                       />
                       <Text>4. Tap the "Create new video set" button.</Text>
                       <Image 
