@@ -75,19 +75,29 @@ const ViewRecordings = ({selected, setSelected}) => {
     videoSelectedData: VideoData,
     videoSelectedFilename: string,
   ) {
-    Alert.alert(
-      'Are you sure you want to delete this video?',
-      "These videos will be deleted immediately. You can't undo this action.",
-      [
-        {
-          text: 'YES',
-          onPress: () => {
-            deleteVideo(videoSelectedData, videoSelectedFilename);
-          },
-        },
-        {text: 'NO', onPress: () => console.log('NO Pressed')},
-      ],
-    );
+
+    const videoSetNames = isVideoInAnySet(videoSelectedData);
+    if (videoSetNames.length !== 0) {
+      Alert.alert(
+        'Video already in set(s)',
+        'Please remove the videos from video sets first. This video is already in the following video set(s):\n\n' +
+          videoSetNames.join('\n'),
+      );
+    } else {
+        Alert.alert(
+          'Are you sure you want to delete this video?',
+          "These videos will be deleted immediately. You can't undo this action.",
+          [
+            {
+              text: 'YES',
+              onPress: () => {
+                deleteVideo(videoSelectedData, videoSelectedFilename);
+              },
+            },
+            {text: 'NO', onPress: () => console.log('NO Pressed')},
+          ],
+        );
+    }
   }
 
   async function handleSendToDashboard(selectedVideos: Set<string>) {
@@ -263,6 +273,19 @@ const ViewRecordings = ({selected, setSelected}) => {
    const video_id = video._id.toHexString(); // Convert the video ID to a string
    return videoSetVideoIDs.indexOf(video_id) !== -1; // Check if the video ID is in the video set
  };
+
+ //checks if video is in a set at all, and list the name of the sets
+  const isVideoInAnySet = (video: VideoData) => {
+    const video_id = video._id.toHexString(); // Convert the video ID to a string
+    const videoSets = realm.objects('VideoSet');
+    let videoSetNames = [];
+    videoSets.forEach((videoSet: any) => {
+      if (videoSet.videoIDs.indexOf(video_id) !== -1) {
+        videoSetNames.push(videoSet.name);
+      }
+    });
+    return videoSetNames;
+  }
 
   const deleteAllVideoDataObjects = async () => {
     //delete videos from storage

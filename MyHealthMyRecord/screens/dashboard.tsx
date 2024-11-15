@@ -73,12 +73,7 @@ function Dashboard() {
 
 
   useEffect(() => {
-    // console.log(currentVideoSet);
     const selectedVideos = route.params?.selectedVideos || [];
-    // console.log('selectedVideos:', selectedVideos);
-    // console.log('selectedVideos.size:', selectedVideos.size);
-    // console.log('sendToVideoSet number:', sendToVideoSet);
-    // console.log('selectedVideoSet:', selectedVideoSet);
     if (sendToVideoSet == 0 || sendToVideoSet == undefined) {
       if (videoSetVideoIDs) {
         const videoIDSet = new Set(videoSetVideoIDs);
@@ -183,7 +178,6 @@ function Dashboard() {
     currentVideos,
     isFocused,
     videoData,
-    // videoSetVideoIDs,
     videoSetValue,
     isFocused,
   ]);

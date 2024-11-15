@@ -310,25 +310,6 @@ const VideoSetDropdown = ({
                 containerStyle={styles.btnContainer}
               />
             )}
-            {clearVideoSetBtn && (
-              <Button
-                disabled={
-                  videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
-                }
-                title="Clear video set"
-                onPress={clearVideoSet}
-                color={Styles.MHMRBlue}
-                radius={50}
-                containerStyle={styles.btnContainer}
-              />
-            )}
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingTop: 10,
-              justifyContent: 'center',
-            }}>
             {manageSetBtn && (
               <Button
                 disabled={!currentVideoSet || videoSetValue == null}
@@ -344,6 +325,25 @@ const VideoSetDropdown = ({
               />
             )}
           </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingTop: 10,
+              justifyContent: 'center',
+            }}>
+            {clearVideoSetBtn && (
+              <Button
+                disabled={
+                  videoSetVideoIDs == null || videoSetVideoIDs?.length === 0
+                }
+                title="Clear screen"
+                onPress={clearVideoSet}
+                color={Styles.MHMRBlue}
+                radius={50}
+                containerStyle={styles.btnContainer}
+              />
+            )}
+          </View>
           {videoSetVideoIDs.length != 0 && isVideoSetSaved === false && (
             <View style={{paddingBottom: 15}}>
               <Text
@@ -353,8 +353,6 @@ const VideoSetDropdown = ({
               </Text>
             </View>
           )}
-
-
         </View>
       )}
     </View>
