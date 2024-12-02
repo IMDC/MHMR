@@ -20,14 +20,17 @@ const smile = require('../assets/images/emojis/smile.png');
 const worried = require('../assets/images/emojis/worried.png');
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import {useRoute} from '@react-navigation/native';
 import {useRealm, useObject} from '../models/VideoData';
 import Video from 'react-native-video';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView} from 'react-native';
 import MHMRVideoPlayer from '../components/mhmrVideoPlayer';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 const EmotionTagging = () => {
+
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [isDeleteBtnVisible, setDeleteBtnVisible] = useState(false);
   const [isEditBtnVisible, setEditBtnVisible] = useState(true);
@@ -70,7 +73,7 @@ const EmotionTagging = () => {
         commentView={false}
         isFullscreen={false}
       />
-      <TouchableOpacity style={styles.saveButton} onPress={() => {}}>
+      <TouchableOpacity style={styles.saveButton} onPress={() => {navigation.goBack()}}>
         <Text style={styles.saveButtonText}>Save</Text>
       </TouchableOpacity>
     </View>
