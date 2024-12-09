@@ -25,6 +25,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../components/networkProvider';
 import {refresh} from '@react-native-community/netinfo';
 import {useLoader} from '../components/loaderProvider';
+import {transcribeWithWhisper} from '../components/stt_api';
 
 const neutral = require('../assets/images/emojis/neutral.png');
 const sad = require('../assets/images/emojis/sad.png');
@@ -92,9 +93,22 @@ const DataAnalysisTextSummary = () => {
 
         const videoTranscripts = await Promise.all(
           videos.map(async video => {
-            // console.log('video.transcript', video.transcript);
             if (!video) {
               return null;
+            }
+
+            if (!video.transcript || video.transcript === '') {
+              const result = await transcribeWithWhisper(
+                video.filename.replace('.mp4', '.wav'),
+                video._id.toString(),
+                realm,
+              );
+              if (result.transcript) {
+                realm.write(() => {
+                  video.transcript = result.transcript;
+                  video.isTranscribed = true;
+                });
+              }
             }
 
             let sentimentLabel = video.sentiment;

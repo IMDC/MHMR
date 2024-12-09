@@ -8,7 +8,6 @@ export const processVideos = async (realm, videos, showLoader, hideLoader, isBat
   showLoader('Processing videos...');
   
   try {
-    const auth = await getAuth();
     const selectedVideos = realm
       .objects<VideoData>('VideoData')
       .filtered('isConverted == false AND isSelected == true');
@@ -17,7 +16,7 @@ export const processVideos = async (realm, videos, showLoader, hideLoader, isBat
     showLoader(`Processing ${selectedVideos.length} videos...`);
 
     // Handle all transcriptions in a batch
-    await processMultipleTranscripts(selectedVideos, realm, auth);
+    await processMultipleTranscripts(selectedVideos, realm);
     console.log('All transcriptions complete.');
     showLoader('Analyzing videos...');
 
