@@ -86,12 +86,13 @@ export const getTranscript = async (
 };
 
 // Function to process multiple transcripts concurrently
-export const processMultipleTranscripts = async (videoFiles, realm, auth) => {
+export const processMultipleTranscripts = async (videoFiles, realm) => {
+  console.log(`Processing ${videoFiles.length} videos for transcription`);
+  
   const transcriptPromises = videoFiles.map(video =>
-    getTranscript(
+    transcribeWithWhisper(
       video.filename.replace('.mp4', '.wav'),
       video._id.toHexString(),
-      auth,
       realm,
     ),
   );
@@ -100,7 +101,7 @@ export const processMultipleTranscripts = async (videoFiles, realm, auth) => {
 
   // Process results in Realm
   realm.write(() => {
-    results.forEach(({_id, transcript, confidence, error}) => {
+    results.forEach(({_id, transcript, error}) => {
       if (error) {
         console.error(`Failed to transcribe video ${_id}:`, error);
         return;
@@ -108,12 +109,57 @@ export const processMultipleTranscripts = async (videoFiles, realm, auth) => {
       const objectId = new Realm.BSON.ObjectId(_id);
       const video = realm.objectForPrimaryKey('VideoData', objectId);
       if (video) {
-        video.transcript = transcript.replace(/%HESITATION/g, '');
+        video.transcript = transcript;
         video.isTranscribed = true;
-        console.log(`Updated video ${_id} with transcript.`);
+        video.isConverted = true;  // Make sure both flags are set
+        console.log(`Updated video ${_id} with transcript (${transcript.length} chars)`);
       } else {
         console.log(`No video found with ID ${_id}.`);
       }
     });
   });
+  
+  console.log('Completed processing all transcripts');
+};
+
+export const transcribeWithWhisper = async (
+  audioFileName: string,
+  _id: string,
+  realm: Realm,
+) => {
+  try {
+    const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
+    const audioFilePath = `${audioFolderPath}/${audioFileName}`;
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', {
+      uri: `file://${audioFilePath}`,
+      type: 'audio/wav',
+      name: audioFileName,
+    });
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'en');
+
+    // Make request to OpenAI Whisper API using the existing API key
+    const response = await axios.post(
+      'https://api.openai.com/v1/audio/transcriptions',
+      formData,
+      {
+        headers: {
+          'Authorization': `Bearer ${Config.API_OPENAI_CHATGPT}`, // Using existing key
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    const transcript = response.data.text || '';
+    console.log(`Transcript for ${audioFileName}:`, transcript);
+    
+    return {_id, transcript, confidence: 1};
+    
+  } catch (error) {
+    console.error('Error during transcription:', error);
+    return {_id, error};
+  }
 };
