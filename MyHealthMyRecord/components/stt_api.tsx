@@ -3,6 +3,7 @@ import axios from 'axios';
 import RNFS from 'react-native-fs';
 import Config from 'react-native-config';
 import {Buffer} from 'buffer';
+import { generateVideoSummary } from './chatgpt_api';
 
 // Function to obtain authorization token
 export const getAuth = async () => {
@@ -100,29 +101,32 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
   const results = await Promise.all(transcriptPromises);
 
   // Process results in Realm
-  realm.write(() => {
-    results.forEach(({_id, transcript, error}) => {
-      if (error) {
-        console.error(`Failed to transcribe video ${_id}:`, error);
-        return;
-      }
-      const objectId = new Realm.BSON.ObjectId(_id);
-      const video = realm.objectForPrimaryKey('VideoData', objectId);
-      if (video) {
+  for (const {_id, transcript, error} of results) {
+    if (error) {
+      console.error(`Failed to transcribe video ${_id}:`, error);
+      continue;
+    }
+
+    const objectId = new Realm.BSON.ObjectId(_id);
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    
+    if (video) {
+      // Generate summary using ChatGPT
+      const summary = await generateVideoSummary(transcript);
+      
+      realm.write(() => {
         video.transcript = transcript;
         video.isTranscribed = true;
         video.isConverted = true;
-        
-        // Generate initial outputs
-        video.tsOutputBullet = `• ${transcript}`; // Simple bullet point format
-        video.tsOutputSentence = transcript; // Simple sentence format
-        
-        console.log(`Updated video ${_id} with transcript and outputs`);
-      } else {
-        console.log(`No video found with ID ${_id}.`);
-      }
-    });
-  });
+        video.tsOutputBullet = summary.bullet;
+        video.tsOutputSentence = summary.sentence;
+      });
+      
+      console.log(`Updated video ${_id} with transcript and summaries`);
+    } else {
+      console.log(`No video found with ID ${_id}.`);
+    }
+  }
   
   console.log('Completed processing all transcripts');
 };

@@ -176,3 +176,29 @@ export const sendVideoSetToChatGPT = async (
     return returnOutput;
   }
 };
+
+export const generateVideoSummary = async (transcript: string) => {
+  const transcriptWordCount = transcript.split(' ').length;
+  const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2); // 20% of original length
+
+  const inputTextBullet = `Summarize the following transcript into a concise summary: ${transcript}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
+  const inputTextSentence = `Summarize the following transcript into a concise summary: ${transcript}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+
+  try {
+    const [bulletResponse, sentenceResponse] = await Promise.all([
+      connectToChatGPT(inputTextBullet),
+      connectToChatGPT(inputTextSentence),
+    ]);
+
+    return {
+      bullet: bulletResponse.choices[0].message.content,
+      sentence: sentenceResponse.choices[0].message.content,
+    };
+  } catch (error) {
+    console.error('Error generating summary:', error);
+    return {
+      bullet: `• ${transcript}`,
+      sentence: transcript,
+    };
+  }
+};
