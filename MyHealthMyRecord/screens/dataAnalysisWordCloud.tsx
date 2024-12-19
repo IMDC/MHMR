@@ -1,19 +1,30 @@
 import React, {useEffect, useState} from 'react';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
-import {Alert, SafeAreaView, Text, View, Modal, TouchableOpacity, StyleSheet, FlatList, Dimensions} from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  Text,
+  View,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import * as Styles from '../assets/util/styles';
-import { useWordList } from '../components/wordListProvider';
-import { Button, CheckBox } from '@rneui/themed';
+import {useWordList} from '../components/wordListProvider';
+import {Button, CheckBox} from '@rneui/themed';
 
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
-  const { wordList } = useWordList(); 
+  const {wordList} = useWordList();
 
   const [updatedData, setUpdatedData] = useState(wordList || []);
+  const [filteredWordList, setFilteredWordList] = useState(wordList || []);
   const [dropdownValue, setDropdownValue] = useState(null);
 
   const dropdownData = [
@@ -25,12 +36,30 @@ const DataAnalysisWordCloud = () => {
     {
       label: 'Palette 2',
       value: 'Wong',
-      colors: ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'],
+      colors: [
+        '#000000',
+        '#E69F00',
+        '#56B4E9',
+        '#009E73',
+        '#F0E442',
+        '#0072B2',
+        '#D55E00',
+        '#CC79A7',
+      ],
     },
     {
       label: 'Palette 3',
       value: 'Tol',
-      colors: ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'],
+      colors: [
+        '#332288',
+        '#117733',
+        '#44AA99',
+        '#88CCEE',
+        '#DDCC77',
+        '#CC6677',
+        '#AA4499',
+        '#882255',
+      ],
     },
   ];
 
@@ -89,19 +118,15 @@ const DataAnalysisWordCloud = () => {
   };
 
   useEffect(() => {
-    if ((wordList.length < 2)) {
+    if (filteredWordList.length < 2) {
       Alert.alert(
         'Cannot create word cloud',
         'There are not enough words found in your videos to create a word cloud with. Try adding more videos with audio to your video set.',
         [{text: 'OK', onPress: () => navigation.goBack()}],
       );
     } else {
-      const validatedData = validateData(wordList);
-      console.log('validatedData:', validatedData);
-      setUpdatedData(validatedData);
-
+      const validatedData = validateData(filteredWordList);
       if (dropdownValue) {
-        console.log('dropdownValue true:', dropdownValue);
         let newPalette;
         if (dropdownValue === 'IBM') {
           newPalette = IBM_palette;
@@ -110,17 +135,30 @@ const DataAnalysisWordCloud = () => {
         } else if (dropdownValue === 'Tol') {
           newPalette = tol_palette;
         }
-        if (wordList) {
-          setUpdatedData(addPalette(validatedData, newPalette));
-        }
+        setUpdatedData(addPalette(validatedData, newPalette));
+      } else {
+        setUpdatedData(validatedData);
       }
     }
-  }, [dropdownValue, wordList]);
+  }, [dropdownValue, filteredWordList]);
+
+  const applyWordSelection = () => {
+    const filteredData = filteredWordList.filter(
+      item => !selectedWords.has(item.text),
+    );
+    setFilteredWordList(filteredData);
+    setEditModalVisible(false);
+  };
+
+  // Reset filteredWordList when wordList changes
+  useEffect(() => {
+    setFilteredWordList(wordList);
+  }, [wordList]);
 
   const renderDropdownItem = item => {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
-        <Text style={{ marginRight: 10 }}>{item.label}</Text>
+      <View style={{flexDirection: 'row', alignItems: 'center', padding: 10}}>
+        <Text style={{marginRight: 10}}>{item.label}</Text>
         {item.colors.map((color, index) => (
           <View
             key={index}
@@ -149,12 +187,6 @@ const DataAnalysisWordCloud = () => {
       updatedSelection.add(word);
     }
     setSelectedWords(updatedSelection);
-  };
-
-  const applyWordSelection = () => {
-    const filteredData = updatedData.filter(item => !selectedWords.has(item.text));
-    setUpdatedData(filteredData);
-    setEditModalVisible(false);
   };
 
   return (
@@ -209,7 +241,13 @@ const DataAnalysisWordCloud = () => {
                 onChange={item => setDropdownValue(item.value)}
               />
             </View>
-            {/* <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginVertical: 10,
+              }}>
               <Button
                 title="Select words"
                 onPress={() => setEditModalVisible(true)}
@@ -220,13 +258,13 @@ const DataAnalysisWordCloud = () => {
                   marginHorizontal: 30,
                 }}
               />
-            </View> */}
+            </View>
           </View>
         </View>
       ) : (
         <View></View>
       )}
-      {/* <Modal
+      <Modal
         animationType="slide"
         transparent={true}
         visible={editModalVisible}
@@ -234,7 +272,7 @@ const DataAnalysisWordCloud = () => {
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Select words to remove</Text>
           <FlatList
-            data={}
+            data={wordList}
             renderItem={({item}) => (
               <CheckBox
                 title={item.text}
@@ -265,7 +303,7 @@ const DataAnalysisWordCloud = () => {
             />
           </View>
         </View>
-      </Modal> */}
+      </Modal>
     </SafeAreaView>
   );
 };
