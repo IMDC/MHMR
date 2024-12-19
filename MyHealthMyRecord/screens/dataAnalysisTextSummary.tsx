@@ -174,8 +174,8 @@ const DataAnalysisTextSummary = () => {
               currentVideoSet._id,
             );
             if (videoSetToUpdate) {
-            videoSetToUpdate.summaryAnalysisSentence = summary[0];
-            videoSetToUpdate.summaryAnalysisBullet = summary[1];
+              videoSetToUpdate.summaryAnalysisSentence = summary[0];
+              videoSetToUpdate.summaryAnalysisBullet = summary[1];
             }
           });
 
@@ -268,7 +268,6 @@ const DataAnalysisTextSummary = () => {
     setEditingID(null);
     setDraftTranscript('');
     setTranscriptEdited(true);
-   
   };
 
   const handleCancel = () => {
