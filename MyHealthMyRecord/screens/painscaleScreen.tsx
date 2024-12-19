@@ -114,7 +114,6 @@ const Painscale = () => {
           onValueChange={setValue}
           maximumValue={3}
           minimumValue={0}
-          step={1}
           allowTouchTrack
           trackStyle={{height: 5, backgroundColor: 'transparent'}}
           thumbStyle={{height: 20, width: 20, backgroundColor: 'transparent'}}
@@ -131,8 +130,9 @@ const Painscale = () => {
             ),
           }}
           onSlidingComplete={value => {
-            console.log(value);
-            saveNumericScale(value);
+            console.log(value.toFixed(1));
+            
+            saveNumericScale(Number(value.toFixed(1)));
           }}
         />
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -143,11 +143,12 @@ const Painscale = () => {
         </View>
         <View>
           <Text style={{fontSize: 20, color: 'black', alignSelf: 'center'}}>
-            {value === 0
+          {value.toFixed(1)} -{' '}
+            {value < 0.5
               ? 'No pain'
-              : value === 1
+              : value < 1.5
               ? 'Mild pain'
-              : value === 2
+              : value < 2.5
               ? 'Moderate pain'
               : 'Severe pain'}
           </Text>

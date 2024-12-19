@@ -633,7 +633,7 @@ const RecordVideo = () => {
       keywords: keywordInit,
       locations: locationInit,
       painScale: painscaleInit,
-      numericScale: 0,
+      numericScale: 0.0,
       isSelected: false,
       isConverted: false,
       isTranscribed: false,

@@ -1219,7 +1219,11 @@ const ViewRecordings = ({selected, setSelected}) => {
                               }
                               return null; // If sentiment has already been displayed, return null
                             })}
+                            
+                            
                           </ScrollView>
+                          {video.numericScale !== 'null' && ( <Text style={{color: 'black', fontSize: 16}}>Numeric pain rating: {video.numericScale.toFixed(1)}</Text>)}
+                         
                           {selected && viewValue == 1 ? (
                             <View style={styles.buttonContainerList}>
                               <Button
