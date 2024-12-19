@@ -111,8 +111,13 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
       if (video) {
         video.transcript = transcript;
         video.isTranscribed = true;
-        video.isConverted = true;  // Make sure both flags are set
-        console.log(`Updated video ${_id} with transcript (${transcript.length} chars)`);
+        video.isConverted = true;
+        
+        // Generate initial outputs
+        video.tsOutputBullet = `• ${transcript}`; // Simple bullet point format
+        video.tsOutputSentence = transcript; // Simple sentence format
+        
+        console.log(`Updated video ${_id} with transcript and outputs`);
       } else {
         console.log(`No video found with ID ${_id}.`);
       }
