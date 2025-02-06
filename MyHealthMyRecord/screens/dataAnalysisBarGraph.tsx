@@ -53,7 +53,7 @@ const DataAnalysisBarGraph = () => {
   //   const video: any = useObject('VideoData', id);
 
   const {currentVideoSet} = useDropdownContext();
-  const {updateWordList} = useWordList();
+
 
   /* ======================================================================= */
   // bar graph stuff below
@@ -183,9 +183,8 @@ const DataAnalysisBarGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
-  const [selectedWords, setSelectedWords] = useState(
-    new Set(currentVideoSet?.selectedWords || []),
-  );
+  const {selectedWords, toggleWordSelection, updateWordList} = useWordList();
+
 
   const handleSentimentPress = async sentiment => {
     try {
@@ -203,55 +202,23 @@ const DataAnalysisBarGraph = () => {
     }
   };
 
-  const toggleWordSelection = word => {
-    const updatedSelection = new Set(selectedWords);
-    if (updatedSelection.has(word)) {
-      updatedSelection.delete(word);
-    } else {
-      updatedSelection.add(word);
-    }
-    setSelectedWords(updatedSelection);
 
-    realm.write(() => {
-      const videoSet = realm.objectForPrimaryKey(
-        'VideoSet',
-        currentVideoSet._id,
-      );
-      if (videoSet) {
-        videoSet.selectedWords = Array.from(updatedSelection);
-      }
-    });
-  };
 
   const applyWordSelection = () => {
     const filteredData = wordFreqBarGraphData.filter(
       item => !selectedWords.has(item.text),
     );
     setFilteredWordFreqBarGraphData(filteredData);
-
-    realm.write(() => {
-      const videoSet = realm.objectForPrimaryKey(
-        'VideoSet',
-        currentVideoSet._id,
-      );
-      if (videoSet) {
-        videoSet.selectedWords = Array.from(selectedWords);
-      }
-    });
-    updateWordList(filteredData);
+    updateWordList(filteredData); // Sync globally
     setEditModalVisible(false);
   };
+  
 
   useEffect(() => {
     if (yTest.length !== undefined) {
-      if (currentVideoSet && currentVideoSet.selectedWords?.length > 0) {
-        const selectedWordsSet = new Set(currentVideoSet.selectedWords);
-        setFilteredWordFreqBarGraphData(
-          wordFreqBarGraphData.filter(item => !selectedWordsSet.has(item.text)),
-        );
-      } else {
-        setFilteredWordFreqBarGraphData(wordFreqBarGraphData);
-      }
+      setFilteredWordFreqBarGraphData(
+        wordFreqBarGraphData.filter(item => !selectedWords.has(item.text)),
+      );
     } else {
       Alert.alert(
         'Cannot create graphs',
@@ -259,7 +226,7 @@ const DataAnalysisBarGraph = () => {
         [{text: 'OK', onPress: () => navigation.goBack()}],
       );
     }
-  }, [currentVideoSet, wordFreqBarGraphData]);
+  }, [selectedWords, wordFreqBarGraphData]);
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -719,13 +686,6 @@ const DataAnalysisBarGraph = () => {
             contentContainerStyle={styles.flatListContent}
           />
           <View style={styles.buttonContainer}>
-            <Button
-              title="Apply"
-              color={Styles.MHMRBlue}
-              radius={50}
-              onPress={applyWordSelection}
-              containerStyle={styles.buttonStyle}
-            />
             <Button
               title="Close"
               color={Styles.MHMRBlue}

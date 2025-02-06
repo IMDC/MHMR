@@ -6,7 +6,6 @@ import {
   Text,
   View,
   Modal,
-  TouchableOpacity,
   StyleSheet,
   FlatList,
   Dimensions,
@@ -21,11 +20,15 @@ import {Button, CheckBox} from '@rneui/themed';
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
-  const {wordList} = useWordList();
+
+  // Access word list and selected words from the provider
+  const {wordList, selectedWords, updateWordList, toggleWordSelection} =
+    useWordList();
 
   const [updatedData, setUpdatedData] = useState(wordList || []);
   const [filteredWordList, setFilteredWordList] = useState(wordList || []);
   const [dropdownValue, setDropdownValue] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
 
   const dropdownData = [
     {
@@ -71,28 +74,6 @@ const DataAnalysisWordCloud = () => {
     {color: '#FFB000'},
   ];
 
-  const wong_palette = [
-    {color: '#000000'},
-    {color: '#E69F00'},
-    {color: '#56B4E9'},
-    {color: '#009E73'},
-    {color: '#F0E442'},
-    {color: '#0072B2'},
-    {color: '#D55E00'},
-    {color: '#CC79A7'},
-  ];
-
-  const tol_palette = [
-    {color: '#332288'},
-    {color: '#117733'},
-    {color: '#44AA99'},
-    {color: '#88CCEE'},
-    {color: '#DDCC77'},
-    {color: '#CC6677'},
-    {color: '#AA4499'},
-    {color: '#882255'},
-  ];
-
   const addPalette = (data, palette) => {
     return data.map(item => ({
       ...item,
@@ -130,10 +111,8 @@ const DataAnalysisWordCloud = () => {
         let newPalette;
         if (dropdownValue === 'IBM') {
           newPalette = IBM_palette;
-        } else if (dropdownValue === 'Wong') {
-          newPalette = wong_palette;
-        } else if (dropdownValue === 'Tol') {
-          newPalette = tol_palette;
+        } else {
+          newPalette = [];
         }
         setUpdatedData(addPalette(validatedData, newPalette));
       } else {
@@ -143,17 +122,21 @@ const DataAnalysisWordCloud = () => {
   }, [dropdownValue, filteredWordList]);
 
   const applyWordSelection = () => {
-    const filteredData = filteredWordList.filter(
+    const filteredData = wordList.filter(
       item => !selectedWords.has(item.text),
     );
     setFilteredWordList(filteredData);
-    setEditModalVisible(false);
+    updateWordList(filteredData);
   };
 
-  // Reset filteredWordList when wordList changes
+  // Sync filtered words with the word list from the provider
   useEffect(() => {
-    setFilteredWordList(wordList);
-  }, [wordList]);
+    const filteredData = wordList.filter(
+      item => !selectedWords.has(item.text),
+    );
+    setFilteredWordList(filteredData);
+    setUpdatedData(filteredData);
+  }, [wordList, selectedWords]);
 
   const renderDropdownItem = item => {
     return (
@@ -173,20 +156,6 @@ const DataAnalysisWordCloud = () => {
         ))}
       </View>
     );
-  };
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [selectedWords, setSelectedWords] = useState(new Set());
-
-  const toggleWordSelection = word => {
-    const updatedSelection = new Set(selectedWords);
-    if (updatedSelection.has(word)) {
-      updatedSelection.delete(word);
-    } else {
-      updatedSelection.add(word);
-    }
-    setSelectedWords(updatedSelection);
   };
 
   return (
@@ -287,13 +256,7 @@ const DataAnalysisWordCloud = () => {
             contentContainerStyle={styles.flatListContent}
           />
           <View style={styles.buttonContainer}>
-            <Button
-              title="Apply"
-              color={Styles.MHMRBlue}
-              radius={50}
-              onPress={applyWordSelection}
-              containerStyle={styles.buttonStyle}
-            />
+
             <Button
               title="Close"
               color={Styles.MHMRBlue}

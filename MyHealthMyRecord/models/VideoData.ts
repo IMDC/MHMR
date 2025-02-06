@@ -45,8 +45,8 @@ export class VideoData extends Realm.Object<VideoData> {
       transcript: {type: 'string', default: ''},
       weekday: {type: 'string', default: new Date().toString().split(' ')[0]},
       sentiment: {type: 'string', default: ''},
-      tsOutputBullet: { type: 'string', default: '' },
-      tsOutputSentence: { type: 'string', default: '' },
+      tsOutputBullet: {type: 'string', default: ''},
+      tsOutputSentence: {type: 'string', default: ''},
     },
   };
 }
@@ -67,7 +67,7 @@ export class VideoSet extends Realm.Object<VideoSet> {
   earliestVideoDateTime!: Date;
   latestVideoDateTime!: Date;
   isAnalyzed!: boolean;
-
+  isCurrent!: boolean;
 
   static schema = {
     name: 'VideoSet',
@@ -80,14 +80,15 @@ export class VideoSet extends Realm.Object<VideoSet> {
       videoIDs: {type: 'mixed[]', default: []},
       frequencyData: {type: 'mixed[]', default: []},
       // summaryAnalysis: {type: 'string', default: ''},
-      summaryAnalysisSentence: { type: 'string', default: '' },
-      summaryAnalysisBullet: { type: 'string', default: '' },
+      summaryAnalysisSentence: {type: 'string', default: ''},
+      summaryAnalysisBullet: {type: 'string', default: ''},
       isSummaryGenerated: {type: 'bool', default: false},
-      reportFormat: { type: 'string', default: 'bullet' },
+      reportFormat: {type: 'string', default: 'bullet'},
       selectedWords: {type: 'string[]', default: []},
       earliestVideoDateTime: {type: 'date', default: new Date()},
       latestVideoDateTime: {type: 'date', default: new Date()},
       isAnalyzed: {type: 'bool', default: false},
+      isCurrent: {type: 'bool', default: false},
     },
   };
 }
