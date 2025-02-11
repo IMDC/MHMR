@@ -215,6 +215,7 @@ export const stopWords = [
   'd',
   'd2',
   'da',
+  'day',
   'date',
   'dc',
   'dd',

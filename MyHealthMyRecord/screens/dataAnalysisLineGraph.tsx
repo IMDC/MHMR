@@ -152,7 +152,7 @@ const DataAnalysisLineGraph = () => {
   const periodOptions = [
     {label: 'Daily', value: '1'},
     {label: 'Weekly', value: '2'},
-    {label: 'Set Range', value: '3'},
+    {label: 'Video set dates', value: '3'},
   ];
 
   const segementDayOptions = [
