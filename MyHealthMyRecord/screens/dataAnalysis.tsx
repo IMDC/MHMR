@@ -33,6 +33,7 @@ import {useDropdownContext} from '../components/videoSetProvider';
 import {stopWords, medWords} from '../assets/util/words';
 import {useSetLineGraphData} from '../components/lineGraphData';
 import { useWordList } from '../components/wordListProvider';
+import TranscriptUploader from '../components/TranscriptUploader';
 
 const DataAnalysis = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -413,6 +414,10 @@ const DataAnalysis = () => {
     setSentimentBarData(formattedData);
   }
 
+  const isButtonDisabled = () => {
+    return !currentVideoSet || currentVideoSet.videoIDs.length === 0;
+  };
+
   return (
     <View style={{flexDirection: 'column', flex: 1}}>
       <View
@@ -441,12 +446,7 @@ const DataAnalysis = () => {
           alignItems: 'center',
         }}>
         <Button
-          disabled={
-            !currentVideoSet?.isAnalyzed ||
-            videoSetValue == null ||
-            (videoSetVideoIDs.length === 0 &&
-              (videoSetValue == null || videoSetValue.length === 0))
-          }
+          disabled={isButtonDisabled()}
           onPress={() => navigation.navigate('Text Report')}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -466,12 +466,7 @@ const DataAnalysis = () => {
           Text Report
         </Button>
         <Button
-          disabled={
-            !currentVideoSet?.isAnalyzed ||
-            videoSetValue == null ||
-            (videoSetVideoIDs.length === 0 &&
-              (videoSetValue == null || videoSetValue.length === 0))
-          }
+          disabled={isButtonDisabled()}
           onPress={() =>
             navigation.navigate('Bar Graph', {
               data: barData,
@@ -497,12 +492,7 @@ const DataAnalysis = () => {
           Bar Graph
         </Button>
         <Button
-          disabled={
-            !currentVideoSet?.isAnalyzed ||
-            videoSetValue == null ||
-            (videoSetVideoIDs.length === 0 &&
-              (videoSetValue == null || videoSetValue.length === 0))
-          }
+          disabled={isButtonDisabled()}
           onPress={() => {
             setModalVisible(true);
             console.log('-------------------------data', data);
@@ -526,12 +516,7 @@ const DataAnalysis = () => {
           Line Graph
         </Button>
         <Button
-          disabled={
-            !currentVideoSet?.isAnalyzed ||
-            videoSetValue == null ||
-            (videoSetVideoIDs.length === 0 &&
-              (videoSetValue == null || videoSetValue.length === 0))
-          }
+          disabled={isButtonDisabled()}
           onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
@@ -557,16 +542,19 @@ const DataAnalysis = () => {
           bottom: 10,
           left: Styles.screenWidth / 3,
         }}>
-        {!currentVideoSet?.isAnalyzed && (
-          <TouchableOpacity style={{flexDirection: 'row'}} onPress={
-            () => Alert.alert('Please analyze the video set first.', 'You must analyze the video set before you can view the data analysis. Video set can only be analyzed when connected to the internet.')
-          } >
+        {isButtonDisabled() && (
+          <TouchableOpacity 
+            style={{flexDirection: 'row'}} 
+            onPress={() => Alert.alert(
+              'No Video Set Selected', 
+              'Please select or create a video set first.'
+            )}
+          >
             <Icon
               name="alert-circle-outline"
               size={24}
               type="ionicon"
               color='gray'
-              // style={{width: Styles.bottomNavIconSize}}
             />
             <Text style={{fontSize: 20, color: 'gray', textAlign: 'center'}}>
               Why can't I click anything?
@@ -639,6 +627,16 @@ const DataAnalysis = () => {
           </View>
         </View>
       </Modal>
+      <TranscriptUploader 
+        onUploadComplete={() => {
+          // Refresh the video set data
+          if (currentVideoSet) {
+            realm.write(() => {
+              currentVideoSet.isAnalyzed = true;
+            });
+          }
+        }}
+      />
     </View>
   );
 };

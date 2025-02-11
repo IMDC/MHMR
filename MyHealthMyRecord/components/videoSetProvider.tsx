@@ -3,6 +3,11 @@ import {useRealm, VideoSet} from '../models/VideoData';
 
 export const VideoSetContext = createContext();
 
+export interface DropdownContextType {
+  currentVideoSet: any;  // or more specific type if available
+  // ... other context properties
+}
+
 export const VideoSetProvider = ({children}) => {
   const realm = useRealm();
   const [videoSetValue, setVideoSetValue] = useState('');
