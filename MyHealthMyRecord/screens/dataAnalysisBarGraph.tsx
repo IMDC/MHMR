@@ -29,6 +29,28 @@ import {Alert} from 'react-native';
 
 const setLineGraphData = useSetLineGraphData();
 
+const chunkData = (data, maxItems = 50) => {
+  if (!data || data.length <= maxItems) return data;
+
+  // Sort by value in descending order
+  const sortedData = [...data].sort((a, b) => b.value - a.value);
+  
+  // Take top maxItems items
+  const topItems = sortedData.slice(0, maxItems);
+  
+  // Combine remaining items into "Others"
+  const remainingItems = sortedData.slice(maxItems);
+  if (remainingItems.length > 0) {
+    const othersValue = remainingItems.reduce((sum, item) => sum + item.value, 0);
+    topItems.push({
+      text: 'Others',
+      value: othersValue
+    });
+  }
+  
+  return topItems;
+};
+
 const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
@@ -216,9 +238,12 @@ const DataAnalysisBarGraph = () => {
 
   useEffect(() => {
     if (yTest.length !== undefined) {
-      setFilteredWordFreqBarGraphData(
-        wordFreqBarGraphData.filter(item => !selectedWords.has(item.text)),
+      const filteredData = wordFreqBarGraphData.filter(
+        item => !selectedWords.has(item.text)
       );
+      // Apply chunking to the filtered data
+      const chunkedData = chunkData(filteredData);
+      setFilteredWordFreqBarGraphData(chunkedData);
     } else {
       Alert.alert(
         'Cannot create graphs',
@@ -264,12 +289,17 @@ const DataAnalysisBarGraph = () => {
                       yAccessor={({index}) => index}
                       contentInset={{top: 10, bottom: 10}}
                       spacing={0.2}
-                      formatLabel={value => value}
+                      formatLabel={value => {
+                        if (value >= 1000000) {
+                          return `${(value / 1000000).toFixed(1)}M`;
+                        } else if (value >= 1000) {
+                          return `${(value / 1000).toFixed(1)}K`;
+                        }
+                        return value;
+                      }}
+                      numberOfTicks={10}
                       min={0}
                       max={filteredWordFreqBarGraphData[0]?.value || 0}
-                      numberOfTicks={
-                        filteredWordFreqBarGraphData[0]?.value || 0
-                      }
                       style={{height: 600}}
                       svg={{fontSize: 20}}
                     />
