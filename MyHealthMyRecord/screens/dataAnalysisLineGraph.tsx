@@ -45,46 +45,46 @@ const DataAnalysisLineGraph = () => {
   const [videoIDs, setVideoIDs] = useState([]);
   const scrollViewRef = useRef<ScrollView>(null);
 
-const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
-  // Validate input dates
-  if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
-    throw new Error('Invalid date objects provided.');
-  }
-
-  if (startDate > endDate) {
-    return []; // Return an empty array if the start date is after the end date
-  }
-
-  const weeks: { label: string; value: number }[] = [];
-  let currentDate = new Date(startDate);
-
-  // Align to the previous Sunday for the start date
-  while (currentDate.getDay() !== 0) {
-    currentDate.setDate(currentDate.getDate() - 1);
-  }
-
-  let weekCounter = 0;
-  while (currentDate <= endDate) {
-    const weekStart = new Date(currentDate);
-    const weekEnd = new Date(currentDate);
-    weekEnd.setDate(weekEnd.getDate() + 6);
-
-    // Ensure the weekEnd doesn't exceed the endDate
-    if (weekEnd > endDate) {
-      weekEnd.setTime(endDate.getTime());
+  const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
+    // Validate input dates
+    if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
+      throw new Error('Invalid date objects provided.');
     }
 
-    weeks.push({
-      label: `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`,
-      value: weekCounter,
-    });
+    if (startDate > endDate) {
+      return []; // Return an empty array if the start date is after the end date
+    }
 
-    currentDate.setDate(currentDate.getDate() + 7);
-    weekCounter++;
-  }
+    const weeks: {label: string; value: number}[] = [];
+    let currentDate = new Date(startDate);
 
-  return weeks;
-};
+    // Align to the previous Sunday for the start date
+    while (currentDate.getDay() !== 0) {
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+
+    let weekCounter = 0;
+    while (currentDate <= endDate) {
+      const weekStart = new Date(currentDate);
+      const weekEnd = new Date(currentDate);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      // Ensure the weekEnd doesn't exceed the endDate
+      if (weekEnd > endDate) {
+        weekEnd.setTime(endDate.getTime());
+      }
+
+      weeks.push({
+        label: `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`,
+        value: weekCounter,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 7);
+      weekCounter++;
+    }
+
+    return weeks;
+  };
 
   useEffect(() => {
     LogBox.ignoreLogs([
@@ -97,16 +97,16 @@ const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
       Alert.alert(
         'No Word Selected',
         'Please select a word from the bar graph to view the word count over time.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        [{text: 'OK', onPress: () => navigation.goBack()}],
       );
     } else {
       setFreqDayArray(lineData.byHour);
       setDateOptionsForHours(lineData.datesForHours);
-  
+
       // Use datesForWeeks directly
       setDateOptionsForWeeks(lineData.datesForWeeks);
       setFreqWeekArray(lineData.byWeek);
-  
+
       // Set range options
       setFreqSetRangeArray(lineData.bySetRange);
       const rangeOptions = lineData.datesForWeeks.map((week, index) => ({
@@ -116,7 +116,6 @@ const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
       setDateOptionsForSetRange(rangeOptions);
     }
   }, [periodValue]);
-  
 
   const windowWidth = Dimensions.get('window').width;
   const axesSvg = {fontSize: 20, fill: 'grey'};
@@ -323,22 +322,22 @@ const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
                     <Dots />
                   </LineChart>
                   <XAxis
-                    style={{marginHorizontal: -40, height: xAxisHeight}}
+                    style={{marginHorizontal: -20, height: xAxisHeight}}
                     data={
                       periodValue == '1'
-                        ? freqDayArray[0]
+                        ? freqDayArray[0] // Use the first day's hourly data
                         : periodValue == '2'
-                        ? freqWeekArray[0]
-                        : freqSetRangeArray
+                        ? freqWeekArray[0] // Use the first week's daily data
+                        : freqSetRangeArray // Use the range data
                     }
-                    scale={scale.scaleTime}
+                    scale={scale.scaleLinear}
                     formatLabel={(value, index) => {
                       if (periodValue == '1') {
-                        return hours[freqDayArray[0][index].label];
+                        return hours[index % 24];
                       } else if (periodValue == '2') {
                         return weeks[index % 7];
                       } else {
-                        return `Week ${index + 1}`;
+                        return dateOptionsForSetRange[index]?.label || '';
                       }
                     }}
                     labelStyle={{margin: 5}}
