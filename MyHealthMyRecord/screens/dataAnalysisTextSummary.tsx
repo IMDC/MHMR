@@ -576,7 +576,7 @@ const DataAnalysisTextSummary = () => {
                       : video.tsOutputBullet === '' ||
                         video.tsOutputSentence === ''
                       ? 'Output has not been generated.'
-                      : reportFormat === 'bullet'
+                      : reportFormat === 'sentence'
                       ? video.tsOutputBullet
                       : video.tsOutputSentence}
                   </Text>

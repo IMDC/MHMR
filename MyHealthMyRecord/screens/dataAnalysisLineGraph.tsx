@@ -45,31 +45,46 @@ const DataAnalysisLineGraph = () => {
   const [videoIDs, setVideoIDs] = useState([]);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
-    const weeks: {label: string; value: number}[] = [];
-    let currentDate = new Date(startDate);
+const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
+  // Validate input dates
+  if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
+    throw new Error('Invalid date objects provided.');
+  }
 
-    // Move to the previous Sunday if not already on Sunday
-    while (currentDate.getDay() !== 0) {
-      currentDate.setDate(currentDate.getDate() - 1);
+  if (startDate > endDate) {
+    return []; // Return an empty array if the start date is after the end date
+  }
+
+  const weeks: { label: string; value: number }[] = [];
+  let currentDate = new Date(startDate);
+
+  // Align to the previous Sunday for the start date
+  while (currentDate.getDay() !== 0) {
+    currentDate.setDate(currentDate.getDate() - 1);
+  }
+
+  let weekCounter = 0;
+  while (currentDate <= endDate) {
+    const weekStart = new Date(currentDate);
+    const weekEnd = new Date(currentDate);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    // Ensure the weekEnd doesn't exceed the endDate
+    if (weekEnd > endDate) {
+      weekEnd.setTime(endDate.getTime());
     }
 
-    let weekCounter = 0;
-    while (currentDate <= endDate) {
-      const weekEnd = new Date(currentDate);
-      weekEnd.setDate(weekEnd.getDate() + 6);
+    weeks.push({
+      label: `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`,
+      value: weekCounter,
+    });
 
-      weeks.push({
-        label: `${currentDate.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`,
-        value: weekCounter,
-      });
+    currentDate.setDate(currentDate.getDate() + 7);
+    weekCounter++;
+  }
 
-      currentDate.setDate(currentDate.getDate() + 7);
-      weekCounter++;
-    }
-
-    return weeks;
-  };
+  return weeks;
+};
 
   useEffect(() => {
     LogBox.ignoreLogs([
@@ -82,30 +97,26 @@ const DataAnalysisLineGraph = () => {
       Alert.alert(
         'No Word Selected',
         'Please select a word from the bar graph to view the word count over time.',
-        [{text: 'OK', onPress: () => navigation.goBack()}],
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } else {
       setFreqDayArray(lineData.byHour);
       setDateOptionsForHours(lineData.datesForHours);
-
-      // Generate weekly options
-      const weeklyOptions = getWeeksBetweenDates(
-        currentVideoSet.earliestVideoDateTime,
-        currentVideoSet.latestVideoDateTime,
-      );
-      setDateOptionsForWeeks(weeklyOptions);
+  
+      // Use datesForWeeks directly
+      setDateOptionsForWeeks(lineData.datesForWeeks);
       setFreqWeekArray(lineData.byWeek);
-
+  
       // Set range options
       setFreqSetRangeArray(lineData.bySetRange);
-      const numberOfWeeks = weeklyOptions.length;
-      const rangeOptions = Array.from({length: numberOfWeeks}, (_, i) => ({
-        label: `Week ${i + 1}`,
-        value: i,
+      const rangeOptions = lineData.datesForWeeks.map((week, index) => ({
+        label: week.label,
+        value: index,
       }));
       setDateOptionsForSetRange(rangeOptions);
     }
   }, [periodValue]);
+  
 
   const windowWidth = Dimensions.get('window').width;
   const axesSvg = {fontSize: 20, fill: 'grey'};
@@ -228,7 +239,7 @@ const DataAnalysisLineGraph = () => {
             />
           ))}
         {periodValue == '3' &&
-          freqSetRangeArray[date]?.map((value, index) => (
+          freqSetRangeArray.map((value, index) => (
             <Circle
               key={index}
               cx={x(index)}
@@ -269,19 +280,13 @@ const DataAnalysisLineGraph = () => {
                     ? freqDayArray[date]
                     : periodValue == '2'
                     ? freqWeekArray[date]
-                    : freqSetRangeArray[date]
+                    : freqSetRangeArray
                 }
                 yAccessor={({item}) => item.value}
                 style={{marginBottom: xAxisHeight}}
                 contentInset={verticalContentInset}
                 svg={axesSvg}
-                numberOfTicks={Math.max(
-                  ...(periodValue == '1'
-                    ? freqDayArray[date]?.map(item => item.value)
-                    : periodValue == '2'
-                    ? freqWeekArray[date]?.map(item => item.value)
-                    : freqSetRangeArray[date]?.map(item => item.value)),
-                )}
+                numberOfTicks={5}
               />
 
               <TouchableOpacity
@@ -305,7 +310,7 @@ const DataAnalysisLineGraph = () => {
                         ? freqDayArray[date]
                         : periodValue == '2'
                         ? freqWeekArray[date]
-                        : freqSetRangeArray[date]
+                        : freqSetRangeArray
                     }
                     yAccessor={({item}) => item.value}
                     xScale={scale.scaleTime}
@@ -324,7 +329,7 @@ const DataAnalysisLineGraph = () => {
                         ? freqDayArray[0]
                         : periodValue == '2'
                         ? freqWeekArray[0]
-                        : freqSetRangeArray[0]
+                        : freqSetRangeArray
                     }
                     scale={scale.scaleTime}
                     formatLabel={(value, index) => {
