@@ -59,7 +59,7 @@ export function useSetLineGraphData() {
 
     // Format the range label to include month and date
     const formatDate = (date: Date) =>
-      `${date.toLocaleString('default', { month: 'long' })} ${date.getDate()}`;
+      `${date.toLocaleString('default', {month: 'long'})} ${date.getDate()}`;
 
     // Initialize range data
     let rangeData = {
@@ -71,7 +71,7 @@ export function useSetLineGraphData() {
     for (let i = 0; i < freqMaps.length; i++) {
       let saveDate = new Date(freqMaps[i].datetime);
       let dateString = saveDate.toDateString(); // "Mon Apr 29 2024"
-      let { start: weekStart, end: weekEnd } = getWeekStartAndEnd(saveDate);
+      let {start: weekStart, end: weekEnd} = getWeekStartAndEnd(saveDate);
       let hour = saveDate.getHours();
       let weekLabel = `${weekStart} - ${weekEnd}`;
 
@@ -80,7 +80,7 @@ export function useSetLineGraphData() {
         if (!trackedDatesForHours.has(dateString)) {
           trackedDatesForHours.set(dateString, resultsDatesForHours.length);
           resultByHour.push(
-            Array.from({ length: 24 }, () => ({
+            Array.from({length: 24}, () => ({
               label: 0,
               value: 0,
               videoIDs: [],
@@ -99,7 +99,7 @@ export function useSetLineGraphData() {
         if (!trackedDatesForWeeks.has(weekLabel)) {
           trackedDatesForWeeks.set(weekLabel, resultsDatesForWeeks.length);
           resultByWeek.push(
-            Array.from({ length: 7 }, () => ({
+            Array.from({length: 7}, () => ({
               label: 0,
               value: 0,
               videoIDs: [],
@@ -144,37 +144,42 @@ export function useSetLineGraphData() {
       }
     }
 
-    // Populate resultsDatesForRange
-    resultsDatesForRange = resultByRange.map(entry => ({
-      label: entry.label, // Month and day (e.g., "2-25")
-      value: entry.value,
-    }));
-
-    // Sort resultsDatesForHours by chronological order and update values
-    resultsDatesForHours = resultsDatesForHours
+    // Reverse and update resultsDatesForHours
+    resultsDatesForHours = (resultsDatesForHours || [])
+      .reverse()
       .map((item, index) => ({
         ...item,
-        value: index,
+        value: index, // Update the value to reflect the new order
+        videoIDs: Array.from(new Set(item.videoIDs || [])).reverse(), // Deduplicate and reverse the videoIDs array
       }));
 
-    // Sort resultsDatesForWeeks by chronological order and update values
-    resultsDatesForWeeks = resultsDatesForWeeks
-
+    // Reverse and update resultsDatesForWeeks
+    resultsDatesForWeeks = (resultsDatesForWeeks || [])
+      .reverse()
       .map((item, index) => ({
         ...item,
-        value: index,
+        value: index, // Update the value to reflect the new order
+        videoIDs: Array.from(new Set(item.videoIDs || [])).reverse(), // Deduplicate and reverse the videoIDs array
+      }));
+
+    // Reverse and update resultsDatesForRange
+    resultsDatesForRange = (resultByRange || [])
+      .reverse()
+      .map((entry, index) => ({
+        label: entry.label, // Month and day (e.g., "2-25")
+        value: entry.value, // Use the aggregated value
+        videoIDs: Array.from(new Set(entry.videoIDs || [])).reverse(), // Deduplicate and reverse the videoIDs array
       }));
 
     return {
       datesForHours: resultsDatesForHours,
-      byHour: resultByHour,
+      byHour: resultByHour.reverse(), 
       datesForWeeks: resultsDatesForWeeks,
-      byWeek: resultByWeek,
-      datesForRange: resultsDatesForRange, // Simplified range data
-      byRange: resultByRange, // Detailed range data
+      byWeek: resultByWeek.reverse(), 
+      datesForRange: resultsDatesForRange,
+      byRange: resultByRange.reverse(), 
     };
   };
 
   return setLineGraphData;
 }
-

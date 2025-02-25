@@ -235,18 +235,18 @@ const DataAnalysisLineGraph = () => {
             />
           ))}
         {periodValue == '3' &&
-          freqSetRangeArray.map((value, index) => (
-            <Circle
-              key={index}
-              cx={x(index)}
-              cy={y(value.value)}
-              r={8}
-              stroke={'rgb(0, 0, 0)'}
-              fill={'white'}
-              onPressIn={() => handlePressIn(value)}
-              onPressOut={() => console.log('end')}
-            />
-          ))}
+        freqSetRangeArray.map((value, index) => (
+          <Circle
+            key={index}
+            cx={x(index)}
+            cy={y(value.value)}
+            r={8}
+            stroke={'rgb(0, 0, 0)'}
+            fill={'white'}
+            onPressIn={() => handlePressIn(value)}
+            onPressOut={() => console.log('end')}
+          />
+        ))}
       </>
     );
   };  
@@ -334,7 +334,7 @@ const DataAnalysisLineGraph = () => {
                       } else if (periodValue == '2') {
                         return weeks[index % 7];
                       } else {
-                        return dateOptionsForSetRange[index]?.label || ''; // Use `datesForRange` labels
+                        return freqSetRangeArray[index]?.label || ''; // Use the range labels
                       }
                     }}
                     labelStyle={{margin: 5}}
