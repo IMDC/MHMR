@@ -20,25 +20,20 @@ function getWeekStartAndEnd(date: Date) {
 }
 
 // Base templates for daily and weekly data
-let freqDayTemplate = Array.from({ length: 24 }, (_, i) => ({
+let freqDayTemplate = Array.from({length: 24}, (_, i) => ({
   label: i,
   value: 0,
   videoIDs: [],
 }));
 
-let freqWeekTemplate = Array.from({ length: 7 }, (_, i) => ({
+let freqWeekTemplate = Array.from({length: 7}, (_, i) => ({
   label: i,
   value: 0,
   videoIDs: [],
 }));
 
 export function useSetLineGraphData() {
-  const setLineGraphData = (
-    freqMaps: any,
-    word: string,
-    earliestVideoDateTime: string,
-    latestVideoDateTime: string,
-  ) => {
+  const setLineGraphData = (freqMaps: any, word: string) => {
     let maps = accessFreqMaps(freqMaps);
 
     let trackedDatesForHours = new Map();
@@ -53,13 +48,22 @@ export function useSetLineGraphData() {
     let resultsDatesForRange = [];
     let resultByRange = [];
 
-    // Parse the earliest and latest video dates
-    const earliestDate = new Date(earliestVideoDateTime);
-    const latestDate = new Date(latestVideoDateTime);
+    // Dynamically determine the earliest and latest dates from freqMaps
+    const allDates = freqMaps.map(item => new Date(item.datetime));
+    const earliestDate = new Date(
+      Math.min(...allDates.map(date => date.getTime())),
+    );
+    const latestDate = new Date(
+      Math.max(...allDates.map(date => date.getTime())),
+    );
+
+    // Format the range label to include month and date
+    const formatDate = (date: Date) =>
+      `${date.toLocaleString('default', { month: 'long' })} ${date.getDate()}`;
 
     // Initialize range data
     let rangeData = {
-      label: `${earliestDate.toDateString()} - ${latestDate.toDateString()}`,
+      label: `${formatDate(earliestDate)} - ${formatDate(latestDate)}`, // e.g., "April 1 - April 30"
       value: 0,
       videoIDs: [],
     };
@@ -113,28 +117,61 @@ export function useSetLineGraphData() {
 
         // Process RANGE Data
         if (saveDate >= earliestDate && saveDate <= latestDate) {
-          rangeData.value += freqMaps[i].map.get(word);
-          rangeData.videoIDs.push(freqMaps[i].videoID);
+          // Extract month and day
+          const monthDayKey = `${
+            saveDate.getMonth() + 1
+          }-${saveDate.getDate()}`; // e.g., "2-25" for February 25
+
+          // Check if the month-day key already exists in resultByRange
+          let rangeEntry = resultByRange.find(
+            entry => entry.label === monthDayKey,
+          );
+
+          if (!rangeEntry) {
+            // If the entry doesn't exist, create a new one
+            rangeEntry = {
+              label: monthDayKey, // e.g., "2-25"
+              value: 0,
+              videoIDs: [],
+            };
+            resultByRange.push(rangeEntry);
+          }
+
+          // Update the range entry
+          rangeEntry.value += freqMaps[i].map.get(word);
+          rangeEntry.videoIDs.push(freqMaps[i].videoID);
         }
       }
     }
 
-    // Populate resultsDatesForRange and resultByRange
-    resultsDatesForRange = [rangeData];
-    resultByRange = [rangeData];
+    // Populate resultsDatesForRange
+    resultsDatesForRange = resultByRange.map(entry => ({
+      label: entry.label, // Month and day (e.g., "2-25")
+      value: entry.value,
+    }));
 
     // Sort resultsDatesForHours by chronological order and update values
-    resultsDatesForHours = resultsDatesForHours.map((item, index) => ({ ...item, value: index }));
+    resultsDatesForHours = resultsDatesForHours
+      .map((item, index) => ({
+        ...item,
+        value: index,
+      }));
 
-    resultsDatesForWeeks = resultsDatesForWeeks.map((item, index) => ({ ...item, value: index }));
+    // Sort resultsDatesForWeeks by chronological order and update values
+    resultsDatesForWeeks = resultsDatesForWeeks
+
+      .map((item, index) => ({
+        ...item,
+        value: index,
+      }));
 
     return {
       datesForHours: resultsDatesForHours,
       byHour: resultByHour,
       datesForWeeks: resultsDatesForWeeks,
       byWeek: resultByWeek,
-      datesForRange: resultsDatesForRange,
-      byRange: resultByRange,
+      datesForRange: resultsDatesForRange, // Simplified range data
+      byRange: resultByRange, // Detailed range data
     };
   };
 

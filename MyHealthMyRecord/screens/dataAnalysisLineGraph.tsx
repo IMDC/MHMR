@@ -108,12 +108,9 @@ const DataAnalysisLineGraph = () => {
       setFreqWeekArray(lineData.byWeek);
 
       // Set range options
-      setFreqSetRangeArray(lineData.bySetRange);
-      const rangeOptions = lineData.datesForWeeks.map((week, index) => ({
-        label: week.label,
-        value: index,
-      }));
-      setDateOptionsForSetRange(rangeOptions);
+      setDateOptionsForSetRange(lineData.datesForRange); // Use `datesForRange` for dropdown options
+      setFreqSetRangeArray(lineData.byRange);
+      
     }
   }, [periodValue]);
 
@@ -252,7 +249,7 @@ const DataAnalysisLineGraph = () => {
           ))}
       </>
     );
-  };
+  };  
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
@@ -337,7 +334,7 @@ const DataAnalysisLineGraph = () => {
                       } else if (periodValue == '2') {
                         return weeks[index % 7];
                       } else {
-                        return dateOptionsForSetRange[index]?.label || '';
+                        return dateOptionsForSetRange[index]?.label || ''; // Use `datesForRange` labels
                       }
                     }}
                     labelStyle={{margin: 5}}
