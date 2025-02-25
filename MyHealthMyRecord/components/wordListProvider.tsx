@@ -10,18 +10,20 @@ export const WordListProvider = ({ children }) => {
 
   // Update the word list
   const updateWordList = (newWordList) => {
-    setWordList(newWordList);
+    // Filter out words with value <= 2
+    const filteredWordList = newWordList.filter((word) => word.value > 2);
+    setWordList(filteredWordList);
 
     // Persist changes in Realm
     realm.write(() => {
       const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0]; // Replace 'isCurrent' with your actual property
       if (videoSet) {
-        videoSet.wordList = newWordList; // Save the updated word list
+        videoSet.wordList = filteredWordList; // Save the updated word list
       }
     });
   };
 
-  // Toggle selection for a word
+  // Toggle selection for a word (only updates state, does not write to Realm)
   const toggleWordSelection = (word) => {
     setSelectedWords((prev) => {
       const updatedSelection = new Set(prev);
@@ -30,16 +32,17 @@ export const WordListProvider = ({ children }) => {
       } else {
         updatedSelection.add(word);
       }
-
-      // Persist selected words in Realm
-      realm.write(() => {
-        const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
-        if (videoSet) {
-          videoSet.selectedWords = Array.from(updatedSelection); // Save the updated selected words
-        }
-      });
-
       return updatedSelection;
+    });
+  };
+
+  // Persist selected words to Realm
+  const persistSelectedWords = () => {
+    realm.write(() => {
+      const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
+      if (videoSet) {
+        videoSet.selectedWords = Array.from(selectedWords); // Save the updated selected words
+      }
     });
   };
 
@@ -52,7 +55,11 @@ export const WordListProvider = ({ children }) => {
     // Load initial data from Realm on mount
     const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
     if (videoSet) {
-      setWordList(videoSet.wordList || []);
+      // Filter out words with value <= 2
+      const filteredWordList = (videoSet.wordList || []).filter(
+        (word) => word.value > 2
+      );
+      setWordList(filteredWordList);
       setSelectedWords(new Set(videoSet.selectedWords || []));
     }
   }, [realm]);
@@ -64,6 +71,7 @@ export const WordListProvider = ({ children }) => {
         selectedWords,
         updateWordList,
         toggleWordSelection,
+        persistSelectedWords,
         resetSelectedWords,
       }}
     >

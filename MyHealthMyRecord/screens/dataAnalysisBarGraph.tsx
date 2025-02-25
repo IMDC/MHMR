@@ -26,6 +26,7 @@ import {useSetLineGraphData} from '../components/lineGraphData';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useWordList} from '../components/wordListProvider';
 import {Alert} from 'react-native';
+import WordRemovalModal from '../components/wordRemovalModal';
 
 const setLineGraphData = useSetLineGraphData();
 
@@ -205,7 +206,7 @@ const DataAnalysisBarGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
-  const {selectedWords, toggleWordSelection, updateWordList} = useWordList();
+  const {wordList, selectedWords, toggleWordSelection, updateWordList} = useWordList();
 
 
   const handleSentimentPress = async sentiment => {
@@ -251,7 +252,7 @@ const DataAnalysisBarGraph = () => {
         [{text: 'OK', onPress: () => navigation.goBack()}],
       );
     }
-  }, [selectedWords, wordFreqBarGraphData]);
+  }, [editModalVisible, wordFreqBarGraphData]);
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -693,39 +694,7 @@ const DataAnalysisBarGraph = () => {
           />
         </View>
       </Modal>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={editModalVisible}
-        onRequestClose={() => setEditModalVisible(false)}>
-        <View style={styles.smallModalView}>
-          <Text style={styles.modalText}>Select words to remove</Text>
-          <FlatList
-            data={wordFreqBarGraphData}
-            renderItem={({item}) => (
-              <CheckBox
-                title={item.text}
-                checked={selectedWords.has(item.text)}
-                onPress={() => toggleWordSelection(item.text)}
-                containerStyle={styles.checkboxContainer}
-                textStyle={styles.checkboxText}
-              />
-            )}
-            keyExtractor={item => item.text}
-            numColumns={3}
-            contentContainerStyle={styles.flatListContent}
-          />
-          <View style={styles.buttonContainer}>
-            <Button
-              title="Close"
-              color={Styles.MHMRBlue}
-              radius={50}
-              onPress={() => setEditModalVisible(false)}
-              containerStyle={styles.buttonStyle}
-            />
-          </View>
-        </View>
-      </Modal>
+      {editModalVisible && <WordRemovalModal setEditModalVisible={setEditModalVisible} />}
     </SafeAreaView>
   );
 };
