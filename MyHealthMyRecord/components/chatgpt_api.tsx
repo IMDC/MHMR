@@ -14,7 +14,11 @@ async function connectToChatGPT(inputText) {
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
-          {role: 'developer', content: 'You are summarizing transcripts of video data. Use second person pronouns.'},
+          {
+            role: 'developer',
+            content:
+              'You are summarizing transcripts of video data. Use second person pronouns.',
+          },
           {role: 'user', content: inputText},
         ],
         max_tokens: 150,
