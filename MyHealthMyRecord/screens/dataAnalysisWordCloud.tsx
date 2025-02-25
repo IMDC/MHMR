@@ -193,7 +193,7 @@ const DataAnalysisWordCloud = () => {
               }}
             >
               <Button
-                title="Select words"
+                title="Remove words"
                 onPress={() => setEditModalVisible(true)}
                 color={Styles.MHMRBlue}
                 radius={50}
