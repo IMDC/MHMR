@@ -97,33 +97,43 @@ const DataAnalysisLineGraph = () => {
       Alert.alert(
         'No Word Selected',
         'Please select a word from the bar graph to view the word count over time.',
-        [{text: 'OK', onPress: () => navigation.goBack()}],
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } else {
       setFreqDayArray(lineData.byHour);
       setDateOptionsForHours(lineData.datesForHours);
-
+  
       // Use datesForWeeks directly
       setDateOptionsForWeeks(lineData.datesForWeeks);
       setFreqWeekArray(lineData.byWeek);
-
+  
       // Sort range options chronologically
-    const sortedDatesForRange = [...lineData.datesForRange].sort((a, b) => {
-      const dateA = new Date(a.label.split('-')[0].trim()); // Parse the start date
-      const dateB = new Date(b.label.split('-')[0].trim()); // Parse the start date
-      return dateA.getTime() - dateB.getTime(); // Sort in ascending order
-    });
-
-    const sortedFreqSetRangeArray = [...lineData.byRange].sort((a, b) => {
-      const dateA = new Date(a.label.split('-')[0].trim()); // Parse the start date
-      const dateB = new Date(b.label.split('-')[0].trim()); // Parse the start date
-      return dateA.getTime() - dateB.getTime(); // Sort in ascending order
-    });
-
-    setDateOptionsForSetRange(sortedDatesForRange); // Use sorted range options
-    setFreqSetRangeArray(sortedFreqSetRangeArray); // Use sorted range data
-  }
-}, [periodValue]);
+      const sortedDatesForRange = [...lineData.datesForRange].sort((a, b) => {
+        // Parse the MM-DD format into a valid date object
+        const [monthA, dayA] = a.label.split('-').map(Number);
+        const [monthB, dayB] = b.label.split('-').map(Number);
+  
+        // Create date objects for comparison (use a fixed year, e.g., 2000)
+        const dateA = new Date(2000, monthA - 1, dayA); // Month is 0-indexed
+        const dateB = new Date(2000, monthB - 1, dayB);
+  
+        return dateA - dateB; // Sort in ascending order
+      });
+  
+      const sortedFreqSetRangeArray = [...lineData.byRange].sort((a, b) => {
+        const [monthA, dayA] = a.label.split('-').map(Number);
+        const [monthB, dayB] = b.label.split('-').map(Number);
+      
+        const dateA = new Date(2000, monthA - 1, dayA); // Month is 0-indexed
+        const dateB = new Date(2000, monthB - 1, dayB);
+      
+        return dateA - dateB; // Sort in ascending order
+      });
+  
+      setDateOptionsForSetRange(sortedDatesForRange); // Use sorted range options
+      setFreqSetRangeArray(sortedFreqSetRangeArray); // Use sorted range data
+    }
+  }, [periodValue]);  
 
   const windowWidth = Dimensions.get('window').width;
   const axesSvg = {fontSize: 20, fill: 'grey'};
@@ -216,51 +226,62 @@ const DataAnalysisLineGraph = () => {
   };
 
   const Dots = (props: Partial<DecoratorProps>) => {
-    const {x, y, data} = props;
+    const { x, y, data } = props;
+  
     return (
       <>
         {periodValue == '1' &&
-          freqDayArray[date]?.map((value, index) => (
-            <Circle
-              key={index}
-              cx={x(index)}
-              cy={y(value.value)}
-              r={8}
-              stroke={'rgb(0, 0, 0)'}
-              fill={'white'}
-              onPressIn={() => handlePressIn(value)}
-              onPressOut={() => console.log('end')}
-            />
-          ))}
+          freqDayArray[date]?.map((value, index) => {
+            console.log(`Dot value: ${value.value}, Y-coordinate: ${y(value.value)}`);
+            return (
+              <Circle
+                key={index}
+                cx={x(index)} // X-coordinate
+                cy={y(value.value)} // Y-coordinate (mapped using the same scale as the Y-axis)
+                r={8}
+                stroke={'rgb(0, 0, 0)'}
+                fill={'white'}
+                onPressIn={() => handlePressIn(value)}
+                onPressOut={() => console.log('end')}
+              />
+            );
+          })}
         {periodValue == '2' &&
-          freqWeekArray[date]?.map((value, index) => (
-            <Circle
-              key={index}
-              cx={x(index)}
-              cy={y(value.value)}
-              r={8}
-              stroke={'rgb(0, 0, 0)'}
-              fill={'white'}
-              onPressIn={() => handlePressIn(value)}
-              onPressOut={() => console.log('end')}
-            />
-          ))}
+          freqWeekArray[date]?.map((value, index) => {
+            console.log(`Dot value: ${value.value}, Y-coordinate: ${y(value.value)}`);
+            return (
+              <Circle
+                key={index}
+                cx={x(index)} // X-coordinate
+                cy={y(value.value)} // Y-coordinate (mapped using the same scale as the Y-axis)
+                r={8}
+                stroke={'rgb(0, 0, 0)'}
+                fill={'white'}
+                onPressIn={() => handlePressIn(value)}
+                onPressOut={() => console.log('end')}
+              />
+            );
+          })}
         {periodValue == '3' &&
-          freqSetRangeArray.map((value, index) => (
-            <Circle
-              key={index}
-              cx={x(index)}
-              cy={y(value.value)}
-              r={8}
-              stroke={'rgb(0, 0, 0)'}
-              fill={'white'}
-              onPressIn={() => handlePressIn(value)}
-              onPressOut={() => console.log('end')}
-            />
-          ))}
+          freqSetRangeArray.map((value, index) => {
+            console.log(`Dot value: ${value.value}, Y-coordinate: ${y(value.value)}`);
+            return (
+              <Circle
+                key={index}
+                cx={x(index)} // X-coordinate
+                cy={y(value.value)} // Y-coordinate (mapped using the same scale as the Y-axis)
+                r={8}
+                stroke={'rgb(0, 0, 0)'}
+                fill={'white'}
+                onPressIn={() => handlePressIn(value)}
+                onPressOut={() => console.log('end')}
+              />
+            );
+          })}
       </>
     );
   };
+  
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
@@ -269,6 +290,17 @@ const DataAnalysisLineGraph = () => {
   const scrollRight = () => {
     scrollViewRef.current?.scrollToEnd({animated: true});
   };
+
+  const maxValue = Math.max(
+    ...(periodValue == '1'
+      ? freqDayArray[date]
+      : periodValue == '2'
+      ? freqWeekArray[date]
+      : freqSetRangeArray
+    ).map(item => item.value),
+  );
+
+  const minValue = 0; // Ensure the Y-axis starts at 0
 
   return (
     <ScrollView>
@@ -293,15 +325,11 @@ const DataAnalysisLineGraph = () => {
                 style={{marginBottom: xAxisHeight}}
                 contentInset={{top: 10, bottom: 10}}
                 svg={axesSvg}
-                numberOfTicks={Math.min(
-                  1,
-                  Math.ceil(
-                    Math.max(...freqSetRangeArray.map(item => item.value)) || 1,
-                  ),
-                )} // dynamically calculate ticks
-                formatLabel={value => Math.round(value)} // ensure whole numbers only
+                min={minValue}
+                max={maxValue} // Explicitly set the max value
+                numberOfTicks={Math.min(5, maxValue)} // Adjust ticks based on the range
+                formatLabel={value => Math.round(value)} // Ensure whole numbers only
               />
-
               <TouchableOpacity
                 onPress={scrollLeft}
                 style={styles.iconContainer}>
@@ -314,7 +342,11 @@ const DataAnalysisLineGraph = () => {
                     marginLeft: 10,
                     marginRight: 10,
                     width:
-                      windowWidth > 768 ? windowWidth * 1.5 : windowWidth * 2,
+                      periodValue === '1'
+                        ? windowWidth > 768
+                          ? windowWidth * 1.5
+                          : windowWidth * 3
+                        : windowWidth,
                   }}>
                   <LineChart
                     style={{flex: 1}}
@@ -327,11 +359,14 @@ const DataAnalysisLineGraph = () => {
                     }
                     yAccessor={({item}) => item.value}
                     xScale={scale.scaleTime}
-                    contentInset={verticalContentInset}
+                    contentInset={{ top: 10, bottom: 10 }}
                     svg={{
                       stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
                       strokeWidth: 5,
-                    }}>
+                    }}
+                    min={minValue} // Explicitly set the min value
+  max={maxValue} // Explicitly set the max value
+                    >
                     <Grid />
                     <Dots />
                   </LineChart>

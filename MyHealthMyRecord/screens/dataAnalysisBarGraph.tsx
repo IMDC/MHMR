@@ -291,15 +291,15 @@ const DataAnalysisBarGraph = () => {
                       yAccessor={({index}) => index}
                       contentInset={{top: 10, bottom: 10}}
                       spacing={0.2}
-                      formatLabel={value => value} // ensure whole numbers
+                      formatLabel={value => Math.round(value)} // Ensure whole numbers
                       numberOfTicks={Math.min(
-                        10,
-                        Math.ceil(filteredWordFreqBarGraphData[0]?.value || 1),
-                      )} // Ddynamically calculate ticks
+                        6, // Maximum number of ticks is 6
+                        Math.ceil(filteredWordFreqBarGraphData[0]?.value || 1), // Dynamically calculate ticks based on data
+                      )}
                       min={0}
                       max={Math.ceil(
                         filteredWordFreqBarGraphData[0]?.value || 0,
-                      )} // round up max value
+                      )} // Round up max value
                       style={{height: 600}}
                       svg={{fontSize: 20}}
                     />
