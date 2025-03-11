@@ -35,20 +35,23 @@ const chunkData = (data, maxItems = 50) => {
 
   // Sort by value in descending order
   const sortedData = [...data].sort((a, b) => b.value - a.value);
-  
+
   // Take top maxItems items
   const topItems = sortedData.slice(0, maxItems);
-  
+
   // Combine remaining items into "Others"
   const remainingItems = sortedData.slice(maxItems);
   if (remainingItems.length > 0) {
-    const othersValue = remainingItems.reduce((sum, item) => sum + item.value, 0);
+    const othersValue = remainingItems.reduce(
+      (sum, item) => sum + item.value,
+      0,
+    );
     topItems.push({
       text: 'Others',
-      value: othersValue
+      value: othersValue,
     });
   }
-  
+
   return topItems;
 };
 
@@ -77,7 +80,6 @@ const DataAnalysisBarGraph = () => {
 
   const {currentVideoSet} = useDropdownContext();
 
-
   /* ======================================================================= */
   // bar graph stuff below
   /* ======================================================================= */
@@ -89,11 +91,13 @@ const DataAnalysisBarGraph = () => {
   // array of length of max value in data (first index value) for yAxis
   const yTest = Array.from(
     {
-      length: filteredWordFreqBarGraphData.length > 0 && filteredWordFreqBarGraphData[0].value 
-        ? filteredWordFreqBarGraphData[0].value 
-        : 0
+      length:
+        filteredWordFreqBarGraphData.length > 0 &&
+        filteredWordFreqBarGraphData[0].value
+          ? filteredWordFreqBarGraphData[0].value
+          : 0,
     },
-    (_, i) => i + 1
+    (_, i) => i + 1,
   );
 
   /* on press functionality for word frequency bar graph */
@@ -206,8 +210,8 @@ const DataAnalysisBarGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
-  const {wordList, selectedWords, toggleWordSelection, updateWordList} = useWordList();
-
+  const {wordList, selectedWords, toggleWordSelection, updateWordList} =
+    useWordList();
 
   const handleSentimentPress = async sentiment => {
     try {
@@ -225,8 +229,6 @@ const DataAnalysisBarGraph = () => {
     }
   };
 
-
-
   const applyWordSelection = () => {
     const filteredData = wordFreqBarGraphData.filter(
       item => !selectedWords.has(item.text),
@@ -235,12 +237,11 @@ const DataAnalysisBarGraph = () => {
     updateWordList(filteredData); // Sync globally
     setEditModalVisible(false);
   };
-  
 
   useEffect(() => {
     if (yTest.length !== undefined) {
       const filteredData = wordFreqBarGraphData.filter(
-        item => !selectedWords.has(item.text)
+        item => !selectedWords.has(item.text),
       );
       // Apply chunking to the filtered data
       const chunkedData = chunkData(filteredData);
@@ -290,20 +291,19 @@ const DataAnalysisBarGraph = () => {
                       yAccessor={({index}) => index}
                       contentInset={{top: 10, bottom: 10}}
                       spacing={0.2}
-                      formatLabel={value => {
-                        if (value >= 1000000) {
-                          return `${(value / 1000000).toFixed(1)}M`;
-                        } else if (value >= 1000) {
-                          return `${(value / 1000).toFixed(1)}K`;
-                        }
-                        return value;
-                      }}
-                      numberOfTicks={10}
+                      formatLabel={value => value} // ensure whole numbers
+                      numberOfTicks={Math.min(
+                        10,
+                        Math.ceil(filteredWordFreqBarGraphData[0]?.value || 1),
+                      )} // Ddynamically calculate ticks
                       min={0}
-                      max={filteredWordFreqBarGraphData[0]?.value || 0}
+                      max={Math.ceil(
+                        filteredWordFreqBarGraphData[0]?.value || 0,
+                      )} // round up max value
                       style={{height: 600}}
                       svg={{fontSize: 20}}
                     />
+
                     <TouchableOpacity
                       onPress={scrollLeft}
                       style={{justifyContent: 'center'}}>
@@ -694,7 +694,9 @@ const DataAnalysisBarGraph = () => {
           />
         </View>
       </Modal>
-      {editModalVisible && <WordRemovalModal setEditModalVisible={setEditModalVisible} />}
+      {editModalVisible && (
+        <WordRemovalModal setEditModalVisible={setEditModalVisible} />
+      )}
     </SafeAreaView>
   );
 };

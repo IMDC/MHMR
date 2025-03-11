@@ -107,12 +107,23 @@ const DataAnalysisLineGraph = () => {
       setDateOptionsForWeeks(lineData.datesForWeeks);
       setFreqWeekArray(lineData.byWeek);
 
-      // Set range options
-      setDateOptionsForSetRange(lineData.datesForRange); // Use `datesForRange` for dropdown options
-      setFreqSetRangeArray(lineData.byRange);
-      
-    }
-  }, [periodValue]);
+      // Sort range options chronologically
+    const sortedDatesForRange = [...lineData.datesForRange].sort((a, b) => {
+      const dateA = new Date(a.label.split('-')[0].trim()); // Parse the start date
+      const dateB = new Date(b.label.split('-')[0].trim()); // Parse the start date
+      return dateA.getTime() - dateB.getTime(); // Sort in ascending order
+    });
+
+    const sortedFreqSetRangeArray = [...lineData.byRange].sort((a, b) => {
+      const dateA = new Date(a.label.split('-')[0].trim()); // Parse the start date
+      const dateB = new Date(b.label.split('-')[0].trim()); // Parse the start date
+      return dateA.getTime() - dateB.getTime(); // Sort in ascending order
+    });
+
+    setDateOptionsForSetRange(sortedDatesForRange); // Use sorted range options
+    setFreqSetRangeArray(sortedFreqSetRangeArray); // Use sorted range data
+  }
+}, [periodValue]);
 
   const windowWidth = Dimensions.get('window').width;
   const axesSvg = {fontSize: 20, fill: 'grey'};
@@ -235,21 +246,21 @@ const DataAnalysisLineGraph = () => {
             />
           ))}
         {periodValue == '3' &&
-        freqSetRangeArray.map((value, index) => (
-          <Circle
-            key={index}
-            cx={x(index)}
-            cy={y(value.value)}
-            r={8}
-            stroke={'rgb(0, 0, 0)'}
-            fill={'white'}
-            onPressIn={() => handlePressIn(value)}
-            onPressOut={() => console.log('end')}
-          />
-        ))}
+          freqSetRangeArray.map((value, index) => (
+            <Circle
+              key={index}
+              cx={x(index)}
+              cy={y(value.value)}
+              r={8}
+              stroke={'rgb(0, 0, 0)'}
+              fill={'white'}
+              onPressIn={() => handlePressIn(value)}
+              onPressOut={() => console.log('end')}
+            />
+          ))}
       </>
     );
-  };  
+  };
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
@@ -280,9 +291,15 @@ const DataAnalysisLineGraph = () => {
                 }
                 yAccessor={({item}) => item.value}
                 style={{marginBottom: xAxisHeight}}
-                contentInset={verticalContentInset}
+                contentInset={{top: 10, bottom: 10}}
                 svg={axesSvg}
-                numberOfTicks={5}
+                numberOfTicks={Math.min(
+                  1,
+                  Math.ceil(
+                    Math.max(...freqSetRangeArray.map(item => item.value)) || 1,
+                  ),
+                )} // dynamically calculate ticks
+                formatLabel={value => Math.round(value)} // ensure whole numbers only
               />
 
               <TouchableOpacity
