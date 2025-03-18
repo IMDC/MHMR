@@ -1323,7 +1323,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                 })
               : null}
           </View>
-          {videoSetVideoIDs.length > 0 ? (
+          {videoData.length > 0 ? (
             <TouchableOpacity
               style={{alignItems: 'center'}}
               onPress={onPressTouch}>
