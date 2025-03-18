@@ -127,19 +127,22 @@ const DataAnalysisBarGraph = () => {
    */
   const CUT_OFF_VER = (filteredWordFreqBarGraphData[0]?.value || 1) - 1;
   const LabelsVertical = ({x, y, bandwidth, data}) =>
-    filteredWordFreqBarGraphData.map((value, index) => (
-      <svg.Text
-        key={index}
-        x={x(index) + bandwidth / 2 - 10}
-        y={
-          value.value > CUT_OFF_VER ? y(value.value) + 20 : y(value.value) - 15
-        }
-        fontSize={20}
-        fill={value.value > CUT_OFF_VER ? 'white' : 'black'}
-        alignmentBaseline={'middle'}>
-        {value.value}
-      </svg.Text>
-    ));
+    filteredWordFreqBarGraphData.map((value, index) => {
+      // Only show labels for bars that are tall enough to be significant
+      if (value.value < filteredWordFreqBarGraphData[0].value * 0.05) return null;
+      
+      return (
+        <svg.Text
+          key={index}
+          x={x(index) + bandwidth / 2 - 10}
+          y={value.value > CUT_OFF_VER ? y(value.value) + 20 : y(value.value) - 15}
+          fontSize={16}
+          fill={value.value > CUT_OFF_VER ? 'white' : 'black'}
+          alignmentBaseline={'middle'}>
+          {value.value}
+        </svg.Text>
+      );
+    });
 
   /**
    * Labels on each bar with the frequency value for the vertical view
@@ -176,10 +179,20 @@ const DataAnalysisBarGraph = () => {
     } else {
       newWordFreqBarGraphData = barData.data;
     }
+    
+    // Filter out the "other" category
+    newWordFreqBarGraphData = newWordFreqBarGraphData.filter(item => item.text.toLowerCase() !== "other");
+    
     setWordFreqBarGraphData(newWordFreqBarGraphData);
     setFilteredWordFreqBarGraphData(newWordFreqBarGraphData);
-    // updateWordList(newWordFreqBarGraphData);
   }
+
+  useEffect(() => {
+    // Initial data setup - filter out "other" category
+    const initialData = barData.dataNoStop.filter(item => item.text.toLowerCase() !== "other");
+    setWordFreqBarGraphData(initialData);
+    setFilteredWordFreqBarGraphData(initialData);
+  }, []);
 
   useEffect(() => {
     updateData();
@@ -255,6 +268,18 @@ const DataAnalysisBarGraph = () => {
     }
   }, [editModalVisible, wordFreqBarGraphData]);
 
+  // Calculate appropriate height based on data size
+  const calculateBarHeight = () => {
+    const baseHeight = 600;
+    const wordCount = filteredWordFreqBarGraphData.length;
+    
+    if (wordCount > 50) {
+      return Math.min(baseHeight * 1.5, 800); // Cap at 800 for very large datasets
+    }
+    
+    return baseHeight;
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -297,11 +322,10 @@ const DataAnalysisBarGraph = () => {
                         Math.ceil(filteredWordFreqBarGraphData[0]?.value || 1), // Dynamically calculate ticks based on data
                       )}
                       min={0}
-                      max={Math.ceil(
-                        filteredWordFreqBarGraphData[0]?.value || 0,
-                      )} // Round up max value
-                      style={{height: 600}}
-                      svg={{fontSize: 20}}
+                      max={filteredWordFreqBarGraphData[0]?.value || 0}
+                      numberOfTicks={Math.min(10, filteredWordFreqBarGraphData[0]?.value || 0)}
+                      style={{height: calculateBarHeight()}}
+                      svg={{fontSize: 16}}
                     />
 
                     <TouchableOpacity
@@ -313,12 +337,12 @@ const DataAnalysisBarGraph = () => {
                         color="black"
                       />
                     </TouchableOpacity>
-                    <ScrollView horizontal={true} ref={horizontalScrollViewRef}>
+                    <ScrollView horizontal={true} ref={horizontalScrollViewRef} showsHorizontalScrollIndicator={true} contentContainerStyle={{alignItems: 'flex-start'}}>
                       <View>
                         <BarChart
                           style={{
-                            height: 600,
-                            width: filteredWordFreqBarGraphData.length * 50,
+                            height: calculateBarHeight(),
+                            width: Math.max(filteredWordFreqBarGraphData.length * 50, Dimensions.get('window').width - 100),
                           }}
                           data={wordFreq}
                           yAccessor={({item}) => item.y.value}
@@ -326,9 +350,7 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          numberOfTicks={
-                            filteredWordFreqBarGraphData[0]?.value || 0
-                          }>
+                          numberOfTicks={Math.min(10, filteredWordFreqBarGraphData[0]?.value || 0)}>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
@@ -337,12 +359,12 @@ const DataAnalysisBarGraph = () => {
                             height: 100,
                             marginTop: 0,
                             marginBottom: 10,
-                            width: filteredWordFreqBarGraphData.length * 50,
+                            width: Math.max(filteredWordFreqBarGraphData.length * 50, Dimensions.get('window').width - 100),
                           }}
                           data={filteredWordFreqBarGraphData}
                           scale={scale.scaleBand}
                           svg={{
-                            fontSize: 18,
+                            fontSize: 16,
                             rotation: -45,
                             fill: 'black',
                             originY: 20,
@@ -350,9 +372,7 @@ const DataAnalysisBarGraph = () => {
                             translateX: 0,
                             y: 5,
                           }}
-                          formatLabel={(value, index) =>
-                            filteredWordFreqBarGraphData[index].text
-                          }
+                          formatLabel={(value, index) => filteredWordFreqBarGraphData[index].text}
                         />
                       </View>
                     </ScrollView>
