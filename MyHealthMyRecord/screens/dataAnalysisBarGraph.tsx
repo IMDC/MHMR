@@ -36,23 +36,8 @@ const chunkData = (data, maxItems = 50) => {
   // Sort by value in descending order
   const sortedData = [...data].sort((a, b) => b.value - a.value);
 
-  // Take top maxItems items
-  const topItems = sortedData.slice(0, maxItems);
-
-  // Combine remaining items into "Others"
-  const remainingItems = sortedData.slice(maxItems);
-  if (remainingItems.length > 0) {
-    const othersValue = remainingItems.reduce(
-      (sum, item) => sum + item.value,
-      0,
-    );
-    topItems.push({
-      text: 'Others',
-      value: othersValue,
-    });
-  }
-
-  return topItems;
+  // Take top maxItems items and return them without creating an "Others" category
+  return sortedData.slice(0, maxItems);
 };
 
 const DataAnalysisBarGraph = () => {
