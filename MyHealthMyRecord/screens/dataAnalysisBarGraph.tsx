@@ -93,12 +93,6 @@ const DataAnalysisBarGraph = () => {
       onPressIn: () => {
         console.log(filteredWordFreqBarGraphData[index]);
         setWordSelected(index);
-        const wordLabel = filteredWordFreqBarGraphData[index].text;
-        const result = setLineGraphData(freqMaps, wordLabel);
-        navigation.navigate('Line Graph', {
-          word: wordLabel,
-          data: result,
-        });
       },
       onPressOut: () => {
         setWordSelected(null);
@@ -265,6 +259,16 @@ const DataAnalysisBarGraph = () => {
     return baseHeight;
   };
 
+  // Create a function to handle word selection and navigation
+  const handleWordSelection = (wordLabel) => {
+    console.log('Selected word:', wordLabel);
+    const result = setLineGraphData(freqMaps, wordLabel);
+    navigation.navigate('Line Graph', {
+      word: wordLabel,
+      data: result,
+    });
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -349,16 +353,47 @@ const DataAnalysisBarGraph = () => {
                           data={filteredWordFreqBarGraphData}
                           scale={scale.scaleBand}
                           svg={{
-                            fontSize: 16,
-                            rotation: -45,
-                            fill: 'black',
-                            originY: 20,
-                            translateY: 25,
-                            translateX: 0,
-                            y: 5,
+                            fontSize: 0,
+                            fill: 'transparent',
                           }}
-                          formatLabel={(value, index) => filteredWordFreqBarGraphData[index].text}
+                          formatLabel={() => ''}
                         />
+                        <View style={{
+                          height: 100,
+                          width: Math.max(filteredWordFreqBarGraphData.length * 50, Dimensions.get('window').width - 100),
+                          flexDirection: 'row',
+                          position: 'absolute',
+                          bottom: 0,
+                        }}>
+                          {filteredWordFreqBarGraphData.map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => handleWordSelection(item.text)}
+                              style={{
+                                width: 50,
+                                height: 100,
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Text 
+                                style={{
+                                  color: 'blue',
+                                  textDecorationLine: 'underline',
+                                  fontSize: 14,
+                                  transform: [{rotate: '-45deg'}],
+                                  width: 70,
+                                  textAlign: 'center',
+                                  marginTop: 10,
+                                }}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {item.text}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
                       </View>
                     </ScrollView>
                     <TouchableOpacity
@@ -455,13 +490,47 @@ const DataAnalysisBarGraph = () => {
                           scale={scale.scaleBand}
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
-                          formatLabel={(value, index) =>
-                            filteredWordFreqBarGraphData[index].text
-                          }
-                          svg={{fontSize: 20, margin: 10}}
+                          formatLabel={() => ''}
+                          svg={{
+                            fontSize: 0,
+                            fill: 'transparent',
+                          }}
                           min={0}
                           max={filteredWordFreqBarGraphData[0]?.value || 0}
                         />
+                        <View style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          width: 80,
+                          height: filteredWordFreqBarGraphData.length * 50,
+                        }}>
+                          {filteredWordFreqBarGraphData.map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => handleWordSelection(item.text)}
+                              style={{
+                                height: 50,
+                                width: 80,
+                                justifyContent: 'center',
+                                paddingLeft: 5,
+                              }}
+                            >
+                              <Text 
+                                style={{
+                                  color: 'blue',
+                                  textDecorationLine: 'underline',
+                                  fontSize: 14,
+                                  width: 75,
+                                }}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {item.text}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
                         <ScrollView
                           horizontal={true}
                           ref={horizontalScrollViewRef}
@@ -747,7 +816,7 @@ const styles = StyleSheet.create({
   videoIDText: {
     marginVertical: 10,
     fontSize: 16,
-    color: 'blue',
+    color: 'black',
   },
   checkboxContainer: {
     width: '30%',
@@ -771,3 +840,4 @@ const styles = StyleSheet.create({
 });
 
 export default DataAnalysisBarGraph;
+
