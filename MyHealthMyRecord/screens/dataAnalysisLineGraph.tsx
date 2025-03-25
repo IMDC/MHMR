@@ -235,25 +235,24 @@ const DataAnalysisLineGraph = () => {
     }
   };
 
-  const Dots = ({ x, y }) => (
+  const Dots = ({x, y}) => (
     <>
       {selectedData.map((value, index) => {
         console.log(`Dot Value: ${value.value}, Scaled Y: ${y(value.value)}`);
         return (
           <Circle
             key={index}
-            cx={x(index)}
-            cy={y(value.value)} // Ensures proper mapping
+            cx={x(index)} // Map the X position to the index
+            cy={y(value.value)} // Map the Y position to the value
             r={8}
             stroke={'black'}
             fill={'white'}
-            onPressIn={() => handlePressIn(value)}
+            onPressIn={() => handlePressIn(value)} // Handle press events
           />
         );
       })}
     </>
   );
-  
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
@@ -269,14 +268,18 @@ const DataAnalysisLineGraph = () => {
       ? freqWeekArray[date] || []
       : freqSetRangeArray || [];
 
-  const minValue = 0; // Force Y-axis to always start at 0
-  const dataValues = selectedData.map(item => item.value);
-  let maxValue = Math.max(...dataValues, 1); // Ensure max is at least 1
-
-  // Prevent min and max from being too close
-  if (maxValue - minValue < 2) {
-    maxValue = minValue + 2; // Add buffer if range is too small
+  if (selectedData.length === 0) {
+    return <Text>No data available for the selected period.</Text>;
   }
+
+  const dataValues = selectedData.map(item => item.value);
+  let minValue = Math.min(...dataValues); // Use the smallest value in the data
+  let maxValue = Math.max(...dataValues); // Use the largest value in the data
+
+  // Add a buffer to the min and max values to prevent dots from being too close to the edges
+  const buffer = 1; 
+  minValue = minValue - buffer < 0 ? 0 : minValue - buffer; // Ensure minValue doesn't go below 0
+  maxValue = maxValue;
 
   return (
     <ScrollView>
@@ -295,9 +298,9 @@ const DataAnalysisLineGraph = () => {
                 style={{marginBottom: xAxisHeight}}
                 contentInset={{top: 10, bottom: 10}}
                 svg={axesSvg}
-                min={minValue} // Force Y-axis to start at 0
-                max={maxValue} // Dynamically scale based on data
-                numberOfTicks={Math.min(5, maxValue)} // Adjust ticks
+                min={0}
+                max={maxValue}
+                numberOfTicks={4}
                 formatLabel={value => Math.round(value)}
               />
 
@@ -322,9 +325,11 @@ const DataAnalysisLineGraph = () => {
                   <LineChart
                     style={{flex: 1}}
                     data={selectedData}
-                    yAccessor={({item}) => item.value || 0}
-                    xScale={scale.scaleTime}
+                    yAccessor={({item}) => item.value || 0} 
+                    xAccessor={({index}) => index} 
                     contentInset={{top: 10, bottom: 10}}
+                    yMin={0} 
+                    yMax={maxValue} 
                     svg={{
                       stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
                       strokeWidth: 5,
