@@ -28,6 +28,9 @@ import {useWordList} from '../components/wordListProvider';
 import {Alert} from 'react-native';
 import WordRemovalModal from '../components/wordRemovalModal';
 
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 const setLineGraphData = useSetLineGraphData();
 
 const chunkData = (data, maxItems = 50) => {
@@ -108,13 +111,18 @@ const DataAnalysisBarGraph = () => {
   const LabelsVertical = ({x, y, bandwidth, data}) =>
     filteredWordFreqBarGraphData.map((value, index) => {
       // Only show labels for bars that are tall enough to be significant
-      if (value.value < filteredWordFreqBarGraphData[0].value * 0.05) return null;
-      
+      if (value.value < filteredWordFreqBarGraphData[0].value * 0.05)
+        return null;
+
       return (
         <svg.Text
           key={index}
           x={x(index) + bandwidth / 2 - 10}
-          y={value.value > CUT_OFF_VER ? y(value.value) + 20 : y(value.value) - 15}
+          y={
+            value.value > CUT_OFF_VER
+              ? y(value.value) + 20
+              : y(value.value) - 15
+          }
           fontSize={16}
           fill={value.value > CUT_OFF_VER ? 'white' : 'black'}
           alignmentBaseline={'middle'}>
@@ -158,17 +166,21 @@ const DataAnalysisBarGraph = () => {
     } else {
       newWordFreqBarGraphData = barData.data;
     }
-    
+
     // Filter out the "other" category
-    newWordFreqBarGraphData = newWordFreqBarGraphData.filter(item => item.text.toLowerCase() !== "other");
-    
+    newWordFreqBarGraphData = newWordFreqBarGraphData.filter(
+      item => item.text.toLowerCase() !== 'other',
+    );
+
     setWordFreqBarGraphData(newWordFreqBarGraphData);
     setFilteredWordFreqBarGraphData(newWordFreqBarGraphData);
   }
 
   useEffect(() => {
     // Initial data setup - filter out "other" category
-    const initialData = barData.dataNoStop.filter(item => item.text.toLowerCase() !== "other");
+    const initialData = barData.dataNoStop.filter(
+      item => item.text.toLowerCase() !== 'other',
+    );
     setWordFreqBarGraphData(initialData);
     setFilteredWordFreqBarGraphData(initialData);
   }, []);
@@ -251,16 +263,16 @@ const DataAnalysisBarGraph = () => {
   const calculateBarHeight = () => {
     const baseHeight = 600;
     const wordCount = filteredWordFreqBarGraphData.length;
-    
+
     if (wordCount > 50) {
       return Math.min(baseHeight * 1.5, 800); // Cap at 800 for very large datasets
     }
-    
+
     return baseHeight;
   };
 
   // Create a function to handle word selection and navigation
-  const handleWordSelection = (wordLabel) => {
+  const handleWordSelection = wordLabel => {
     console.log('Selected word:', wordLabel);
     const result = setLineGraphData(freqMaps, wordLabel);
     navigation.navigate('Line Graph', {
@@ -312,26 +324,36 @@ const DataAnalysisBarGraph = () => {
                       )}
                       min={0}
                       max={filteredWordFreqBarGraphData[0]?.value || 0}
-                      numberOfTicks={Math.min(10, filteredWordFreqBarGraphData[0]?.value || 0)}
+                      numberOfTicks={Math.min(
+                        10,
+                        filteredWordFreqBarGraphData[0]?.value || 0,
+                      )}
                       style={{height: calculateBarHeight()}}
                       svg={{fontSize: 16}}
                     />
 
                     <TouchableOpacity
                       onPress={scrollLeft}
-                      style={{justifyContent: 'center'}}>
+                      style={[styles.overlayArrow, {left: 5}]}>
                       <Icon
                         name="keyboard-arrow-left"
                         size={40}
                         color="black"
                       />
                     </TouchableOpacity>
-                    <ScrollView horizontal={true} ref={horizontalScrollViewRef} showsHorizontalScrollIndicator={true} contentContainerStyle={{alignItems: 'flex-start'}}>
+                    <ScrollView
+                      horizontal={true}
+                      ref={horizontalScrollViewRef}
+                      showsHorizontalScrollIndicator={true}
+                      contentContainerStyle={{alignItems: 'flex-start'}}>
                       <View>
                         <BarChart
                           style={{
                             height: calculateBarHeight(),
-                            width: Math.max(filteredWordFreqBarGraphData.length * 50, Dimensions.get('window').width - 100),
+                            width: Math.max(
+                              filteredWordFreqBarGraphData.length * 50,
+                              Dimensions.get('window').width - 100,
+                            ),
                           }}
                           data={wordFreq}
                           yAccessor={({item}) => item.y.value}
@@ -339,7 +361,10 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          numberOfTicks={Math.min(10, filteredWordFreqBarGraphData[0]?.value || 0)}>
+                          numberOfTicks={Math.min(
+                            10,
+                            filteredWordFreqBarGraphData[0]?.value || 0,
+                          )}>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
@@ -347,8 +372,12 @@ const DataAnalysisBarGraph = () => {
                           style={{
                             height: 100,
                             marginTop: 0,
-                            marginBottom: 10,
-                            width: Math.max(filteredWordFreqBarGraphData.length * 50, Dimensions.get('window').width - 100),
+
+                            // marginBottom: 10,
+                            width: Math.max(
+                              filteredWordFreqBarGraphData.length * 50,
+                              Dimensions.get('window').width - 100,
+                            ),
                           }}
                           data={filteredWordFreqBarGraphData}
                           scale={scale.scaleBand}
@@ -358,13 +387,17 @@ const DataAnalysisBarGraph = () => {
                           }}
                           formatLabel={() => ''}
                         />
-                        <View style={{
-                          height: 100,
-                          width: Math.max(filteredWordFreqBarGraphData.length * 50, Dimensions.get('window').width - 100),
-                          flexDirection: 'row',
-                          position: 'absolute',
-                          bottom: 0,
-                        }}>
+                        <View
+                          style={{
+                            height: 100,
+                            width: Math.max(
+                              filteredWordFreqBarGraphData.length * 50,
+                              Dimensions.get('window').width - 100,
+                            ),
+                            flexDirection: 'row',
+                            position: 'absolute',
+                            bottom: 0,
+                          }}>
                           {filteredWordFreqBarGraphData.map((item, index) => (
                             <TouchableOpacity
                               key={index}
@@ -374,9 +407,8 @@ const DataAnalysisBarGraph = () => {
                                 height: 100,
                                 justifyContent: 'flex-start',
                                 alignItems: 'center',
-                              }}
-                            >
-                              <Text 
+                              }}>
+                              <Text
                                 style={{
                                   color: 'blue',
                                   textDecorationLine: 'underline',
@@ -387,8 +419,7 @@ const DataAnalysisBarGraph = () => {
                                   marginTop: 10,
                                 }}
                                 numberOfLines={1}
-                                ellipsizeMode="tail"
-                              >
+                                ellipsizeMode="tail">
                                 {item.text}
                               </Text>
                             </TouchableOpacity>
@@ -398,7 +429,7 @@ const DataAnalysisBarGraph = () => {
                     </ScrollView>
                     <TouchableOpacity
                       onPress={scrollRight}
-                      style={{justifyContent: 'center'}}>
+                      style={[styles.overlayArrow, {right: 5}]}>
                       <Icon
                         name="keyboard-arrow-right"
                         size={40}
@@ -412,7 +443,7 @@ const DataAnalysisBarGraph = () => {
                     textAlign: 'center',
                     fontSize: 20,
                     color: 'black',
-                    marginTop: -30,
+                    marginTop: -80,
                   }}>
                   Word
                 </Text>
@@ -498,13 +529,14 @@ const DataAnalysisBarGraph = () => {
                           min={0}
                           max={filteredWordFreqBarGraphData[0]?.value || 0}
                         />
-                        <View style={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          width: 80,
-                          height: filteredWordFreqBarGraphData.length * 50,
-                        }}>
+                        <View
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            width: 80,
+                            height: filteredWordFreqBarGraphData.length * 50,
+                          }}>
                           {filteredWordFreqBarGraphData.map((item, index) => (
                             <TouchableOpacity
                               key={index}
@@ -514,9 +546,8 @@ const DataAnalysisBarGraph = () => {
                                 width: 80,
                                 justifyContent: 'center',
                                 paddingLeft: 5,
-                              }}
-                            >
-                              <Text 
+                              }}>
+                              <Text
                                 style={{
                                   color: 'blue',
                                   textDecorationLine: 'underline',
@@ -524,8 +555,7 @@ const DataAnalysisBarGraph = () => {
                                   width: 75,
                                 }}
                                 numberOfLines={1}
-                                ellipsizeMode="tail"
-                              >
+                                ellipsizeMode="tail">
                                 {item.text}
                               </Text>
                             </TouchableOpacity>
@@ -838,7 +868,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 10,
   },
+
+  overlayArrow: {
+    position: 'absolute',
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: 30,
+    padding: 5,
+    top: windowHeight > 800 ? '40%' : '45%', // Adjust for taller screens
+  },
 });
 
 export default DataAnalysisBarGraph;
-

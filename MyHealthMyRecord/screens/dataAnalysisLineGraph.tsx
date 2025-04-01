@@ -21,6 +21,9 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useRealm} from '../models/VideoData';
 import {useDropdownContext} from '../components/videoSetProvider';
 
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 const DataAnalysisLineGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route: any = useRoute();
@@ -145,7 +148,6 @@ const DataAnalysisLineGraph = () => {
     }
   }, [periodValue]);
 
-  const windowWidth = Dimensions.get('window').width;
   const axesSvg = {fontSize: 20, fill: 'grey'};
   const verticalContentInset = {top: 10, bottom: 10};
   const xAxisHeight = 30;
@@ -282,107 +284,134 @@ const DataAnalysisLineGraph = () => {
   maxValue = maxValue;
 
   return (
-    <ScrollView>
-      <View style={{paddingBottom: '10%'}}>
-        <View>
+    <ScrollView contentContainerStyle={{paddingBottom: 100}}>
+      <View style={{height: '100%'}}>
+        <View id="linegraph">
           <View>
-            <Text style={{padding: 20, fontSize: 20}}>
+            <Text
+              style={{
+                padding: 20,
+                fontSize: 20,
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
               Word count of "{wordLabel}" over time
             </Text>
-            <View
-              id="linegraph"
-              style={{height: 600, padding: 20, flexDirection: 'row'}}>
-              <YAxis
-                data={selectedData}
-                yAccessor={({item}) => item?.value || 0}
-                style={{marginBottom: xAxisHeight}}
-                contentInset={{top: 10, bottom: 10}}
-                svg={axesSvg}
-                min={0}
-                max={maxValue}
-                numberOfTicks={maxValue < 4 ? maxValue : 4}
-                formatLabel={value => Math.round(value)}
-              />
-
-              <TouchableOpacity
-                onPress={scrollLeft}
-                style={styles.iconContainer}>
-                <Icon name="keyboard-arrow-left" size={40} color="black" />
-              </TouchableOpacity>
-              <ScrollView horizontal={true} ref={scrollViewRef}>
-                <View
+            <View style={{flexDirection: 'row', flex: 1}}>
+              <View style={{width: 50, justifyContent: 'center'}}>
+                <Text
                   style={{
-                    flex: 1,
-                    marginLeft: 10,
-                    marginRight: 10,
-                    width:
-                      periodValue === '1'
-                        ? windowWidth > 768
-                          ? windowWidth * 1.5
-                          : windowWidth * 3
-                        : windowWidth,
+                    transform: [{rotate: '270deg'}],
+                    textAlign: 'center',
+                    fontSize: 18,
+                    color: 'black',
+                    width: 60,
                   }}>
-                  <LineChart
-                    style={{flex: 1}}
-                    data={selectedData}
-                    yAccessor={({item}) => item.value || 0}
-                    xAccessor={({index}) => index}
-                    contentInset={{top: 10, bottom: 10}}
-                    yMin={0}
-                    yMax={maxValue}
-                    svg={{
-                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                      strokeWidth: 5,
-                    }}>
-                    <Grid />
-                    <Dots />
-                  </LineChart>
-
-                  <XAxis
+                  Count
+                </Text>
+              </View>
+              <View style={{flexDirection: 'row', flex: 1}}>
+                <YAxis
+                  data={selectedData}
+                  yAccessor={({item}) => item?.value || 0}
+                  style={{marginBottom: xAxisHeight, marginRight: 5}}
+                  contentInset={{
+                    top: windowHeight * 0.6 * 0.015,
+                    bottom: windowHeight * 0.6 * 0.07,
+                  }}
+                  svg={{fontSize: 14, fill: 'black'}}
+                  min={0}
+                  max={maxValue}
+                  numberOfTicks={maxValue < 4 ? maxValue : 4}
+                  formatLabel={value => Math.round(value)}
+                />
+                <TouchableOpacity
+                  onPress={scrollLeft}
+                  style={[styles.overlayArrow, {left: 5}]}>
+                  <Icon name="keyboard-arrow-left" size={40} color="black" />
+                </TouchableOpacity>
+                <ScrollView horizontal={true} ref={scrollViewRef}>
+                  <View
                     style={{
-                      marginHorizontal: -20,
-                      height: xAxisHeight + 30,
-                      marginTop: 10,
-                    }}
-                    data={
-                      periodValue == '1'
-                        ? freqDayArray[0] // Use the first day's hourly data
-                        : periodValue == '2'
-                        ? freqWeekArray[0] // Use the first week's daily data
-                        : freqSetRangeArray // Use the range data
-                    }
-                    xAccessor={({index}) => index}
-                    scale={scale.scaleLinear}
-                    formatLabel={(value, index) => {
-                      if (periodValue === '1') {
-                        return hours[index % 24];
-                      } else if (periodValue === '2') {
-                        return weeks[index % 7];
-                      } else {
-                        // Range mode: only show 5 labels max
-                        const totalLabels = freqSetRangeArray.length;
-                        if (totalLabels <= 5) {
-                          return freqSetRangeArray[index]?.label || '';
+                      height: windowHeight * 0.6,
+                      width: windowWidth,
+                      marginLeft: 10,
+                      marginRight: 10,
+                    }}>
+                    <LineChart
+                      style={{height: '90%', width: '100%'}}
+                      data={selectedData}
+                      yAccessor={({item}) => item.value || 0}
+                      xAccessor={({index}) => index}
+                      contentInset={{top: 10, bottom: 10}}
+                      yMin={0}
+                      yMax={maxValue}
+                      svg={{
+                        stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                        strokeWidth: 5,
+                      }}>
+                      <Grid />
+                      <Dots />
+                    </LineChart>
+
+                    <XAxis
+                      style={{
+                        marginHorizontal: -20,
+                        height: 80,
+                        marginVertical: -5,
+                      }}
+                      data={selectedData}
+                      xAccessor={({index}) => index}
+                      scale={scale.scaleLinear}
+                      formatLabel={(value, index) => {
+                        if (periodValue === '1') {
+                          return hours[index % 24];
+                        } else if (periodValue === '2') {
+                          return weeks[index % 7];
                         } else {
-                          const step = Math.ceil(totalLabels / 5);
-                          return index % step === 0
-                            ? freqSetRangeArray[index]?.label || ''
-                            : '';
+                          const totalLabels = freqSetRangeArray.length;
+                          if (totalLabels <= 5) {
+                            return freqSetRangeArray[index]?.label || '';
+                          } else {
+                            const step = Math.ceil(totalLabels / 5);
+                            return index % step === 0
+                              ? freqSetRangeArray[index]?.label || ''
+                              : '';
+                          }
                         }
+                      }}
+                      contentInset={
+                        periodValue === '1'
+                          ? {left: 58, right: 0}
+                          : {left: 45, right: 50}
                       }
-                    }}
-                    labelStyle={{margin: 5}}
-                    contentInset={{left: 50, right: 50}}
-                    svg={axesSvg}
-                  />
-                </View>
-              </ScrollView>
-              <TouchableOpacity
-                onPress={scrollRight}
-                style={[styles.iconContainer, {right: 0}]}>
-                <Icon name="keyboard-arrow-right" size={40} color="black" />
-              </TouchableOpacity>
+                      svg={{
+                        fontSize: 14,
+                        fill: 'black',
+                        rotation: periodValue === '1' ? -45 : 0,
+                        originY: periodValue === '1' ? 30 : 0,
+                        textAnchor: periodValue === '1' ? 'end' : 'middle',
+                        dy: periodValue === '1' ? 0 : 10,
+                      }}
+                    />
+                  </View>
+                </ScrollView>
+                <TouchableOpacity
+                  onPress={scrollRight}
+                  style={[styles.overlayArrow, {right: 5}]}>
+                  <Icon name="keyboard-arrow-right" size={40} color="black" />
+                </TouchableOpacity>
+              </View>
             </View>
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 16,
+                color: 'black',
+                marginTop: -29,
+              }}>
+              Time / Date
+            </Text>
             {periodValue != '3' && (
               <View style={{height: '10%', width: '100%'}}>
                 <View style={styles.navigationContainer}>
@@ -420,6 +449,7 @@ const DataAnalysisLineGraph = () => {
                     labelField="label"
                     valueField="value"
                     value={date}
+                    dropdownPosition="top"
                     onChange={item => {
                       setDateValue(item.value);
                     }}
@@ -454,12 +484,16 @@ const DataAnalysisLineGraph = () => {
           </View>
         </View>
 
-        <View>
-          <Text style={styles.filterTitle}>Filter and sort</Text>
+        <View style={{paddingHorizontal: 20}}>
+          <Text style={[styles.filterTitle, {marginBottom: 10}]}>
+            Filter and sort
+          </Text>
+
           <View style={styles.filterContainer}>
-            <View id="period-dropdown">
-              <Text style={styles.dropdownLabel}>Select period: </Text>
+            <View style={styles.dropdownGroup}>
+              <Text style={styles.dropdownLabel}>Select period:</Text>
               <Dropdown
+                dropdownPosition="top"
                 data={periodOptions}
                 maxHeight={300}
                 style={styles.periodDropdown}
@@ -473,22 +507,23 @@ const DataAnalysisLineGraph = () => {
               />
             </View>
 
-            <View id="segmentDay-dropdown">
-              <Text style={styles.dropdownLabel}>Select segment option: </Text>
+            <View style={styles.dropdownGroup}>
+              <Text style={styles.dropdownLabel}>Select segment option:</Text>
               <Dropdown
+                dropdownPosition="top"
                 data={
-                  periodValue == '1'
+                  periodValue === '1'
                     ? segementDayOptions
-                    : periodValue == '2'
+                    : periodValue === '2'
                     ? segementWeekOptions
                     : []
                 }
                 style={styles.periodDropdown}
                 labelField="label"
                 valueField="value"
-                value={periodValue == '1' ? segementDay : segementWeek}
+                value={periodValue === '1' ? segementDay : segementWeek}
                 onChange={item => {
-                  periodValue == '1'
+                  periodValue === '1'
                     ? setSegementDayValue(item.value)
                     : setSegementWeekValue(item.value);
                 }}
@@ -592,6 +627,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#DBDBDB',
     borderRadius: 22,
+  },
+  overlayArrow: {
+    position: 'absolute',
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: 30,
+    padding: 5,
+    top: windowHeight > 800 ? '40%' : '45%', // Adjust for taller screens
   },
 });
 
