@@ -277,7 +277,7 @@ const DataAnalysisLineGraph = () => {
   let maxValue = Math.max(...dataValues); // Use the largest value in the data
 
   // Add a buffer to the min and max values to prevent dots from being too close to the edges
-  const buffer = 1; 
+  const buffer = 1;
   minValue = minValue - buffer < 0 ? 0 : minValue - buffer; // Ensure minValue doesn't go below 0
   maxValue = maxValue;
 
@@ -300,7 +300,7 @@ const DataAnalysisLineGraph = () => {
                 svg={axesSvg}
                 min={0}
                 max={maxValue}
-                numberOfTicks={4}
+                numberOfTicks={maxValue < 4 ? maxValue : 4}
                 formatLabel={value => Math.round(value)}
               />
 
@@ -325,11 +325,11 @@ const DataAnalysisLineGraph = () => {
                   <LineChart
                     style={{flex: 1}}
                     data={selectedData}
-                    yAccessor={({item}) => item.value || 0} 
-                    xAccessor={({index}) => index} 
+                    yAccessor={({item}) => item.value || 0}
+                    xAccessor={({index}) => index}
                     contentInset={{top: 10, bottom: 10}}
-                    yMin={0} 
-                    yMax={maxValue} 
+                    yMin={0}
+                    yMax={maxValue}
                     svg={{
                       stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
                       strokeWidth: 5,
@@ -339,7 +339,11 @@ const DataAnalysisLineGraph = () => {
                   </LineChart>
 
                   <XAxis
-                    style={{marginHorizontal: -20, height: xAxisHeight}}
+                    style={{
+                      marginHorizontal: -20,
+                      height: xAxisHeight + 30,
+                      marginTop: 10,
+                    }}
                     data={
                       periodValue == '1'
                         ? freqDayArray[0] // Use the first day's hourly data
@@ -350,12 +354,21 @@ const DataAnalysisLineGraph = () => {
                     xAccessor={({index}) => index}
                     scale={scale.scaleLinear}
                     formatLabel={(value, index) => {
-                      if (periodValue == '1') {
+                      if (periodValue === '1') {
                         return hours[index % 24];
-                      } else if (periodValue == '2') {
+                      } else if (periodValue === '2') {
                         return weeks[index % 7];
                       } else {
-                        return freqSetRangeArray[index]?.label || ''; // Use the range labels
+                        // Range mode: only show 5 labels max
+                        const totalLabels = freqSetRangeArray.length;
+                        if (totalLabels <= 5) {
+                          return freqSetRangeArray[index]?.label || '';
+                        } else {
+                          const step = Math.ceil(totalLabels / 5);
+                          return index % step === 0
+                            ? freqSetRangeArray[index]?.label || ''
+                            : '';
+                        }
                       }
                     }}
                     labelStyle={{margin: 5}}
@@ -370,72 +383,74 @@ const DataAnalysisLineGraph = () => {
                 <Icon name="keyboard-arrow-right" size={40} color="black" />
               </TouchableOpacity>
             </View>
-            <View style={{height: '10%', width: '100%'}}>
-              <View style={styles.navigationContainer}>
-                <Button
-                  disabled={date == 0}
-                  buttonStyle={styles.btnStyle}
-                  title="Previous period"
-                  color={Styles.MHMRBlue}
-                  radius={50}
-                  icon={{
-                    name: 'arrow-left',
-                    type: 'font-awesome',
-                    size: 15,
-                    color: 'white',
-                  }}
-                  onPress={() => {
-                    if (date > 0) {
-                      setDateValue(date - 1);
-                    }
-                  }}
-                />
+            {periodValue != '3' && (
+              <View style={{height: '10%', width: '100%'}}>
+                <View style={styles.navigationContainer}>
+                  <Button
+                    disabled={date == 0}
+                    buttonStyle={styles.btnStyle}
+                    title="Previous period"
+                    color={Styles.MHMRBlue}
+                    radius={50}
+                    icon={{
+                      name: 'arrow-left',
+                      type: 'font-awesome',
+                      size: 15,
+                      color: 'white',
+                    }}
+                    onPress={() => {
+                      if (date > 0) {
+                        setDateValue(date - 1);
+                      }
+                    }}
+                  />
 
-                <Dropdown
-                  data={
-                    periodValue == '1'
-                      ? dateOptionsForHours
-                      : periodValue == '2'
-                      ? dateOptionsForWeeks
-                      : dateOptionsForSetRange
-                  }
-                  maxHeight={300}
-                  style={styles.dropdown}
-                  placeholderStyle={{fontSize: 20}}
-                  selectedTextStyle={{fontSize: 20}}
-                  labelField="label"
-                  valueField="value"
-                  value={date}
-                  onChange={item => {
-                    setDateValue(item.value);
-                  }}
-                />
-                <Button
-                  disabled={
-                    (periodValue == '1' &&
-                      date >= dateOptionsForHours.length - 1) ||
-                    (periodValue == '2' &&
-                      date >= dateOptionsForWeeks.length - 1) ||
-                    (periodValue == '3' &&
-                      date >= dateOptionsForSetRange.length - 1)
-                  }
-                  title="Next period"
-                  buttonStyle={styles.btnStyle}
-                  color={Styles.MHMRBlue}
-                  radius={50}
-                  iconPosition="right"
-                  icon={{
-                    name: 'arrow-right',
-                    type: 'font-awesome',
-                    size: 15,
-                    color: 'white',
-                  }}
-                  onPress={() => {
-                    setDateValue(date + 1);
-                  }}
-                />
+                  <Dropdown
+                    data={
+                      periodValue == '1'
+                        ? dateOptionsForHours
+                        : periodValue == '2'
+                        ? dateOptionsForWeeks
+                        : dateOptionsForSetRange
+                    }
+                    maxHeight={300}
+                    style={styles.dropdown}
+                    placeholderStyle={{fontSize: 20}}
+                    selectedTextStyle={{fontSize: 20}}
+                    labelField="label"
+                    valueField="value"
+                    value={date}
+                    onChange={item => {
+                      setDateValue(item.value);
+                    }}
+                  />
+                  <Button
+                    disabled={
+                      (periodValue == '1' &&
+                        date >= dateOptionsForHours.length - 1) ||
+                      (periodValue == '2' &&
+                        date >= dateOptionsForWeeks.length - 1) ||
+                      (periodValue == '3' &&
+                        date >= dateOptionsForSetRange.length - 1)
+                    }
+                    title="Next period"
+                    buttonStyle={styles.btnStyle}
+                    color={Styles.MHMRBlue}
+                    radius={50}
+                    iconPosition="right"
+                    icon={{
+                      name: 'arrow-right',
+                      type: 'font-awesome',
+                      size: 15,
+                      color: 'white',
+                    }}
+                    onPress={() => {
+                      setDateValue(date + 1);
+                    }}
+                  />
+                </View>
               </View>
-            </View>
+            )}
           </View>
         </View>
 

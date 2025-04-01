@@ -682,7 +682,8 @@ const DataAnalysisBarGraph = () => {
                 formatLabel={value => value}
                 min={0}
                 max={Math.max(...sentimentData.map(d => d.value))}
-                numberOfTicks={Math.max(...sentimentData.map(d => d.value))}
+                // numberOfTicks={Math.max(...sentimentData.map(d => d.value))}
+                numberOfTicks={5}
                 style={{height: 400}}
                 svg={{fontSize: 20}}
               />

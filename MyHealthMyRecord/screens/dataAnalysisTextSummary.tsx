@@ -573,12 +573,12 @@ const DataAnalysisTextSummary = () => {
                   <Text style={styles.output}>
                     {video.transcript === ''
                       ? 'Transcript has not been generated.'
-                      : video.tsOutputBullet === '' ||
-                        video.tsOutputSentence === ''
+                      : video.tsOutputSentence === '' ||
+                        video.tsOutputBullet === ''
                       ? 'Output has not been generated.'
                       : reportFormat === 'sentence'
-                      ? video.tsOutputBullet
-                      : video.tsOutputSentence}
+                      ? video.tsOutputSentence
+                      : video.tsOutputBullet}
                   </Text>
                 </View>
                 <Text style={styles.sentiment}>
