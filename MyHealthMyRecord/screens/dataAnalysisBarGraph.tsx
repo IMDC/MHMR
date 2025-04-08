@@ -199,6 +199,8 @@ const DataAnalysisBarGraph = () => {
     ]);
   });
 
+
+  
   const scrollLeft = () => {
     horizontalScrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
@@ -288,6 +290,13 @@ const DataAnalysisBarGraph = () => {
   const maxValue =
     Math.ceil((filteredWordFreqBarGraphData[0]?.value || 1) / 10) * 10;
 
+  const chartWidth = Math.max(
+    filteredWordFreqBarGraphData.length * 50,
+    Dimensions.get('window').width - 100,
+  );
+
+  const barWidth = chartWidth / filteredWordFreqBarGraphData.length;
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -342,7 +351,7 @@ const DataAnalysisBarGraph = () => {
                       />
                     </TouchableOpacity>
                     <ScrollView
-                      horizontal={true}
+                      horizontal
                       ref={horizontalScrollViewRef}
                       showsHorizontalScrollIndicator={true}
                       contentContainerStyle={{alignItems: 'flex-start'}}>
@@ -350,10 +359,7 @@ const DataAnalysisBarGraph = () => {
                         <BarChart
                           style={{
                             height: calculateBarHeight(),
-                            width: Math.max(
-                              filteredWordFreqBarGraphData.length * 50,
-                              Dimensions.get('window').width - 100,
-                            ),
+                            width: chartWidth,
                           }}
                           data={wordFreq}
                           yAccessor={({item}) => item.y.value}
@@ -361,21 +367,17 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          gridMax={maxValue} 
+                          gridMax={maxValue}
                           numberOfTicks={5}>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
+
                         <XAxis
                           style={{
                             height: 100,
                             marginTop: 0,
-
-                            // marginBottom: 10,
-                            width: Math.max(
-                              filteredWordFreqBarGraphData.length * 50,
-                              Dimensions.get('window').width - 100,
-                            ),
+                            width: chartWidth,
                           }}
                           data={filteredWordFreqBarGraphData}
                           scale={scale.scaleBand}
@@ -385,13 +387,11 @@ const DataAnalysisBarGraph = () => {
                           }}
                           formatLabel={() => ''}
                         />
+
                         <View
                           style={{
                             height: 100,
-                            width: Math.max(
-                              filteredWordFreqBarGraphData.length * 50,
-                              Dimensions.get('window').width - 100,
-                            ),
+                            width: chartWidth,
                             flexDirection: 'row',
                             position: 'absolute',
                             bottom: 0,
@@ -401,7 +401,7 @@ const DataAnalysisBarGraph = () => {
                               key={index}
                               onPress={() => handleWordSelection(item.text)}
                               style={{
-                                width: 50,
+                                width: barWidth,
                                 height: 100,
                                 justifyContent: 'flex-start',
                                 alignItems: 'center',
@@ -412,7 +412,7 @@ const DataAnalysisBarGraph = () => {
                                   textDecorationLine: 'underline',
                                   fontSize: 14,
                                   transform: [{rotate: '-45deg'}],
-                                  width: 70,
+                                  width: barWidth + 20, // give extra padding for rotated label
                                   textAlign: 'center',
                                   marginTop: 10,
                                 }}
@@ -425,6 +425,7 @@ const DataAnalysisBarGraph = () => {
                         </View>
                       </View>
                     </ScrollView>
+
                     <TouchableOpacity
                       onPress={scrollRight}
                       style={[styles.overlayArrow, {right: 5}]}>
