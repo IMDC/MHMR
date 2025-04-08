@@ -43,8 +43,6 @@ const chunkData = (data, maxItems = 50) => {
   return sortedData.slice(0, maxItems);
 };
 
-
-
 const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
@@ -287,6 +285,9 @@ const DataAnalysisBarGraph = () => {
     });
   };
 
+  const maxValue =
+    Math.ceil((filteredWordFreqBarGraphData[0]?.value || 1) / 10) * 10;
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -324,16 +325,9 @@ const DataAnalysisBarGraph = () => {
                       contentInset={{top: 10, bottom: 10}}
                       spacing={0.2}
                       formatLabel={value => Math.round(value)} // Ensure whole numbers
-                      numberOfTicks={Math.min(
-                        6, // Maximum number of ticks is 6
-                        Math.ceil(filteredWordFreqBarGraphData[0]?.value || 1), // Dynamically calculate ticks based on data
-                      )}
+                      numberOfTicks={Math.min(6, maxValue)} // maxValue already rounded up
                       min={0}
-                      max={roundUpToNearest(filteredWordFreqBarGraphData[0]?.value || 1, 5)}
-                      numberOfTicks={Math.min(
-                        10,
-                        filteredWordFreqBarGraphData[0]?.value || 0,
-                      )}
+                      max={maxValue}
                       style={{height: calculateBarHeight()}}
                       svg={{fontSize: 16}}
                     />
@@ -367,10 +361,8 @@ const DataAnalysisBarGraph = () => {
                           contentInset={{top: 10, bottom: 10}}
                           spacing={0.2}
                           gridMin={0}
-                          numberOfTicks={Math.min(
-                            10,
-                            filteredWordFreqBarGraphData[0]?.value || 0,
-                          )}>
+                          gridMax={maxValue} 
+                          numberOfTicks={5}>
                           <Grid direction={Grid.Direction.HORIZONTAL} />
                           <LabelsVertical />
                         </BarChart>
