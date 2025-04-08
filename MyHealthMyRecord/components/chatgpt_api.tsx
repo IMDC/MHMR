@@ -57,7 +57,7 @@ export const sendToChatGPT = async (
   const inputTexts = [
     `Provide bullet points of the main topics discussed in this video transcript: "${transcript}". Format this in bullet points using \u2022`,
     `Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
-    `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`,
+    `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`,
   ];
 
   const results = await Promise.all(
@@ -91,7 +91,7 @@ export const sendToChatGPT = async (
 };
 
 export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
-  const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Transcript: "${transcript}"`;
+  const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`;
   const data = await connectToChatGPT(inputText);
   if (data.choices && data.choices.length > 0) {
     const sentiment = data.choices[0].message.content.trim();

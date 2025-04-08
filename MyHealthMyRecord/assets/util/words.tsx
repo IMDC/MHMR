@@ -1161,6 +1161,8 @@ export const stopWords = [
   'zero',
   'zi',
   'zz',
+  'gotta'
+  
 ];
 
 export const medWords = [

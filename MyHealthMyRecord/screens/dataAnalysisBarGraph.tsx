@@ -43,6 +43,8 @@ const chunkData = (data, maxItems = 50) => {
   return sortedData.slice(0, maxItems);
 };
 
+
+
 const DataAnalysisBarGraph = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const route = useRoute();
@@ -53,6 +55,10 @@ const DataAnalysisBarGraph = () => {
     ...freqMap,
     videoID: freqMap.videoID.toHexString(),
   }));
+
+  const roundUpToNearest = (num: number, multiple: number) => {
+    return Math.ceil(num / multiple) * multiple;
+  };
 
   const [freqMaps, setFreqMaps] = useState(transformedFreqMaps);
   const [wordFreqBarGraphData, setWordFreqBarGraphData] = useState(
@@ -323,7 +329,7 @@ const DataAnalysisBarGraph = () => {
                         Math.ceil(filteredWordFreqBarGraphData[0]?.value || 1), // Dynamically calculate ticks based on data
                       )}
                       min={0}
-                      max={filteredWordFreqBarGraphData[0]?.value || 0}
+                      max={roundUpToNearest(filteredWordFreqBarGraphData[0]?.value || 1, 5)}
                       numberOfTicks={Math.min(
                         10,
                         filteredWordFreqBarGraphData[0]?.value || 0,
