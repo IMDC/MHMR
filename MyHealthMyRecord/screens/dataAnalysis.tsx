@@ -170,7 +170,7 @@ const DataAnalysis = () => {
 
   function removePunctuationAndLowercase(text: string) {
     return text
-      .replace(/[^\w\s]|_/g, '')
+      .replace(/[^a-zA-Z\s']/g, '')
       .replace(/\s+/g, ' ')
       .toLowerCase();
   }
