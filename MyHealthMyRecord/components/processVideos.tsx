@@ -2,21 +2,44 @@ import {getTranscript, processMultipleTranscripts} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
 import Realm from 'realm';
 import {VideoData} from '../models/VideoData';
+import { stopWords } from '../assets/util/words';
 
-export const processVideos = async (realm, videos, showLoader, hideLoader, isBatchSetAnalysis) => {
+export const processVideos = async (
+  realm,
+  videos,
+  showLoader,
+  hideLoader,
+  isBatchSetAnalysis,
+) => {
   showLoader('Processing videos...');
 
   try {
-    const selectedVideos = realm
-      .objects<VideoData>('VideoData')
-      .filtered('isConverted == false AND isSelected == true');
+    const currentSet = realm
+      .objects('VideoSet')
+      .filtered('isCurrent == true')[0];
+    if (!currentSet) {
+      console.error('No current video set found.');
+      return;
+    }
 
+    const selectedVideos = currentSet.videoIDs
+      .map(id =>
+        realm.objects('VideoData').find(video => video._id.toString() === id),
+      )
+    //commented out for HCP-VIEW:
+    //  .filter(video => video?.isConverted);
+    console.log(selectedVideos);
     console.log(`Found ${selectedVideos.length} videos to process.`);
     showLoader(`Processing ${selectedVideos.length} videos...`);
 
     await processMultipleTranscripts(selectedVideos, realm);
     console.log('All transcriptions complete.');
     showLoader('Analyzing videos...');
+
+    const updatedVideos = realm
+      .objects<VideoData>('VideoData')
+      .filtered('isConverted == true AND isSelected == true');
+
 
     const analysisPromises = selectedVideos.map(video =>
       handleYesAnalysis(video, videos, realm, isBatchSetAnalysis),
@@ -26,9 +49,10 @@ export const processVideos = async (realm, videos, showLoader, hideLoader, isBat
     console.log('All analyses complete.');
 
     // generate and store combined frequency map
-    const freqMaps: Map<string, number>[] = [];
+    const freqMaps = [];
 
     for (const video of selectedVideos) {
+      console.log(`Transcript for ${video.filename}:`, video.transcript);
       if (video.transcript) {
         const map = getFreqMap(video.transcript);
         freqMaps.push(map);
@@ -36,17 +60,29 @@ export const processVideos = async (realm, videos, showLoader, hideLoader, isBat
     }
 
     const combinedMap = combineFreqMaps(freqMaps);
-    const freqDataAsStringList = Array.from(combinedMap.entries()).map(
+
+    // Filter out words with count < 3 and stop words
+    const filteredMap = Array.from(combinedMap.entries())
+      .filter(
+        ([word, count]) =>
+          count >= 3 && !stopWords.includes(word.toLowerCase()),
+      );
+
+    const freqDataAsStringList = filteredMap.map(
       ([word, count]) => `${word}:${count}`,
     );
 
     // store in current VideoSet
     realm.write(() => {
-      const currentSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
+      const currentSet = realm
+        .objects('VideoSet')
+        .filtered('isCurrent == true')[0];
       if (currentSet) {
         currentSet.frequencyData = freqDataAsStringList;
         currentSet.isAnalyzed = true;
-        console.log(`Stored ${freqDataAsStringList.length} frequency entries in set "${currentSet.name}"`);
+        console.log(
+          `Stored ${freqDataAsStringList.length} frequency entries in set "${currentSet.name}"`,
+        );
       }
     });
 
@@ -80,7 +116,9 @@ const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
       realm.write(() => {
         realm.objects('VideoSet').forEach(videoSet => {
           videoSet.isAnalyzed = true;
-          console.log(`Video set ${videoSet._id.toHexString()} marked as analyzed.`);
+          console.log(
+            `Video set ${videoSet._id.toHexString()} marked as analyzed.`,
+          );
         });
       });
     }
@@ -96,7 +134,12 @@ function getFreqMap(transcript: string): Map<string, number> {
   const map = new Map<string, number>();
 
   for (const word of words) {
-    if (word) {
+    if (
+      word &&
+      word !== '' &&
+      word !== 'hesitation' &&
+      word !== '%hesitation'
+    ) {
       map.set(word, (map.get(word) || 0) + 1);
     }
   }

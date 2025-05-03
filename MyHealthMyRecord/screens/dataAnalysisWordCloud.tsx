@@ -131,7 +131,10 @@ const DataAnalysisWordCloud = () => {
 
   // Sync filtered words with the word list from the provider
   useEffect(() => {
-    const filteredData = wordList.filter(word => !selectedWords.has(word.text));
+    const filteredData = wordList
+  .filter(word => !selectedWords.has(word.text))
+  .filter(word => word.value >= 5);
+
     setFilteredWordList(filteredData);
     setUpdatedData(filteredData);
   }, [wordList, editModalVisible]);

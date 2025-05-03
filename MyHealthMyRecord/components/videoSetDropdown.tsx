@@ -69,28 +69,16 @@ const VideoSetDropdown = ({
   };
 
   const createVideoSet = (frequencyData, videoIDs) => {
-    // create a realm array of videos by mapping through the videoIDs
-    let videoIDsArray = videoIDs.map(id =>
+    const videoObjs = videoIDs.map(id =>
       realm.objects('VideoData').find(video => video._id.toString() === id),
     );
-
-    console.log('videoIDsArray:', videoIDsArray);
-
-    let firstVideoDateTime = videoIDsArray[0].datetimeRecorded;
-
-    let lastVideoDateTime =
-      videoIDsArray[videoIDsArray.length - 1].datetimeRecorded;
-    let newSet;
-    // filter videos in video id for isConverted == false, if > 0 then set isAnalyzed to false
-    const unconvertedVideos = videoIDsArray.filter(
-      video => video.isConverted === false,
-    );
-
-    const convertedVideos = videoIDsArray.filter(
-      video => video.isConverted === true,
-    );
-
-    
+  
+    const unconvertedVideos = videoObjs.filter(video => video?.isConverted === false);
+    const convertedVideos = videoObjs.filter(video => video?.isConverted === true);
+  
+    let newSet, newSetCopy;
+  
+    // Realm write must ONLY touch Realm
     realm.write(() => {
       newSet = realm.create('VideoSet', {
         _id: new Realm.BSON.ObjectID(),
@@ -101,37 +89,48 @@ const VideoSetDropdown = ({
         summaryAnalysisBullet: '',
         summaryAnalysisSentence: '',
         isSummaryGenerated: false,
-        earliestVideoDateTime: firstVideoDateTime,
-        latestVideoDateTime: lastVideoDateTime,
+        earliestVideoDateTime: videoObjs[0].datetimeRecorded,
+        latestVideoDateTime: videoObjs[videoObjs.length - 1].datetimeRecorded,
         isAnalyzed: unconvertedVideos.length === 0 || convertedVideos.length > 0,
+        isCurrent: true, // also set as current
       });
-
-      console.log('New Video Set Analyzed?:', newSet.isAnalyzed);
-
-      const updatedVideoSets = realm.objects('VideoSet');
-      const updatedDropdown = [
-        {
-          label: "+ Create New",
-          value: "create_new",
-          id: "create_new",
-        },
-        ...updatedVideoSets.map(set => ({
-          label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
-            set.earliestVideoDateTime.toLocaleString().split(',')[0]
-          } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
-          value: set._id.toString(),
-          id: set._id,
-        })),
-      ];
-      
-      setLocalDropdown(updatedDropdown);
-
-      const newVideoSetValue = newSet._id.toString();
-      setVideoSetValue(newVideoSetValue);
-      handleNewSet(newSet);
-      onVideoSetChange(newVideoSetValue);
+  
+      const allSets = realm.objects('VideoSet');
+      allSets.forEach(set => {
+        if (set._id.toHexString() !== newSet._id.toHexString()) {
+          set.isCurrent = false;
+        }
+      });
+  
+      newSetCopy = {
+        _id: newSet._id,
+        name: newSet.name,
+        videoIDs: [...newSet.videoIDs],
+      };
     });
+  
+    // React state updates must happen AFTER Realm write
+    const updatedDropdown = [
+      {
+        label: '+ Create New',
+        value: 'create_new',
+        id: 'create_new',
+      },
+      ...realm.objects('VideoSet').map(set => ({
+        label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+          set.earliestVideoDateTime.toLocaleString().split(',')[0]
+        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
+        value: set._id.toString(),
+        id: set._id,
+      })),
+    ];
+  
+    setLocalDropdown(updatedDropdown);
+    setVideoSetValue(newSetCopy._id.toString());
+    handleNewSet(newSet);
+    onVideoSetChange(newSetCopy._id.toString());
   };
+  
 
   const clearVideoSet = () => {
     setVideoSetVideoIDs([]);
@@ -243,6 +242,12 @@ const VideoSetDropdown = ({
             videoSets.find(set => set._id.toString() === item.value),
           );
           console.log('Current Video Set:', currentVideoSet);
+          //console log if videoset isCurrent == true
+          console.log(
+            'Current Video Set isCurrent:', currentVideoSet?.isCurrent,
+          );
+
+
           setVideoSetValue(item.value);
           handleChange(item.value, videoSets);
           onVideoSetChange(item.value);
