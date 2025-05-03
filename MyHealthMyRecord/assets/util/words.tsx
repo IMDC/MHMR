@@ -1162,30 +1162,7 @@ export const stopWords = [
   'zero',
   'zi',
   'zz',
-<<<<<<< Updated upstream
-  'gotta'
-  
-=======
-  'yeah',
-  'dont',
-  'didnt',
-  'havent',
   'gotta',
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'until',
-  'today',
-  'lunch',
-  'supper',
-  'breakfast',
-  'dinner',
-  'grocery'
->>>>>>> Stashed changes
 ];
 
 export const medWords = [
@@ -1258,5 +1235,4 @@ export const medWords = [
   'cramps',
   'cramped',
   'cramping',
-
 ];
