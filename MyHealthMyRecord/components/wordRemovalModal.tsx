@@ -1,10 +1,17 @@
-import React, { useCallback } from 'react';
-import { Modal, View, Text, FlatList, StyleSheet, Dimensions } from 'react-native';
-import { Button, CheckBox } from '@rneui/themed';
+import React, {useCallback} from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import {Button, CheckBox} from '@rneui/themed';
 import * as Styles from '../assets/util/styles';
-import { useWordList } from '../components/wordListProvider';
+import {useWordList} from '../components/wordListProvider';
 
-const MemoizedCheckBox = React.memo(({ title, checked, onPress }) => (
+const MemoizedCheckBox = React.memo(({title, checked, onPress}) => (
   <CheckBox
     title={title}
     checked={checked}
@@ -14,14 +21,15 @@ const MemoizedCheckBox = React.memo(({ title, checked, onPress }) => (
   />
 ));
 
-const WordRemovalModal = ({ setEditModalVisible, filteredWords }) => {
-  const { selectedWords, toggleWordSelection, persistSelectedWords } = useWordList();
+const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
+  const {selectedWords, toggleWordSelection, persistSelectedWords} =
+    useWordList();
 
   const handleToggleWordSelection = useCallback(
-    (word) => {
+    word => {
       toggleWordSelection(word);
     },
-    [toggleWordSelection]
+    [toggleWordSelection],
   );
 
   const handleClose = () => {
@@ -34,21 +42,23 @@ const WordRemovalModal = ({ setEditModalVisible, filteredWords }) => {
       animationType="slide"
       transparent={true}
       visible={true}
-      onRequestClose={() => setEditModalVisible(false)}
-    >
+      onRequestClose={() => setEditModalVisible(false)}>
       <View style={styles.modalView}>
-        <Text style={styles.modalText}>Select words to remove from visualization</Text>
+        <Text style={styles.modalText}>
+          Select words to remove from visualization
+        </Text>
         <FlatList
           data={filteredWords}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <MemoizedCheckBox
               title={item.text}
               checked={selectedWords.has(item.text)}
               onPress={() => handleToggleWordSelection(item.text)}
             />
           )}
-          keyExtractor={(item) => item.text}
+          keyExtractor={item => item.text}
           extraData={selectedWords}
+          initialNumToRender={12}
           numColumns={3}
           contentContainerStyle={styles.flatListContent}
         />
@@ -74,7 +84,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
