@@ -281,20 +281,16 @@ const DataAnalysis = () => {
             Select a word to view in line graph:
           </Text>
           <Dropdown
-            data={
-              Array.isArray(barData?.data)
-                ? barData.data
-                    .filter(
-                      item =>
-                        item.text && item.text.toLowerCase() !== 'hesitation',
-                    )
-                    .sort((a, b) => a.text.localeCompare(b.text))
-                    .map(item => ({
-                      label: item.text,
-                      value: item.text,
-                    }))
-                : []
-            }
+            data={wordList
+              .filter(
+                item => item.text && item.text.toLowerCase() !== 'hesitation',
+              )
+              .sort((a, b) => a.text.localeCompare(b.text))
+              .map(item => ({
+                label: item.text,
+                value: item.text,
+              }))}
+            value={selectedWord}
             maxHeight={400}
             style={{
               height: 50,
