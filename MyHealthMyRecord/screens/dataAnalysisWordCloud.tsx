@@ -80,11 +80,14 @@ const DataAnalysisWordCloud = () => {
   useEffect(() => {
     if (!editModalVisible) {
       const cleaned = (wordList || [])
-        .filter(word => typeof word.text === 'string' && typeof word.value === 'number')
-        .filter(word => !selectedWords.has(word.text));
-
-      setFilteredWordList(cleaned);
-      setUpdatedData(validateData(cleaned));
+      .filter(word => typeof word.text === 'string' && typeof word.value === 'number')
+      .filter(word => !selectedWords.has(word.text))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 50); 
+    
+    setFilteredWordList(cleaned);
+    setUpdatedData(cleaned);
+    
     }
   }, [editModalVisible, wordList, selectedWords]);
 
@@ -228,8 +231,11 @@ const DataAnalysisWordCloud = () => {
         </Text>
       )}
       {editModalVisible && (
-        <WordRemovalModal setEditModalVisible={setEditModalVisible} />
-      )}
+  <WordRemovalModal
+    setEditModalVisible={setEditModalVisible}
+    filteredWords={wordList}
+  />
+)}
     </SafeAreaView>
   );
 };

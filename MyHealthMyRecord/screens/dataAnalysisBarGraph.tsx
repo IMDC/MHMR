@@ -48,17 +48,6 @@ const DataAnalysisBarGraph = () => {
   const scrollRef = useRef<ScrollView>(null);
   const horizontalScrollRef = useRef<ScrollView>(null);
 
-  const calculateBarHeight = () => {
-    const baseHeight = 600;
-    const wordCount = filteredBarData.length;
-
-    if (wordCount > 50) {
-      return Math.min(baseHeight * 1.5, 800); // Cap at 800 for very large datasets
-    }
-
-    return baseHeight;
-  };
-
   // array of length of max value in data (first index value) for yAxis
   const yTest = Array.from(
     {
@@ -112,40 +101,31 @@ const DataAnalysisBarGraph = () => {
   }, [currentVideoSet]);
 
   useEffect(() => {
+    if (!editModalVisible) {
+      updateFilteredBarData();
+    }
+  }, [barData, selectedWords, editModalVisible]);
+
+  const updateFilteredBarData = () => {
     const cleaned = barData.filter(item => !selectedWords.has(item.text));
     setFilteredBarData(chunkData(cleaned));
-  }, [barData, selectedWords, editModalVisible]);
+  };
 
   const chunkData = (data, max = 50) =>
     data.length > max
       ? [...data].sort((a, b) => b.value - a.value).slice(0, max)
       : data;
 
-      const handleWordSelection = (label: string) => {
-        const parsed = currentVideoSet.frequencyData
-          .filter(item => typeof item === 'string') // filter out non-strings
-          .map(item => JSON.parse(item)); // safely parse
-        const result = setLineGraphData(parsed, label);
-        navigation.navigate('Line Graph', {
-          word: label,
-          data: result,
-        });
-      };
-      
-
-  const Labels = ({x, y, bandwidth}) =>
-    filteredBarData.map((item, index) => (
-      <Text
-        key={index}
-        x={x(index) + bandwidth / 2}
-        y={y(item.value) - 10}
-        fontSize={14}
-        fill="black"
-        alignmentBaseline="middle"
-        textAnchor="middle">
-        {item.value}
-      </Text>
-    ));
+  const handleWordSelection = (label: string) => {
+    const parsed = currentVideoSet.frequencyData
+      .filter(item => typeof item === 'string') // filter out non-strings
+      .map(item => JSON.parse(item)); // safely parse
+    const result = setLineGraphData(parsed, label);
+    navigation.navigate('Line Graph', {
+      word: label,
+      data: result,
+    });
+  };
 
   const maxValue =
     filteredBarData.length > 0
@@ -168,12 +148,6 @@ const DataAnalysisBarGraph = () => {
     setModalVisible(true);
   };
 
-  const applyWordSelection = () => {
-    const filtered = barData.filter(item => !selectedWords.has(item.text));
-    setFilteredBarData(filtered);
-    updateWordList(filtered);
-    setEditModalVisible(false);
-  };
   if (filteredBarData.length === 0) {
     return (
       <SafeAreaView
@@ -425,7 +399,10 @@ const DataAnalysisBarGraph = () => {
         </Modal>
 
         {editModalVisible && (
-          <WordRemovalModal setEditModalVisible={setEditModalVisible} />
+          <WordRemovalModal
+            setEditModalVisible={setEditModalVisible}
+            filteredWords={wordList}
+          />
         )}
       </ScrollView>
     </SafeAreaView>

@@ -1,66 +1,80 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRealm } from '../models/VideoData';
+import { stopWords } from '../assets/util/words';
 
 const WordListContext = createContext();
 
 export const WordListProvider = ({ children }) => {
-  const [wordList, setWordList] = useState([]); // Shared word list
-  const [selectedWords, setSelectedWords] = useState(new Set()); // Selected words for removal
+  const [wordList, setWordList] = useState([]);
+  const [selectedWords, setSelectedWords] = useState(new Set());
   const realm = useRealm();
 
-  // Update the word list
-  const updateWordList = (newWordList) => {
-    // Filter out words with value <= 2
-    const filteredWordList = newWordList.filter((word) => word.value > 2);
-    setWordList(filteredWordList);
+  const updateWordListFromFrequencyData = () => {
+    const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
+    if (!videoSet || !videoSet.frequencyData) return;
 
-    // Persist changes in Realm
-    realm.write(() => {
-      const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0]; // Replace 'isCurrent' with your actual property
-      if (videoSet) {
-        videoSet.wordList = filteredWordList; // Save the updated word list
+    try {
+      const parsedWords = videoSet.frequencyData
+        .map(entry => {
+          const parsed = JSON.parse(entry);
+          return Object.entries(parsed.map).map(([word, count]) => ({
+            text: word,
+            value: count,
+          }));
+        })
+        .flat();
+
+      const mergedMap = new Map();
+      for (const item of parsedWords) {
+        if (mergedMap.has(item.text)) {
+          mergedMap.set(item.text, mergedMap.get(item.text) + item.value);
+        } else {
+          mergedMap.set(item.text, item.value);
+        }
       }
+
+      const cleaned = Array.from(mergedMap.entries())
+        .map(([text, value]) => ({ text, value }))
+        .filter(
+          word =>
+            typeof word.text === 'string' &&
+            typeof word.value === 'number' &&
+            word.value > 2 &&
+            !stopWords.includes(word.text.toLowerCase()) &&
+            word.text.toLowerCase() !== 'hesitation'
+        );
+
+      setWordList(cleaned);
+    } catch (err) {
+      console.error('Failed to parse word frequency data:', err);
+    }
+  };
+
+  const toggleWordSelection = word => {
+    setSelectedWords(prev => {
+      const next = new Set(prev);
+      next.has(word) ? next.delete(word) : next.add(word);
+      return next;
     });
   };
 
-  // Toggle selection for a word (only updates state, does not write to Realm)
-  const toggleWordSelection = (word) => {
-    setSelectedWords((prev) => {
-      const updatedSelection = new Set(prev);
-      if (updatedSelection.has(word)) {
-        updatedSelection.delete(word);
-      } else {
-        updatedSelection.add(word);
-      }
-      return updatedSelection;
-    });
-  };
-
-  // Persist selected words to Realm
   const persistSelectedWords = () => {
     realm.write(() => {
       const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
       if (videoSet) {
-        videoSet.selectedWords = Array.from(selectedWords); // Save the updated selected words
+        videoSet.selectedWords = Array.from(selectedWords);
       }
     });
   };
 
-  // Reset selected words (e.g., when switching video sets)
-  const resetSelectedWords = () => {
-    setSelectedWords(new Set());
-  };
+  const resetSelectedWords = () => setSelectedWords(new Set());
 
   useEffect(() => {
-    // Load initial data from Realm on mount
+    updateWordListFromFrequencyData();
+
     const videoSet = realm.objects('VideoSet').filtered('isCurrent == true')[0];
-    if (videoSet) {
-      // Filter out words with value <= 2
-      const filteredWordList = (videoSet.wordList || []).filter(
-        (word) => word.value > 2
-      );
-      setWordList(filteredWordList);
-      setSelectedWords(new Set(videoSet.selectedWords || []));
+    if (videoSet?.selectedWords) {
+      setSelectedWords(new Set(videoSet.selectedWords));
     }
   }, [realm]);
 
@@ -69,7 +83,7 @@ export const WordListProvider = ({ children }) => {
       value={{
         wordList,
         selectedWords,
-        updateWordList,
+        updateWordList: updateWordListFromFrequencyData,
         toggleWordSelection,
         persistSelectedWords,
         resetSelectedWords,
@@ -80,6 +94,4 @@ export const WordListProvider = ({ children }) => {
   );
 };
 
-export const useWordList = () => {
-  return useContext(WordListContext);
-};
+export const useWordList = () => useContext(WordListContext);
