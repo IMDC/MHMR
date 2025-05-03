@@ -51,6 +51,12 @@ const DataAnalysisBarGraph = () => {
   const calculateBarHeight = () => {
     const baseHeight = 600;
     const wordCount = filteredBarData.length;
+
+    if (wordCount > 50) {
+      return Math.min(baseHeight * 1.5, 800); // Cap at 800 for very large datasets
+    }
+
+    return baseHeight;
   };
 
   // array of length of max value in data (first index value) for yAxis
@@ -64,44 +70,45 @@ const DataAnalysisBarGraph = () => {
     (_, i) => i * 10,
   );
 
-  //useeffect to check sentiment data
-  useEffect(() => {
-    if (
-      !sentimentData ||
-      !Array.isArray(sentimentData) ||
-      sentimentData.length === 0
-    ) {
-      console.log('No sentiment data found in currentVideoSet');
-      return;
-    }
-    console.log('Sentiment data:', sentimentData);
-  }, [sentimentData]);
-
   useEffect(() => {
     if (!currentVideoSet?.frequencyData) {
       console.log('No frequencyData found in currentVideoSet');
       return;
     }
 
-    // console.log('Raw frequencyData:', currentVideoSet.frequencyData);
+    let parsed = [];
+    try {
+      parsed = currentVideoSet.frequencyData
+        .map(entry => {
+          const parsedEntry = JSON.parse(entry);
+          const wordEntries = Object.entries(parsedEntry.map);
+          return wordEntries.map(([word, count]) => ({
+            text: word,
+            value: count,
+          }));
+        })
+        .flat();
+    } catch (err) {
+      console.error('Error parsing frequency data:', err);
+      return;
+    }
 
-    // console.log('Current video set:', currentVideoSet);
+    // Merge duplicates
+    const mergedMap = new Map();
+    for (const item of parsed) {
+      if (mergedMap.has(item.text)) {
+        mergedMap.set(item.text, mergedMap.get(item.text) + item.value);
+      } else {
+        mergedMap.set(item.text, item.value);
+      }
+    }
 
-    const parsed = currentVideoSet.frequencyData.map(entry => {
-      const [word, count] = entry.split(':');
-      return {text: word, value: parseInt(count)};
-    });
+    const cleaned = Array.from(mergedMap.entries())
+      .map(([text, value]) => ({text, value}))
+      .filter(item => item.text && item.text.toLowerCase() !== 'hesitation');
 
-    // console.log('Parsed frequency entries:', parsed);
-
-    const clean = parsed.filter(
-      item => item.text && item.text.toLowerCase() !== 'hesitation',
-    );
-
-    // console.log('Filtered (no hesitation) entries:', clean);
-
-    setBarData(clean);
-    updateWordList(clean);
+    setBarData(cleaned);
+    updateWordList(cleaned);
   }, [currentVideoSet]);
 
   useEffect(() => {
@@ -114,13 +121,17 @@ const DataAnalysisBarGraph = () => {
       ? [...data].sort((a, b) => b.value - a.value).slice(0, max)
       : data;
 
-  const handleWordSelection = (label: string) => {
-    const result = setLineGraphData(currentVideoSet.frequencyData, label);
-    navigation.navigate('Line Graph', {
-      word: label,
-      data: result,
-    });
-  };
+      const handleWordSelection = (label: string) => {
+        const parsed = currentVideoSet.frequencyData
+          .filter(item => typeof item === 'string') // filter out non-strings
+          .map(item => JSON.parse(item)); // safely parse
+        const result = setLineGraphData(parsed, label);
+        navigation.navigate('Line Graph', {
+          word: label,
+          data: result,
+        });
+      };
+      
 
   const Labels = ({x, y, bandwidth}) =>
     filteredBarData.map((item, index) => (
@@ -187,119 +198,119 @@ const DataAnalysisBarGraph = () => {
           }}>
           {currentVideoSet?.name} - Word Frequency
         </Text>
-
-        <ScrollView horizontal ref={horizontalScrollRef}>
-          <View style={{width: 50, justifyContent: 'center'}}>
-            <Text
-              style={{
-                transform: [{rotate: '270deg'}],
-                textAlign: 'center',
-                fontSize: 18,
-                color: 'black',
-                width: 60,
-              }}>
-              Count
-            </Text>
-          </View>
-          <View style={{flexDirection: 'column', flex: 1}}>
-            <View style={{flexDirection: 'row', flex: 1}}>
-              <YAxis
-                data={yTest}
-                yAccessor={({index}) => index}
-                contentInset={{top: 10, bottom: 10}}
-                spacing={0.2}
-                formatLabel={value => Math.round(value)} // Ensure whole numbers
-                numberOfTicks={Math.min(6, maxValue)} // maxValue already rounded up
-                min={0}
-                max={maxValue}
-                style={{height: calculateBarHeight()}}
-                svg={{fontSize: 16}}
-              />
-              <BarChart
+        <View style={{height: Dimensions.get('window').height * 0.75}}>
+          <ScrollView horizontal ref={horizontalScrollRef}>
+            <View style={{width: 50, justifyContent: 'center'}}>
+              <Text
                 style={{
-                  height: calculateBarHeight(),
+                  transform: [{rotate: '270deg'}],
+                  textAlign: 'center',
+                  fontSize: 18,
+                  color: 'black',
+                  width: 60,
+                }}>
+                Count
+              </Text>
+            </View>
+            <View style={{flexDirection: 'column', flex: 1}}>
+              <View style={{flexDirection: 'row', flex: 1}}>
+                <YAxis
+                  data={yTest}
+                  yAccessor={({index}) => index}
+                  contentInset={{top: 10, bottom: 10}}
+                  spacing={0.2}
+                  formatLabel={value => Math.round(value)} // Ensure whole numbers
+                  numberOfTicks={Math.min(6, maxValue)} // maxValue already rounded up
+                  min={0}
+                  max={maxValue}
+                  // style={{height: calculateBarHeight()}}
+                  svg={{fontSize: 16}}
+                />
+                <BarChart
+                  style={{
+                    // height: calculateBarHeight(),
+                    width: chartWidth,
+                  }}
+                  data={filteredBarData}
+                  yAccessor={({item}) => item.value}
+                  svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
+                  contentInset={{top: 10, bottom: 10}}
+                  spacing={0.2}
+                  gridMin={0}
+                  gridMax={maxValue}>
+                  <Grid direction={Grid.Direction.HORIZONTAL} />
+                </BarChart>
+              </View>
+              <XAxis
+                style={{
+                  height: 100,
+                  marginTop: 0,
                   width: chartWidth,
                 }}
                 data={filteredBarData}
-                yAccessor={({item}) => item.value}
-                svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
-                contentInset={{top: 10, bottom: 10}}
-                spacing={0.2}
-                gridMin={0}
-                gridMax={maxValue}>
-                <Grid direction={Grid.Direction.HORIZONTAL} />
-              </BarChart>
-            </View>
-            <XAxis
-              style={{
-                height: 100,
-                marginTop: 0,
-                width: chartWidth,
-              }}
-              data={filteredBarData}
-              scale={scale.scaleBand}
-              svg={{
-                fontSize: 0,
-                fill: 'transparent',
-              }}
-              formatLabel={() => ''}
-            />
-            <View
-              style={{
-                height: 100,
-                width: chartWidth,
-                flexDirection: 'row',
-                position: 'absolute',
-                bottom: 0,
-              }}>
-              {filteredBarData.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleWordSelection(item.text)}
-                  style={{
-                    width: barWidth,
-                    height: 100,
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                  }}>
-                  <Text
+                scale={scale.scaleBand}
+                svg={{
+                  fontSize: 0,
+                  fill: 'transparent',
+                }}
+                formatLabel={() => ''}
+              />
+              <View
+                style={{
+                  height: 100,
+                  width: chartWidth,
+                  flexDirection: 'row',
+                  position: 'absolute',
+                  bottom: 0,
+                }}>
+                {filteredBarData.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleWordSelection(item.text)}
                     style={{
-                      color: 'blue',
-                      textDecorationLine: 'underline',
-                      fontSize: 14,
-                      transform: [{rotate: '-45deg'}],
-                      width: barWidth + 20, // give extra padding for rotated label
-                      textAlign: 'center',
-                      marginTop: 10,
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail">
-                    {item.text}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                      width: barWidth,
+                      height: 100,
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        color: 'blue',
+                        textDecorationLine: 'underline',
+                        fontSize: 14,
+                        transform: [{rotate: '-45deg'}],
+                        width: barWidth + 20, // give extra padding for rotated label
+                        textAlign: 'center',
+                        marginTop: 10,
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {item.text}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
+          </ScrollView>
+          <Text
+            style={{
+              textAlign: 'center',
+              fontSize: 20,
+              color: 'black',
+              marginTop: -50,
+            }}>
+            Word
+          </Text>
+          <View style={{alignItems: 'center', marginTop: 20}}>
+            <Button
+              title="Remove Words"
+              onPress={() => setEditModalVisible(true)}
+              color={Styles.MHMRBlue}
+              radius={50}
+              containerStyle={{width: 200}}
+            />
           </View>
-        </ScrollView>
-        <Text
-          style={{
-            textAlign: 'center',
-            fontSize: 20,
-            color: 'black',
-            marginTop: -50,
-          }}>
-          Word
-        </Text>
-        <View style={{alignItems: 'center', marginTop: 20}}>
-          <Button
-            title="Remove Words"
-            onPress={() => setEditModalVisible(true)}
-            color={Styles.MHMRBlue}
-            radius={50}
-            containerStyle={{width: 200}}
-          />
         </View>
-
         <Text
           style={{
             padding: 20,
@@ -331,12 +342,12 @@ const DataAnalysisBarGraph = () => {
             min={0}
             max={Math.max(...sentimentData.map(d => d.value))}
             numberOfTicks={5}
-            style={{height: 400}}
+            style={{height: Dimensions.get('window').height * 0.3}}
             svg={{fontSize: 16}}
           />
           <BarChart
             style={{
-              height: Dimensions.get('window').height * 0.6,
+              height: Dimensions.get('window').height * 0.3,
               width: Dimensions.get('window').width - 90,
             }}
             data={sentimentData.map((item, index) => ({

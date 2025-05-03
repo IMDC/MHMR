@@ -1,10 +1,11 @@
-function accessFreqMaps(freqMaps: any) {
-  let temp = freqMaps;
-  let result = [];
-  for (let i = 0; i < temp.length; i++) {
-    result.push(temp[i].map);
-  }
-  return result;
+function accessFreqMaps(freqMaps: any[]) {
+  return freqMaps
+    .filter(item => item && typeof item.map === 'object' && item.map !== null)
+    .map(item => ({
+      map: new Map(Object.entries(item.map)), // convert plain object to Map
+      datetime: item.datetime,
+      videoID: item.videoID,
+    }));
 }
 
 function getWeekStartAndEnd(date: Date) {
@@ -34,7 +35,9 @@ let freqWeekTemplate = Array.from({length: 7}, (_, i) => ({
 
 export function useSetLineGraphData() {
   const setLineGraphData = (freqMaps: any, word: string) => {
-    let maps = accessFreqMaps(freqMaps);
+    let maps = accessFreqMaps(freqMaps); // convert maps to proper Map objects
+
+    console.log('Parsed frequency maps (as Map objects):', maps);
 
     let trackedDatesForHours = new Map();
     let trackedDatesForWeeks = new Map();
@@ -49,7 +52,7 @@ export function useSetLineGraphData() {
     let resultByRange = [];
 
     // Dynamically determine the earliest and latest dates from freqMaps
-    const allDates = freqMaps.map(item => new Date(item.datetime));
+    const allDates = maps.map(item => new Date(item.datetime));
     const earliestDate = new Date(
       Math.min(...allDates.map(date => date.getTime())),
     );
@@ -68,14 +71,14 @@ export function useSetLineGraphData() {
       videoIDs: [],
     };
 
-    for (let i = 0; i < freqMaps.length; i++) {
-      let saveDate = new Date(freqMaps[i].datetime);
+    for (let i = 0; i < maps.length; i++) {
+      let saveDate = new Date(maps[i].datetime);
       let dateString = saveDate.toDateString(); // "Mon Apr 29 2024"
       let {start: weekStart, end: weekEnd} = getWeekStartAndEnd(saveDate);
       let hour = saveDate.getHours();
       let weekLabel = `${weekStart} - ${weekEnd}`;
 
-      if (freqMaps[i].map.has(word)) {
+      if (maps[i].map.has(word)) {
         // Process DAILY Data
         if (!trackedDatesForHours.has(dateString)) {
           trackedDatesForHours.set(dateString, resultsDatesForHours.length);
@@ -92,8 +95,8 @@ export function useSetLineGraphData() {
           });
         }
         const hourIndex = trackedDatesForHours.get(dateString);
-        resultByHour[hourIndex][hour].value += freqMaps[i].map.get(word);
-        resultByHour[hourIndex][hour].videoIDs.push(freqMaps[i].videoID);
+        resultByHour[hourIndex][hour].value += maps[i].map.get(word);
+        resultByHour[hourIndex][hour].videoIDs.push(maps[i].videoID);
 
         // Process WEEKLY Data
         if (!trackedDatesForWeeks.has(weekLabel)) {
@@ -112,8 +115,8 @@ export function useSetLineGraphData() {
         }
         const weekIndex = trackedDatesForWeeks.get(weekLabel);
         const dayIndex = saveDate.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-        resultByWeek[weekIndex][dayIndex].value += freqMaps[i].map.get(word);
-        resultByWeek[weekIndex][dayIndex].videoIDs.push(freqMaps[i].videoID);
+        resultByWeek[weekIndex][dayIndex].value += maps[i].map.get(word);
+        resultByWeek[weekIndex][dayIndex].videoIDs.push(maps[i].videoID);
 
         // Process RANGE Data
         if (saveDate >= earliestDate && saveDate <= latestDate) {
@@ -138,46 +141,57 @@ export function useSetLineGraphData() {
           }
 
           // Update the range entry
-          rangeEntry.value += freqMaps[i].map.get(word);
-          rangeEntry.videoIDs.push(freqMaps[i].videoID);
+          rangeEntry.value += maps[i].map.get(word);
+          rangeEntry.videoIDs.push(maps[i].videoID);
         }
       }
     }
 
     // Reverse and update resultsDatesForHours
+    // Sort daily by actual date
     resultsDatesForHours = (resultsDatesForHours || [])
-      .reverse()
+      .sort((a, b) => new Date(a.label).getTime() - new Date(b.label).getTime())
       .map((item, index) => ({
         ...item,
-        value: index, // Update the value to reflect the new order
-        videoIDs: Array.from(new Set(item.videoIDs || [])).reverse(), // Deduplicate and reverse the videoIDs array
+        value: index,
+        videoIDs: Array.from(new Set(item.videoIDs || [])),
       }));
 
-    // Reverse and update resultsDatesForWeeks
+    // Sort weekly by week start date
     resultsDatesForWeeks = (resultsDatesForWeeks || [])
-      .reverse()
+      .sort((a, b) => {
+        const [startA] = a.label.split(' - ');
+        const [startB] = b.label.split(' - ');
+        return new Date(startA).getTime() - new Date(startB).getTime();
+      })
       .map((item, index) => ({
         ...item,
-        value: index, // Update the value to reflect the new order
-        videoIDs: Array.from(new Set(item.videoIDs || [])).reverse(), // Deduplicate and reverse the videoIDs array
+        value: index,
+        videoIDs: Array.from(new Set(item.videoIDs || [])),
       }));
 
-    // Reverse and update resultsDatesForRange
+    // Sort range by MM-DD interpreted as real date
     resultsDatesForRange = (resultByRange || [])
-      .reverse()
+      .sort((a, b) => {
+        const [monthA, dayA] = a.label.split('-').map(Number);
+        const [monthB, dayB] = b.label.split('-').map(Number);
+        return (
+          new Date(2000, monthA - 1, dayA) - new Date(2000, monthB - 1, dayB)
+        );
+      })
       .map((entry, index) => ({
-        label: entry.label, // Month and day (e.g., "2-25")
-        value: entry.value, // Use the aggregated value
-        videoIDs: Array.from(new Set(entry.videoIDs || [])).reverse(), // Deduplicate and reverse the videoIDs array
+        label: entry.label,
+        value: index,
+        videoIDs: Array.from(new Set(entry.videoIDs || [])),
       }));
 
     return {
       datesForHours: resultsDatesForHours,
-      byHour: resultByHour.reverse(), 
+      byHour: resultByHour,
       datesForWeeks: resultsDatesForWeeks,
-      byWeek: resultByWeek.reverse(), 
+      byWeek: resultByWeek,
       datesForRange: resultsDatesForRange,
-      byRange: resultByRange.reverse(), 
+      byRange: resultByRange,
     };
   };
 

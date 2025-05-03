@@ -33,6 +33,7 @@ const DataAnalysis = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const isFocused = useIsFocused();
   const setLineGraphData = useSetLineGraphData();
+  const [lineGraphData, setLineGraphDataState] = useState(null);
   const [wordLabel, setWordLabel] = useState('');
   const [selectedWord, setSelectedWord] = useState('');
   const [barData, setBarData] = useState<any>([]);
@@ -64,8 +65,11 @@ const DataAnalysis = () => {
   const loadFrequencyData = () => {
     if (!currentVideoSet?.frequencyData) return;
 
-    const rawEntries = currentVideoSet.frequencyData as string[];
-    const parsed = rawEntries
+    const colonEntries = currentVideoSet.frequencyData.filter(
+      entry => typeof entry === 'string' && entry.includes(':'),
+    );
+
+    const parsed = colonEntries
       .map(entry => {
         const [word, count] = entry.split(':');
         return {text: word, value: parseInt(count)};
@@ -73,8 +77,35 @@ const DataAnalysis = () => {
       .filter(item => item.text && item.text.toLowerCase() !== 'hesitation');
 
     setBarData({data: parsed});
-    setNoStopWords(parsed.map((item, idx) => ({label: item.text, value: idx})));
+
+    const sortedWords = parsed
+      .map(item => item.text)
+      .sort((a, b) => a.localeCompare(b));
+
+    const dropdownItems = sortedWords.map(word => ({
+      label: word,
+      value: word,
+    }));
+
+    setNoStopWords(dropdownItems);
     updateWordList(parsed);
+
+    // For initial preview data
+    const jsonEntries = currentVideoSet.frequencyData
+      .filter(item => typeof item === 'string' && item.includes('{'))
+      .map(item => {
+        try {
+          return JSON.parse(item);
+        } catch {
+          return null;
+        }
+      })
+      .filter(entry => entry?.map && typeof entry.map === 'object');
+
+    if (parsed.length > 0) {
+      const result = setLineGraphData(jsonEntries, parsed[0].text);
+      setLineGraphDataState(result);
+    }
   };
 
   const processSentimentData = () => {
@@ -250,7 +281,20 @@ const DataAnalysis = () => {
             Select a word to view in line graph:
           </Text>
           <Dropdown
-            data={noStopWords}
+            data={
+              Array.isArray(barData?.data)
+                ? barData.data
+                    .filter(
+                      item =>
+                        item.text && item.text.toLowerCase() !== 'hesitation',
+                    )
+                    .sort((a, b) => a.text.localeCompare(b.text))
+                    .map(item => ({
+                      label: item.text,
+                      value: item.text,
+                    }))
+                : []
+            }
             maxHeight={400}
             style={{
               height: 50,
@@ -263,11 +307,12 @@ const DataAnalysis = () => {
             labelField="label"
             valueField="value"
             onChange={item => {
+              setSelectedWord(item.value);
               setViewValue(item.value);
-              setSelectedWord(item.label);
               setLineGraphNavigationVisible(true);
             }}
           />
+
           <View style={{flexDirection: 'row'}}>
             <Button
               containerStyle={{marginTop: 20}}
@@ -283,10 +328,16 @@ const DataAnalysis = () => {
                 color={Styles.MHMRBlue}
                 radius={50}
                 onPress={() => {
-                  const result = setLineGraphData(
-                    currentVideoSet.frequencyData,
-                    selectedWord,
-                  );
+                  const fullMapData = currentVideoSet.frequencyData
+                    .map(item => {
+                      if (typeof item === 'string') return JSON.parse(item);
+                      return item;
+                    })
+                    .filter(
+                      entry => entry?.map && typeof entry.map === 'object',
+                    );
+
+                  const result = setLineGraphData(fullMapData, selectedWord);
                   setModalVisible(false);
                   navigation.navigate('Line Graph', {
                     word: selectedWord,

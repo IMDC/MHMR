@@ -111,17 +111,10 @@ const DataAnalysisLineGraph = () => {
       setFreqWeekArray(lineData.byWeek);
 
       // Sort range options chronologically
-      const sortedDatesForRange = [...lineData.datesForRange].sort((a, b) => {
-        // Parse the MM-DD format into a valid date object
-        const [monthA, dayA] = a.label.split('-').map(Number);
-        const [monthB, dayB] = b.label.split('-').map(Number);
-
-        // Create date objects for comparison (use a fixed year, e.g., 2000)
-        const dateA = new Date(2000, monthA - 1, dayA); // Month is 0-indexed
-        const dateB = new Date(2000, monthB - 1, dayB);
-
-        return dateA - dateB; // Sort in ascending order
-      });
+      const sortedDatesForRange = [...lineData.datesForRange].sort((a, b) =>
+        a.value - b.value,
+      );
+      
 
       const sortedFreqSetRangeArray = [...lineData.byRange].sort((a, b) => {
         const [monthA, dayA] = a.label.split('-').map(Number);
