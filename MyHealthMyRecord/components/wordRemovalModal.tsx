@@ -1,34 +1,37 @@
-import React, { useCallback } from 'react';
-import { Modal, View, Text, FlatList, StyleSheet, Dimensions } from 'react-native';
-import { Button, CheckBox } from '@rneui/themed';
+import React, {useCallback} from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import {Button, CheckBox} from '@rneui/themed';
 import * as Styles from '../assets/util/styles';
-import { useWordList } from '../components/wordListProvider';
+import {useWordList} from '../components/wordListProvider';
 
-// Memoized CheckBox component to prevent unnecessary re-renders
-const MemoizedCheckBox = React.memo(({ title, checked, onPress }) => {
-  return (
-    <CheckBox
-      title={title}
-      checked={checked}
-      onPress={onPress}
-      containerStyle={styles.checkboxContainer}
-      textStyle={styles.checkboxText}
-    />
-  );
-});
+const MemoizedCheckBox = React.memo(({title, checked, onPress}) => (
+  <CheckBox
+    title={title}
+    checked={checked}
+    onPress={onPress}
+    containerStyle={styles.checkboxContainer}
+    textStyle={styles.checkboxText}
+  />
+));
 
-const WordRemovalModal = ({ setEditModalVisible }) => {
-  const { wordList, selectedWords, toggleWordSelection, persistSelectedWords } = useWordList();
+const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
+  const {selectedWords, toggleWordSelection, persistSelectedWords} =
+    useWordList();
 
-  // Memoized toggle function to prevent re-creation on every render
   const handleToggleWordSelection = useCallback(
-    (word) => {
+    word => {
       toggleWordSelection(word);
     },
-    [toggleWordSelection]
+    [toggleWordSelection],
   );
 
-  // Handle "Close" button press
   const handleClose = () => {
     persistSelectedWords();
     setEditModalVisible(false);
@@ -39,21 +42,23 @@ const WordRemovalModal = ({ setEditModalVisible }) => {
       animationType="slide"
       transparent={true}
       visible={true}
-      onRequestClose={() => setEditModalVisible(false)}
-    >
+      onRequestClose={() => setEditModalVisible(false)}>
       <View style={styles.modalView}>
-        <Text style={styles.modalText}>Select words to remove from visualization</Text>
+        <Text style={styles.modalText}>
+          Select words to remove from visualization
+        </Text>
         <FlatList
-          data={wordList}
-          renderItem={({ item }) => (
+          data={filteredWords}
+          renderItem={({item}) => (
             <MemoizedCheckBox
               title={item.text}
-              checked={selectedWords.has(item.text)} // Check if the word is in the selectedWords set
-              onPress={() => handleToggleWordSelection(item.text)} // Toggle word in the provider
+              checked={selectedWords.has(item.text)}
+              onPress={() => handleToggleWordSelection(item.text)}
             />
           )}
-          keyExtractor={(item) => item.text}
-          extraData={selectedWords} // Ensure FlatList rerenders only when selectedWords changes
+          keyExtractor={item => item.text}
+          extraData={selectedWords}
+          initialNumToRender={12}
           numColumns={3}
           contentContainerStyle={styles.flatListContent}
         />
@@ -62,7 +67,7 @@ const WordRemovalModal = ({ setEditModalVisible }) => {
             title="Close"
             color={Styles.MHMRBlue}
             radius={50}
-            onPress={handleClose} // Persist changes and close the modal
+            onPress={handleClose}
             containerStyle={styles.buttonStyle}
           />
         </View>
@@ -79,14 +84,11 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    maxHeight: Dimensions.get('window').height * 0.5,
+    maxHeight: Dimensions.get('window').height * 0.6,
   },
   modalText: {
     marginBottom: 15,

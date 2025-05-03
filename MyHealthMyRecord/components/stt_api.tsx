@@ -3,7 +3,7 @@ import axios from 'axios';
 import RNFS from 'react-native-fs';
 import Config from 'react-native-config';
 import {Buffer} from 'buffer';
-import { generateVideoSummary } from './chatgpt_api';
+import {generateVideoSummary} from './chatgpt_api';
 
 // Function to obtain authorization token
 export const getAuth = async () => {
@@ -89,7 +89,7 @@ export const getTranscript = async (
 // Function to process multiple transcripts concurrently
 export const processMultipleTranscripts = async (videoFiles, realm) => {
   console.log(`Processing ${videoFiles.length} videos for transcription`);
-  
+
   const transcriptPromises = videoFiles.map(video =>
     transcribeWithWhisper(
       video.filename.replace('.mp4', '.wav'),
@@ -109,11 +109,10 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
 
     const objectId = new Realm.BSON.ObjectId(_id);
     const video = realm.objectForPrimaryKey('VideoData', objectId);
-    
+
     if (video) {
-      // Generate summary using ChatGPT
-      const summary = await generateVideoSummary(transcript);
-      
+      const summary = await generateVideoSummary(transcript); // run outside write
+
       realm.write(() => {
         video.transcript = transcript;
         video.isTranscribed = true;
@@ -121,13 +120,13 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
         video.tsOutputBullet = summary.bullet;
         video.tsOutputSentence = summary.sentence;
       });
-      
+
       console.log(`Updated video ${_id} with transcript and summaries`);
     } else {
       console.log(`No video found with ID ${_id}.`);
     }
   }
-  
+
   console.log('Completed processing all transcripts');
 };
 
@@ -139,7 +138,7 @@ export const transcribeWithWhisper = async (
   try {
     const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
     const audioFilePath = `${audioFolderPath}/${audioFileName}`;
-    
+
     // Create form data
     const formData = new FormData();
     formData.append('file', {
@@ -156,17 +155,16 @@ export const transcribeWithWhisper = async (
       formData,
       {
         headers: {
-          'Authorization': `Bearer ${Config.API_OPENAI_CHATGPT}`, // Using existing key
+          Authorization: `Bearer ${Config.API_OPENAI_CHATGPT}`, // Using existing key
           'Content-Type': 'multipart/form-data',
         },
-      }
+      },
     );
 
     const transcript = response.data.text || '';
     console.log(`Transcript for ${audioFileName}:`, transcript);
-    
+
     return {_id, transcript, confidence: 1};
-    
   } catch (error) {
     console.error('Error during transcription:', error);
     return {_id, error};
