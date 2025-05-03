@@ -8,27 +8,19 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
 import {VideoData, useRealm, useObject, useQuery} from '../models/VideoData';
 import {
-  SafeAreaView,
   View,
   Text,
-  ScrollView,
-  Dimensions,
   Modal,
   StyleSheet,
   TouchableOpacity,
   Alert,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
-import {LineChart, BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
-import Svg, * as svg from 'react-native-svg';
-import * as scale from 'd3-scale';
-import {Rect} from 'react-native-svg';
+
 import {Dropdown} from 'react-native-element-dropdown';
 //import { VideoSet } from '../models/VideoSet';
-import Realm from 'realm';
 import * as Styles from '../assets/util/styles';
 import VideoSetDropdown from '../components/videoSetDropdown';
-import {color} from '@rneui/base';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {stopWords, medWords} from '../assets/util/words';
 import {useSetLineGraphData} from '../components/lineGraphData';
@@ -40,10 +32,7 @@ const DataAnalysis = () => {
   const [lineGraphNavigationVisible, setLineGraphNavigationVisible] =
     useState(false);
   const {
-    handleChange,
-    videoSetValue,
     videoSetVideoIDs,
-    setVideoSetValue,
     currentVideos,
     currentVideoSet,
   } = useDropdownContext();
@@ -331,52 +320,6 @@ const DataAnalysis = () => {
     console.log('--------------------------wordList:', wordList);
     console.log('**************************wordList.length:', wordList.length);
   }
-
-  /* ------------------------------ LINE GRAPH FREQUENCY ------------------------------ */
-
-  //const [map, setMap] = useState<any>([]);
-  //const [trackedDates, setTrackedDates] = useState(null);
-
-  /*   function setLineGraphDataDay(freqMaps, word) {
-    let temp = accessFreqMaps();
-    
-    //let trackedDates = [];
-    //trackedDates.push(temp[0].datetime);
-
-    let trackedDates = new Map();
-    let trackedHours = new Map();
-
-    let result = temp[0];
-    let saveDate = temp[0].datetime.toString().split(' ');
-    // ex. result of above: Array ["Mon", "Apr", "29", "2024", "13:05:26", "GMT-0400", "(Eastern", "Daylight", "Time)"]
-    let date = saveDate[0] + " " + saveDate[1] + " " + saveDate[2] + " " + saveDate[3];
-    // result of above: "Mon Apr 29 2024"
-    let hour = temp[0].datetime.getHours();
-    // result of above: 13
-    trackedDates.set(date, 1);
-    trackedHours.set(hour, 1);
-
-    for (let i = 1; i < temp.length; i++) {
-      //result = combineMaps(result, temp[i]);
-
-      saveDate = temp[i].datetime.toString().split(' ');
-      date = saveDate[0] + saveDate[1] + saveDate[2] + saveDate[3];;
-      
-      if (!trackedDates.has(date)) {
-        trackedDates.set(date, 1);
-        //result = combineMaps(result, temp[i]);
-      } else {
-        trackedDates.set(date, trackedDates.get(date) + 1);
-        //result = combineMaps(result, temp[i]);
-      }
-
-
-    }
-  } */
-
-  /* ------------------------------ DROP DOWN MENU ------------------------------ */
-
-  /* ======================================================================= */
 
   function processSentimentData() {
     const sentimentCounts = {
