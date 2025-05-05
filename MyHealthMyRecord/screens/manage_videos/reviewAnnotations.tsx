@@ -15,17 +15,17 @@ import {
   LogBox,
   Image,
 } from 'react-native';
-const angry = require('../assets/images/emojis/angry.png');
-const neutral = require('../assets/images/emojis/neutral.png');
-const sad = require('../assets/images/emojis/sad.png');
-const smile = require('../assets/images/emojis/smile.png');
-const worried = require('../assets/images/emojis/worried.png');
+const angry = require('../../assets/images/emojis/angry.png');
+const neutral = require('../../assets/images/emojis/neutral.png');
+const sad = require('../../assets/images/emojis/sad.png');
+const smile = require('../../assets/images/emojis/smile.png');
+const worried = require('../../assets/images/emojis/worried.png');
 import {Icon, Button} from '@rneui/themed';
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import {useObject, useRealm} from '../models/VideoData';
+import {useObject, useRealm} from '../../models/VideoData';
 import {Chip} from 'react-native-paper';
-import MHMRVideoPlayer from '../components/mhmrVideoPlayer';
+import MHMRVideoPlayer from '../../components/mhmrVideoPlayer';
 
 const ReviewAnnotations = () => {
   async function saveChanges() {
@@ -60,7 +60,7 @@ const ReviewAnnotations = () => {
     <ScrollView>
       <View style={styles.container}>
         <Text style={styles.titleStyle}>{video.title}</Text>
-        <ScrollView horizontal={true}  style={styles.row}>
+        <ScrollView horizontal={true} style={styles.row}>
           {video.keywords.map((key: string) => {
             if (JSON.parse(key).checked) {
               return (

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {Button, Icon, Slider} from '@rneui/themed';
 import {RadioButton} from 'react-native-paper';
-import {useObject, useRealm} from '../models/VideoData';
+import {useObject, useRealm} from '../../models/VideoData';
 
 const Painscale = () => {
   const [refreshFlatlist, setRefreshFlatList] = useState(false);

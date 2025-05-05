@@ -1,0 +1,633 @@
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  Alert,
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  LogBox,
+} from 'react-native';
+import {Button, Icon} from '@rneui/themed';
+import {Dropdown} from 'react-native-element-dropdown';
+import Svg, {Circle} from 'react-native-svg';
+import {LineChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
+import * as scale from 'd3-scale';
+import * as Styles from '../../assets/util/styles';
+import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useRealm} from '../../models/VideoData';
+import {useDropdownContext} from '../../components/videoSetProvider';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+const DataAnalysisLineGraph = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const route: any = useRoute();
+  const wordLabel = route.params?.word;
+  const lineData = route.params?.data;
+  const realm = useRealm();
+  const {currentVideoSet} = useDropdownContext();
+
+  const [freqDayArray, setFreqDayArray] = useState([[]]);
+  const [freqWeekArray, setFreqWeekArray] = useState([[]]);
+  const [freqSetRangeArray, setFreqSetRangeArray] = useState([]);
+  const [dateOptionsForHours, setDateOptionsForHours] = useState([]);
+  const [dateOptionsForWeeks, setDateOptionsForWeeks] = useState([]);
+  const [dateOptionsForSetRange, setDateOptionsForSetRange] = useState<
+    {label: string; value: number}[]
+  >([]);
+  const [periodValue, setPeriodValue] = useState('1');
+  const [segementDay, setSegementDayValue] = useState('12');
+  const [segementWeek, setSegementWeekValue] = useState('1');
+  const [date, setDateValue] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [videoIDs, setVideoIDs] = useState([]);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
+    // Validate input dates
+    if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
+      throw new Error('Invalid date objects provided.');
+    }
+
+    if (startDate > endDate) {
+      return []; // Return an empty array if the start date is after the end date
+    }
+
+    const weeks: {label: string; value: number}[] = [];
+    let currentDate = new Date(startDate);
+
+    // Align to the previous Sunday for the start date
+    while (currentDate.getDay() !== 0) {
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+
+    let weekCounter = 0;
+    while (currentDate <= endDate) {
+      const weekStart = new Date(currentDate);
+      const weekEnd = new Date(currentDate);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      // Ensure the weekEnd doesn't exceed the endDate
+      if (weekEnd > endDate) {
+        weekEnd.setTime(endDate.getTime());
+      }
+
+      weeks.push({
+        label: `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`,
+        value: weekCounter,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 7);
+      weekCounter++;
+    }
+
+    return weeks;
+  };
+
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'Non-serializable values were found in the navigation state.',
+    ]);
+  });
+
+  useEffect(() => {
+    if (wordLabel == undefined) {
+      Alert.alert(
+        'No Word Selected',
+        'Please select a word from the bar graph to view the word count over time.',
+        [{text: 'OK', onPress: () => navigation.goBack()}],
+      );
+    } else {
+      setFreqDayArray(lineData.byHour);
+      setDateOptionsForHours(lineData.datesForHours);
+
+      // Use datesForWeeks directly
+      setDateOptionsForWeeks(lineData.datesForWeeks);
+      setFreqWeekArray(lineData.byWeek);
+
+      // Sort range options chronologically
+      const sortedDatesForRange = [...lineData.datesForRange].sort(
+        (a, b) => a.value - b.value,
+      );
+
+      const sortedFreqSetRangeArray = [...lineData.byRange].sort((a, b) => {
+        const [monthA, dayA] = a.label.split('-').map(Number);
+        const [monthB, dayB] = b.label.split('-').map(Number);
+
+        const dateA = new Date(2000, monthA - 1, dayA); // Month is 0-indexed
+        const dateB = new Date(2000, monthB - 1, dayB);
+
+        return dateA - dateB; // Sort in ascending order
+      });
+
+      // Log the sorted data for debugging
+      console.log(
+        'Video Set Dates - sortedDatesForRange:',
+        sortedDatesForRange,
+      );
+      console.log(
+        'Video Set Dates - sortedFreqSetRangeArray:',
+        sortedFreqSetRangeArray,
+      );
+
+      setDateOptionsForSetRange(sortedDatesForRange); // Use sorted range options
+      setFreqSetRangeArray(sortedFreqSetRangeArray); // Use sorted range data
+    }
+  }, [periodValue]);
+
+  const axesSvg = {fontSize: 20, fill: 'grey'};
+  const verticalContentInset = {top: 10, bottom: 10};
+  const xAxisHeight = 30;
+
+  const hours = [
+    '12AM',
+    '1AM',
+    '2AM',
+    '3AM',
+    '4AM',
+    '5AM',
+    '6AM',
+    '7AM',
+    '8AM',
+    '9AM',
+    '10AM',
+    '11AM',
+    '12PM',
+    '1PM',
+    '2PM',
+    '3PM',
+    '4PM',
+    '5PM',
+    '6PM',
+    '7PM',
+    '8PM',
+    '9PM',
+    '10PM',
+    '11PM',
+  ];
+
+  const weeks = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+
+  const periodOptions = [
+    {label: 'Daily', value: '1'},
+    {label: 'Weekly', value: '2'},
+    {label: 'Video set dates', value: '3'},
+  ];
+
+  const segementDayOptions = [
+    {label: '1 hour', value: '1'},
+    {label: '3 hour', value: '3'},
+    {label: '6 hour', value: '6'},
+    {label: '12 hour', value: '12'},
+  ];
+
+  const segementWeekOptions = [
+    {label: 'By Day', value: '1'},
+    {label: 'Weekday/Weekend', value: '2'},
+    {label: 'Start/Mid/End', value: '3'},
+  ];
+
+  const handlePressIn = async value => {
+    try {
+      const videoDataArray = await Promise.all(
+        value.videoIDs.map(async videoID => {
+          try {
+            const objectId = new Realm.BSON.ObjectId(videoID);
+            const videoData = realm.objectForPrimaryKey('VideoData', objectId);
+            if (videoData) {
+              return videoData;
+            } else {
+              console.error(`Video with ID ${videoID} not found`);
+              return null;
+            }
+          } catch (error) {
+            console.error(`Error retrieving video with ID ${videoID}:`, error);
+            return null;
+          }
+        }),
+      );
+      const filteredVideoDataArray = videoDataArray.filter(
+        video => video !== null,
+      );
+      setVideoIDs(filteredVideoDataArray);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Error in handlePressIn:', error);
+    }
+  };
+
+  const Dots = ({x, y}) => (
+    <>
+      {selectedData.map((value, index) => {
+        console.log(`Dot Value: ${value.value}, Scaled Y: ${y(value.value)}`);
+        return (
+          <Circle
+            key={index}
+            cx={x(index)} // Map the X position to the index
+            cy={y(value.value)} // Map the Y position to the value
+            r={8}
+            stroke={'black'}
+            fill={'white'}
+            onPressIn={() => handlePressIn(value)} // Handle press events
+          />
+        );
+      })}
+    </>
+  );
+
+  const scrollLeft = () => {
+    scrollViewRef.current?.scrollTo({x: 0, animated: true});
+  };
+
+  const scrollRight = () => {
+    scrollViewRef.current?.scrollToEnd({animated: true});
+  };
+  const selectedData =
+    periodValue === '1'
+      ? freqDayArray[date] || []
+      : periodValue === '2'
+      ? freqWeekArray[date] || []
+      : freqSetRangeArray || [];
+
+  if (selectedData.length === 0) {
+    return <Text>No data available for the selected period.</Text>;
+  }
+
+  const dataValues = selectedData.map(item => item.value);
+  let minValue = Math.min(...dataValues); // Use the smallest value in the data
+  let maxValue = Math.max(...dataValues); // Use the largest value in the data
+
+  // Add a buffer to the min and max values to prevent dots from being too close to the edges
+  const buffer = 1;
+  minValue = minValue - buffer < 0 ? 0 : minValue - buffer; // Ensure minValue doesn't go below 0
+  maxValue = maxValue;
+
+  return (
+    <ScrollView contentContainerStyle={{paddingBottom: 100}}>
+      <View style={{height: '100%'}}>
+        <View id="linegraph">
+          <View>
+            <Text
+              style={{
+                padding: 20,
+                fontSize: 20,
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Word count of "{wordLabel}" over time
+            </Text>
+            <View style={{flexDirection: 'row', flex: 1}}>
+              <View style={{width: 50, justifyContent: 'center'}}>
+                <Text
+                  style={{
+                    transform: [{rotate: '270deg'}],
+                    textAlign: 'center',
+                    fontSize: 18,
+                    color: 'black',
+                    width: 60,
+                  }}>
+                  Count
+                </Text>
+              </View>
+              <View style={{flexDirection: 'row', flex: 1}}>
+                <YAxis
+                  data={selectedData}
+                  yAccessor={({item}) => item?.value || 0}
+                  style={{marginBottom: xAxisHeight, marginRight: 5}}
+                  contentInset={{
+                    top: windowHeight * 0.6 * 0.015,
+                    bottom: windowHeight * 0.6 * 0.07,
+                  }}
+                  svg={{fontSize: 14, fill: 'black'}}
+                  min={0}
+                  max={maxValue}
+                  numberOfTicks={maxValue < 4 ? maxValue : 4}
+                  formatLabel={value => Math.round(value)}
+                />
+                <TouchableOpacity
+                  onPress={scrollLeft}
+                  style={[styles.overlayArrow, {left: 5}]}>
+                  <Icon name="keyboard-arrow-left" size={40} color="black" />
+                </TouchableOpacity>
+                <ScrollView horizontal={true} ref={scrollViewRef}>
+                  <View
+                    style={{
+                      height: windowHeight * 0.6,
+                      width: windowWidth,
+                      marginLeft: 10,
+                      marginRight: 10,
+                    }}>
+                    <LineChart
+                      style={{height: '90%', width: '100%'}}
+                      data={selectedData}
+                      yAccessor={({item}) => item.value || 0}
+                      xAccessor={({index}) => index}
+                      contentInset={{top: 10, bottom: 10}}
+                      yMin={0}
+                      yMax={maxValue}
+                      svg={{
+                        stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                        strokeWidth: 5,
+                      }}>
+                      <Grid />
+                      <Dots />
+                    </LineChart>
+
+                    <XAxis
+                      style={{
+                        marginHorizontal: -20,
+                        height: 80,
+                        marginVertical: -5,
+                      }}
+                      data={selectedData}
+                      xAccessor={({index}) => index}
+                      scale={scale.scaleLinear}
+                      formatLabel={(value, index) => {
+                        if (periodValue === '1') {
+                          return hours[index % 24];
+                        } else if (periodValue === '2') {
+                          return weeks[index % 7];
+                        } else {
+                          const totalLabels = freqSetRangeArray.length;
+                          if (totalLabels <= 5) {
+                            return freqSetRangeArray[index]?.label || '';
+                          } else {
+                            const step = Math.ceil(totalLabels / 5);
+                            return index % step === 0
+                              ? freqSetRangeArray[index]?.label || ''
+                              : '';
+                          }
+                        }
+                      }}
+                      contentInset={
+                        periodValue === '1'
+                          ? {left: 58, right: 0}
+                          : {left: 45, right: 50}
+                      }
+                      svg={{
+                        fontSize: 14,
+                        fill: 'black',
+                        rotation: periodValue === '1' ? -45 : 0,
+                        originY: periodValue === '1' ? 30 : 0,
+                        textAnchor: periodValue === '1' ? 'end' : 'middle',
+                        dy: periodValue === '1' ? 0 : 10,
+                      }}
+                    />
+                  </View>
+                </ScrollView>
+                <TouchableOpacity
+                  onPress={scrollRight}
+                  style={[styles.overlayArrow, {right: 5}]}>
+                  <Icon name="keyboard-arrow-right" size={40} color="black" />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 16,
+                color: 'black',
+                marginTop: -29,
+              }}>
+              Time / Date
+            </Text>
+            {periodValue != '3' && (
+              <View style={{height: '10%', width: '100%'}}>
+                <View style={styles.navigationContainer}>
+                  <Button
+                    disabled={date == 0}
+                    buttonStyle={styles.btnStyle}
+                    title="Previous period"
+                    color={Styles.MHMRBlue}
+                    radius={50}
+                    icon={{
+                      name: 'arrow-left',
+                      type: 'font-awesome',
+                      size: 15,
+                      color: 'white',
+                    }}
+                    onPress={() => {
+                      if (date > 0) {
+                        setDateValue(date - 1);
+                      }
+                    }}
+                  />
+
+                  <Dropdown
+                    data={
+                      periodValue == '1'
+                        ? dateOptionsForHours
+                        : periodValue == '2'
+                        ? dateOptionsForWeeks
+                        : dateOptionsForSetRange
+                    }
+                    maxHeight={300}
+                    style={styles.dropdown}
+                    placeholderStyle={{fontSize: 20}}
+                    selectedTextStyle={{fontSize: 20}}
+                    labelField="label"
+                    valueField="value"
+                    value={date}
+                    dropdownPosition="top"
+                    onChange={item => {
+                      setDateValue(item.value);
+                    }}
+                  />
+                  <Button
+                    disabled={
+                      (periodValue == '1' &&
+                        date >= dateOptionsForHours.length - 1) ||
+                      (periodValue == '2' &&
+                        date >= dateOptionsForWeeks.length - 1) ||
+                      (periodValue == '3' &&
+                        date >= dateOptionsForSetRange.length - 1)
+                    }
+                    title="Next period"
+                    buttonStyle={styles.btnStyle}
+                    color={Styles.MHMRBlue}
+                    radius={50}
+                    iconPosition="right"
+                    icon={{
+                      name: 'arrow-right',
+                      type: 'font-awesome',
+                      size: 15,
+                      color: 'white',
+                    }}
+                    onPress={() => {
+                      setDateValue(date + 1);
+                    }}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+
+        <View style={{paddingHorizontal: 20}}>
+          <Text style={[styles.filterTitle, {marginBottom: 10}]}>
+            Filter and sort
+          </Text>
+
+          <View style={styles.filterContainer}>
+            <View style={styles.dropdownGroup}>
+              <Text style={styles.dropdownLabel}>Select period:</Text>
+              <Dropdown
+                dropdownPosition="top"
+                data={periodOptions}
+                maxHeight={300}
+                style={styles.periodDropdown}
+                labelField="label"
+                valueField="value"
+                value={periodValue}
+                onChange={item => {
+                  setPeriodValue(item.value);
+                  setDateValue(0);
+                }}
+              />
+            </View>
+
+            <View style={styles.dropdownGroup}>
+              <Text style={styles.dropdownLabel}>Select segment option:</Text>
+              <Dropdown
+                dropdownPosition="top"
+                data={
+                  periodValue === '1'
+                    ? segementDayOptions
+                    : periodValue === '2'
+                    ? segementWeekOptions
+                    : []
+                }
+                style={styles.periodDropdown}
+                labelField="label"
+                valueField="value"
+                value={periodValue === '1' ? segementDay : segementWeek}
+                onChange={item => {
+                  periodValue === '1'
+                    ? setSegementDayValue(item.value)
+                    : setSegementWeekValue(item.value);
+                }}
+              />
+            </View>
+          </View>
+        </View>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>View video(s) with this data</Text>
+            {videoIDs.map((video, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  navigation.navigate('Fullscreen Video', {
+                    id: video?._id,
+                  });
+                  setModalVisible(false);
+                }}>
+                <Text style={styles.videoIDText}>{video?.title}</Text>
+              </TouchableOpacity>
+            ))}
+            <Button
+              title="Close"
+              color={Styles.MHMRBlue}
+              radius={50}
+              onPress={() => setModalVisible(false)}
+            />
+          </View>
+        </Modal>
+      </View>
+    </ScrollView>
+  );
+};
+const styles = StyleSheet.create({
+  btnStyle: {
+    width: Styles.windowWidth * 0.22,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  videoIDText: {
+    marginVertical: 10,
+    fontSize: 16,
+    color: 'blue',
+  },
+  navigationContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+  },
+  dropdown: {
+    width: '40%',
+    paddingHorizontal: 20,
+    backgroundColor: '#DBDBDB',
+    borderRadius: 22,
+  },
+  filterTitle: {
+    fontSize: 25,
+    marginLeft: '5%',
+    marginTop: 5,
+  },
+  filterContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+  },
+  dropdownLabel: {
+    fontSize: 20,
+  },
+  periodDropdown: {
+    width: '100%',
+    paddingHorizontal: 20,
+    backgroundColor: '#DBDBDB',
+    borderRadius: 22,
+  },
+  overlayArrow: {
+    position: 'absolute',
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: 30,
+    padding: 5,
+    top: windowHeight > 800 ? '40%' : '45%', // Adjust for taller screens
+  },
+});
+
+export default DataAnalysisLineGraph;

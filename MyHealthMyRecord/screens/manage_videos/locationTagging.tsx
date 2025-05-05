@@ -22,7 +22,7 @@ import {
   Input,
   Dialog,
 } from '@rneui/themed';
-import {useRealm, useObject} from '../models/VideoData';
+import {useRealm, useObject} from '../../models/VideoData';
 
 const LocationTagging = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();

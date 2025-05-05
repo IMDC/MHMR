@@ -13,18 +13,18 @@ import {
   LogBox,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-const angry = require('../assets/images/emojis/angry.png');
-const neutral = require('../assets/images/emojis/neutral.png');
-const sad = require('../assets/images/emojis/sad.png');
-const smile = require('../assets/images/emojis/smile.png');
-const worried = require('../assets/images/emojis/worried.png');
+const angry = require('../../assets/images/emojis/angry.png');
+const neutral = require('../../assets/images/emojis/neutral.png');
+const sad = require('../../assets/images/emojis/sad.png');
+const smile = require('../../assets/images/emojis/smile.png');
+const worried = require('../../assets/images/emojis/worried.png');
 import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
-import {useRealm, useObject} from '../models/VideoData';
+import {useRealm, useObject} from '../../models/VideoData';
 import Video from 'react-native-video';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ScrollView} from 'react-native';
-import MHMRVideoPlayer from '../components/mhmrVideoPlayer';
+import MHMRVideoPlayer from '../../components/mhmrVideoPlayer';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 

@@ -11,17 +11,16 @@ import {
   LogBox,
 } from 'react-native';
 import {Text, Chip} from 'react-native-paper';
-import {VideoData, useRealm, useQuery} from '../models/VideoData';
+import {VideoData, useRealm, useQuery} from '../../models/VideoData';
 import {Icon, Badge, Button} from '@rneui/themed';
 import RNFS from 'react-native-fs';
 import NetInfo from '@react-native-community/netinfo';
-import {sendToChatGPT} from '../components/chatgpt_api';
-import VideoSetDropdown from '../components/videoSetDropdown';
-import * as Styles from '../assets/util/styles';
+import VideoSetDropdown from '../../components/videoSetDropdown';
+import * as Styles from '../../assets/util/styles';
 import {ObjectId} from 'bson';
-import {useDropdownContext} from '../components/videoSetProvider';
-import {useLoader} from '../components/loaderProvider';
-import {processVideos} from '../components/processVideos';
+import {useDropdownContext} from '../../components/videoSetProvider';
+import {useLoader} from '../../components/loaderProvider';
+import {processVideos} from '../../components/processVideos';
 
 
 function Dashboard() {

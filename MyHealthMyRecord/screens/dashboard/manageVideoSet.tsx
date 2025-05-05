@@ -13,9 +13,9 @@ import {
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 import {Button, Icon} from '@rneui/themed';
 import RNFS from 'react-native-fs';
-import {useRealm, VideoData} from '../models/VideoData';
-import * as Styles from '../assets/util/styles';
-import {useDropdownContext} from '../components/videoSetProvider';
+import {useRealm, VideoData} from '../../models/VideoData';
+import * as Styles from '../../assets/util/styles';
+import {useDropdownContext} from '../../components/videoSetProvider';
 
 const ManageVideoSet = () => {
   const {videoSetVideoIDs, currentVideoSet, currentSetID, handleDeleteSet} =

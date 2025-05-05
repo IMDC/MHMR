@@ -12,13 +12,11 @@ import {
   ScrollView,
   LogBox,
 } from 'react-native';
-import {Button, Icon, Input, Dialog} from '@rneui/themed';
-import VideoPlayer from 'react-native-media-console';
-import RNFS from 'react-native-fs';
-import {VideoData, useObject, useRealm} from '../models/VideoData';
-const logo = require('../assets/images/MHMRLogo_NOBG.png');
+
+import {VideoData, useObject, useRealm} from '../../models/VideoData';
+const logo = require('../../assets/images/MHMRLogo_NOBG.png');
 import {Portal, PaperProvider} from 'react-native-paper';
-import MHMRVideoPlayer from '../components/mhmrVideoPlayer';
+import MHMRVideoPlayer from '../../components/mhmrVideoPlayer';
 
 const TextComments = () => {
   // const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();

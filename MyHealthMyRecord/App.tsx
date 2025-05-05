@@ -16,43 +16,41 @@ import {
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Home from './screens/home';
 import RecordVideo from './screens/recordVideo';
-import ViewRecordings from './screens/videoDirectory';
-import AnnotationMenu from './screens/annotationMenu';
-import ReviewAnnotations from './screens/reviewAnnotations';
-import KeywordTagging from './screens/keywordTagging';
-import LocationTagging from './screens/locationTagging';
-import EmotionTagging from './screens/emotionTagging';
-import TextComments from './screens/textComments';
+import ViewRecordings from './screens/manage_videos/videoDirectory';
+import AnnotationMenu from './screens/manage_videos/annotationMenu';
+import ReviewAnnotations from './screens/manage_videos/reviewAnnotations';
+import KeywordTagging from './screens/manage_videos/keywordTagging';
+import LocationTagging from './screens/manage_videos/locationTagging';
+import EmotionTagging from './screens/manage_videos/emotionTagging';
+import TextComments from './screens/manage_videos/textComments';
 import FullscreenVideo from './screens/fullscreenVideo';
-import Painscale from './screens/painscaleScreen';
+import Painscale from './screens/manage_videos/painscaleScreen';
 import Help from './screens/help';
-import Dashboard from './screens/dashboard';
-import DataAnalysis from './screens/dataAnalysis';
-import DataAnalysisBarGraph from './screens/dataAnalysisBarGraph';
-import DataAnalysisLineGraph from './screens/dataAnalysisLineGraph';
-import DataAnalysisTextSummary from './screens/dataAnalysisTextSummary';
-import DataAnalysisWordCloud from './screens/dataAnalysisWordCloud';
+import Dashboard from './screens/dashboard/dashboard';
+import DataAnalysis from './screens/data_analysis/dataAnalysis';
+import DataAnalysisBarGraph from './screens/data_analysis/dataAnalysisBarGraph';
+import DataAnalysisLineGraph from './screens/data_analysis/dataAnalysisLineGraph';
+import DataAnalysisTextSummary from './screens/data_analysis/dataAnalysisTextSummary';
+import DataAnalysisWordCloud from './screens/data_analysis/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
 import {getAuth} from './components/stt_api';
 import {NetworkProvider} from './components/networkProvider';
 import {VideoSetProvider} from './components/videoSetProvider';
-import { LoaderProvider } from './components/loaderProvider';
-import ManageVideoSet from './screens/manageVideoSet';
+import {LoaderProvider} from './components/loaderProvider';
+import ManageVideoSet from './screens/dashboard/manageVideoSet';
 import Video from 'react-native-video';
-import { WordListProvider } from './components/wordListProvider';
-import { useNetwork } from './components/networkProvider';
+import {WordListProvider} from './components/wordListProvider';
+import {useNetwork} from './components/networkProvider';
 import OfflineAlert from './components/offlineAlert';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
 
-
 function StackNav() {
   return (
     <Stack.Navigator
       initialRouteName="Home"
-
       screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Record Video" component={RecordVideo} />
@@ -70,7 +68,7 @@ function DataAnalysisStack() {
       <Stack.Screen name="Line Graph" component={DataAnalysisLineGraph} />
       <Stack.Screen name="Text Report" component={DataAnalysisTextSummary} />
       <Stack.Screen name="Word Cloud" component={DataAnalysisWordCloud} />
-      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo}  />
+      <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
     </Stack.Navigator>
   );
 }
@@ -79,8 +77,7 @@ function DashboardStack() {
   return (
     <Stack.Navigator
       initialRouteName="Dashboard"
-      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}
-      >
+      screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Video Set Dashboard" component={Dashboard} />
       <Stack.Screen name="Manage Video Set" component={ManageVideoSet} />
       <Stack.Screen name="Fullscreen Video" component={FullscreenVideo} />
@@ -293,7 +290,7 @@ function App() {
       </NetworkProvider>
     </RealmProvider>
   );
-};
+}
 
 const styles = StyleSheet.create({
   customLabelStyle: {

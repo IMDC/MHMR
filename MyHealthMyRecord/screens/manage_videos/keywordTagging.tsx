@@ -28,7 +28,7 @@ import {
   Dialog,
   Input,
 } from '@rneui/themed';
-import {useRealm, useObject} from '../models/VideoData';
+import {useRealm, useObject} from '../../models/VideoData';
 
 const KeywordTagging = () => {
   useEffect(() => {

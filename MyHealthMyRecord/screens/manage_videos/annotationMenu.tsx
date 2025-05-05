@@ -19,8 +19,8 @@ import {
   TextInputFocusEventData,
 } from 'react-native';
 import {Button, Icon, Input} from '@rneui/themed';
-import {useObject, useRealm} from '../models/VideoData';
-import * as Styles from '../assets/util/styles';
+import {useObject, useRealm} from '../../models/VideoData';
+import * as Styles from '../../assets/util/styles';
 
 const AnnotationMenu = () => {
   //is the current screen focused, used for state changes between navigation
