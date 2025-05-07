@@ -94,7 +94,8 @@ const DataAnalysisBarGraph = () => {
 
     const cleaned = Array.from(mergedMap.entries())
       .map(([text, value]) => ({text, value}))
-      .filter(item => item.text && item.text.toLowerCase() !== 'hesitation');
+      .filter(item => item.text && item.text.toLowerCase() !== 'hesitation')
+      .sort((a, b) => b.value - a.value);
 
     setBarData(cleaned);
     updateWordList(cleaned);
@@ -108,7 +109,7 @@ const DataAnalysisBarGraph = () => {
 
   const updateFilteredBarData = () => {
     const cleaned = barData.filter(item => !selectedWords.has(item.text));
-    setFilteredBarData(chunkData(cleaned));
+    setFilteredBarData(cleaned);
   };
 
   const chunkData = (data, max = 50) =>

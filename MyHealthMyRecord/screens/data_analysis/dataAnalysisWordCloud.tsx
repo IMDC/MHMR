@@ -1,11 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
+import {SafeAreaView, View, Text, StyleSheet, Dimensions} from 'react-native';
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import WordCloud from 'rn-wordcloud';
@@ -35,12 +29,30 @@ const DataAnalysisWordCloud = () => {
     {
       label: 'Palette 2',
       value: 'Wong',
-      colors: ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'],
+      colors: [
+        '#000000',
+        '#E69F00',
+        '#56B4E9',
+        '#009E73',
+        '#F0E442',
+        '#0072B2',
+        '#D55E00',
+        '#CC79A7',
+      ],
     },
     {
       label: 'Palette 3',
       value: 'Tol',
-      colors: ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'],
+      colors: [
+        '#332288',
+        '#117733',
+        '#44AA99',
+        '#88CCEE',
+        '#DDCC77',
+        '#CC6677',
+        '#AA4499',
+        '#882255',
+      ],
     },
   ];
 
@@ -69,7 +81,13 @@ const DataAnalysisWordCloud = () => {
 
       const cleaned = Array.from(mergedMap.entries())
         .map(([text, value]) => ({text, value}))
-        .filter(item => item.text && item.text.toLowerCase() !== 'hesitation');
+        .filter(
+          item =>
+            item.text &&
+            item.text.toLowerCase() !== 'hesitation' &&
+            item.value > 2 &&
+            !selectedWords.has(item.text),
+        );
 
       updateWordList(cleaned);
     } catch (err) {
@@ -80,14 +98,16 @@ const DataAnalysisWordCloud = () => {
   useEffect(() => {
     if (!editModalVisible) {
       const cleaned = (wordList || [])
-      .filter(word => typeof word.text === 'string' && typeof word.value === 'number')
-      .filter(word => !selectedWords.has(word.text))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 50); 
-    
-    setFilteredWordList(cleaned);
-    setUpdatedData(cleaned);
-    
+        .filter(
+          word =>
+            typeof word.text === 'string' && typeof word.value === 'number',
+        )
+        .filter(word => !selectedWords.has(word.text))
+        .sort((a, b) => b.value - a.value)
+       
+
+      setFilteredWordList(cleaned);
+      setUpdatedData(cleaned);
     }
   }, [editModalVisible, wordList, selectedWords]);
 
@@ -95,7 +115,9 @@ const DataAnalysisWordCloud = () => {
     if (dropdownValue && filteredWordList.length > 0) {
       const validated = validateData(filteredWordList);
       const selectedPalette =
-        dropdownData.find(item => item.value === dropdownValue)?.colors.map(color => ({color})) || [];
+        dropdownData
+          .find(item => item.value === dropdownValue)
+          ?.colors.map(color => ({color})) || [];
       setUpdatedData(addPalette(validated, selectedPalette));
     }
   }, [dropdownValue]);
@@ -231,11 +253,11 @@ const DataAnalysisWordCloud = () => {
         </Text>
       )}
       {editModalVisible && (
-  <WordRemovalModal
-    setEditModalVisible={setEditModalVisible}
-    filteredWords={wordList}
-  />
-)}
+        <WordRemovalModal
+          setEditModalVisible={setEditModalVisible}
+          filteredWords={wordList}
+        />
+      )}
     </SafeAreaView>
   );
 };
