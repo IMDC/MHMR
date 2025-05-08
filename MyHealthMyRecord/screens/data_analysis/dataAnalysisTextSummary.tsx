@@ -45,7 +45,9 @@ const DataAnalysisTextSummary = () => {
   const realm = useRealm();
   const {showLoader, hideLoader} = useLoader();
   const [refreshSummary, setRefreshSummary] = useState(false);
-
+  const previousVideoSetVideoIDsRef = useRef<Set<string>>(
+    new Set(videoSetVideoIDs),
+  );
   const [sentimentCounts, setSentimentCounts] = useState({
     veryPositive: 0,
     positive: 0,
@@ -235,6 +237,63 @@ const DataAnalysisTextSummary = () => {
       </Text>
     </View>
   );
+
+  useEffect(() => {
+    const updateVideoSetSummary = async () => {
+      if (online && currentVideoSet) {
+        const previousVideoSetVideoIDs = previousVideoSetVideoIDsRef.current;
+        const newVideosAdded = videoSetVideoIDs.some(
+          videoID => !previousVideoSetVideoIDs.has(videoID),
+        );
+
+        if (
+          currentVideoSet.isSummaryGenerated === false ||
+          newVideosAdded ||
+          refreshSummary
+        ) {
+          showLoader('Generating video set summary...');
+          const summary = await sendVideoSetToChatGPT(
+            realm,
+            videoSetVideoIDs,
+            currentVideoSet,
+            reportFormat,
+          );
+
+          realm.write(() => {
+            const videoSetToUpdate = realm.objectForPrimaryKey(
+              'VideoSet',
+              currentVideoSet._id,
+            );
+            if (videoSetToUpdate) {
+              videoSetToUpdate.summaryAnalysisSentence = summary[0];
+              videoSetToUpdate.summaryAnalysisBullet = summary[1];
+            }
+          });
+
+          if (reportFormat === 'bullet') {
+            setVideoSetSummary(summary[1]);
+            console.log('videoSetSummary Bullet:', summary[1]);
+          } else {
+            setVideoSetSummary(summary[0]);
+            console.log('videoSetSummary Sentence:', summary[0]);
+          }
+
+          hideLoader();
+        }
+        previousVideoSetVideoIDsRef.current = new Set(videoSetVideoIDs);
+        setRefreshSummary(false);
+      }
+    };
+
+    updateVideoSetSummary();
+  }, [
+    currentVideoSet,
+    videoSetVideoIDs,
+    realm,
+    reportFormat,
+    online,
+    refreshSummary,
+  ]);
 
   useEffect(() => {
     const getVideoData = async () => {
