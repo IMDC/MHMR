@@ -45,9 +45,9 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
 
       const content = await RNFS.readFile(fileUri, 'utf8');
 
-      // Regex to split based on "=== Copy of filename ==="
+      // Regex to split based on "=== filename ==="
       const transcriptChunks = content
-        .split(/=== Copy of (.*?) ===/g)
+        .split(/=== (.*?) ===/g)
         .filter(Boolean);
 
       const videoDataList: VideoData[] = [];
