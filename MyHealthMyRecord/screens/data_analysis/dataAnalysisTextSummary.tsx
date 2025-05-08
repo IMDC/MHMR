@@ -44,6 +44,7 @@ const DataAnalysisTextSummary = () => {
   const [showTranscript, setShowTranscript] = useState({});
   const realm = useRealm();
   const {showLoader, hideLoader} = useLoader();
+  const [refreshSummary, setRefreshSummary] = useState(false);
 
   const [sentimentCounts, setSentimentCounts] = useState({
     veryPositive: 0,
@@ -451,23 +452,6 @@ const DataAnalysisTextSummary = () => {
                 {showTranscript[video._id] && (
                   <View style={{flexDirection: 'row'}}>
                     <Text style={styles.transcript}>{video.transcript}</Text>
-                    {online && (
-                      <View
-                        style={[
-                          styles.buttonContainer,
-                          {justifyContent: 'center'},
-                        ]}>
-                        <View style={styles.buttonWrapper}>
-                          <Button
-                            buttonStyle={{width: 150}}
-                            radius={50}
-                            title="Edit transcript"
-                            onPress={() => handleEdit(video)}
-                            color={Styles.MHMRBlue}
-                          />
-                        </View>
-                      </View>
-                    )}
                   </View>
                 )}
               </>
@@ -547,7 +531,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: 'black',
     marginBottom: 10,
-    width: Dimensions.get('window').width - 200,
   },
   output: {
     fontSize: 20,
