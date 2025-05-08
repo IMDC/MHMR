@@ -17,11 +17,11 @@ async function connectToChatGPT(inputText) {
           {
             role: 'developer',
             content:
-              'You are summarizing transcripts of video data. Use second person pronouns.',
+              'You are summarizing transcripts of video data. Your response must be sharp, concise, and terse.',
           },
           {role: 'user', content: inputText},
         ],
-        max_tokens: 150,
+        max_tokens: 400,
       }),
     });
     const data = await response.json();
@@ -138,10 +138,8 @@ export const sendVideoSetToChatGPT = async (
     // console.log('combinedTranscripts:', combinedTranscripts);
 
     try {
-      // let inputTextBullet = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
-      // let inputTextSentence = `Summarize the selected video transcripts in this video set: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
-      let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
-      let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+      let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Use up to 100 tokens. Have 10 or fewer bullet points. Format the summary in bullet points using \u2022`;
+      let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Use up to 100 tokens. Format the summary in sentence(s).`;
       const dataSentence = await connectToChatGPT(inputTextSentence);
       if (dataSentence.choices && dataSentence.choices.length > 0) {
         const outputText = dataSentence.choices[0].message.content;
@@ -184,6 +182,7 @@ export const sendVideoSetToChatGPT = async (
   }
 };
 
+// individual videos
 export const generateVideoSummary = async (transcript: string) => {
   const transcriptWordCount = transcript.split(' ').length;
   const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2); // 20% of original length
