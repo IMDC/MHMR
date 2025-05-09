@@ -23,8 +23,14 @@ const MemoizedCheckBox = React.memo(({title, checked, onPress}) => (
 ));
 
 const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
-  const {selectedWords, toggleWordSelection, persistSelectedWords} =
-    useWordList();
+  const {
+    selectedWords,
+    toggleWordSelection,
+    persistSelectedWords,
+    minFrequency,
+    setMinFrequency,
+    updateWordList,
+  } = useWordList();
 
   const handleToggleWordSelection = useCallback(
     word => {
@@ -35,6 +41,7 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
 
   const handleClose = () => {
     persistSelectedWords();
+    updateWordList(minFrequency);
     setEditModalVisible(false);
   };
 
@@ -82,14 +89,15 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
             </View>
 
             <Input
-              placeholder="Enter word frequency"
+              placeholder={minFrequency.toString()}
               keyboardType="numeric"
               onChangeText={text => {
                 const frequency = parseInt(text, 10);
                 if (!isNaN(frequency)) {
-                  // Handle the frequency value as needed
+                  setMinFrequency(frequency);
                 }
               }}
+
               containerStyle={{width: '30%', justifyContent: 'center'}}
             />
           </View>
