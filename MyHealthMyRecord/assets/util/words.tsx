@@ -1236,3 +1236,37 @@ export const medWords = [
   'cramped',
   'cramping',
 ];
+
+export const trackedWords = [
+  // Physical symptoms
+  'pain',
+  'ache',
+  'fatigue',
+  'nausea',
+  'discomfort',
+  'soreness',
+  'tension',
+  'pressure',
+  'stiffness',
+  'burning',
+  'throbbing',
+
+  // Mental/emotional
+  'anxiety',
+  'stress',
+  'depression',
+  'fear',
+  'worry',
+  'panic',
+  'anger',
+  'sadness',
+  'frustration',
+  'mood',
+
+  // Sleep/appetite
+  'sleep',
+  'insomnia',
+  'appetite',
+  'energy',
+  'exhaustion',
+];

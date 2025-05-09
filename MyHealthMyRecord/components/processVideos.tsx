@@ -1,8 +1,33 @@
-import {getTranscript, processMultipleTranscripts} from './stt_api';
+import {processMultipleTranscripts} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
-import Realm from 'realm';
-import {VideoData} from '../models/VideoData';
-import {stopWords} from '../assets/util/words';
+import {stopWords, trackedWords} from '../assets/util/words';
+import {extractNGrams} from './ngramExtractor';
+
+const processTranscript = (transcript: string) => {
+  const frequencyMap: Record<string, number> = {};
+
+  // Remove all punctuation except apostrophes
+  const cleanText = transcript
+    .replace(/[^a-zA-Z\s']/g, '')
+    .toLowerCase();
+
+  const plainWords = cleanText.split(/\s+/);
+
+  // Count individual words
+  plainWords.forEach(word => {
+    if (word) {
+      frequencyMap[word] = (frequencyMap[word] || 0) + 1;
+    }
+  });
+
+  // Extract and count n-grams around tracked words
+  const ngrams = extractNGrams(cleanText, trackedWords, 3);
+  ngrams.forEach(phrase => {
+    frequencyMap[phrase] = (frequencyMap[phrase] || 0) + 1;
+  });
+
+  return frequencyMap;
+};
 
 export const processVideos = async (
   realm,
@@ -47,10 +72,10 @@ export const processVideos = async (
 
     for (const video of selectedVideos) {
       if (video.transcript) {
-        const rawMap = getFreqMap(video.transcript);
+        const rawMap = processTranscript(video.transcript); // NEW: includes n-grams
 
         freqMaps.push({
-          map: Object.fromEntries(rawMap), // raw, not filtered yet
+          map: rawMap,
           datetime:
             video.datetimeRecorded?.toISOString() ?? new Date().toISOString(),
           videoID: video._id.toString(),

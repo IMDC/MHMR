@@ -81,10 +81,9 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
                 style={{
                   textAlign: 'center',
                   justifyContent: 'center',
-                  fontSize: 18,
-                  fontWeight: 'bold',
+                  fontSize: 16,
                 }}>
-                Word Frequency:
+                Display words with frequency greater than or equal to:
               </Text>
             </View>
 
@@ -97,6 +96,7 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
                   setMinFrequency(frequency);
                 }
               }}
+              inputStyle={{textAlign: 'center'}}
 
               containerStyle={{width: '30%', justifyContent: 'center'}}
             />
