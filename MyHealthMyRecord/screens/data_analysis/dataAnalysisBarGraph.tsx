@@ -102,15 +102,14 @@ const DataAnalysisBarGraph = () => {
   }, [currentVideoSet]);
 
   useEffect(() => {
-    if (!editModalVisible) {
-      updateFilteredBarData();
-    }
-  }, [barData, selectedWords, editModalVisible]);
+    updateFilteredBarData();
+  }, [wordList, selectedWords, editModalVisible]);
 
   const updateFilteredBarData = () => {
-    const cleaned = barData.filter(item => !selectedWords.has(item.text));
+    const cleaned = wordList.filter(item => !selectedWords.has(item.text));
     setFilteredBarData(cleaned);
   };
+
 
   const chunkData = (data, max = 50) =>
     data.length > max

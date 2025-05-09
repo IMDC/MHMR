@@ -7,6 +7,7 @@ const WordListContext = createContext();
 export const WordListProvider = ({children}) => {
   const [wordList, setWordList] = useState([]);
   const [selectedWords, setSelectedWords] = useState(new Set());
+  const [minFrequency, setMinFrequency] = useState(3);
   const realm = useRealm();
 
   const updateWordListFromFrequencyData = () => {
@@ -39,7 +40,7 @@ export const WordListProvider = ({children}) => {
           item =>
             item.text &&
             item.text.toLowerCase() !== 'hesitation' &&
-            item.value > 3 &&
+            item.value >= minFrequency &&
             !stopWords.includes(item.text.toLowerCase()),
         )
         .sort((a, b) => b.value - a.value);
@@ -95,6 +96,8 @@ export const WordListProvider = ({children}) => {
         toggleWordSelection,
         persistSelectedWords,
         resetSelectedWords,
+        minFrequency,
+        setMinFrequency,
       }}>
       {children}
     </WordListContext.Provider>
