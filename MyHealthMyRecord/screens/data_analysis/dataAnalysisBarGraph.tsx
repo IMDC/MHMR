@@ -110,7 +110,6 @@ const DataAnalysisBarGraph = () => {
     setFilteredBarData(cleaned);
   };
 
-
   const chunkData = (data, max = 50) =>
     data.length > max
       ? [...data].sort((a, b) => b.value - a.value).slice(0, max)
@@ -165,12 +164,13 @@ const DataAnalysisBarGraph = () => {
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
         <Text
           style={{
+            textAlign: 'center',
             padding: 20,
             fontSize: 20,
             color: 'black',
             fontWeight: 'bold',
           }}>
-          {currentVideoSet?.name} - Word Frequency
+          Word Frequency of {currentVideoSet?.name}
         </Text>
         <View style={{height: Dimensions.get('window').height * 0.75}}>
           <ScrollView horizontal ref={horizontalScrollRef}>
@@ -277,7 +277,7 @@ const DataAnalysisBarGraph = () => {
           </Text>
           <View style={{alignItems: 'center', marginTop: 20}}>
             <Button
-              title="Remove Words"
+              title="Word settings"
               onPress={() => setEditModalVisible(true)}
               color={Styles.MHMRBlue}
               radius={50}

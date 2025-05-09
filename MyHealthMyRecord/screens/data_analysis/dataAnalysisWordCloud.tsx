@@ -184,7 +184,8 @@ const DataAnalysisWordCloud = () => {
             style={{
               flexDirection: 'row',
               marginVertical: 10,
-              justifyContent: 'center',
+              paddingHorizontal: 20,
+              justifyContent: 'space-evenly',
             }}>
             <View style={{flexDirection: 'row', paddingHorizontal: 2}}>
               <Text
@@ -205,7 +206,7 @@ const DataAnalysisWordCloud = () => {
                 maxHeight={150}
                 style={{
                   height: 50,
-                  width: Styles.windowWidth / 3,
+                  width: Styles.windowWidth / 2.5,
                   paddingHorizontal: 20,
                   backgroundColor: '#DBDBDB',
                   borderRadius: 22,
@@ -220,11 +221,11 @@ const DataAnalysisWordCloud = () => {
             </View>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Button
-                title="Remove words"
+                title="Word settings"
                 onPress={() => setEditModalVisible(true)}
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{width: 200}}
+                containerStyle={{width: 150}}
               />
             </View>
           </View>

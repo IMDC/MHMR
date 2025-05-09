@@ -97,7 +97,6 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
                 }
               }}
               inputStyle={{textAlign: 'center'}}
-
               containerStyle={{width: '30%', justifyContent: 'center'}}
             />
           </View>
