@@ -162,26 +162,6 @@ const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
   }
 };
 
-// Create raw word frequency map from transcript
-function getFreqMap(transcript: string): Map<string, number> {
-  const cleanText = transcript.replace(/[^a-zA-Z\s']/g, '').toLowerCase();
-  const words = cleanText.split(/\s+/);
-  const map = new Map<string, number>();
-
-  for (const word of words) {
-    if (
-      word &&
-      word !== '' &&
-      word !== 'hesitation' &&
-      word !== '%hesitation'
-    ) {
-      map.set(word, (map.get(word) || 0) + 1);
-    }
-  }
-
-  return map;
-}
-
 // Merge all maps together into one total frequency map
 function combineFreqMaps(freqMaps: any[]): Map<string, number> {
   const combined = new Map<string, number>();
