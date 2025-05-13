@@ -83,7 +83,7 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
                   justifyContent: 'center',
                   fontSize: 16,
                 }}>
-                Display words with frequency greater than or equal to:
+                Show words that appear more than or equal to:
               </Text>
             </View>
 

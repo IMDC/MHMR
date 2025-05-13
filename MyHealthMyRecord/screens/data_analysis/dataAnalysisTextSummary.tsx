@@ -6,9 +6,10 @@ import {
   TextInput,
   View,
   TouchableOpacity,
-  Dimensions,
   FlatList,
-  Alert,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from 'react-native';
 import {useRealm} from '../../models/VideoData';
 import {useDropdownContext} from '../../components/videoSetProvider';
@@ -23,6 +24,13 @@ import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../../components/networkProvider';
 import {useLoader} from '../../components/loaderProvider';
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const neutral = require('../../assets/images/emojis/neutral.png');
 const sad = require('../../assets/images/emojis/sad.png');

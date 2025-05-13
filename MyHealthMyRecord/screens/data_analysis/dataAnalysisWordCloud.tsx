@@ -202,11 +202,11 @@ const DataAnalysisWordCloud = () => {
           <View
             style={{
               flexDirection: 'row',
-              marginVertical: 10,
+              marginTop: 10,
               paddingHorizontal: 20,
               justifyContent: 'space-evenly',
             }}>
-            <View style={{flexDirection: 'row', paddingHorizontal: 2}}>
+            <View style={{flexDirection: 'row',}}>
               <Text
                 style={{
                   textAlign: 'center',
@@ -214,9 +214,9 @@ const DataAnalysisWordCloud = () => {
                   fontWeight: 'bold',
                   color: 'black',
                   paddingVertical: 10,
-                  paddingHorizontal: 2,
+                  paddingHorizontal: 4,
                 }}>
-                Select Color Palette:
+                Select Color Palette: 
               </Text>
 
               <Dropdown
@@ -255,7 +255,6 @@ const DataAnalysisWordCloud = () => {
               options={{
                 words: updatedData,
                 verticalEnabled: true,
-                rotateRatio: 0.8,
                 minFont: Styles.windowHeight * 0.0225,
                 maxFont: Styles.windowHeight * 0.05,
                 fontOffset: 0.6,
