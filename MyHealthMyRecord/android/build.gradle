@@ -11,16 +11,29 @@ buildscript {
         ndkVersion = "23.1.7779620"
 
         kotlinVersion = "1.8.0"
-        ffmpegKitPackage = "full"
+        //ffmpegKitPackage = "full"
     }
     repositories {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" } 
         maven { url "https://maven.google.com" } 
+        
     }
     dependencies {
         classpath("com.android.tools.build:gradle:7.3.1")
         classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
+
+    allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        flatDir {
+            dirs "$rootDir/app/libs"
+        }
+    }
+}
+
+//apply plugin: "com.facebook.react.rootproject"
