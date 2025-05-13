@@ -9,6 +9,7 @@ import {
   Alert,
   TouchableOpacity,
   LogBox,
+  FlatList,
 } from 'react-native';
 import {Text, Chip} from 'react-native-paper';
 import {VideoData, useRealm, useQuery} from '../../models/VideoData';
@@ -21,7 +22,6 @@ import {ObjectId} from 'bson';
 import {useDropdownContext} from '../../components/videoSetProvider';
 import {useLoader} from '../../components/loaderProvider';
 import {processVideos} from '../../components/processVideos';
-
 
 function Dashboard() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -68,8 +68,6 @@ function Dashboard() {
       'Non-serializable values were found in the navigation state.',
     ]);
   });
-
-
 
   useEffect(() => {
     const selectedVideos = route.params?.selectedVideos || [];
@@ -193,7 +191,6 @@ function Dashboard() {
     setSelectedVideoSet(selectedSet);
   };
 
-
   async function handleQueuePress() {
     const state = await NetInfo.fetch();
     if (videosByIsConvertedAndSelected.length == 0) {
@@ -272,25 +269,8 @@ function Dashboard() {
             plainDropdown={false}
           />
         </View>
-        {videos !== null || videos !== undefined
+        {/* {videos !== null || videos !== undefined
           ? videos.map(video => {
-              // const isTranscriptEmpty = video => {
-              //   return (
-              //     video.transcript === undefined || video.transcript === ''
-              //   );
-              // };
-
-              // const checkedTitles = video.keywords
-              //   .map(key => JSON.parse(key))
-              //   .filter(obj => obj.checked)
-              //   .map(obj => obj.title)
-              //   .join(', ');
-
-              // const checkedLocations = video.locations
-              //   .map(key => JSON.parse(key))
-              //   .filter(obj => obj.checked)
-              //   .map(obj => obj.title)
-              //   .join(', ');
               return (
                 <View key={video._id.toString()}>
                   <View style={styles.container}>
@@ -399,7 +379,106 @@ function Dashboard() {
                 </View>
               );
             })
-          : null}
+          : null} */}
+        <FlatList
+          data={videos}
+          keyExtractor={item => item._id.toString()}
+          initialNumToRender={10}
+          renderItem={({item}) => (
+            <View style={styles.container}>
+              <View style={styles.thumbnail}>
+                <ImageBackground
+                  style={{
+                    height: '100%',
+                    width: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                  }}
+                  source={{
+                    uri: 'file://' + MHMRfolderPath + '/' + item.filename,
+                  }}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('Fullscreen Video', {
+                        id: item._id,
+                      })
+                    }>
+                    <Icon
+                      reverse
+                      name="play-sharp"
+                      type="ionicon"
+                      color="#1C3EAA"
+                      size={20}
+                    />
+                  </TouchableOpacity>
+                </ImageBackground>
+              </View>
+              <View style={styles.rightContainer}>
+                <Text
+                  style={{
+                    fontSize: 24,
+                    color: 'black',
+                    fontWeight: 'bold',
+                  }}>
+                  {item.title}
+                  {item.textComments.length !== 0 ? (
+                    <Icon
+                      name="chatbox-ellipses"
+                      type="ionicon"
+                      color="black"
+                      size={22}
+                      style={{
+                        alignSelf: 'flex-start',
+                        paddingLeft: 5,
+                      }}
+                    />
+                  ) : null}
+                </Text>
+                <Text style={{fontSize: 20}}>
+                  {item.datetimeRecorded?.toLocaleString()}
+                </Text>
+                <ScrollView horizontal={true} style={{flexDirection: 'row'}}>
+                  {item.keywords.map((key: string) => {
+                    if (JSON.parse(key).checked) {
+                      return (
+                        <Chip
+                          key={JSON.parse(key).title}
+                          style={{
+                            margin: 2,
+                            backgroundColor: '#E1BE6A',
+                          }}
+                          textStyle={{fontSize: 16}}
+                          mode="outlined"
+                          compact={true}
+                          icon={'tag'}>
+                          {JSON.parse(key).title}
+                        </Chip>
+                      );
+                    }
+                  })}
+                  {item.locations.map((key: string) => {
+                    if (JSON.parse(key).checked) {
+                      return (
+                        <Chip
+                          key={JSON.parse(key).title}
+                          textStyle={{fontSize: 16}}
+                          style={{
+                            margin: 2,
+                            backgroundColor: '#40B0A6',
+                          }}
+                          mode="outlined"
+                          compact={true}
+                          icon={'map-marker'}>
+                          {JSON.parse(key).title}
+                        </Chip>
+                      );
+                    }
+                  })}
+                </ScrollView>
+              </View>
+            </View>
+          )}></FlatList>
       </ScrollView>
     </View>
   );
