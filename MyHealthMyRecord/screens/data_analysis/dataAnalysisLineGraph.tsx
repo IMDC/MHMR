@@ -259,6 +259,7 @@ const DataAnalysisLineGraph = () => {
   }
 
   const dataValues = selectedData.map(item => item.value);
+  
   let minValue = Math.min(...dataValues); // Use the smallest value in the data
   let maxValue = Math.max(...dataValues); // Use the largest value in the data
 
@@ -383,8 +384,18 @@ const DataAnalysisLineGraph = () => {
                       svg={{
                         fontSize: periodValue === '1' ? 14 : 16,
                         fill: 'black',
-                        rotation: periodValue === '1' ? -45 : 0,
-                        originY: periodValue === '1' ? 30 : 0,
+                        rotation:
+                          periodValue === '1'
+                            ? -45
+                            : periodValue === '3'
+                            ? -45
+                            : 0,
+                        originY:
+                          periodValue === '1'
+                            ? 30
+                            : periodValue === '3'
+                            ? 15
+                            : 0,
                         textAnchor: periodValue === '1' ? 'end' : 'middle',
                         dy: periodValue === '1' ? 0 : 10,
                       }}
