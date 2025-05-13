@@ -364,6 +364,7 @@ export const stopWords = [
   'goes',
   'going',
   'gone',
+  'gonna',
   'got',
   'gotten',
   'gr',
