@@ -171,15 +171,7 @@ const DataAnalysisLineGraph = () => {
     '11PM',
   ];
 
-  const weeks = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
+  const weeks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
@@ -232,16 +224,16 @@ const DataAnalysisLineGraph = () => {
   const Dots = ({x, y}) => (
     <>
       {selectedData.map((value, index) => {
-        console.log(`Dot Value: ${value.value}, Scaled Y: ${y(value.value)}`);
+        if (value.value === 0) return null;
         return (
           <Circle
             key={index}
-            cx={x(index)} // Map the X position to the index
-            cy={y(value.value)} // Map the Y position to the value
+            cx={x(index)}
+            cy={y(value.value)}
             r={8}
             stroke={'black'}
             fill={'white'}
-            onPressIn={() => handlePressIn(value)} // Handle press events
+            onPressIn={() => handlePressIn(value)}
           />
         );
       })}
@@ -311,7 +303,7 @@ const DataAnalysisLineGraph = () => {
                     top: windowHeight * 0.6 * 0.015,
                     bottom: windowHeight * 0.6 * 0.07,
                   }}
-                  svg={{fontSize: 14, fill: 'black'}}
+                  svg={{fontSize: 18, fill: 'black'}}
                   min={0}
                   max={maxValue}
                   numberOfTicks={maxValue < 4 ? maxValue : 4}
@@ -326,9 +318,11 @@ const DataAnalysisLineGraph = () => {
                   <View
                     style={{
                       height: windowHeight * 0.6,
-                      width: windowWidth,
-                      marginLeft: 10,
-                      marginRight: 10,
+                      width: windowWidth * 0.9,
+                      left: periodValue === '3' ? 0 : 0,
+                      right: periodValue === '3' ? 0 : 0,
+                      top: 0,
+                      bottom: 0,
                     }}>
                     <LineChart
                       style={{height: '90%', width: '100%'}}
@@ -348,7 +342,7 @@ const DataAnalysisLineGraph = () => {
 
                     <XAxis
                       style={{
-                        marginHorizontal: -20,
+                        marginHorizontal: 0,
                         height: 80,
                         marginVertical: -5,
                       }}
@@ -361,24 +355,33 @@ const DataAnalysisLineGraph = () => {
                         } else if (periodValue === '2') {
                           return weeks[index % 7];
                         } else {
-                          const totalLabels = freqSetRangeArray.length;
-                          if (totalLabels <= 5) {
-                            return freqSetRangeArray[index]?.label || '';
-                          } else {
-                            const step = Math.ceil(totalLabels / 5);
-                            return index % step === 0
-                              ? freqSetRangeArray[index]?.label || ''
-                              : '';
-                          }
+                          const entry = freqSetRangeArray[index];
+                          const isFirst = index === 0;
+                          const isLast = index === freqSetRangeArray.length - 1;
+                          const shouldLabel =
+                            entry?.value > 0 || isFirst || isLast;
+
+                          return shouldLabel ? entry.label : '';
                         }
                       }}
-                      contentInset={
-                        periodValue === '1'
-                          ? {left: 58, right: 0}
-                          : {left: 45, right: 50}
-                      }
+                      contentInset={{
+                        left:
+                          periodValue === '1'
+                            ? 45
+                            : periodValue === '2'
+                            ? 20
+                            : 0,
+                        right:
+                          periodValue === '1'
+                            ? 0
+                            : periodValue === '2'
+                            ? 20
+                            : 0,
+                        top: 0,
+                        bottom: 0,
+                      }}
                       svg={{
-                        fontSize: 14,
+                        fontSize: periodValue === '1' ? 14 : 16,
                         fill: 'black',
                         rotation: periodValue === '1' ? -45 : 0,
                         originY: periodValue === '1' ? 30 : 0,
@@ -398,7 +401,7 @@ const DataAnalysisLineGraph = () => {
             <Text
               style={{
                 textAlign: 'center',
-                fontSize: 16,
+                fontSize: 20,
                 color: 'black',
                 marginTop: -29,
               }}>
@@ -540,7 +543,9 @@ const DataAnalysisLineGraph = () => {
                   });
                   setModalVisible(false);
                 }}>
-                <Text style={styles.videoIDText}>{video?.title}</Text>
+                <Text style={styles.videoIDText}>
+                  {video?.title} at {video?.datetimeRecorded.toLocaleString()}
+                </Text>
               </TouchableOpacity>
             ))}
             <Button
