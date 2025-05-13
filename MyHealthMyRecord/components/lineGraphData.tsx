@@ -37,7 +37,7 @@ export function useSetLineGraphData() {
   const setLineGraphData = (freqMaps: any, word: string) => {
     let maps = accessFreqMaps(freqMaps); // convert maps to proper Map objects
 
-    console.log('Parsed frequency maps (as Map objects):', maps);
+    // console.log('Parsed frequency maps (as Map objects):', maps);
 
     let trackedDatesForHours = new Map();
     let trackedDatesForWeeks = new Map();
@@ -150,11 +150,11 @@ export function useSetLineGraphData() {
             rangeEntry.value += maps[i].map.get(word);
             rangeEntry.videoIDs.push(maps[i].videoID);
           }
-
-          resultByRange = Array.from(rangeMap.values());
         }
       }
     }
+
+    resultByRange = Array.from(rangeMap.values());
 
     // Reverse and update resultsDatesForHours
     // Sort daily by actual date
@@ -188,7 +188,6 @@ export function useSetLineGraphData() {
     resultByWeek = resultsDatesForWeeks.map(
       date => resultByWeek[trackedDatesForWeeks.get(date.label)],
     );
-
 
     // Sort range by MM-DD interpreted as real date
     resultsDatesForRange = (resultByRange || [])

@@ -229,7 +229,7 @@ const DataAnalysis = () => {
 
         <Button
           disabled={isButtonDisabled()}
-          onPress={() => navigation.navigate('Word Cloud', {data: barData})}
+          onPress={() => navigation.navigate('Word Cloud', {data: barData,})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: Styles.windowHeight * 0.4,

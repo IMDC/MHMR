@@ -9,6 +9,7 @@ import {useWordList} from '../../components/wordListProvider';
 import {Button} from '@rneui/themed';
 import WordRemovalModal from '../../components/wordRemovalModal';
 import {useDropdownContext} from '../../components/videoSetProvider';
+import {useSetLineGraphData} from '../../components/lineGraphData';
 
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -19,6 +20,8 @@ const DataAnalysisWordCloud = () => {
   const [filteredWordList, setFilteredWordList] = useState([]);
   const [dropdownValue, setDropdownValue] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+
+  const setLineGraphData = useSetLineGraphData();
 
   const dropdownData = [
     {
@@ -103,8 +106,7 @@ const DataAnalysisWordCloud = () => {
             typeof word.text === 'string' && typeof word.value === 'number',
         )
         .filter(word => !selectedWords.has(word.text))
-        .sort((a, b) => b.value - a.value)
-       
+        .sort((a, b) => b.value - a.value);
 
       setFilteredWordList(cleaned);
       setUpdatedData(cleaned);
@@ -176,6 +178,23 @@ const DataAnalysisWordCloud = () => {
     </View>
   );
 
+  const handleWordClick = wordObj => {
+    const word = wordObj.text;
+
+    const parsed = currentVideoSet.frequencyData
+      .filter(item => typeof item === 'string')
+      .map(item => JSON.parse(item));
+
+    console.log('Clicked word:', word);
+    console.log('First parsed map:', parsed[0]?.map);
+
+    const result = setLineGraphData(parsed, word);
+    navigation.navigate('Line Graph', {
+      word,
+      data: result,
+    });
+  };
+
   return (
     <SafeAreaView>
       {updatedData.length > 1 ? (
@@ -245,6 +264,7 @@ const DataAnalysisWordCloud = () => {
                 padding: 1,
                 fontFamily: 'Arial',
               }}
+              onWordPress={handleWordClick}
             />
           </View>
         </View>
