@@ -35,7 +35,6 @@ async function connectToChatGPT(inputText) {
 }
 
 // Define sentiment weights
-
 type SentimentType = 'Very Negative' | 'Negative' | 'Neutral' | 'Positive' | 'Very Positive';
 const SENTIMENT_WEIGHTS = {
   'Very Negative': -2,
@@ -54,6 +53,23 @@ const scoreToSentiment = (score) => {
   return 'Very Positive';
 };
 
+// Function to normalize bullet points to use '•' 
+function normalizeBulletPoints(text) {
+  return text
+    .split('\n')
+    .map(line => {
+      const trimmedLine = line.trim();
+      // Match lines starting with '-', '•', or '-•'
+      const bulletRegex = /^[-•]\s*(.*)/;
+      const match = trimmedLine.match(bulletRegex);
+      if (match) {
+        return `• ${match[1]}`;
+      }
+      return trimmedLine;
+    })
+    .join('\n');
+}
+
 // New function to get sentiment for a single bullet point
 export const getSentimentForBulletPoint = async (bulletPoint) => {
   const inputText = `Analyze the sentiment of this point and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Point: "${bulletPoint}"`;
@@ -70,6 +86,7 @@ interface SentimentResult {
   sentiment: SentimentType;
   weight: number;
 }
+
 // New function to analyze bullet points and calculate weighted sentiment
 export const getWeightedSentiment = async (bulletPoints) => {
   // Split the bullet points if they're in a single string
@@ -120,9 +137,13 @@ export const getWeightedSentiment = async (bulletPoints) => {
   };
 };
 
-
-
-// Updated sendToChatGPT function to include weighted sentiment analysis
+// New Function to produce appropriate amount of bullet points
+function getOptimalBulletPoints(wordCount) {
+  const min = 3;
+  const max = 7;
+  return Math.min(max, Math.max(min, Math.floor(wordCount / 60)));
+}
+// Updated sendToChatGPT function with improved bullet point generation
 export const sendToChatGPT = async (
   textFileName,
   transcript,
@@ -145,50 +166,60 @@ export const sendToChatGPT = async (
     return [];
   }
 
+  
+  
+  // Calculate optimal number of bullet points based on transcript length
+  const transcriptWordCount = transcript.split(' ').length;
+  const optimalBulletPoints = getOptimalBulletPoints(transcriptWordCount);
+  
   const inputTexts = [
-    `Provide bullet points of the main topics discussed in this video transcript: "${transcript}". ONLY use the • character (Unicode U+2022) to begin each bullet point. Do not use hyphens (-), asterisks (*), or any other symbols.`,
+    `Provide exactly ${optimalBulletPoints} bullet points of the main topics discussed in this video transcript: "${transcript}". 
+    ONLY use the • character (Unicode U+2022) to begin each bullet point. Do not use hyphens (-), asterisks (*), or any other symbols.`,
     `Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
-    `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`,
+    `Analyze the sentiment of this video transcript and return only one of the following labels:
+     Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`,
   ];
 
-  const results = await Promise.all(
-    inputTexts.map(text => connectToChatGPT(text)),
-  );
+  try {
+    // Get all ChatGPT responses
+    const results = await Promise.all(
+      inputTexts.map(text => connectToChatGPT(text)),
+    );
 
-  const updates = results.map((result, index) => {
-    if (result && result.choices && result.choices.length > 0) {
-      const content = result.choices[0].message.content;
-      return {index, content: content.trim()};
-    }
-    return {index, content: null};
-  });
-
-// Function to normalize bullet points to use '•'
-function normalizeBulletPoints(text) {
-  return text
-    .split('\n')
-    .map(line => {
-      const trimmedLine = line.trim();
-      // Match lines starting with '-', '•', or '-•'
-      const bulletRegex = /^[-•]\s*(.*)/;
-      const match = trimmedLine.match(bulletRegex);
-      if (match) {
-        return `• ${match[1]}`;
+    const updates = results.map((result, index) => {
+      if (result && result.choices && result.choices.length > 0) {
+        const content = result.choices[0].message.content;
+        return {index, content: content.trim()};
       }
-      return trimmedLine;
-    })
-    .join('\n');
-  }
+      return {index, content: null};
+    });
 
-  // Get the bullet points for weighted sentiment analysis in the background
-  const bulletPoints = updates.find(u => u.index === 0)?.content;
-  
-  // Process weighted sentiment asynchronously
-  if (bulletPoints) {
-    const normalizedBullets = normalizeBulletPoints(bulletPoints);
+    // Get the bullet points for weighted sentiment analysis
+    const bulletPoints = updates.find(u => u.index === 0)?.content;
+    
+    // Create an initial database write with available information
+    realm.write(() => {
+      const objectId = new Realm.BSON.ObjectId(_id);
+      const video = realm.objectForPrimaryKey('VideoData', objectId);
+      if (video) {
+        updates.forEach(update => {
+          if (update.content !== null) {
+            if (update.index === 0) video.tsOutputBullet = update.content;
+            if (update.index === 1) video.tsOutputSentence = update.content;
+            if (update.index === 2) video.sentiment = update.content; // Initial sentiment as fallback
+          }
+        });
+        video.isConverted = true;
+      }
+    });
 
-    getWeightedSentiment(normalizedBullets).then(weightedSentimentResult => {
-      if (weightedSentimentResult) {
+    // Process weighted sentiment synchronously to ensure it completes before function returns
+    if (bulletPoints) {
+      try {
+        const normalizedBullets = normalizeBulletPoints(bulletPoints);
+        const weightedSentimentResult = await getWeightedSentiment(normalizedBullets);
+        
+        // Update with weighted sentiment in a separate transaction
         realm.write(() => {
           const objectId = new Realm.BSON.ObjectId(_id);
           const video = realm.objectForPrimaryKey('VideoData', objectId);
@@ -201,181 +232,208 @@ function normalizeBulletPoints(text) {
             video.tsOutputBullet = weightedSentimentResult.formattedBulletsWithSentiment;
           }
         });
-        //console.log(`Updated sentiment to weighted value: ${weightedSentimentResult.overallSentiment}`);
+      } catch (error) {
+        console.error('Error calculating weighted sentiment:', error);
+        // Weighted sentiment failed, but basic analysis succeeded, so we can still return data
       }
-    }).catch(error => {
-      console.error('Error calculating weighted sentiment:', error);
-    });
-  }
+    }
 
-  realm.write(() => {
-    const objectId = new Realm.BSON.ObjectId(_id);
-    const video = realm.objectForPrimaryKey('VideoData', objectId);
-    if (video) {
-      updates.forEach(update => {
-        if (update.content !== null) {
-          if (update.index === 0) video.tsOutputBullet = update.content;
-          if (update.index === 1) video.tsOutputSentence = update.content;
-          if (update.index === 2) video.sentiment = update.content; // Initial sentiment as fallback
+    // Return the filtered results
+    return updates.filter(u => u.content !== null).map(u => u.content);
+  } catch (error) {
+    console.error('Error in sendToChatGPT:', error);
+    return [];
+  }
+};
+
+// Updated getSentimentFromChatGPT function with better error handling
+export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
+  try {
+    const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`;
+    const data = await connectToChatGPT(inputText);
+    
+    if (data?.choices && data.choices.length > 0) {
+      const sentiment = data.choices[0].message.content.trim();
+
+      realm.write(() => {
+        const objectId = new Realm.BSON.ObjectId(videoId);
+        const video = realm.objectForPrimaryKey('VideoData', objectId);
+        if (video) {
+          video.sentiment = sentiment;
         }
       });
-      video.isConverted = true;
+
+      return sentiment;
     }
-  });
-
-  // Keep the original return structure
-  return updates.filter(u => u.content !== null).map(u => u.content);
-};
-
-// Your existing getSentimentFromChatGPT function (unchanged)
-export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
-  const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`;
-  const data = await connectToChatGPT(inputText);
-  if (data.choices && data.choices.length > 0) {
-    const sentiment = data.choices[0].message.content.trim();
-
-    realm.write(() => {
-      const objectId = new Realm.BSON.ObjectId(videoId);
-      const video = realm.objectForPrimaryKey('VideoData', objectId);
-      if (video) {
-        video.sentiment = sentiment;
-      }
-    });
-
-    return sentiment;
+    return 'Neutral';
+  } catch (error) {
+    console.error('Error in getSentimentFromChatGPT:', error);
+    return 'Neutral';
   }
-  return 'Neutral';
 };
 
-// Your existing sendVideoSetToChatGPT function with background sentiment analysis
+// Updated sendVideoSetToChatGPT function with improved bullet point quality
 export const sendVideoSetToChatGPT = async (
   realm,
   videoSetVideoIDs,
   selectedVideoSet,
   reportFormat,
 ) => {
-  let returnOutput = [];
-  const videoTranscripts = videoSetVideoIDs.map(videoID => {
-    const objectId = new Realm.BSON.ObjectId(videoID);
-    const video = realm.objectForPrimaryKey('VideoData', objectId);
-    return video ? video.transcript : '';
-  });
-  
-  const isArrayEmptyOrOnlyEmptyStrings = arr => {
-    return arr.length === 0 || arr.every(item => item.trim() === '');
-  };
-  
-  if (isArrayEmptyOrOnlyEmptyStrings(videoTranscripts)) {
-    realm.write(() => {
-      selectedVideoSet.isSummaryGenerated = false;
+  try {
+    let returnOutput = [];
+    const videoTranscripts = videoSetVideoIDs.map(videoID => {
+      const objectId = new Realm.BSON.ObjectId(videoID);
+      const video = realm.objectForPrimaryKey('VideoData', objectId);
+      return video ? video.transcript : '';
     });
-    console.log('No videos selected for summarization');
-    return ['', ''];
-  } else {
-    console.log('Video Transcripts in Set:', videoTranscripts);
-    const combinedTranscripts = videoTranscripts.join(' ');
-    const transcriptWordCount = combinedTranscripts.split(' ').length;
-    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2);
+    
+    const isArrayEmptyOrOnlyEmptyStrings = arr => {
+      return arr.length === 0 || arr.every(item => item.trim() === '');
+    };
+    
+    if (isArrayEmptyOrOnlyEmptyStrings(videoTranscripts)) {
+      realm.write(() => {
+        selectedVideoSet.isSummaryGenerated = false;
+      });
+      console.log('No videos selected for summarization');
+      return ['', ''];
+    } else {
+      console.log('Video Transcripts in Set:', videoTranscripts);
+      const combinedTranscripts = videoTranscripts.join(' ');
+      const transcriptWordCount = combinedTranscripts.split(' ').length;
+      const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2);
 
-    try {
-      let inputTextBullet = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. ONLY use the • character (Unicode U+2022) to begin each bullet point. Do not use hyphens (-), asterisks (*), or any other symbols.`;
+      const optimalBulletPoints = getOptimalBulletPoints(transcriptWordCount);
+
+      let inputTextBullet = `Summarize the following user's selected video transcripts into exactly ${optimalBulletPoints} high-impact bullet points: ${videoTranscripts}. 
+      Make the total word count of the summary ${maxSummaryWords} words or less. 
+      Focus ONLY on the most significant information and key insights.
+      ONLY use the • character (Unicode U+2022) to begin each bullet point. 
+      Do not use hyphens (-), asterisks (*), or any other symbols.
+      Each bullet point should be concise but informative.
+      Avoid redundant or less important information.`;
+      
       let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
       
+      // Get both summaries in parallel
       const [dataSentence, dataBullet] = await Promise.all([
         connectToChatGPT(inputTextSentence),
         connectToChatGPT(inputTextBullet)
       ]);
       
-      // Handle sentence summary
-      if (dataSentence.choices && dataSentence.choices.length > 0) {
-        const outputText = dataSentence.choices[0].message.content;
-        
-        realm.write(() => {
-          selectedVideoSet.summaryAnalysisSentence = outputText;
-          selectedVideoSet.isSummaryGenerated = true;
-        });
-        
-        returnOutput.push(outputText);
-        console.log('Set summary analysis in sentence form:', selectedVideoSet.summaryAnalysisSentence);
+      let sentenceSummary = '';
+      let bulletSummary = '';
+      
+      // Process sentence summary
+      if (dataSentence?.choices && dataSentence.choices.length > 0) {
+        sentenceSummary = dataSentence.choices[0].message.content;
+        returnOutput.push(sentenceSummary);
       } else {
-        throw new Error('Invalid response from ChatGPT API');
+        console.error('Invalid response from ChatGPT API for sentence summary');
+        returnOutput.push('');
       }
       
-      // Handle bullet point summary
-      if (dataBullet.choices && dataBullet.choices.length > 0) {
-        const outputText = dataBullet.choices[0].message.content;
-        
-        realm.write(() => {
-          selectedVideoSet.summaryAnalysisBullet = outputText;
-        });
-        
-        returnOutput.push(outputText);
-        console.log('Set summary analysis in bullet form:', selectedVideoSet.summaryAnalysisBullet);
-        
-        // Calculate weighted sentiment from bullet points in the background
-        getWeightedSentiment(outputText).then(weightedSentimentResult => {
-          if (weightedSentimentResult) {
-            realm.write(() => {
-              // Update the sentiment of the video set with the weighted calculation
-              selectedVideoSet.sentiment = weightedSentimentResult.overallSentiment;
-              // Store additional data
-              selectedVideoSet.sentimentScore = weightedSentimentResult.averageScore;
-              selectedVideoSet.bulletSentiments = JSON.stringify(weightedSentimentResult.bulletSentiments);
-            });
-            
-            console.log('Updated video set sentiment to:', weightedSentimentResult.overallSentiment);
-          }
-        }).catch(error => {
-          console.error('Error calculating weighted sentiment for video set:', error);
-        });
+      // Process bullet point summary
+      if (dataBullet?.choices && dataBullet.choices.length > 0) {
+        bulletSummary = dataBullet.choices[0].message.content;
+        returnOutput.push(bulletSummary);
       } else {
-        throw new Error('Invalid response from ChatGPT API');
+        console.error('Invalid response from ChatGPT API for bullet summary');
+        returnOutput.push('');
       }
-    } catch (error) {
-      console.error('Error:', error);
+      
+      // Process weighted sentiment synchronously before returning
+      let weightedSentimentResult = null;
+      if (bulletSummary) {
+        try {
+          weightedSentimentResult = await getWeightedSentiment(bulletSummary);
+        } catch (error) {
+          console.error('Error calculating weighted sentiment for video set:', error);
+          // Continue with basic summaries even if sentiment analysis fails
+        }
+      }
+      
+      // Use a single write transaction for all updates to improve database performance
+      realm.write(() => {
+        selectedVideoSet.summaryAnalysisSentence = sentenceSummary;
+        selectedVideoSet.summaryAnalysisBullet = bulletSummary;
+        selectedVideoSet.isSummaryGenerated = true;
+        
+        // Add sentiment data if available
+        if (weightedSentimentResult) {
+          selectedVideoSet.sentiment = weightedSentimentResult.overallSentiment;
+          selectedVideoSet.sentimentScore = weightedSentimentResult.averageScore;
+          selectedVideoSet.bulletSentiments = JSON.stringify(weightedSentimentResult.bulletSentiments);
+        }
+      });
+      
+      console.log('Video Set returnOutput:', returnOutput);
+      return returnOutput;
     }
-    
-    console.log('Video Set returnOutput:', returnOutput);
-    return returnOutput;
+  } catch (error) {
+    console.error('Error in sendVideoSetToChatGPT:', error);
+    return ['', ''];
   }
 };
 
-// Updated generateVideoSummary to maintain original return structure but analyze sentiment in background
+// Updated function to get more focused bullet points
 export const generateVideoSummary = async (transcript) => {
-  const transcriptWordCount = transcript.split(' ').length;
-  const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2); // 20% of original length
-
-  const inputTextBullet = `Summarize the following transcript into a concise summary: ${transcript}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in bullet points using \u2022`;
-  const inputTextSentence = `Summarize the following transcript into a concise summary: ${transcript}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
-
   try {
+    const transcriptWordCount = transcript.split(' ').length;
+    const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2); // 20% of original length
+    
+    // Calculate optimal number of bullet points based on transcript length
+    // For short transcripts: fewer points, for longer ones: more points but still limited
+    const minBulletPoints = 3;
+    const maxBulletPoints = 7;
+    const optimalBulletPoints = Math.min(maxBulletPoints, 
+      Math.max(minBulletPoints, Math.floor(transcriptWordCount / 100))
+    );
+
+    const inputTextBullet = `Summarize the following transcript into exactly ${optimalBulletPoints} high-quality bullet points: ${transcript}. 
+    Make the total word count of the summary ${maxSummaryWords} words or less. 
+    Each bullet point should be concise but informative.
+    Use the • character (Unicode U+2022) for bullet points.
+    Avoid redundant information.`;
+    
+    const inputTextSentence = `Summarize the following transcript into a concise summary: ${transcript}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+
+    // Get both summaries in parallel
     const [bulletResponse, sentenceResponse] = await Promise.all([
       connectToChatGPT(inputTextBullet),
       connectToChatGPT(inputTextSentence),
     ]);
 
-    const bulletContent = bulletResponse.choices[0].message.content;
-    const sentenceContent = sentenceResponse.choices[0].message.content;
+    // Extract content safely with error checking
+    const bulletContent = bulletResponse?.choices?.[0]?.message?.content || `• ${transcript}`;
+    const sentenceContent = sentenceResponse?.choices?.[0]?.message?.content || transcript;
     
-    // Start sentiment analysis in the background
-    getWeightedSentiment(bulletContent).then(weightedSentimentResult => {
-      console.log('Generated weighted sentiment:', weightedSentimentResult.overallSentiment);
-      // This data is available but not added to the return structure
-      // You can use it elsewhere if needed
-    }).catch(error => {
+    // Process weighted sentiment before returning
+    let weightedSentiment = null;
+    try {
+      weightedSentiment = await getWeightedSentiment(bulletContent);
+      console.log('Generated weighted sentiment:', weightedSentiment.overallSentiment);
+    } catch (error) {
       console.error('Error calculating weighted sentiment:', error);
-    });
+      // Continue with basic summaries even if sentiment analysis fails
+    }
     
-    // Keep original return structure
+    // Return the complete result including sentiment data
     return {
       bullet: bulletContent,
       sentence: sentenceContent,
+      sentiment: weightedSentiment?.overallSentiment || 'Neutral',
+      sentimentScore: weightedSentiment?.averageScore || 0,
+      bulletSentiments: weightedSentiment?.bulletSentiments || [],
     };
   } catch (error) {
     console.error('Error generating summary:', error);
     return {
       bullet: `• ${transcript}`,
       sentence: transcript,
+      sentiment: 'Neutral',
+      sentimentScore: 0,
+      bulletSentiments: [],
     };
   }
 };
