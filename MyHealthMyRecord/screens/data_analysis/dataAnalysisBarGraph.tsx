@@ -94,21 +94,20 @@ const DataAnalysisBarGraph = () => {
 
     const cleaned = Array.from(mergedMap.entries())
       .map(([text, value]) => ({text, value}))
-      .filter(item => item.text && item.text.toLowerCase() !== 'hesitation');
+      .filter(item => item.text && item.text.toLowerCase() !== 'hesitation')
+      .sort((a, b) => b.value - a.value);
 
     setBarData(cleaned);
     updateWordList(cleaned);
   }, [currentVideoSet]);
 
   useEffect(() => {
-    if (!editModalVisible) {
-      updateFilteredBarData();
-    }
-  }, [barData, selectedWords, editModalVisible]);
+    updateFilteredBarData();
+  }, [wordList, selectedWords, editModalVisible]);
 
   const updateFilteredBarData = () => {
-    const cleaned = barData.filter(item => !selectedWords.has(item.text));
-    setFilteredBarData(chunkData(cleaned));
+    const cleaned = wordList.filter(item => !selectedWords.has(item.text));
+    setFilteredBarData(cleaned);
   };
 
   const chunkData = (data, max = 50) =>
@@ -165,12 +164,13 @@ const DataAnalysisBarGraph = () => {
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
         <Text
           style={{
+            textAlign: 'center',
             padding: 20,
             fontSize: 20,
             color: 'black',
             fontWeight: 'bold',
           }}>
-          {currentVideoSet?.name} - Word Frequency
+          Word Frequency of {currentVideoSet?.name}
         </Text>
         <View style={{height: Dimensions.get('window').height * 0.75}}>
           <ScrollView horizontal ref={horizontalScrollRef}>
@@ -277,7 +277,7 @@ const DataAnalysisBarGraph = () => {
           </Text>
           <View style={{alignItems: 'center', marginTop: 20}}>
             <Button
-              title="Remove Words"
+              title="Word settings"
               onPress={() => setEditModalVisible(true)}
               color={Styles.MHMRBlue}
               radius={50}

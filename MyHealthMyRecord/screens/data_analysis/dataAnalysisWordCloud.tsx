@@ -1,11 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
+import {SafeAreaView, View, Text, StyleSheet, Dimensions} from 'react-native';
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import WordCloud from 'rn-wordcloud';
@@ -15,6 +9,7 @@ import {useWordList} from '../../components/wordListProvider';
 import {Button} from '@rneui/themed';
 import WordRemovalModal from '../../components/wordRemovalModal';
 import {useDropdownContext} from '../../components/videoSetProvider';
+import {useSetLineGraphData} from '../../components/lineGraphData';
 
 const DataAnalysisWordCloud = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -26,6 +21,8 @@ const DataAnalysisWordCloud = () => {
   const [dropdownValue, setDropdownValue] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
+  const setLineGraphData = useSetLineGraphData();
+
   const dropdownData = [
     {
       label: 'Palette 1',
@@ -35,12 +32,30 @@ const DataAnalysisWordCloud = () => {
     {
       label: 'Palette 2',
       value: 'Wong',
-      colors: ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'],
+      colors: [
+        '#000000',
+        '#E69F00',
+        '#56B4E9',
+        '#009E73',
+        '#F0E442',
+        '#0072B2',
+        '#D55E00',
+        '#CC79A7',
+      ],
     },
     {
       label: 'Palette 3',
       value: 'Tol',
-      colors: ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'],
+      colors: [
+        '#332288',
+        '#117733',
+        '#44AA99',
+        '#88CCEE',
+        '#DDCC77',
+        '#CC6677',
+        '#AA4499',
+        '#882255',
+      ],
     },
   ];
 
@@ -69,7 +84,13 @@ const DataAnalysisWordCloud = () => {
 
       const cleaned = Array.from(mergedMap.entries())
         .map(([text, value]) => ({text, value}))
-        .filter(item => item.text && item.text.toLowerCase() !== 'hesitation');
+        .filter(
+          item =>
+            item.text &&
+            item.text.toLowerCase() !== 'hesitation' &&
+            item.value > 2 &&
+            !selectedWords.has(item.text),
+        );
 
       updateWordList(cleaned);
     } catch (err) {
@@ -80,14 +101,15 @@ const DataAnalysisWordCloud = () => {
   useEffect(() => {
     if (!editModalVisible) {
       const cleaned = (wordList || [])
-      .filter(word => typeof word.text === 'string' && typeof word.value === 'number')
-      .filter(word => !selectedWords.has(word.text))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 50); 
-    
-    setFilteredWordList(cleaned);
-    setUpdatedData(cleaned);
-    
+        .filter(
+          word =>
+            typeof word.text === 'string' && typeof word.value === 'number',
+        )
+        .filter(word => !selectedWords.has(word.text))
+        .sort((a, b) => b.value - a.value);
+
+      setFilteredWordList(cleaned);
+      setUpdatedData(cleaned);
     }
   }, [editModalVisible, wordList, selectedWords]);
 
@@ -95,7 +117,9 @@ const DataAnalysisWordCloud = () => {
     if (dropdownValue && filteredWordList.length > 0) {
       const validated = validateData(filteredWordList);
       const selectedPalette =
-        dropdownData.find(item => item.value === dropdownValue)?.colors.map(color => ({color})) || [];
+        dropdownData
+          .find(item => item.value === dropdownValue)
+          ?.colors.map(color => ({color})) || [];
       setUpdatedData(addPalette(validated, selectedPalette));
     }
   }, [dropdownValue]);
@@ -154,6 +178,23 @@ const DataAnalysisWordCloud = () => {
     </View>
   );
 
+  const handleWordClick = wordObj => {
+    const word = wordObj.text;
+
+    const parsed = currentVideoSet.frequencyData
+      .filter(item => typeof item === 'string')
+      .map(item => JSON.parse(item));
+
+    console.log('Clicked word:', word);
+    console.log('First parsed map:', parsed[0]?.map);
+
+    const result = setLineGraphData(parsed, word);
+    navigation.navigate('Line Graph', {
+      word,
+      data: result,
+    });
+  };
+
   return (
     <SafeAreaView>
       {updatedData.length > 1 ? (
@@ -161,10 +202,11 @@ const DataAnalysisWordCloud = () => {
           <View
             style={{
               flexDirection: 'row',
-              marginVertical: 10,
-              justifyContent: 'center',
+              marginTop: 10,
+              paddingHorizontal: 20,
+              justifyContent: 'space-evenly',
             }}>
-            <View style={{flexDirection: 'row', paddingHorizontal: 2}}>
+            <View style={{flexDirection: 'row',}}>
               <Text
                 style={{
                   textAlign: 'center',
@@ -172,9 +214,9 @@ const DataAnalysisWordCloud = () => {
                   fontWeight: 'bold',
                   color: 'black',
                   paddingVertical: 10,
-                  paddingHorizontal: 2,
+                  paddingHorizontal: 4,
                 }}>
-                Select Color Palette:
+                Select Color Palette: 
               </Text>
 
               <Dropdown
@@ -183,7 +225,7 @@ const DataAnalysisWordCloud = () => {
                 maxHeight={150}
                 style={{
                   height: 50,
-                  width: Styles.windowWidth / 3,
+                  width: Styles.windowWidth / 2.5,
                   paddingHorizontal: 20,
                   backgroundColor: '#DBDBDB',
                   borderRadius: 22,
@@ -198,11 +240,11 @@ const DataAnalysisWordCloud = () => {
             </View>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Button
-                title="Remove words"
+                title="Word settings"
                 onPress={() => setEditModalVisible(true)}
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{width: 200}}
+                containerStyle={{width: 150}}
               />
             </View>
           </View>
@@ -213,7 +255,6 @@ const DataAnalysisWordCloud = () => {
               options={{
                 words: updatedData,
                 verticalEnabled: true,
-                rotateRatio: 0.8,
                 minFont: Styles.windowHeight * 0.0225,
                 maxFont: Styles.windowHeight * 0.05,
                 fontOffset: 0.6,
@@ -222,6 +263,7 @@ const DataAnalysisWordCloud = () => {
                 padding: 1,
                 fontFamily: 'Arial',
               }}
+              onWordPress={handleWordClick}
             />
           </View>
         </View>
@@ -231,11 +273,11 @@ const DataAnalysisWordCloud = () => {
         </Text>
       )}
       {editModalVisible && (
-  <WordRemovalModal
-    setEditModalVisible={setEditModalVisible}
-    filteredWords={wordList}
-  />
-)}
+        <WordRemovalModal
+          setEditModalVisible={setEditModalVisible}
+          filteredWords={wordList}
+        />
+      )}
     </SafeAreaView>
   );
 };

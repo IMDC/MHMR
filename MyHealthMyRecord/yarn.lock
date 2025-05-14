@@ -7440,10 +7440,10 @@ rimraf@~2.6.2:
   dependencies:
     glob "^7.1.3"
 
-rn-wordcloud@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.npmjs.org/rn-wordcloud/-/rn-wordcloud-1.0.3.tgz"
-  integrity sha512-lOxrJqoJgFW58h5Ibpt98SvweZzHSd0GNVVIVNEbkOz0unnvXtDGtsyXZ3YkU2V75fhEwWspt0NUfSaz/e+7OQ==
+rn-wordcloud@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npmjs.org/rn-wordcloud/-/rn-wordcloud-1.0.6.tgz"
+  integrity sha512-9rOj20jFm3TKZaQ0vhW8N78h2gTXGu3mRbRpAdWp3DtclKubghWavawNc/WO2L9uZ9ZcBeYupV5v1ZyszBNFgg==
   dependencies:
     prop-types "^15.8.1"
 

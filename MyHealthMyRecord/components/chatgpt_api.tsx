@@ -23,7 +23,7 @@ async function connectToChatGPT(inputText) {
           },
           {role: 'user', content: inputText},
         ],
-        max_tokens: 150,
+        max_tokens: 400,
       }),
     });
     const data = await response.json();

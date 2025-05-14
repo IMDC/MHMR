@@ -37,7 +37,7 @@ export function useSetLineGraphData() {
   const setLineGraphData = (freqMaps: any, word: string) => {
     let maps = accessFreqMaps(freqMaps); // convert maps to proper Map objects
 
-    console.log('Parsed frequency maps (as Map objects):', maps);
+    // console.log('Parsed frequency maps (as Map objects):', maps);
 
     let trackedDatesForHours = new Map();
     let trackedDatesForWeeks = new Map();
@@ -70,6 +70,25 @@ export function useSetLineGraphData() {
       value: 0,
       videoIDs: [],
     };
+
+    // Pre-fill all range dates with zero values using a Map for fast updates
+    const rangeMap = new Map<
+      string,
+      {label: string; value: number; videoIDs: string[]}
+    >();
+    const rangeDateCursor = new Date(earliestDate);
+
+    while (rangeDateCursor <= latestDate) {
+      const monthDayKey = `${
+        rangeDateCursor.getMonth() + 1
+      }-${rangeDateCursor.getDate()}`;
+      rangeMap.set(monthDayKey, {
+        label: monthDayKey,
+        value: 0,
+        videoIDs: [],
+      });
+      rangeDateCursor.setDate(rangeDateCursor.getDate() + 1);
+    }
 
     for (let i = 0; i < maps.length; i++) {
       let saveDate = new Date(maps[i].datetime);
@@ -125,31 +144,21 @@ export function useSetLineGraphData() {
             saveDate.getMonth() + 1
           }-${saveDate.getDate()}`; // e.g., "2-25" for February 25
 
-          // Check if the month-day key already exists in resultByRange
-          let rangeEntry = resultByRange.find(
-            entry => entry.label === monthDayKey,
-          );
+          const rangeEntry = rangeMap.get(monthDayKey);
 
-          if (!rangeEntry) {
-            // If the entry doesn't exist, create a new one
-            rangeEntry = {
-              label: monthDayKey, // e.g., "2-25"
-              value: 0,
-              videoIDs: [],
-            };
-            resultByRange.push(rangeEntry);
+          if (rangeEntry) {
+            rangeEntry.value += maps[i].map.get(word);
+            rangeEntry.videoIDs.push(maps[i].videoID);
           }
-
-          // Update the range entry
-          rangeEntry.value += maps[i].map.get(word);
-          rangeEntry.videoIDs.push(maps[i].videoID);
         }
       }
     }
 
+    resultByRange = Array.from(rangeMap.values());
+
     // Reverse and update resultsDatesForHours
     // Sort daily by actual date
-    resultsDatesForHours = (resultsDatesForHours || [])
+    resultsDatesForHours = resultsDatesForHours
       .sort((a, b) => new Date(a.label).getTime() - new Date(b.label).getTime())
       .map((item, index) => ({
         ...item,
@@ -157,8 +166,13 @@ export function useSetLineGraphData() {
         videoIDs: Array.from(new Set(item.videoIDs || [])),
       }));
 
+    // Sort resultByHour to match resultsDatesForHours
+    resultByHour = resultsDatesForHours.map(
+      date => resultByHour[trackedDatesForHours.get(date.label)],
+    );
+
     // Sort weekly by week start date
-    resultsDatesForWeeks = (resultsDatesForWeeks || [])
+    resultsDatesForWeeks = resultsDatesForWeeks
       .sort((a, b) => {
         const [startA] = a.label.split(' - ');
         const [startB] = b.label.split(' - ');
@@ -169,6 +183,11 @@ export function useSetLineGraphData() {
         value: index,
         videoIDs: Array.from(new Set(item.videoIDs || [])),
       }));
+
+    // Sort resultByWeek to match resultsDatesForWeeks
+    resultByWeek = resultsDatesForWeeks.map(
+      date => resultByWeek[trackedDatesForWeeks.get(date.label)],
+    );
 
     // Sort range by MM-DD interpreted as real date
     resultsDatesForRange = (resultByRange || [])

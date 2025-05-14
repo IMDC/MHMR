@@ -10,6 +10,7 @@ import {
 import {Button, CheckBox} from '@rneui/themed';
 import * as Styles from '../assets/util/styles';
 import {useWordList} from '../components/wordListProvider';
+import {Input} from '@rneui/base';
 
 const MemoizedCheckBox = React.memo(({title, checked, onPress}) => (
   <CheckBox
@@ -22,8 +23,14 @@ const MemoizedCheckBox = React.memo(({title, checked, onPress}) => (
 ));
 
 const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
-  const {selectedWords, toggleWordSelection, persistSelectedWords} =
-    useWordList();
+  const {
+    selectedWords,
+    toggleWordSelection,
+    persistSelectedWords,
+    minFrequency,
+    setMinFrequency,
+    updateWordList,
+  } = useWordList();
 
   const handleToggleWordSelection = useCallback(
     word => {
@@ -34,6 +41,7 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
 
   const handleClose = () => {
     persistSelectedWords();
+    updateWordList(minFrequency);
     setEditModalVisible(false);
   };
 
@@ -44,24 +52,56 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
       visible={true}
       onRequestClose={() => setEditModalVisible(false)}>
       <View style={styles.modalView}>
-        <Text style={styles.modalText}>
-          Select words to remove from visualization
-        </Text>
-        <FlatList
-          data={filteredWords}
-          renderItem={({item}) => (
-            <MemoizedCheckBox
-              title={item.text}
-              checked={selectedWords.has(item.text)}
-              onPress={() => handleToggleWordSelection(item.text)}
+        <View accessibilityLabel="Word Removal" style={{height: '65%'}}>
+          <Text style={styles.modalText}>
+            Select words to remove from visualization
+          </Text>
+          <FlatList
+            persistentScrollbar={true}
+            data={filteredWords}
+            renderItem={({item}) => (
+              <MemoizedCheckBox
+                title={item.text}
+                checked={selectedWords.has(item.text)}
+                onPress={() => handleToggleWordSelection(item.text)}
+              />
+            )}
+            keyExtractor={item => item.text}
+            extraData={selectedWords}
+            initialNumToRender={12}
+            numColumns={3}
+            contentContainerStyle={styles.flatListContent}
+          />
+        </View>
+        <View accessibilityLabel="Settings">
+          <Text style={styles.modalText}>Word Settings</Text>
+          <View style={{flexDirection: 'row', height: '20%'}}>
+            <View style={{alignContent: 'center', justifyContent: 'center'}}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  justifyContent: 'center',
+                  fontSize: 16,
+                }}>
+                Show words that appear more than or equal to:
+              </Text>
+            </View>
+
+            <Input
+              placeholder={minFrequency.toString()}
+              keyboardType="numeric"
+              onChangeText={text => {
+                const frequency = parseInt(text, 10);
+                if (!isNaN(frequency)) {
+                  setMinFrequency(frequency);
+                }
+              }}
+              inputStyle={{textAlign: 'center'}}
+              containerStyle={{width: '30%', justifyContent: 'center'}}
             />
-          )}
-          keyExtractor={item => item.text}
-          extraData={selectedWords}
-          initialNumToRender={12}
-          numColumns={3}
-          contentContainerStyle={styles.flatListContent}
-        />
+          </View>
+        </View>
+
         <View style={styles.buttonContainer}>
           <Button
             title="Close"
@@ -92,6 +132,7 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
+    marginTop: 15,
     textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
@@ -107,13 +148,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+
     width: '100%',
-    marginTop: 20,
+    marginBottom: 0,
   },
   buttonStyle: {
     flex: 1,
-    marginHorizontal: 10,
   },
 });
 

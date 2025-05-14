@@ -45,17 +45,15 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
 
       const content = await RNFS.readFile(fileUri, 'utf8');
 
-      // Regex to split based on "=== Copy of filename ==="
-      const transcriptChunks = content
-        .split(/=== Copy of (.*?) ===/g)
-        .filter(Boolean);
+      // Regex to split based on "=== filename ==="
+      const transcriptChunks = content.split(/=== (.*?) ===/g).filter(Boolean);
 
       const videoDataList: VideoData[] = [];
 
       realm.write(() => {
         for (let i = 0; i < transcriptChunks.length; i += 2) {
-          const filename = transcriptChunks[i + 1]?.trim();
-          const transcriptText = transcriptChunks[i]?.trim();
+          const filename = transcriptChunks[i]?.trim();
+          const transcriptText = transcriptChunks[i + 1]?.trim();
 
           if (!filename || !transcriptText) continue;
 

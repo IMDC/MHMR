@@ -6,9 +6,10 @@ import {
   TextInput,
   View,
   TouchableOpacity,
-  Dimensions,
   FlatList,
-  Alert,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from 'react-native';
 import {useRealm} from '../../models/VideoData';
 import {useDropdownContext} from '../../components/videoSetProvider';
@@ -23,6 +24,13 @@ import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../../components/networkProvider';
 import {useLoader} from '../../components/loaderProvider';
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const neutral = require('../../assets/images/emojis/neutral.png');
 const sad = require('../../assets/images/emojis/sad.png');
@@ -44,7 +52,10 @@ const DataAnalysisTextSummary = () => {
   const [showTranscript, setShowTranscript] = useState({});
   const realm = useRealm();
   const {showLoader, hideLoader} = useLoader();
-
+  const [refreshSummary, setRefreshSummary] = useState(false);
+  const previousVideoSetVideoIDsRef = useRef<Set<string>>(
+    new Set(videoSetVideoIDs),
+  );
   const [sentimentCounts, setSentimentCounts] = useState({
     veryPositive: 0,
     positive: 0,
@@ -234,6 +245,63 @@ const DataAnalysisTextSummary = () => {
       </Text>
     </View>
   );
+
+  useEffect(() => {
+    const updateVideoSetSummary = async () => {
+      if (online && currentVideoSet) {
+        const previousVideoSetVideoIDs = previousVideoSetVideoIDsRef.current;
+        const newVideosAdded = videoSetVideoIDs.some(
+          videoID => !previousVideoSetVideoIDs.has(videoID),
+        );
+
+        if (
+          currentVideoSet.isSummaryGenerated === false ||
+          newVideosAdded ||
+          refreshSummary
+        ) {
+          showLoader('Generating video set summary...');
+          const summary = await sendVideoSetToChatGPT(
+            realm,
+            videoSetVideoIDs,
+            currentVideoSet,
+            reportFormat,
+          );
+
+          realm.write(() => {
+            const videoSetToUpdate = realm.objectForPrimaryKey(
+              'VideoSet',
+              currentVideoSet._id,
+            );
+            if (videoSetToUpdate) {
+              videoSetToUpdate.summaryAnalysisSentence = summary[0];
+              videoSetToUpdate.summaryAnalysisBullet = summary[1];
+            }
+          });
+
+          if (reportFormat === 'bullet') {
+            setVideoSetSummary(summary[1]);
+            console.log('videoSetSummary Bullet:', summary[1]);
+          } else {
+            setVideoSetSummary(summary[0]);
+            console.log('videoSetSummary Sentence:', summary[0]);
+          }
+
+          hideLoader();
+        }
+        previousVideoSetVideoIDsRef.current = new Set(videoSetVideoIDs);
+        setRefreshSummary(false);
+      }
+    };
+
+    updateVideoSetSummary();
+  }, [
+    currentVideoSet,
+    videoSetVideoIDs,
+    realm,
+    reportFormat,
+    online,
+    refreshSummary,
+  ]);
 
   useEffect(() => {
     const getVideoData = async () => {
@@ -451,23 +519,6 @@ const DataAnalysisTextSummary = () => {
                 {showTranscript[video._id] && (
                   <View style={{flexDirection: 'row'}}>
                     <Text style={styles.transcript}>{video.transcript}</Text>
-                    {online && (
-                      <View
-                        style={[
-                          styles.buttonContainer,
-                          {justifyContent: 'center'},
-                        ]}>
-                        <View style={styles.buttonWrapper}>
-                          <Button
-                            buttonStyle={{width: 150}}
-                            radius={50}
-                            title="Edit transcript"
-                            onPress={() => handleEdit(video)}
-                            color={Styles.MHMRBlue}
-                          />
-                        </View>
-                      </View>
-                    )}
                   </View>
                 )}
               </>
@@ -547,7 +598,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: 'black',
     marginBottom: 10,
-    width: Dimensions.get('window').width - 200,
   },
   output: {
     fontSize: 20,
