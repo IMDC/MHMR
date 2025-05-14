@@ -52,8 +52,8 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
 
       realm.write(() => {
         for (let i = 0; i < transcriptChunks.length; i += 2) {
-          const filename = transcriptChunks[i - 1]?.trim();
-          const transcriptText = transcriptChunks[i]?.trim();
+          const filename = transcriptChunks[i]?.trim();
+          const transcriptText = transcriptChunks[i + 1]?.trim();
 
           if (!filename || !transcriptText) continue;
 
