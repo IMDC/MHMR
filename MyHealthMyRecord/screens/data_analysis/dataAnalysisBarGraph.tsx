@@ -14,6 +14,7 @@ import {
   Modal,
   StyleSheet,
   Alert,
+  FlatList,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
@@ -36,6 +37,9 @@ const DataAnalysisBarGraph = () => {
   const {currentVideoSet} = useDropdownContext();
   const {wordList, selectedWords, toggleWordSelection, updateWordList} =
     useWordList();
+
+  const CHUNK_SIZE = 20;
+  const [visibleBars, setVisibleBars] = useState(CHUNK_SIZE);
 
   const [barData, setBarData] = useState([]);
   const [filteredBarData, setFilteredBarData] = useState([]);
@@ -107,7 +111,8 @@ const DataAnalysisBarGraph = () => {
 
   const updateFilteredBarData = () => {
     const cleaned = wordList.filter(item => !selectedWords.has(item.text));
-    setFilteredBarData(cleaned);
+    setFilteredBarData(cleaned.slice(0, CHUNK_SIZE));
+    setBarData(cleaned); // Keep full data for later loads
   };
 
   const chunkData = (data, max = 50) =>
@@ -159,6 +164,15 @@ const DataAnalysisBarGraph = () => {
     );
   }
 
+  const loadMoreBars = () => {
+    if (visibleBars >= barData.length) return;
+
+    const newVisible = Math.min(visibleBars + CHUNK_SIZE, barData.length);
+    setFilteredBarData(barData.slice(0, newVisible));
+    setVisibleBars(newVisible);
+  };
+  
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -173,7 +187,22 @@ const DataAnalysisBarGraph = () => {
           Word Frequency of {currentVideoSet?.name}
         </Text>
         <View style={{height: Dimensions.get('window').height * 0.75}}>
-          <ScrollView horizontal ref={horizontalScrollRef}>
+          <ScrollView
+            horizontal
+            ref={horizontalScrollRef}
+            onScroll={({nativeEvent}) => {
+              const {layoutMeasurement, contentOffset, contentSize} =
+                nativeEvent;
+              const paddingToEnd = 50;
+
+              if (
+                layoutMeasurement.width + contentOffset.x >=
+                contentSize.width - paddingToEnd
+              ) {
+                loadMoreBars();
+              }
+            }}
+            scrollEventThrottle={16}>
             <View style={{width: 50, justifyContent: 'center'}}>
               <Text
                 style={{
@@ -377,18 +406,21 @@ const DataAnalysisBarGraph = () => {
             <Text style={styles.modalText}>
               View videos with this sentiment
             </Text>
-            {videoIDs.map((video, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  navigation.navigate('Fullscreen Video', {
-                    id: video?._id,
-                  });
-                  setModalVisible(false);
-                }}>
-                <Text style={styles.videoIDText}>{video?.title}</Text>
-              </TouchableOpacity>
-            ))}
+            <FlatList
+              data={videoIDs}
+              keyExtractor={item => item._id.toString()}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('Fullscreen Video', {
+                      id: item._id,
+                    });
+                    setModalVisible(false);
+                  }}>
+                  <Text style={styles.videoIDText}>{item.title}</Text>
+                </TouchableOpacity>
+              )}
+            />
             <Button
               title="Close"
               color={Styles.MHMRBlue}
@@ -412,6 +444,7 @@ const DataAnalysisBarGraph = () => {
 const styles = StyleSheet.create({
   modalView: {
     margin: 20,
+    height: windowHeight > 800 ? '60%' : '50%', // Adjust for taller screens
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 35,
