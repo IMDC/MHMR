@@ -38,9 +38,6 @@ const DataAnalysisBarGraph = () => {
   const {wordList, selectedWords, toggleWordSelection, updateWordList} =
     useWordList();
 
-  const CHUNK_SIZE = 20;
-  const [visibleBars, setVisibleBars] = useState(CHUNK_SIZE);
-
   const [barData, setBarData] = useState([]);
   const [filteredBarData, setFilteredBarData] = useState([]);
   const [barGraphVertical, setBarGraphVertical] = useState(true);
@@ -111,14 +108,8 @@ const DataAnalysisBarGraph = () => {
 
   const updateFilteredBarData = () => {
     const cleaned = wordList.filter(item => !selectedWords.has(item.text));
-    setFilteredBarData(cleaned.slice(0, CHUNK_SIZE));
-    setBarData(cleaned); // Keep full data for later loads
+    setFilteredBarData(cleaned);
   };
-
-  const chunkData = (data, max = 50) =>
-    data.length > max
-      ? [...data].sort((a, b) => b.value - a.value).slice(0, max)
-      : data;
 
   const handleWordSelection = (label: string) => {
     const parsed = currentVideoSet.frequencyData
@@ -164,15 +155,6 @@ const DataAnalysisBarGraph = () => {
     );
   }
 
-  const loadMoreBars = () => {
-    if (visibleBars >= barData.length) return;
-
-    const newVisible = Math.min(visibleBars + CHUNK_SIZE, barData.length);
-    setFilteredBarData(barData.slice(0, newVisible));
-    setVisibleBars(newVisible);
-  };
-  
-
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -190,19 +172,7 @@ const DataAnalysisBarGraph = () => {
           <ScrollView
             horizontal
             ref={horizontalScrollRef}
-            onScroll={({nativeEvent}) => {
-              const {layoutMeasurement, contentOffset, contentSize} =
-                nativeEvent;
-              const paddingToEnd = 50;
-
-              if (
-                layoutMeasurement.width + contentOffset.x >=
-                contentSize.width - paddingToEnd
-              ) {
-                loadMoreBars();
-              }
-            }}
-            scrollEventThrottle={16}>
+            >
             <View style={{width: 50, justifyContent: 'center'}}>
               <Text
                 style={{
