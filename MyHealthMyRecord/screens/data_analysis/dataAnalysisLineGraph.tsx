@@ -413,7 +413,11 @@ const DataAnalysisLineGraph = () => {
                 color: 'black',
                 marginTop: -25,
               }}>
-              Month / Date
+              {periodValue === '1'
+                ? 'Hour'
+                : periodValue === '2'
+                ? 'Weekday'
+                : 'Video Dates'}
             </Text>
             {periodValue != '3' && (
               <View style={{height: '10%', width: '100%'}}>
