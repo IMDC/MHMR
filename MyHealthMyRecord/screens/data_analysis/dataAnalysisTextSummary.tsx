@@ -32,6 +32,8 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+const sections = [{title: 'Individual videos in video set'}];
+
 const neutral = require('../../assets/images/emojis/neutral.png');
 const sad = require('../../assets/images/emojis/sad.png');
 const smile = require('../../assets/images/emojis/smile.png');
@@ -63,6 +65,17 @@ const DataAnalysisTextSummary = () => {
     negative: 0,
     veryNegative: 0,
   });
+
+  const [openSections, setOpenSections] = React.useState<string[]>([]);
+
+  const toggleSection = (section: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpenSections(prevOpenSections =>
+      prevOpenSections.includes(section)
+        ? prevOpenSections.filter(s => s !== section)
+        : [...prevOpenSections, section],
+    );
+  };
 
   const getEmojiForSentiment = sentiment => {
     switch (sentiment) {
@@ -429,9 +442,23 @@ const DataAnalysisTextSummary = () => {
                 Emotional distribution of video set
               </Text>
               {Object.entries(sentimentCounts).map(([label, count]) => (
-                <Text key={label} style={styles.sentimentCount}>
-                  {label.replace(/([A-Z])/g, ' $1')}: {count}
-                </Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text key={label} style={styles.sentimentCount}>
+                    {label
+                      .replace(/([A-Z])/g, ' $1')
+                      .replace(/^./, str => str.toUpperCase())}
+                    : {count}
+                  </Text>
+                  <Image
+                    key={`${label}-emoji`}
+                    source={getEmojiForSentiment(
+                      label.replace(/([A-Z])/g, ' $1').replace(/^./, str =>
+                        str.toUpperCase(),
+                      ),
+                    )}
+                    style={styles.emoji}
+                  />
+                </View>
               ))}
             </View>
 
@@ -450,7 +477,12 @@ const DataAnalysisTextSummary = () => {
               </Text>
               <TouchableOpacity
                 style={{flexDirection: 'row', alignSelf: 'center'}}
-                onPress={() => setVideosVisible(!videosVisible)}>
+                onPress={() => {
+                  LayoutAnimation.configureNext(
+                    LayoutAnimation.Presets.easeInEaseOut,
+                  );
+                  setVideosVisible(!videosVisible);
+                }}>
                 <Text>{videosVisible ? 'Hide' : 'Show'}</Text>
                 <Icon
                   name={
@@ -467,61 +499,32 @@ const DataAnalysisTextSummary = () => {
           <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
             <Text style={[styles.title, {fontSize: 28}]}>{video.title}</Text>
 
-            {editingID === video._id ? (
-              <>
+            <View>
+              <TouchableOpacity
+                style={{flexDirection: 'row', alignItems: 'center'}}
+                onPress={() => {
+                  LayoutAnimation.configureNext(
+                    LayoutAnimation.Presets.easeInEaseOut,
+                  );
+                  toggleTranscript(video._id);
+                }}>
                 <Text style={styles.transcriptLabel}>Video transcript:</Text>
-                <View style={{flexDirection: 'row'}}>
-                  <TextInput
-                    style={styles.textInput}
-                    onChangeText={setDraftTranscript}
-                    value={draftTranscript}
-                    multiline
-                  />
-                  <View style={styles.buttonContainer}>
-                    <View style={styles.buttonWrapper}>
-                      <Button
-                        radius={20}
-                        title="Save"
-                        onPress={handleSave}
-                        color={Styles.MHMRBlue}
-                      />
-                    </View>
-                    <View style={styles.buttonWrapper}>
-                      <Button
-                        radius={20}
-                        title="Cancel"
-                        onPress={handleCancel}
-                        color={Styles.MHMRBlue}
-                      />
-                    </View>
-                  </View>
-                </View>
-              </>
-            ) : (
-              <>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <TouchableOpacity onPress={() => toggleTranscript(video._id)}>
-                    <Text style={styles.transcriptLabel}>
-                      Video transcript:
-                    </Text>
-                  </TouchableOpacity>
-                  <Icon
-                    name={
-                      showTranscript[video._id]
-                        ? 'keyboard-arrow-up'
-                        : 'keyboard-arrow-down'
-                    }
-                    size={30}
-                    onPress={() => toggleTranscript(video._id)}
-                  />
-                </View>
 
-                {showTranscript[video._id] && (
-                  <View style={{flexDirection: 'row'}}>
-                    <Text style={styles.transcript}>{video.transcript}</Text>
-                  </View>
-                )}
-              </>
+                <Icon
+                  name={
+                    showTranscript[video._id]
+                      ? 'keyboard-arrow-up'
+                      : 'keyboard-arrow-down'
+                  }
+                  size={30}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {showTranscript[video._id] && (
+              <View style={{flexDirection: 'row'}}>
+                <Text style={styles.transcript}>{video.transcript}</Text>
+              </View>
             )}
 
             <View style={{flexDirection: 'column'}}>
