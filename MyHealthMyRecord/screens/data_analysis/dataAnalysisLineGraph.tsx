@@ -281,7 +281,14 @@ const DataAnalysisLineGraph = () => {
                 color: 'black',
                 fontWeight: 'bold',
               }}>
-              Word count of "{wordLabel}" over time
+              Word count of "{wordLabel}" over time 
+              {periodValue === '1'
+                ? ` for ${dateOptionsForHours[date]?.label}`
+                : periodValue === '2'
+                ? ` for the week of ${dateOptionsForWeeks[date]?.label}`
+                : periodValue === '3'
+                ? ` for the video set dates`
+                : ''}
             </Text>
             <View style={{flexDirection: 'row', flex: 1}}>
               <View style={{width: 50, justifyContent: 'center'}}>
