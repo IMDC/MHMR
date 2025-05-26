@@ -14,6 +14,7 @@ import {
   Modal,
   StyleSheet,
   Alert,
+  FlatList,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
@@ -110,11 +111,6 @@ const DataAnalysisBarGraph = () => {
     setFilteredBarData(cleaned);
   };
 
-  const chunkData = (data, max = 50) =>
-    data.length > max
-      ? [...data].sort((a, b) => b.value - a.value).slice(0, max)
-      : data;
-
   const handleWordSelection = (label: string) => {
     const parsed = currentVideoSet.frequencyData
       .filter(item => typeof item === 'string') // filter out non-strings
@@ -173,7 +169,10 @@ const DataAnalysisBarGraph = () => {
           Word Frequency of {currentVideoSet?.name}
         </Text>
         <View style={{height: Dimensions.get('window').height * 0.75}}>
-          <ScrollView horizontal ref={horizontalScrollRef}>
+          <ScrollView
+            horizontal
+            ref={horizontalScrollRef}
+            >
             <View style={{width: 50, justifyContent: 'center'}}>
               <Text
                 style={{
@@ -377,18 +376,21 @@ const DataAnalysisBarGraph = () => {
             <Text style={styles.modalText}>
               View videos with this sentiment
             </Text>
-            {videoIDs.map((video, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  navigation.navigate('Fullscreen Video', {
-                    id: video?._id,
-                  });
-                  setModalVisible(false);
-                }}>
-                <Text style={styles.videoIDText}>{video?.title}</Text>
-              </TouchableOpacity>
-            ))}
+            <FlatList
+              data={videoIDs}
+              keyExtractor={item => item._id.toString()}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('Fullscreen Video', {
+                      id: item._id,
+                    });
+                    setModalVisible(false);
+                  }}>
+                  <Text style={styles.videoIDText}>{item.title}</Text>
+                </TouchableOpacity>
+              )}
+            />
             <Button
               title="Close"
               color={Styles.MHMRBlue}
@@ -412,6 +414,7 @@ const DataAnalysisBarGraph = () => {
 const styles = StyleSheet.create({
   modalView: {
     margin: 20,
+    height: windowHeight > 800 ? '60%' : '50%', // Adjust for taller screens
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 35,
