@@ -38,6 +38,9 @@ const DataAnalysisBarGraph = () => {
   const {wordList, selectedWords, toggleWordSelection, updateWordList} =
     useWordList();
 
+  const CHUNK_SIZE = 20;
+  const [visibleBars, setVisibleBars] = useState(CHUNK_SIZE);
+
   const [barData, setBarData] = useState([]);
   const [filteredBarData, setFilteredBarData] = useState([]);
   const [barGraphVertical, setBarGraphVertical] = useState(true);
@@ -108,7 +111,8 @@ const DataAnalysisBarGraph = () => {
 
   const updateFilteredBarData = () => {
     const cleaned = wordList.filter(item => !selectedWords.has(item.text));
-    setFilteredBarData(cleaned);
+    setFilteredBarData(cleaned.slice(0, CHUNK_SIZE));
+    setBarData(cleaned); // Keep full data for later loads
   };
 
   const handleWordSelection = (label: string) => {
@@ -154,6 +158,15 @@ const DataAnalysisBarGraph = () => {
       </SafeAreaView>
     );
   }
+
+  const loadMoreBars = () => {
+    if (visibleBars >= barData.length) return;
+
+    const newVisible = Math.min(visibleBars + CHUNK_SIZE, barData.length);
+    setFilteredBarData(barData.slice(0, newVisible));
+    setVisibleBars(newVisible);
+  };
+  
 
   return (
     <SafeAreaView style={{flex: 1}}>
