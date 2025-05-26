@@ -223,22 +223,20 @@ const DataAnalysisLineGraph = () => {
 
   const Dots = ({x, y}) => (
     <>
-      {selectedData.map((value, index) => {
-        if (value.value === 0) return null;
-        return (
-          <Circle
-            key={index}
-            cx={x(index)}
-            cy={y(value.value)}
-            r={8}
-            stroke={'black'}
-            fill={'white'}
-            onPressIn={() => handlePressIn(value)}
-          />
-        );
-      })}
+      {selectedData.map((value, index) => (
+        <Circle
+          key={index}
+          cx={x(index)}
+          cy={y(value.value)}
+          r={8}
+          stroke={'black'}
+          fill={'white'}
+          onPressIn={() => handlePressIn(value)}
+        />
+      ))}
     </>
   );
+  
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
@@ -252,6 +250,7 @@ const DataAnalysisLineGraph = () => {
       ? freqDayArray[date] || []
       : periodValue === '2'
       ? freqWeekArray[date] || []
+      //: freqSetRangeArray.filter(item => item.value >= 1) || [];
       : freqSetRangeArray || [];
 
   if (selectedData.length === 0) {
@@ -264,9 +263,11 @@ const DataAnalysisLineGraph = () => {
   let maxValue = Math.max(...dataValues); // Use the largest value in the data
 
   // Add a buffer to the min and max values to prevent dots from being too close to the edges
-  const buffer = 1;
+  const buffer = 0.5;
   minValue = minValue - buffer < 0 ? 0 : minValue - buffer; // Ensure minValue doesn't go below 0
   maxValue = maxValue;
+
+  const chartWidth = Math.max(windowWidth * 0.95, selectedData.length * 32);
 
   return (
     <ScrollView contentContainerStyle={{paddingBottom: 100}}>
@@ -319,18 +320,18 @@ const DataAnalysisLineGraph = () => {
                   <View
                     style={{
                       height: windowHeight * 0.6,
-                      width: windowWidth * 0.9,
+                      width: chartWidth,
                       left: periodValue === '3' ? 0 : 0,
                       right: periodValue === '3' ? 0 : 0,
                       top: 0,
                       bottom: 0,
                     }}>
                     <LineChart
-                      style={{height: '90%', width: '100%'}}
+                      style={{ height: 200, flex: 1 }}
                       data={selectedData}
+                      contentInset={{ top: 20, bottom: 10, left: 10, right: 10 }}
                       yAccessor={({item}) => item.value || 0}
                       xAccessor={({index}) => index}
-                      contentInset={{top: 10, bottom: 10}}
                       yMin={0}
                       yMax={maxValue}
                       svg={{
@@ -356,13 +357,7 @@ const DataAnalysisLineGraph = () => {
                         } else if (periodValue === '2') {
                           return weeks[index % 7];
                         } else {
-                          const entry = freqSetRangeArray[index];
-                          const isFirst = index === 0;
-                          const isLast = index === freqSetRangeArray.length - 1;
-                          const shouldLabel =
-                            entry?.value > 0 || isFirst || isLast;
-
-                          return shouldLabel ? entry.label : '';
+                          return selectedData[index]?.label ?? '';
                         }
                       }}
                       contentInset={{
@@ -371,34 +366,36 @@ const DataAnalysisLineGraph = () => {
                             ? 45
                             : periodValue === '2'
                             ? 20
-                            : 0,
+                            : 20,
                         right:
                           periodValue === '1'
                             ? 0
                             : periodValue === '2'
                             ? 20
-                            : 0,
+                            : 9,
                         top: 0,
                         bottom: 0,
                       }}
                       svg={{
-                        fontSize: periodValue === '1' ? 14 : 16,
+                        fontSize: periodValue === '1' ? 14 : 14,
                         fill: 'black',
                         rotation:
                           periodValue === '1'
                             ? -45
                             : periodValue === '3'
-                            ? -45
+                            ? -30
                             : 0,
                         originY:
                           periodValue === '1'
                             ? 30
                             : periodValue === '3'
-                            ? 15
+                            ? 30
                             : 0,
                         textAnchor: periodValue === '1' ? 'end' : 'middle',
                         dy: periodValue === '1' ? 0 : 10,
                       }}
+                      
+                      
                     />
                   </View>
                 </ScrollView>
@@ -414,9 +411,9 @@ const DataAnalysisLineGraph = () => {
                 textAlign: 'center',
                 fontSize: 20,
                 color: 'black',
-                marginTop: -29,
+                marginTop: -25,
               }}>
-              Time / Date
+              Month / Date
             </Text>
             {periodValue != '3' && (
               <View style={{height: '10%', width: '100%'}}>

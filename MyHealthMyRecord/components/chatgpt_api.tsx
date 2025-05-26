@@ -177,7 +177,10 @@ export const sendToChatGPT = async (
     ONLY use the • character (Unicode U+2022) to begin each bullet point. Do not use hyphens (-), asterisks (*), or any other symbols.`,
     `Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
     `Analyze the sentiment of this video transcript and return only one of the following labels:
-     Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`,
+     Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. 
+     Use Neutral **only** when the content is purely factual, objective, and emotionally uncharged. Avoid using Neutral if the statement
+     reflects any degree of emotional weight, opinion, or implication. 
+     Transcript: "${transcript}"`,
   ];
 
   try {
