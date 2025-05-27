@@ -3,6 +3,8 @@ import {sendToChatGPT} from './chatgpt_api';
 import {stopWords, trackedWords} from '../assets/util/words';
 import {extractNGrams} from './ngramExtractor';
 
+const stopWordsSet = new Set(stopWords.map(w => w.toLowerCase()));
+
 const processTranscript = (transcript: string) => {
   const frequencyMap: Record<string, number> = {};
 
@@ -22,7 +24,7 @@ const processTranscript = (transcript: string) => {
   });
 
   // Extract and count n-grams around tracked words
-  const ngrams = extractNGrams(cleanText, trackedWords, 3);
+  const ngrams = extractNGrams(cleanText, trackedWords, 4);
   ngrams.forEach(phrase => {
     frequencyMap[phrase] = (frequencyMap[phrase] || 0) + 1;
   });
@@ -88,10 +90,7 @@ export const processVideos = async (
     const combinedMap = combineFreqMaps(freqMaps);
     const allowedWords = new Set(
       Array.from(combinedMap.entries())
-        .filter(
-          ([word, count]) =>
-            count >= 1 && !stopWords.includes(word.toLowerCase()),
-        )
+        .filter(([word, count]) => count >= 1 && !stopWordsSet.has(word))
         .map(([word]) => word),
     );
 

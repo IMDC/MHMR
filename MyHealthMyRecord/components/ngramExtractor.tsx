@@ -1,7 +1,7 @@
 export function extractNGrams(
   text: string,
   trackedWords: string[],
-  windowSize = 4,
+  windowSize: number,
 ): string[] {
   const inputText = text.toLowerCase().split(/\s+/);
   const ngrams = [];
