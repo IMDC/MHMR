@@ -6,11 +6,12 @@ import {extractNGrams} from './ngramExtractor';
 const processTranscript = (transcript: string) => {
   const frequencyMap: Record<string, number> = {};
 
-  // Remove all punctuation except apostrophes
+  // cleanText = Remove all punctuation except apostrophes
   const cleanText = transcript
     .replace(/[^a-zA-Z\s']/g, '')
     .toLowerCase();
 
+  // plainWords = Split entire transcript into words
   const plainWords = cleanText.split(/\s+/);
 
   // Count individual words
@@ -83,13 +84,13 @@ export const processVideos = async (
       }
     }
 
-    // Step 2: Combine all maps and determine valid words (>=3 and not stop word)
+    // Step 2: Combine all maps and determine valid words (>=1 and not stop word)
     const combinedMap = combineFreqMaps(freqMaps);
     const allowedWords = new Set(
       Array.from(combinedMap.entries())
         .filter(
           ([word, count]) =>
-            count >= 3 && !stopWords.includes(word.toLowerCase()),
+            count >= 1 && !stopWords.includes(word.toLowerCase()),
         )
         .map(([word]) => word),
     );

@@ -133,6 +133,7 @@ export const stopWords = [
   'between',
   'beyond',
   'bi',
+  'bit',
   'bill',
   'biol',
   'bj',
@@ -361,6 +362,7 @@ export const stopWords = [
   'gj',
   'gl',
   'go',
+  'good',
   'goes',
   'going',
   'gone',
@@ -974,6 +976,7 @@ export const stopWords = [
   'tm',
   'tn',
   'to',
+  'today', 
   'together',
   'too',
   'took',
@@ -1004,6 +1007,7 @@ export const stopWords = [
   'uj',
   'uk',
   'um',
+  'uh',
   'un',
   'under',
   'unfortunately',
@@ -1353,6 +1357,13 @@ export const trackedWords = [
   'unbearable pain',
   'managing pain',
   'pain relief',
+  'good',
+  'bad',
+  'better',
+  'worse',
+  'improving',
+  'deteriorating',
+  'great',
 
   // Functional Impact
   'difficulty',
@@ -1395,4 +1406,7 @@ export const trackedWords = [
   'condition worsening',
   'symptom flare',
   'flare-up of symptoms',
+
+  'today',
+  'bit'
 ];
