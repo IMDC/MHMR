@@ -452,9 +452,9 @@ const DataAnalysisTextSummary = () => {
                   <Image
                     key={`${label}-emoji`}
                     source={getEmojiForSentiment(
-                      label.replace(/([A-Z])/g, ' $1').replace(/^./, str =>
-                        str.toUpperCase(),
-                      ),
+                      label
+                        .replace(/([A-Z])/g, ' $1')
+                        .replace(/^./, str => str.toUpperCase()),
                     )}
                     style={styles.emoji}
                   />
@@ -472,9 +472,7 @@ const DataAnalysisTextSummary = () => {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
               }}>
-              <Text style={[styles.title, {paddingHorizontal: 10}]}>
-                Individual videos in video set
-              </Text>
+              <Text style={[styles.title]}>Individual videos in video set</Text>
               <TouchableOpacity
                 style={{flexDirection: 'row', alignSelf: 'center'}}
                 onPress={() => {
@@ -549,6 +547,7 @@ const DataAnalysisTextSummary = () => {
               video.tsOutputSentence === ''
                 ? 'Neutral '
                 : video.sentiment}
+              <Text> </Text>
               <Image
                 source={getEmojiForSentiment(video.sentiment)}
                 style={styles.emoji}

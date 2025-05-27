@@ -128,7 +128,7 @@ export const getWeightedSentiment = async (bulletPoints) => {
     .join('\n');
 
   // new AS
-  const formattedOutput = `${formattedBulletsWithSentiment}\n\nOverall feeling: ${overallSentiment} [${averageScore.toFixed(2)}]`;  
+  const formattedOutput = `${formattedBulletsWithSentiment}`;  
   return {
     overallSentiment,
     bulletSentiments,
