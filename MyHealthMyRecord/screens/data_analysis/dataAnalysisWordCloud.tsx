@@ -82,6 +82,15 @@ const DataAnalysisWordCloud = () => {
         }
       }
 
+      // Log multi-word phrases
+      console.log('Multi-word phrases found:');
+      Array.from(mergedMap.entries())
+        .filter(([text]) => text.includes(' '))
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([text, count]) => {
+          console.log(`"${text}" (frequency: ${count})`);
+        });
+
       const cleaned = Array.from(mergedMap.entries())
         .map(([text, value]) => ({text, value}))
         .filter(
@@ -206,7 +215,7 @@ const DataAnalysisWordCloud = () => {
               paddingHorizontal: 20,
               justifyContent: 'space-evenly',
             }}>
-            <View style={{flexDirection: 'row',}}>
+            <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
                   textAlign: 'center',
@@ -216,7 +225,7 @@ const DataAnalysisWordCloud = () => {
                   paddingVertical: 10,
                   paddingHorizontal: 4,
                 }}>
-                Select Color Palette: 
+                Select Color Palette:
               </Text>
 
               <Dropdown

@@ -1,50 +1,105 @@
 import {processMultipleTranscripts} from './stt_api';
 import {sendToChatGPT} from './chatgpt_api';
-import {stopWords, trackedWords} from '../assets/util/words';
-import {extractNGrams} from './ngramExtractor';
+import {stopWords} from '../assets/util/words';
+import {extractMedicalPhrases, ExtractedPhrase} from './ngramExtractor';
+
+// Types
+interface VideoData {
+  _id: {
+    toString: () => string;
+    toHexString: () => string;
+  };
+  transcript?: string;
+  filename: string;
+  keywords: string[];
+  locations: string[];
+  datetimeRecorded?: Date;
+}
+
+interface VideoSet {
+  name: string;
+  videoIDs: string[];
+  frequencyData: string[];
+  isAnalyzed: boolean;
+  isCurrent: boolean;
+}
+
+interface RealmResults<T> {
+  filtered(query: string): T[];
+  find(predicate: (item: T) => boolean): T | undefined;
+  forEach(callback: (item: T) => void): void;
+  [index: number]: T;
+}
+
+interface Realm {
+  write: (callback: () => void) => void;
+  objects: (name: string) => RealmResults<any>;
+}
+
+interface FrequencyMap {
+  [key: string]: number;
+}
+
+interface FrequencyData {
+  map: FrequencyMap;
+  datetime: string;
+  videoID: string;
+}
 
 const stopWordsSet = new Set(stopWords.map(w => w.toLowerCase()));
 
-const processTranscript = (transcript: string) => {
-  const frequencyMap: Record<string, number> = {};
+const processTranscript = (transcript: string): FrequencyMap => {
+  const frequencyMap: FrequencyMap = {};
 
-  // cleanText = Remove all punctuation except apostrophes
-  const cleanText = transcript
-    .replace(/[^a-zA-Z\s']/g, '')
-    .toLowerCase();
+  // Clean text = Remove all punctuation except apostrophes
+  const cleanText = transcript.replace(/[^a-zA-Z\s']/g, '').toLowerCase();
 
-  // plainWords = Split entire transcript into words
+  // Plain words = Split entire transcript into words
   const plainWords = cleanText.split(/\s+/);
 
   // Count individual words
   plainWords.forEach(word => {
-    if (word) {
+    if (word && !stopWordsSet.has(word)) {
       frequencyMap[word] = (frequencyMap[word] || 0) + 1;
     }
   });
 
-  // Extract and count n-grams around tracked words
-  const ngrams = extractNGrams(cleanText, trackedWords, 4);
-  ngrams.forEach(phrase => {
-    frequencyMap[phrase] = (frequencyMap[phrase] || 0) + 1;
+  // Extract and count medical phrases
+  const medicalPhrases = extractMedicalPhrases(cleanText);
+  medicalPhrases.forEach((extracted: ExtractedPhrase) => {
+    // Store the complete phrase
+    frequencyMap[extracted.phrase] = (frequencyMap[extracted.phrase] || 0) + 1;
+
+    // Store the symptom if found
+    if (extracted.symptom) {
+      frequencyMap[extracted.symptom] =
+        (frequencyMap[extracted.symptom] || 0) + 1;
+
+      // Store each modifier with the symptom in a natural phrase
+      extracted.modifiers.forEach(modifier => {
+        // Create natural phrases like "severe pain" or "constant headache"
+        const modifierPhrase = `${modifier} ${extracted.symptom}`;
+        frequencyMap[modifierPhrase] = (frequencyMap[modifierPhrase] || 0) + 1;
+      });
+    }
   });
 
   return frequencyMap;
 };
 
 export const processVideos = async (
-  realm,
-  videos,
-  showLoader,
-  hideLoader,
-  isBatchSetAnalysis,
+  realm: Realm,
+  videos: VideoData[],
+  showLoader: (message: string) => void,
+  hideLoader: () => void,
+  isBatchSetAnalysis: boolean,
 ) => {
   showLoader('Processing videos...');
 
   try {
     const currentSet = realm
       .objects('VideoSet')
-      .filtered('isCurrent == true')[0];
+      .filtered('isCurrent == true')[0] as VideoSet;
 
     if (!currentSet) {
       console.error('No current video set found.');
@@ -53,9 +108,8 @@ export const processVideos = async (
 
     const selectedVideos = currentSet.videoIDs.map(id =>
       realm.objects('VideoData').find(video => video._id.toString() === id),
-    );
-    //commented out for HCP-VIEW:
-    //  .filter(video => video?.isConverted);
+    ) as VideoData[];
+
     console.log(`Found ${selectedVideos.length} videos to process.`);
     showLoader(`Processing ${selectedVideos.length} videos...`);
 
@@ -69,13 +123,12 @@ export const processVideos = async (
     await Promise.all(analysisPromises);
     console.log('All analyses complete.');
 
-    // generate and store combined frequency map
-    // Step 1: Create raw frequency maps (unfiltered)
-    const freqMaps = [];
+    // Generate and store combined frequency map
+    const freqMaps: FrequencyData[] = [];
 
     for (const video of selectedVideos) {
       if (video.transcript) {
-        const rawMap = processTranscript(video.transcript); // NEW: includes n-grams
+        const rawMap = processTranscript(video.transcript);
 
         freqMaps.push({
           map: rawMap,
@@ -86,17 +139,33 @@ export const processVideos = async (
       }
     }
 
-    // Step 2: Combine all maps and determine valid words (>=1 and not stop word)
+    // Combine all maps and determine valid entries
     const combinedMap = combineFreqMaps(freqMaps);
+
+    // Log multi-word phrases with frequency > 1
+    console.log('Multi-word phrases found (frequency > 1):');
+    Array.from(combinedMap.entries())
+      .filter(([word, count]) => word.includes(' ') && count > 1)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([phrase, count]) => {
+        console.log(`"${phrase}" (frequency: ${count})`);
+      });
+
+    // Filter words: Keep single words with freq >= 1, multi-word phrases only if freq > 1
     const allowedWords = new Set(
       Array.from(combinedMap.entries())
-        .filter(([word, count]) => count >= 1 && !stopWordsSet.has(word))
+        .filter(
+          ([word, count]) =>
+            !stopWordsSet.has(word) &&
+            ((!word.includes(' ') && count >= 1) ||
+              (word.includes(' ') && count > 1)),
+        )
         .map(([word]) => word),
     );
 
-    // Step 3: Filter each map using allowed words
+    // Filter each map using allowed words
     const filteredFreqMaps = freqMaps.map(f => {
-      const filteredMap = {};
+      const filteredMap: FrequencyMap = {};
       for (const word in f.map) {
         if (allowedWords.has(word)) {
           filteredMap[word] = f.map[word];
@@ -109,7 +178,7 @@ export const processVideos = async (
       };
     });
 
-    // Step 4: Save final filtered data
+    // Save final filtered data
     realm.write(() => {
       currentSet.frequencyData = filteredFreqMaps.map(f =>
         JSON.stringify({
@@ -132,7 +201,12 @@ export const processVideos = async (
   }
 };
 
-const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
+const handleYesAnalysis = async (
+  video: VideoData,
+  videos: VideoData[],
+  realm: Realm,
+  isBatchSetAnalysis: boolean,
+) => {
   const transcript = video.transcript;
   const keywords = video.keywords.join(', ');
   const locations = video.locations.join(', ');
@@ -140,7 +214,7 @@ const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
   try {
     await sendToChatGPT(
       video.filename,
-      transcript,
+      transcript || '',
       keywords,
       locations,
       realm,
@@ -152,7 +226,7 @@ const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
 
     if (isBatchSetAnalysis) {
       realm.write(() => {
-        realm.objects('VideoSet').forEach(videoSet => {
+        realm.objects('VideoSet').forEach((videoSet: VideoSet) => {
           videoSet.isAnalyzed = true;
         });
       });
@@ -163,7 +237,7 @@ const handleYesAnalysis = async (video, videos, realm, isBatchSetAnalysis) => {
 };
 
 // Merge all maps together into one total frequency map
-function combineFreqMaps(freqMaps: any[]): Map<string, number> {
+function combineFreqMaps(freqMaps: FrequencyData[]): Map<string, number> {
   const combined = new Map<string, number>();
 
   for (const item of freqMaps) {
