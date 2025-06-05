@@ -550,6 +550,8 @@ export const stopWords = [
   'll',
   'ln',
   'lo',
+  'lot',
+  'lots',
   'look',
   'looking',
   'looks',

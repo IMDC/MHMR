@@ -46,10 +46,20 @@ interface FrequencyData {
   videoID: string;
 }
 
+interface GroupedPhrases {
+  [key: string]: {
+    variations: string[];
+    symptom?: string;
+    intensity?: string;
+    totalFrequency: number;
+  };
+}
+
 const stopWordsSet = new Set(stopWords.map(w => w.toLowerCase()));
 
 const processTranscript = (transcript: string): FrequencyMap => {
   const frequencyMap: FrequencyMap = {};
+  const groupedPhrases: GroupedPhrases = {};
 
   // Clean text = Remove all punctuation except apostrophes
   const cleanText = transcript.replace(/[^a-zA-Z\s']/g, '').toLowerCase();
@@ -67,21 +77,41 @@ const processTranscript = (transcript: string): FrequencyMap => {
   // Extract and count medical phrases
   const medicalPhrases = extractMedicalPhrases(cleanText);
   medicalPhrases.forEach((extracted: ExtractedPhrase) => {
-    // Store the complete phrase
+    // Skip phrases without intensity
+    if (!extracted.intensity) return;
+
+    // Create a normalized key for grouping
+    const normalizedKey = `${extracted.intensity}_${extracted.symptom}`;
+
+    // Initialize or update the grouped phrases
+    if (!groupedPhrases[normalizedKey]) {
+      groupedPhrases[normalizedKey] = {
+        variations: [],
+        symptom: extracted.symptom,
+        intensity: extracted.intensity,
+        totalFrequency: 0,
+      };
+    }
+
+    // Add this variation if it's not already included
+    if (!groupedPhrases[normalizedKey].variations.includes(extracted.phrase)) {
+      groupedPhrases[normalizedKey].variations.push(extracted.phrase);
+    }
+    groupedPhrases[normalizedKey].totalFrequency += 1;
+
+    // Store the complete phrase in the frequency map as well
     frequencyMap[extracted.phrase] = (frequencyMap[extracted.phrase] || 0) + 1;
 
     // Store the symptom if found
     if (extracted.symptom) {
       frequencyMap[extracted.symptom] =
         (frequencyMap[extracted.symptom] || 0) + 1;
-
-      // Store each modifier with the symptom in a natural phrase
-      extracted.modifiers.forEach(modifier => {
-        // Create natural phrases like "severe pain" or "constant headache"
-        const modifierPhrase = `${modifier} ${extracted.symptom}`;
-        frequencyMap[modifierPhrase] = (frequencyMap[modifierPhrase] || 0) + 1;
-      });
     }
+  });
+
+  // Add the grouped phrases to the frequency map with their normalized keys
+  Object.entries(groupedPhrases).forEach(([key, group]) => {
+    frequencyMap[key] = group.totalFrequency;
   });
 
   return frequencyMap;
@@ -143,12 +173,59 @@ export const processVideos = async (
     const combinedMap = combineFreqMaps(freqMaps);
 
     // Log multi-word phrases with frequency > 1
-    console.log('Multi-word phrases found (frequency > 1):');
+    console.log('Grouped medical phrases by intensity and symptom:');
+    const groupedResults = new Map<
+      string,
+      {variations: string[]; frequency: number}
+    >();
+
     Array.from(combinedMap.entries())
-      .filter(([word, count]) => word.includes(' ') && count > 1)
-      .sort((a, b) => b[1] - a[1])
-      .forEach(([phrase, count]) => {
-        console.log(`"${phrase}" (frequency: ${count})`);
+      .filter(([word, count]) => {
+        // Only include entries with intensity (exclude unspecified)
+        const [intensity] = word.split('_');
+        return word.includes('_') && count > 1 && intensity !== 'unspecified';
+      })
+      .forEach(([key, count]) => {
+        const [intensity, ...symptomParts] = key.split('_');
+        const symptom = symptomParts.join('_');
+
+        // Find all related variations from the individual frequency maps
+        const variations = new Set<string>();
+        freqMaps.forEach(f => {
+          Object.keys(f.map).forEach(phrase => {
+            if (phrase.includes(' ') && f.map[phrase] > 0) {
+              // Check if this phrase contains the symptom and matches the intensity
+              const extracted = extractMedicalPhrases(phrase)[0];
+              if (
+                extracted &&
+                extracted.symptom === symptom &&
+                extracted.intensity === intensity
+              ) {
+                variations.add(phrase);
+              }
+            }
+          });
+        });
+
+        if (variations.size > 0) {
+          groupedResults.set(key, {
+            variations: Array.from(variations),
+            frequency: count,
+          });
+        }
+      });
+
+    // Display grouped results
+    Array.from(groupedResults.entries())
+      .sort(([, a], [, b]) => b.frequency - a.frequency)
+      .forEach(([key, {variations, frequency}]) => {
+        const [intensity, ...symptomParts] = key.split('_');
+        // Join symptom parts with spaces instead of underscores
+        const symptomDisplay = symptomParts.join(' ');
+        console.log(
+          `\n${intensity} ${symptomDisplay} (total frequency: ${frequency}):`,
+        );
+        console.log('Variations found:', variations.join(', '));
       });
 
     // Filter words: Keep single words with freq >= 1, multi-word phrases only if freq > 1

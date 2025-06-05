@@ -1,58 +1,60 @@
 export const intensityModifiers = {
   high: [
-    'a lot of',
-    'lots of',
-    'severe',
-    'extreme',
-    'intense',
-    'really',
-    'very',
-    'so',
-    'so so',
-    'super',
-    'totally',
-    'absolutely',
-    'quite a bit',
-    'pretty bad',
-    'horrible',
-    'terrible',
-    'unbearable',
-    'in so much',
-    'significant',
-    'substantial',
-    'considerable',
-    'excessive',
-    'overwhelming',
-    'excruciating',
-  ],
+    // Extreme intensity
+    [
+      'severe',
+      'extreme',
+      'intense',
+      'horrible',
+      'terrible',
+      'unbearable',
+      'excruciating',
+    ],
+
+    // Large quantity
+    [
+      'a lot of',
+      'lots of',
+      'significant',
+      'substantial',
+      'considerable',
+      'excessive',
+    ],
+
+    // Strong emphasis
+    ['really', 'very', 'so', 'super', 'totally', 'absolutely'],
+
+    // Descriptive high intensity
+    ['overwhelming', 'quite a bit', 'pretty bad', 'in so much'],
+  ].flat(),
+
   moderate: [
-    'moderate',
-    'fair amount of',
-    'pretty',
-    'quite',
-    'kind of',
-    'kinda',
-    'fairly',
-    'rather',
-    'somewhat',
-    'noticeable',
-  ],
+    // Medium intensity
+    ['moderate', 'noticeable'],
+
+    // Medium quantity
+    ['fair amount of'],
+
+    // Medium emphasis
+    ['pretty', 'quite', 'fairly', 'rather'],
+
+    // Casual medium intensity
+    ['kind of', 'kinda', 'somewhat'],
+  ].flat(),
+
   low: [
-    'a little',
-    'a bit',
-    'slight',
-    'mild',
-    'minor',
-    'minimal',
-    'not too bad',
-    'not too much',
-    'not horrible',
-    'not as bad',
-    'barely any',
-    'hardly any',
-    'small amount of',
-    'touch of',
-  ],
+    // Small quantity
+    ['a little', 'a bit', 'small amount of', 'barely any', 'hardly any'],
+
+    // Mild intensity
+    ['slight', 'mild', 'minor', 'minimal'],
+
+    // Light touch
+    ['touch of'],
+
+    // Comparative low intensity
+    ['not too bad', 'not too much', 'not horrible', 'not as bad'],
+  ].flat(),
 };
 
 export const frequencyModifiers = [
