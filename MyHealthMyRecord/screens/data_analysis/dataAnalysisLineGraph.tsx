@@ -172,7 +172,7 @@ const DataAnalysisLineGraph = () => {
     '11PM',
   ];
 
-  const weeks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weeks = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
@@ -379,22 +379,20 @@ const DataAnalysisLineGraph = () => {
                       )}
                       {periodValue === '2' && segementWeek === '2' && (
                         <>
-                          {Array.from({
-                            length: Math.ceil(selectedData.length / 7),
-                          }).map((_, i) => (
+                          {Array.from({length: 3}).map((_, i) => (
                             <Rect
                               key={i}
-                              x={
-                                i *
-                                (chartWidth /
-                                  Math.ceil(selectedData.length / 7))
-                              }
+                              x={i * (chartWidth / 2.45)}
                               y={0}
-                              width={
-                                chartWidth / Math.ceil(selectedData.length / 7)
-                              }
+                              width={chartWidth / 2.45}
                               height={windowHeight * 0.6}
-                              fill={i % 2 === 0 ? '#d0d0d0' : '#505050'}
+                              fill={
+                                i === 0
+                                  ? '#d0d0d0'
+                                  : i === 1
+                                  ? '#d0d0d0'
+                                  : '#707070'
+                              }
                               opacity={0.5}
                             />
                           ))}
