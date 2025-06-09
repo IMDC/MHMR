@@ -72,7 +72,16 @@ function normalizeBulletPoints(text) {
 
 // New function to get sentiment for a single bullet point
 export const getSentimentForBulletPoint = async (bulletPoint) => {
-  const inputText = `Analyze the sentiment of this point and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Point: "${bulletPoint}"`;
+  const inputText = `Analyze the sentiment of this point and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive.
+  - Very Positive: Clear health improvements (significant pain reduction, excellent sleep, high energy, great mood)
+  - Positive: Moderate improvements (manageable pain, decent sleep, good energy, stable mood)
+  - Neutral: Factual statement unrelated to health/wellbeing
+  - Negative: Health difficulties (increased pain, poor sleep, fatigue, stress, anxiety)
+  - Very Negative: Severe issues (extreme pain, insomnia, exhaustion, severe distress)
+  
+  Label as Neutral ONLY if the statement has no relation to physical or mental wellbeing.
+  Consider both pain AND overall condition (sleep, energy, mood, stress levels). Point: "${bulletPoint}"`;
+  
   const data = await connectToChatGPT(inputText);
   
   if (data?.choices && data.choices.length > 0) {
@@ -124,7 +133,8 @@ export const getWeightedSentiment = async (bulletPoints) => {
   const overallSentiment = scoreToSentiment(averageScore);
   
   const formattedBulletsWithSentiment = bulletSentiments
-    .map(item => `• ${item.point} [${item.sentiment}, ${item.weight}]`)
+    .map(item => `• ${item.point}`)
+    //.map(item => `• ${item.point} [${item.sentiment}, ${item.weight}]`) //- displays the sentiment and score
     .join('\n');
 
   // new AS
@@ -180,7 +190,23 @@ export const sendToChatGPT = async (
      Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. 
      Use Neutral **only** when the content is purely factual, objective, and emotionally uncharged. Avoid using Neutral if the statement
      reflects any degree of emotional weight, opinion, or implication. 
-     Transcript: "${transcript}"`,
+
+    - Very Positive: Significant improvements in pain AND overall wellbeing (energy/sleep/mood)
+    - Positive: Some improvements in pain OR general wellbeing
+    - Neutral: Content unrelated and does not have strong connection to health/wellbeing
+    - Negative: Difficulties with pain OR declining general wellbeing
+    - Very Negative: Severe pain AND significant overall health struggles
+    
+    Consider:
+    - Pain levels and management
+    - Sleep quality
+    - Energy levels/fatigue
+    - Stress/anxiety levels
+    - Mood and emotional state
+    - General physical wellbeing
+
+      Focus specifically on pain-related impacts and outcomes. Label as Neutral if the statement doesn't relate to pain experience.
+      Transcript: "${transcript}"`,
   ];
 
   try {
