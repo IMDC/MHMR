@@ -256,7 +256,7 @@ const DataAnalysis = () => {
             onPress={() =>
               Alert.alert(
                 'No Video Set Selected',
-                'Please select or create a video set first.',
+                'Please select a video set first.',
               )
             }>
             <Icon
@@ -346,18 +346,6 @@ const DataAnalysis = () => {
           </View>
         </View>
       </Modal>
-
-      <TranscriptUploader
-        onUploadComplete={() => {
-          if (currentVideoSet) {
-            realm.write(() => {
-              currentVideoSet.isAnalyzed = true;
-            });
-          }
-        }}
-      />
-
-      <DataTransfer />
     </View>
   );
 };
