@@ -384,9 +384,9 @@ const DataAnalysisLineGraph = () => {
                           {Array.from({length: 3}).map((_, i) => (
                             <Rect
                               key={i}
-                              x={i * (chartWidth / 2.45) + 10}
+                              x={i * (chartWidth / 2.5) + 10}
                               y={0}
-                              width={chartWidth / 2.45}
+                              width={chartWidth / 2.5}
                               height={windowHeight * 0.6}
                               fill={
                                 i === 0
