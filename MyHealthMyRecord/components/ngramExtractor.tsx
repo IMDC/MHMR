@@ -62,12 +62,23 @@ export function extractMedicalPhrases(text: string): ExtractedPhrase[] {
     // Build the complete phrase
     const phrase = [...precedingWords, words[i], ...followingWords].join(' ');
 
+    // Determine intensity from modifiers
+    let intensity: 'high' | 'moderate' | 'low' | undefined;
+    for (const modifier of foundModifiers) {
+      const category = getIntensityCategory(modifier);
+      if (category) {
+        intensity = category;
+        break;
+      }
+    }
+
     phrases.push({
       phrase,
       start,
       end,
       symptom: symptomWord,
       modifiers: foundModifiers,
+      intensity,
     });
   }
 
