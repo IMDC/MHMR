@@ -10,6 +10,8 @@ import {
   useDropdownContext,
   DropdownContextType,
 } from '../components/videoSetProvider';
+import {processVideos} from './processVideos';
+import {useLoader} from './loaderProvider';
 
 interface TranscriptUploaderProps {
   onUploadComplete?: () => void;
@@ -28,6 +30,7 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
   const realm = useRealm();
   const {currentVideoSet, setCurrentVideos} =
     useDropdownContext() as DropdownContextType;
+  const {showLoader, hideLoader} = useLoader();
 
   const pickDocument = async () => {
     try {
@@ -92,7 +95,21 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
         }
       });
 
-      Alert.alert('Success', 'Transcripts parsed and uploaded successfully.');
+      // Process the uploaded videos
+      if (videoDataList.length > 0) {
+        await processVideos(
+          realm,
+          videoDataList,
+          showLoader,
+          hideLoader,
+          false,
+        );
+      }
+
+      Alert.alert(
+        'Success',
+        'Transcripts parsed, uploaded, and processed successfully.',
+      );
       onUploadComplete?.();
     } catch (err) {
       if (!DocumentPicker.isCancel(err)) {
