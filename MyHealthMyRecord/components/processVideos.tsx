@@ -14,7 +14,6 @@ interface VideoData {
   keywords: string[];
   locations: string[];
   datetimeRecorded?: Date;
-  isAnalyzed?: boolean;
 }
 
 interface VideoSet {
@@ -128,15 +127,27 @@ export const processVideos = async (
   showLoader('Processing videos...');
 
   try {
-    // Process all provided videos directly
-    console.log(`Processing ${videos.length} videos...`);
-    showLoader(`Processing ${videos.length} videos...`);
+    const currentSet = realm
+      .objects('VideoSet')
+      .filtered('isCurrent == true')[0] as VideoSet;
 
-    await processMultipleTranscripts(videos, realm);
+    if (!currentSet) {
+      console.error('No current video set found.');
+      return;
+    }
+
+    const selectedVideos = currentSet.videoIDs.map(id =>
+      realm.objects('VideoData').find(video => video._id.toString() === id),
+    ) as VideoData[];
+
+    console.log(`Found ${selectedVideos.length} videos to process.`);
+    showLoader(`Processing ${selectedVideos.length} videos...`);
+
+    await processMultipleTranscripts(selectedVideos, realm);
     console.log('All transcriptions complete.');
     showLoader('Analyzing videos...');
 
-    const analysisPromises = videos.map(video =>
+    const analysisPromises = selectedVideos.map(video =>
       handleYesAnalysis(video, videos, realm, isBatchSetAnalysis),
     );
     await Promise.all(analysisPromises);
@@ -145,7 +156,7 @@ export const processVideos = async (
     // Generate and store combined frequency map
     const freqMaps: FrequencyData[] = [];
 
-    for (const video of videos) {
+    for (const video of selectedVideos) {
       if (video.transcript) {
         const rawMap = processTranscript(video.transcript);
 
@@ -244,37 +255,19 @@ export const processVideos = async (
       };
     });
 
-    // Update video set if it exists, otherwise just mark videos as analyzed
+    // Save final filtered data
     realm.write(() => {
-      // Try to find current video set
-      const currentSet = realm
-        .objects('VideoSet')
-        .filtered('isCurrent == true')[0] as VideoSet;
-
-      if (currentSet) {
-        currentSet.frequencyData = filteredFreqMaps.map(f =>
-          JSON.stringify({
-            map: f.map,
-            datetime: f.datetime,
-            videoID: f.videoID,
-          }),
-        );
-        currentSet.isAnalyzed = true;
-        console.log(
-          `Stored ${filteredFreqMaps.length} frequency maps in set "${currentSet.name}"`,
-        );
-      }
-
-      // Mark all processed videos as analyzed
-      videos.forEach(video => {
-        video.isAnalyzed = true;
-      });
-
-      if (isBatchSetAnalysis) {
-        realm.objects('VideoSet').forEach((videoSet: VideoSet) => {
-          videoSet.isAnalyzed = true;
-        });
-      }
+      currentSet.frequencyData = filteredFreqMaps.map(f =>
+        JSON.stringify({
+          map: f.map,
+          datetime: f.datetime,
+          videoID: f.videoID,
+        }),
+      );
+      currentSet.isAnalyzed = true;
+      console.log(
+        `Stored ${filteredFreqMaps.length} frequency maps in set "${currentSet.name}"`,
+      );
     });
 
     showLoader('Videos processed successfully.');
