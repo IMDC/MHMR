@@ -358,10 +358,12 @@ const DataAnalysisLineGraph = () => {
                               key={i}
                               x={
                                 i *
-                                (chartWidth /
-                                  Math.ceil(
-                                    selectedData.length / parseInt(segementDay),
-                                  ))
+                                  (chartWidth /
+                                    Math.ceil(
+                                      selectedData.length /
+                                        parseInt(segementDay),
+                                    )) +
+                                10
                               }
                               y={0}
                               width={
@@ -382,7 +384,7 @@ const DataAnalysisLineGraph = () => {
                           {Array.from({length: 3}).map((_, i) => (
                             <Rect
                               key={i}
-                              x={i * (chartWidth / 2.45)}
+                              x={i * (chartWidth / 2.45) + 10}
                               y={0}
                               width={chartWidth / 2.45}
                               height={windowHeight * 0.6}
@@ -403,7 +405,7 @@ const DataAnalysisLineGraph = () => {
                           {Array.from({length: 3}).map((_, i) => (
                             <Rect
                               key={i}
-                              x={i * (chartWidth / 3)}
+                              x={i * (chartWidth / 3) + 10}
                               y={0}
                               width={chartWidth / 3}
                               height={windowHeight * 0.6}
@@ -428,8 +430,9 @@ const DataAnalysisLineGraph = () => {
                               key={i}
                               x={
                                 i *
-                                (chartWidth /
-                                  Math.ceil(selectedData.length / 30))
+                                  (chartWidth /
+                                    Math.ceil(selectedData.length / 30)) +
+                                10
                               }
                               y={0}
                               width={
