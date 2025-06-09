@@ -24,6 +24,7 @@ import {useDropdownContext} from '../../components/videoSetProvider';
 import {useSetLineGraphData} from '../../components/lineGraphData';
 import {useWordList} from '../../components/wordListProvider';
 import TranscriptUploader from '../../components/TranscriptUploader';
+import DataTransfer from '../../components/dataTransfer';
 
 const DataAnalysis = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -229,7 +230,7 @@ const DataAnalysis = () => {
 
         <Button
           disabled={isButtonDisabled()}
-          onPress={() => navigation.navigate('Word Cloud', {data: barData,})}
+          onPress={() => navigation.navigate('Word Cloud', {data: barData})}
           titleStyle={{fontSize: 40}}
           containerStyle={{
             width: Styles.windowHeight * 0.4,
@@ -355,6 +356,8 @@ const DataAnalysis = () => {
           }
         }}
       />
+
+      <DataTransfer />
     </View>
   );
 };
