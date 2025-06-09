@@ -342,7 +342,7 @@ export const sendVideoSetToChatGPT = async (
       Each bullet point should be concise but informative.
       Avoid redundant or less important information.`;
       
-      let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Format the summary in sentence(s).`;
+      let inputTextSentence = `Summarize the following user's selected video transcripts into a concise summary: ${videoTranscripts}. Make the total word count of the summary ${maxSummaryWords} words or less. Only use 250 tokens. Format the summary in sentence(s).`;
       
       // Get both summaries in parallel
       const [dataSentence, dataBullet] = await Promise.all([
