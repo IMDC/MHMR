@@ -507,8 +507,8 @@ const DataAnalysisTextSummary = () => {
             <Text style={[styles.title, {fontSize: 28}]}>
               {video.title}
             </Text>
-            <Text style={[styles.title, {fontSize: 22}]}>
-              ({video.datetimeRecorded.toLocaleString()})
+            <Text style={{fontSize: 20}}>
+              {video.datetimeRecorded.toLocaleString()}
             </Text>
 
             <View>
