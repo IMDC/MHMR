@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   btnStyle: {
-    backgroundColor: '#1C3EAA',
+    backgroundColor: Styles.MHMRBlue,
     width: 200,
     height: 65,
   },

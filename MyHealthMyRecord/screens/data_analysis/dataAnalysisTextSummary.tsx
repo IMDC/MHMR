@@ -196,7 +196,10 @@ const DataAnalysisTextSummary = () => {
 
   const renderItem = ({item: video}) => (
     <View key={video._id} style={styles.container}>
-      <Text style={[styles.title, {fontSize: 28}]}>{video.title}</Text>
+      {/* Display video title with date and time */}
+      <Text style={[styles.title, {fontSize: 28}]}>
+        {video.title} 
+      </Text>
 
       {editingID === video._id ? (
         <View>
@@ -326,10 +329,16 @@ const DataAnalysisTextSummary = () => {
         }),
       );
       const filtered = videoData.filter(Boolean);
-      setVideos(filtered);
+
+      // Sort videos by datetimeRecorded (earliest to latest)
+      const sortedVideos = filtered.sort(
+        (a, b) => a.datetimeRecorded.getTime() - b.datetimeRecorded.getTime()
+      );
+
+      setVideos(sortedVideos);
 
       // Update sentiment counts
-      const counts = filtered.reduce(
+      const counts = sortedVideos.reduce(
         (acc, video) => {
           switch (video.sentiment) {
             case 'Very Positive':
@@ -495,7 +504,12 @@ const DataAnalysisTextSummary = () => {
       renderItem={({item: video}) => (
         <View key={video._id} style={styles.container}>
           <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
-            <Text style={[styles.title, {fontSize: 28}]}>{video.title}</Text>
+            <Text style={[styles.title, {fontSize: 28}]}>
+              {video.title}
+            </Text>
+            <Text style={[styles.title, {fontSize: 22}]}>
+              ({video.datetimeRecorded.toLocaleString()})
+            </Text>
 
             <View>
               <TouchableOpacity
@@ -573,6 +587,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 32,
     color: 'black',
+  },
+  date: {
+    fontSize: 16, // Smaller font size for the date
+    color: 'gray', // Less bold color
+    marginTop: 5, // Add some spacing between title and date
   },
   textInput: {
     flex: 1,

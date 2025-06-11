@@ -41,7 +41,7 @@ import {sendToChatGPT} from '../components/chatgpt_api';
 import {useDropdownContext} from '../components/videoSetProvider';
 import {useLoader} from '../components/loaderProvider';
 import {processVideos} from '../components/processVideos';
-import {windowWidth} from '../assets/util/styles';
+import Styles, * as AppStyle from '../assets/util/styles';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const {showLoader, hideLoader} = useLoader();
@@ -453,7 +453,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                   (videoSetValue == null || videoSetValue.length === 0))
               }
               style={{
-                backgroundColor: '#1C3EAA',
+                backgroundColor: AppStyle.MHMRBlue,
                 padding: 20,
                 borderRadius: 5,
                 paddingHorizontal: 10,
@@ -471,7 +471,7 @@ const ViewRecordings = ({selected, setSelected}) => {
             </Button>
             <View style={{width: 10}}></View>
             <Button
-              style={{backgroundColor: '#1C3EAA', padding: 20, borderRadius: 5}}
+              style={{backgroundColor: AppStyle.MHMRBlue, padding: 20, borderRadius: 5}}
               radius={50}
               buttonStyle={[styles.btnStyle, {}]}
               // onPress={handleSend}>
@@ -1103,7 +1103,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                                 reverse
                                 name="play-sharp"
                                 type="ionicon"
-                                color="#1C3EAA"
+                                color={AppStyle.MHMRBlue}
                                 size={20}
                               />
                             </TouchableOpacity>
@@ -1371,8 +1371,8 @@ const styles = StyleSheet.create({
   },
 
   btnStyle: {
-    backgroundColor: '#1C3EAA',
-    margin: windowWidth > 768 ? 0 : 1,
+    backgroundColor: AppStyle.MHMRBlue,
+    margin: AppStyle.windowWidth > 768 ? 0 : 1,
   },
 
   backgroundVideo: {
@@ -1425,16 +1425,16 @@ const styles = StyleSheet.create({
   },
   buttonContainerList: {
     flexDirection: 'row',
-    justifyContent: windowWidth > 768 ? 'space-between' : 'space-around',
-    flexWrap: windowWidth > 768 ? 'nowrap' : 'wrap',
+    justifyContent: AppStyle.windowWidth > 768 ? 'space-between' : 'space-around',
+    flexWrap: AppStyle.windowWidth > 768 ? 'nowrap' : 'wrap',
     paddingTop: 5,
   },
   buttonContainerGrid: {
     flex: 1,
     paddingBottom: 5,
     flexDirection: 'row',
-    justifyContent: windowWidth > 768 ? 'space-evenly' : 'space-evenly',
-    flexWrap: windowWidth > 768 ? 'nowrap' : 'nowrap',
+    justifyContent: AppStyle.windowWidth > 768 ? 'space-evenly' : 'space-evenly',
+    flexWrap: AppStyle.windowWidth > 768 ? 'nowrap' : 'nowrap',
     alignItems: 'flex-end',
   },
   thumbnail: {

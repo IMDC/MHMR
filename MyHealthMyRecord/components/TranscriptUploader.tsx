@@ -26,8 +26,7 @@ const getRandomDateWithinLast8Weeks = () => {
 
 const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
   const realm = useRealm();
-  const {currentVideoSet, setCurrentVideos} =
-    useDropdownContext() as DropdownContextType;
+  const {setCurrentVideos} = useDropdownContext() as DropdownContextType;
 
   const pickDocument = async () => {
     try {
@@ -45,10 +44,10 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
 
       const content = await RNFS.readFile(fileUri, 'utf8');
 
-      // Regex to split based on "=== filename ==="
       const transcriptChunks = content.split(/=== (.*?) ===/g).filter(Boolean);
 
       const videoDataList: VideoData[] = [];
+      const generatedDates: Date[] = []; // Array to store all generated dates
 
       realm.write(() => {
         for (let i = 0; i < transcriptChunks.length; i += 2) {
@@ -57,11 +56,14 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
 
           if (!filename || !transcriptText) continue;
 
+          const randomDate = getRandomDateWithinLast8Weeks(); // Generate random date
+          generatedDates.push(randomDate); // Store the generated date
+
           const videoData = realm.create<VideoData>('VideoData', {
             _id: new Realm.BSON.ObjectId(),
             title: filename,
             filename: filename,
-            datetimeRecorded: getRandomDateWithinLast8Weeks(),
+            datetimeRecorded: randomDate, // Use the generated random date
             duration: 0,
             transcript: transcriptText,
             isConverted: false,
@@ -78,7 +80,12 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
         }
 
         if (videoDataList.length > 0) {
-          // Create a new VideoSet that includes all video IDs
+          // Sort the generated dates to find the earliest and latest
+          const sortedDates = generatedDates.sort((a, b) => a.getTime() - b.getTime());
+          const earliestDate = sortedDates[0];
+          const latestDate = sortedDates[sortedDates.length - 1];
+
+          // Create a new VideoSet that includes all video IDs and date range
           const videoSet = realm.create('VideoSet', {
             _id: new Realm.BSON.ObjectId(),
             name: `Transcript Set: ${result[0].name}`,
@@ -86,6 +93,8 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
             dateCreated: new Date(),
             isAnalyzed: false,
             isSummaryGenerated: false,
+            earliestVideoDateTime: earliestDate, // Set earliest date
+            latestVideoDateTime: latestDate,    // Set latest date
           });
 
           setCurrentVideos(videoDataList);

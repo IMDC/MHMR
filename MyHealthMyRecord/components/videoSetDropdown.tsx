@@ -56,12 +56,9 @@ const VideoSetDropdown = ({
         id: set._id,
       })),
     ];
-    
+
     setLocalDropdown(formattedDropdown);
   }, [videoSets, plainDropdown]);
-  
-
-  
 
   const toggleDialog = () => {
     console.log('toggleDialog');

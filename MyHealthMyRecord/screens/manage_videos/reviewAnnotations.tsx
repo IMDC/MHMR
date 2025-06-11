@@ -26,6 +26,7 @@ import RNFS from 'react-native-fs';
 import {useObject, useRealm} from '../../models/VideoData';
 import {Chip} from 'react-native-paper';
 import MHMRVideoPlayer from '../../components/mhmrVideoPlayer';
+import { MHMRBlue } from '../../assets/util/styles';
 
 const ReviewAnnotations = () => {
   async function saveChanges() {
@@ -114,7 +115,7 @@ const ReviewAnnotations = () => {
       <View style={{paddingTop: 30, marginBottom: 40}}>
         <Button
           buttonStyle={{width: 200, height: 65, alignSelf: 'center'}}
-          color="#1C3EAA"
+          color={MHMRBlue}
           radius={50}
           title="Save changes"
           onPress={() => saveChanges()}

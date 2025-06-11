@@ -12,6 +12,7 @@ import {
 import {Button, Icon, Slider} from '@rneui/themed';
 import {RadioButton} from 'react-native-paper';
 import {useObject, useRealm} from '../../models/VideoData';
+import { MHMRBlue } from '../../assets/util/styles';
 
 const Painscale = () => {
   const [refreshFlatlist, setRefreshFlatList] = useState(false);
@@ -223,7 +224,7 @@ const Painscale = () => {
           // saveNumericScale(value);
         }}
         title="Save"
-        color="#1C3EAA"
+        color={MHMRBlue}
       />
       <View style={{margin: 40, height: 75}} />
     </ScrollView>

@@ -23,6 +23,7 @@ import {
   bottomNavBarHeight,
   NavBarGrey,
   screenWidth,
+  MHMRBlue
 } from '../assets/util/styles';
 
 const RecordVideo = () => {
@@ -1007,7 +1008,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
-  btnStyle: {backgroundColor: '#1C3EAA'},
+  btnStyle: {backgroundColor: MHMRBlue},
   timer: {
     color: 'red',
     fontSize: 25,
@@ -1061,7 +1062,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   extendButton: {
-    backgroundColor: '#1C3EAA',
+    backgroundColor: MHMRBlue,
     padding: 10,
     borderRadius: 50,
     flexDirection: 'row',

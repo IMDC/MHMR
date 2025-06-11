@@ -13,6 +13,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import { MHMRBlue } from '../../assets/util/styles';
 import {
   Card,
   CheckBox,
@@ -157,7 +158,7 @@ const LocationTagging = () => {
         }}
         onPress={() => navigation.goBack()}
         title="Save"
-        color="#1C3EAA"
+        color={MHMRBlue}
       />
       <View style={{margin: 40, height: 75}} />
     </ScrollView>

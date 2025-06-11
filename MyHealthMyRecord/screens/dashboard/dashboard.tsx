@@ -243,7 +243,7 @@ function Dashboard() {
           name="albums-outline"
           size={30}
           type="ionicon"
-          color="#1C3EAA"
+          color={Styles.MHMRBlue}
           onPress={() => {
             handleQueuePress();
           }}
@@ -408,7 +408,7 @@ function Dashboard() {
                       reverse
                       name="play-sharp"
                       type="ionicon"
-                      color="#1C3EAA"
+                      color={Styles.MHMRBlue}
                       size={20}
                     />
                   </TouchableOpacity>
@@ -486,7 +486,7 @@ function Dashboard() {
 
 const styles = StyleSheet.create({
   btnStyle: {
-    backgroundColor: '#1C3EAA',
+    backgroundColor: Styles.MHMRBlue,
   },
   backgroundVideo: {
     position: 'absolute',

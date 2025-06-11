@@ -9,6 +9,7 @@ import {
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
+import { MHMRBlue } from '../../assets/util/styles';
 import {
   SafeAreaView,
   StyleSheet,
@@ -177,7 +178,7 @@ const KeywordTagging = () => {
         }}
         onPress={() => navigation.goBack()}
         title="Save"
-        color="#1C3EAA"
+        color= {MHMRBlue}
       />
       <View style={{margin: 40, height: 75}} />
     </ScrollView>
