@@ -122,10 +122,11 @@ const DataAnalysisBarGraph = () => {
     });
   };
 
+  // Calculate maxValue to ensure exactly 6 ticks (0 to maxValue)
   const maxValue =
     filteredBarData.length > 0
-      ? Math.ceil(filteredBarData[0].value / 5) * 5
-      : 5; // default to 5 if empty
+      ? Math.ceil(filteredBarData[0].value / 25) * 25 // Round up to nearest multiple of 25 for 5 intervals
+      : 25; // default to 25 for 6 ticks (0,5,10,15,20,25)
 
   const chartWidth = Math.max(
     filteredBarData.length * 50,
@@ -202,7 +203,7 @@ const DataAnalysisBarGraph = () => {
                   contentInset={{top: 10, bottom: 10}}
                   spacing={0.2}
                   formatLabel={value => Math.round(value)} // Ensure whole numbers
-                  numberOfTicks={Math.min(6, maxValue)} // maxValue already rounded up
+                  numberOfTicks={6} // Keep consistent with grid
                   min={0}
                   max={maxValue}
                   // style={{height: calculateBarHeight()}}
@@ -222,7 +223,7 @@ const DataAnalysisBarGraph = () => {
                   gridMax={maxValue}>
                   <Grid
                     direction={Grid.Direction.HORIZONTAL}
-                    numberOfTicks={4}
+                    numberOfTicks={6}
                   />
                 </BarChart>
               </View>
@@ -327,10 +328,10 @@ const DataAnalysisBarGraph = () => {
             min={0}
             max={
               Math.ceil(
-                Math.max(...sortedSentimentData.map(d => d.value)) / 5,
-              ) * 5
+                Math.max(...sortedSentimentData.map(d => d.value)) / 25,
+              ) * 25 || 25 // Use 25 as minimum for 6 ticks
             }
-            numberOfTicks={5}
+            numberOfTicks={6}
             style={{height: Dimensions.get('window').height * 0.3}}
             svg={{fontSize: 16}}
           />
@@ -361,10 +362,10 @@ const DataAnalysisBarGraph = () => {
             gridMin={0}
             gridMax={
               Math.ceil(
-                Math.max(...sortedSentimentData.map(d => d.value)) / 5,
-              ) * 5
+                Math.max(...sortedSentimentData.map(d => d.value)) / 25,
+              ) * 25 || 25 // Use 25 as minimum for 6 ticks
             }>
-            <Grid direction={Grid.Direction.HORIZONTAL} numberOfTicks={3} />
+            <Grid direction={Grid.Direction.HORIZONTAL} numberOfTicks={6} />
           </BarChart>
         </View>
         <XAxis

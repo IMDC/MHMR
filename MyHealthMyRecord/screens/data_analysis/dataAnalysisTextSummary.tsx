@@ -281,7 +281,7 @@ const DataAnalysisTextSummary = () => {
 
       // Sort videos by datetimeRecorded (earliest to latest)
       const sortedVideos = filtered.sort(
-        (a, b) => a.datetimeRecorded.getTime() - b.datetimeRecorded.getTime(),
+        (a, b) => b.datetimeRecorded.getTime() - a.datetimeRecorded.getTime(),
       );
 
       setVideos(sortedVideos);
