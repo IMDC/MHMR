@@ -399,6 +399,7 @@ const DataAnalysisBarGraph = () => {
             </Text>
             <FlatList
               data={videoIDs}
+              persistentScrollbar={true}
               keyExtractor={item => item._id.toString()}
               renderItem={({item}) => (
                 <TouchableOpacity
@@ -408,7 +409,13 @@ const DataAnalysisBarGraph = () => {
                     });
                     setModalVisible(false);
                   }}>
-                  <Text style={styles.videoIDText}>{item.title}</Text>
+                  <Text style={styles.videoItemContainer}>
+                    <Text style={styles.videoIDText}>{item.title}</Text>
+                    <Text style={styles.dateText}>
+                      {' '}
+                      at {item.datetimeRecorded.toLocaleString()}
+                    </Text>
+                  </Text>
                 </TouchableOpacity>
               )}
             />
@@ -461,9 +468,15 @@ const styles = StyleSheet.create({
     top: windowHeight > 800 ? '40%' : '45%', // Adjust for taller screens
   },
   videoIDText: {
-    marginVertical: 10,
+    fontSize: 16,
+    color: 'blue',
+  },
+  dateText: {
     fontSize: 16,
     color: 'black',
+  },
+  videoItemContainer: {
+    marginVertical: 10,
   },
 });
 
