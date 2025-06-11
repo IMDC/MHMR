@@ -199,10 +199,7 @@ const DataAnalysisLineGraph = () => {
     {label: '12 hour', value: '12'},
   ];
 
-  const segementWeekOptions = [
-    {label: 'Weekday/Weekend', value: '2'},
-    {label: 'Start/Mid/End', value: '3'},
-  ];
+  const segementWeekOptions = [{label: 'Start/Mid/End', value: '3'}];
 
   const segementSetRangeOptions = [{label: 'Weekday/Weekend', value: '2'}];
 
@@ -431,7 +428,7 @@ const DataAnalysisLineGraph = () => {
                           ))}
                         </>
                       )}
-                      {periodValue === '3' && (
+                      {periodValue === '3' && segementSetRange === '2' && (
                         <>
                           {selectedData.map((item, i) => (
                             <Rect
@@ -621,28 +618,37 @@ const DataAnalysisLineGraph = () => {
               />
             </View>
 
-            {periodValue !== '3' && (
-              <View style={styles.dropdownGroup}>
-                <Text style={styles.dropdownLabel}>Select segment option:</Text>
-                <Dropdown
-                  dropdownPosition="top"
-                  data={
-                    periodValue === '1'
-                      ? segementDayOptions
-                      : segementWeekOptions
-                  }
-                  style={styles.periodDropdown}
-                  labelField="label"
-                  valueField="value"
-                  value={periodValue === '1' ? segementDay : segementWeek}
-                  onChange={item => {
-                    periodValue === '1'
-                      ? setSegementDayValue(item.value)
-                      : setSegementWeekValue(item.value);
-                  }}
-                />
-              </View>
-            )}
+            <View style={styles.dropdownGroup}>
+              <Text style={styles.dropdownLabel}>Select segment option:</Text>
+              <Dropdown
+                dropdownPosition="top"
+                data={
+                  periodValue === '1'
+                    ? segementDayOptions
+                    : periodValue === '2'
+                    ? segementWeekOptions
+                    : segementSetRangeOptions
+                }
+                style={styles.periodDropdown}
+                labelField="label"
+                valueField="value"
+                placeholder="Weekend/Weekday"
+                value={
+                  periodValue === '1'
+                    ? segementDay
+                    : periodValue === '2'
+                    ? segementWeek
+                    : segementSetRange
+                }
+                onChange={item => {
+                  periodValue === '1'
+                    ? setSegementDayValue(item.value)
+                    : periodValue === '2'
+                    ? setSegementWeekValue(item.value)
+                    : setSegementSetRangeValue(item.value);
+                }}
+              />
+            </View>
           </View>
         </View>
 
