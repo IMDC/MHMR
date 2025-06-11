@@ -668,8 +668,12 @@ const DataAnalysisLineGraph = () => {
                   });
                   setModalVisible(false);
                 }}>
-                <Text style={styles.videoIDText}>
-                  {video?.title} at {video?.datetimeRecorded.toLocaleString()}
+                <Text style={styles.videoItemContainer}>
+                  <Text style={styles.videoIDText}>{video?.title}</Text>
+                  <Text style={styles.dateText}>
+                    {' '}
+                    at {video?.datetimeRecorded.toLocaleString()}
+                  </Text>
                 </Text>
               </TouchableOpacity>
             ))}
@@ -714,9 +718,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   videoIDText: {
-    marginVertical: 10,
     fontSize: 16,
     color: 'blue',
+  },
+  dateText: {
+    fontSize: 16,
+    color: 'black',
+  },
+  videoItemContainer: {
+    marginVertical: 10,
   },
   navigationContainer: {
     flex: 1,
