@@ -52,6 +52,7 @@ const DataAnalysisTextSummary = () => {
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [videosVisible, setVideosVisible] = useState(true);
   const [showTranscript, setShowTranscript] = useState({});
+  const [sentimentSort, setSentimentSort] = useState(null);
   const realm = useRealm();
   const {showLoader, hideLoader} = useLoader();
   const [refreshSummary, setRefreshSummary] = useState(false);
@@ -67,6 +68,15 @@ const DataAnalysisTextSummary = () => {
   });
 
   const [openSections, setOpenSections] = React.useState<string[]>([]);
+
+  const sortData = [
+    {label: 'All', value: 'all'},
+    {label: 'Very Positive', value: 'Very Positive'},
+    {label: 'Positive', value: 'Positive'},
+    {label: 'Neutral', value: 'Neutral'},
+    {label: 'Negative', value: 'Negative'},
+    {label: 'Very Negative', value: 'Very Negative'},
+  ];
 
   const toggleSection = (section: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -147,6 +157,13 @@ const DataAnalysisTextSummary = () => {
     hideLoader();
   };
 
+  const getFilteredVideos = () => {
+    if (!sentimentSort || sentimentSort === 'all') {
+      return videos;
+    }
+    return videos.filter(video => video.sentiment === sentimentSort);
+  };
+
   const renderHeader = () => (
     <View>
       <View style={styles.dropdownContainer}>
@@ -191,74 +208,6 @@ const DataAnalysisTextSummary = () => {
           Very positive: {sentimentCounts.veryPositive}
         </Text>
       </View>
-    </View>
-  );
-
-  const renderItem = ({item: video}) => (
-    <View key={video._id} style={styles.container}>
-      {/* Display video title with date and time */}
-      <Text style={[styles.title, {fontSize: 28}]}>
-        {video.title} 
-      </Text>
-
-      {editingID === video._id ? (
-        <View>
-          <Text style={styles.transcriptLabel}>Video transcript:</Text>
-          <TextInput
-            style={styles.textInput}
-            onChangeText={setDraftTranscript}
-            value={draftTranscript}
-            multiline
-          />
-          <View style={styles.buttonContainer}>
-            <Button title="Save" onPress={handleSave} color={Styles.MHMRBlue} />
-            <Button
-              title="Cancel"
-              onPress={() => setEditingID(null)}
-              color={Styles.MHMRBlue}
-            />
-          </View>
-        </View>
-      ) : (
-        <>
-          <TouchableOpacity onPress={() => toggleTranscript(video._id)}>
-            <Text style={styles.transcriptLabel}>Video transcript</Text>
-            <Icon
-              name={
-                showTranscript[video._id]
-                  ? 'keyboard-arrow-up'
-                  : 'keyboard-arrow-down'
-              }
-              size={30}
-            />
-          </TouchableOpacity>
-          {showTranscript[video._id] && (
-            <Text style={styles.transcript}>{video.transcript}</Text>
-          )}
-          {online && (
-            <Button
-              title="Edit transcript"
-              onPress={() => handleEdit(video)}
-              color={Styles.MHMRBlue}
-            />
-          )}
-        </>
-      )}
-
-      <Text style={styles.output}>
-        <Text style={{fontWeight: 'bold'}}>Output:</Text>{' '}
-        {reportFormat === 'sentence'
-          ? video.tsOutputSentence
-          : video.tsOutputBullet}
-      </Text>
-
-      <Text style={styles.sentiment}>
-        Overall feeling: {video.sentiment}
-        <Image
-          source={getEmojiForSentiment(video.sentiment)}
-          style={styles.emoji}
-        />
-      </Text>
     </View>
   );
 
@@ -332,7 +281,7 @@ const DataAnalysisTextSummary = () => {
 
       // Sort videos by datetimeRecorded (earliest to latest)
       const sortedVideos = filtered.sort(
-        (a, b) => a.datetimeRecorded.getTime() - b.datetimeRecorded.getTime()
+        (a, b) => a.datetimeRecorded.getTime() - b.datetimeRecorded.getTime(),
       );
 
       setVideos(sortedVideos);
@@ -377,9 +326,20 @@ const DataAnalysisTextSummary = () => {
 
   return (
     <FlatList
-      data={videosVisible ? videos.filter(Boolean) : []}
+      data={videosVisible ? getFilteredVideos().filter(Boolean) : []}
       keyExtractor={item => item._id}
       initialNumToRender={10}
+      ListEmptyComponent={
+        videosVisible && (
+          <View style={{padding: 20, alignItems: 'center'}}>
+            <Text style={{fontSize: 20, color: 'black'}}>
+              {sentimentSort && sentimentSort !== 'all'
+                ? `No ${sentimentSort.toLowerCase()} videos found.`
+                : 'No videos found.'}
+            </Text>
+          </View>
+        )
+      }
       ListHeaderComponent={
         <View>
           <View style={styles.dropdownContainer}>
@@ -425,6 +385,7 @@ const DataAnalysisTextSummary = () => {
                 <Icon name="refresh-outline" type="ionicon" size={24} />
               </TouchableOpacity>
             )}
+
             <Text style={[styles.title, {textAlign: 'center'}]}>
               {currentVideoSet?.name
                 ? `${currentVideoSet?.name} - Video set summary`
@@ -498,15 +459,55 @@ const DataAnalysisTextSummary = () => {
                 />
               </TouchableOpacity>
             </View>
+            <View
+              style={{
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderBottomColor: 'black',
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                flexDirection: 'row',
+                width: '100%',
+                // marginVertical: 5,
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  width: '25%',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: 'black',
+                }}>
+                Filter by feeling:
+              </Text>
+              <Dropdown
+                data={sortData}
+                maxHeight={300}
+                style={{
+                  width: '75%',
+                  backgroundColor: '#DBDBDB',
+                  borderRadius: 22,
+                  paddingHorizontal: 20,
+                }}
+                dropdownPosition="top"
+                placeholderStyle={{fontSize: 20}}
+                selectedTextStyle={{fontSize: 20}}
+                itemTextStyle={{textAlign: 'center'}}
+                labelField="label"
+                valueField="value"
+                value={sentimentSort}
+                onChange={item => {
+                  setSentimentSort(item.value);
+                }}
+              />
+            </View>
           </View>
         </View>
       }
       renderItem={({item: video}) => (
         <View key={video._id} style={styles.container}>
           <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
-            <Text style={[styles.title, {fontSize: 28}]}>
-              {video.title}
-            </Text>
+            <Text style={[styles.title, {fontSize: 28}]}>{video.title}</Text>
             <Text style={{fontSize: 20}}>
               {video.datetimeRecorded.toLocaleString()}
             </Text>
@@ -640,23 +641,25 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   dropdownContainer: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingTop: 2,
+    paddingBottom: 5,
     borderBottomColor: 'black',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   dropdownLabel: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 2,
     textAlign: 'center',
     color: 'black',
   },
   dropdown: {
-    height: 40,
+    height: 35,
     borderWidth: 1,
     borderRadius: 22,
     paddingHorizontal: 8,
-    marginBottom: 10,
+    marginBottom: 5,
     width: '100%',
     alignSelf: 'center',
   },
