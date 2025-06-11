@@ -367,12 +367,10 @@ const DataAnalysisLineGraph = () => {
                               key={i}
                               x={
                                 i *
-                                  (chartWidth /
-                                    Math.ceil(
-                                      selectedData.length /
-                                        parseInt(segementDay),
-                                    )) +
-                                10
+                                (chartWidth /
+                                  Math.ceil(
+                                    selectedData.length / parseInt(segementDay),
+                                  ))
                               }
                               y={0}
                               width={
@@ -393,9 +391,9 @@ const DataAnalysisLineGraph = () => {
                           {Array.from({length: 3}).map((_, i) => (
                             <Rect
                               key={i}
-                              x={i * (chartWidth / 2.5) + 10}
+                              x={i * (chartWidth / 2.45)}
                               y={0}
-                              width={chartWidth / 2.5}
+                              width={chartWidth / 2.45}
                               height={windowHeight * 0.6}
                               fill={
                                 i === 0
@@ -414,7 +412,7 @@ const DataAnalysisLineGraph = () => {
                           {Array.from({length: 3}).map((_, i) => (
                             <Rect
                               key={i}
-                              x={i * (chartWidth / 3) + 10}
+                              x={i * (chartWidth / 3)}
                               y={0}
                               width={chartWidth / 3}
                               height={windowHeight * 0.6}
