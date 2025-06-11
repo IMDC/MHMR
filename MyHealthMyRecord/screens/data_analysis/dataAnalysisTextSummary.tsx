@@ -60,22 +60,22 @@ const DataAnalysisTextSummary = () => {
     new Set(videoSetVideoIDs),
   );
   const [sentimentCounts, setSentimentCounts] = useState({
-    veryPositive: 0,
-    positive: 0,
-    neutral: 0,
-    negative: 0,
     veryNegative: 0,
+    negative: 0,
+    neutral: 0,
+    positive: 0,
+    veryPositive: 0,
   });
 
   const [openSections, setOpenSections] = React.useState<string[]>([]);
 
   const sortData = [
     {label: 'All', value: 'all'},
-    {label: 'Very Positive', value: 'Very Positive'},
-    {label: 'Positive', value: 'Positive'},
-    {label: 'Neutral', value: 'Neutral'},
-    {label: 'Negative', value: 'Negative'},
     {label: 'Very Negative', value: 'Very Negative'},
+    {label: 'Negative', value: 'Negative'},
+    {label: 'Neutral', value: 'Neutral'},
+    {label: 'Positive', value: 'Positive'},
+    {label: 'Very Positive', value: 'Very Positive'},
   ];
 
   const toggleSection = (section: string) => {
@@ -411,25 +411,51 @@ const DataAnalysisTextSummary = () => {
               <Text style={styles.sentimentCountsTitle}>
                 Emotional distribution of video set
               </Text>
-              {Object.entries(sentimentCounts).map(([label, count]) => (
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text key={label} style={styles.sentimentCount}>
-                    {label
-                      .replace(/([A-Z])/g, ' $1')
-                      .replace(/^./, str => str.toUpperCase())}
-                    : {count}
-                  </Text>
-                  <Image
-                    key={`${label}-emoji`}
-                    source={getEmojiForSentiment(
-                      label
-                        .replace(/([A-Z])/g, ' $1')
-                        .replace(/^./, str => str.toUpperCase()),
-                    )}
-                    style={styles.emoji}
-                  />
-                </View>
-              ))}
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.sentimentCount}>
+                  Very Negative: {sentimentCounts.veryNegative}
+                </Text>
+                <Image
+                  source={getEmojiForSentiment('Very Negative')}
+                  style={styles.emoji}
+                />
+              </View>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.sentimentCount}>
+                  Negative: {sentimentCounts.negative}
+                </Text>
+                <Image
+                  source={getEmojiForSentiment('Negative')}
+                  style={styles.emoji}
+                />
+              </View>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.sentimentCount}>
+                  Neutral: {sentimentCounts.neutral}
+                </Text>
+                <Image
+                  source={getEmojiForSentiment('Neutral')}
+                  style={styles.emoji}
+                />
+              </View>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.sentimentCount}>
+                  Positive: {sentimentCounts.positive}
+                </Text>
+                <Image
+                  source={getEmojiForSentiment('Positive')}
+                  style={styles.emoji}
+                />
+              </View>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.sentimentCount}>
+                  Very Positive: {sentimentCounts.veryPositive}
+                </Text>
+                <Image
+                  source={getEmojiForSentiment('Very Positive')}
+                  style={styles.emoji}
+                />
+              </View>
             </View>
 
             <View
@@ -496,6 +522,7 @@ const DataAnalysisTextSummary = () => {
                 labelField="label"
                 valueField="value"
                 value={sentimentSort}
+                placeholder="All"
                 onChange={item => {
                   setSentimentSort(item.value);
                 }}

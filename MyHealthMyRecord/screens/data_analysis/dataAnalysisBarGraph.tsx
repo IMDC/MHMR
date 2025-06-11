@@ -143,6 +143,18 @@ const DataAnalysisBarGraph = () => {
     setModalVisible(true);
   };
 
+  const sentimentOrder = {
+    'Very Negative': 0,
+    Negative: 1,
+    Neutral: 2,
+    Positive: 3,
+    'Very Positive': 4,
+  };
+
+  const sortedSentimentData = [...sentimentData].sort(
+    (a, b) => sentimentOrder[a.label] - sentimentOrder[b.label],
+  );
+
   if (filteredBarData.length === 0) {
     return (
       <SafeAreaView
@@ -208,7 +220,10 @@ const DataAnalysisBarGraph = () => {
                   spacing={0.2}
                   gridMin={0}
                   gridMax={maxValue}>
-                  <Grid direction={Grid.Direction.HORIZONTAL} />
+                  <Grid
+                    direction={Grid.Direction.HORIZONTAL}
+                    numberOfTicks={4}
+                  />
                 </BarChart>
               </View>
               <XAxis
@@ -304,13 +319,17 @@ const DataAnalysisBarGraph = () => {
             </Text>
           </View>
           <YAxis
-            data={sentimentData}
-            yAccessor={({index}) => sentimentData[index].value}
+            data={sortedSentimentData}
+            yAccessor={({index}) => sortedSentimentData[index].value}
             contentInset={{top: 10, bottom: 10}}
             spacing={0.2}
             formatLabel={value => value}
             min={0}
-            max={Math.max(...sentimentData.map(d => d.value))}
+            max={
+              Math.ceil(
+                Math.max(...sortedSentimentData.map(d => d.value)) / 5,
+              ) * 5
+            }
             numberOfTicks={5}
             style={{height: Dimensions.get('window').height * 0.3}}
             svg={{fontSize: 16}}
@@ -320,34 +339,39 @@ const DataAnalysisBarGraph = () => {
               height: Dimensions.get('window').height * 0.3,
               width: Dimensions.get('window').width - 90,
             }}
-            data={sentimentData.map((item, index) => ({
+            data={sortedSentimentData.map((item, index) => ({
               ...item,
               svg: {
                 fill:
-                  index === 4
-                    ? '#00CC00'
-                    : index === 3
-                    ? '#99CC00'
-                    : index === 2
-                    ? '#FFCC00'
+                  index === 0
+                    ? '#6633CC' // Very Negative
                     : index === 1
-                    ? '#9966CC'
-                    : '#6633CC',
+                    ? '#9966CC' // Negative
+                    : index === 2
+                    ? '#FFCC00' // Neutral
+                    : index === 3
+                    ? '#99CC00' // Positive
+                    : '#00CC00', // Very Positive
                 onPressIn: () => handleSentimentPress(item.label),
               },
             }))}
             yAccessor={({item}) => item.value}
             contentInset={{top: 10, bottom: 10}}
             spacing={0.2}
-            gridMin={0}>
-            <Grid direction={Grid.Direction.HORIZONTAL} />
+            gridMin={0}
+            gridMax={
+              Math.ceil(
+                Math.max(...sortedSentimentData.map(d => d.value)) / 5,
+              ) * 5
+            }>
+            <Grid direction={Grid.Direction.HORIZONTAL} numberOfTicks={3} />
           </BarChart>
         </View>
         <XAxis
           style={{marginHorizontal: -10, alignContent: 'center'}}
-          data={sentimentData.map((_, index) => index)}
+          data={sortedSentimentData.map((_, index) => index)}
           scale={scale.scaleBand}
-          formatLabel={(value, index) => sentimentData[index].label}
+          formatLabel={(value, index) => sortedSentimentData[index].label}
           svg={{
             fontSize: 18,
             fill: 'black',
