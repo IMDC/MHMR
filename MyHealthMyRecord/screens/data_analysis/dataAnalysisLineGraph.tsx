@@ -43,7 +43,7 @@ const DataAnalysisLineGraph = () => {
   const [periodValue, setPeriodValue] = useState('1');
   const [segementDay, setSegementDayValue] = useState('12');
   const [segementWeek, setSegementWeekValue] = useState('2');
-  const [segementSetRange, setSegementSetRangeValue] = useState('1');
+  const [segementSetRange, setSegementSetRangeValue] = useState('2');
   const [date, setDateValue] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
@@ -172,7 +172,19 @@ const DataAnalysisLineGraph = () => {
     '11PM',
   ];
 
-  const weeks = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weeks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Function to determine if a date is a weekend
+  const isWeekend = (dateStr: string) => {
+    const [month, day] = dateStr.split('-').map(Number);
+    // Get the year from the first video in the set
+    const currentYear = lineData?.datesForHours?.[0]?.label
+      ? new Date(lineData.datesForHours[0].label).getFullYear()
+      : new Date().getFullYear(); // Fallback to current year if no data
+    const date = new Date(currentYear, month - 1, day);
+    const dayOfWeek = date.getDay();
+    return dayOfWeek === 0 || dayOfWeek === 6; // 0 is Sunday, 6 is Saturday
+  };
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
@@ -192,7 +204,7 @@ const DataAnalysisLineGraph = () => {
     {label: 'Start/Mid/End', value: '3'},
   ];
 
-  const segementSetRangeOptions = [{label: 'By Month', value: '1'}];
+  const segementSetRangeOptions = [{label: 'Weekday/Weekend', value: '2'}];
 
   const handlePressIn = async value => {
     try {
@@ -419,24 +431,18 @@ const DataAnalysisLineGraph = () => {
                           ))}
                         </>
                       )}
-                      {periodValue === '3' && segementSetRange === '1' && (
+                      {periodValue === '3' && (
                         <>
-                          {Array.from({
-                            length: Math.ceil(selectedData.length / 30),
-                          }).map((_, i) => (
+                          {selectedData.map((item, i) => (
                             <Rect
                               key={i}
-                              x={
-                                i *
-                                (chartWidth /
-                                  Math.ceil(selectedData.length / 30))
-                              }
+                              x={i * (chartWidth / selectedData.length)}
                               y={0}
-                              width={
-                                chartWidth / Math.ceil(selectedData.length / 30)
-                              }
+                              width={chartWidth / selectedData.length}
                               height={windowHeight * 0.6}
-                              fill={i % 2 === 0 ? '#d0d0d0' : '#909090'}
+                              fill={
+                                isWeekend(item.label) ? '#707070' : '#d0d0d0'
+                              }
                               opacity={0.5}
                             />
                           ))}
