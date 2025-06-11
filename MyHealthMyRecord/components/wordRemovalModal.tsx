@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useState, useMemo} from 'react';
 import {
   Modal,
   View,
@@ -32,6 +32,8 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
     updateWordList,
   } = useWordList();
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const handleToggleWordSelection = useCallback(
     word => {
       toggleWordSelection(word);
@@ -45,6 +47,12 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
     setEditModalVisible(false);
   };
 
+  const filteredAndSearchedWords = useMemo(() => {
+    return filteredWords.filter(item =>
+      item.text.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [filteredWords, searchQuery]);
+
   return (
     <Modal
       animationType="slide"
@@ -56,9 +64,26 @@ const WordRemovalModal = ({setEditModalVisible, filteredWords}) => {
           <Text style={styles.modalText}>
             Select words to remove from visualization
           </Text>
+          <View style={styles.searchWrapper}>
+            <Input
+              placeholder="Search words..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              containerStyle={styles.searchContainer}
+              inputContainerStyle={styles.searchInputContainer}
+              inputStyle={styles.searchInput}
+              leftIcon={{
+                type: 'ionicon',
+                name: 'search-outline',
+                color: 'gray',
+                size: 20,
+              }}
+              clearButtonMode="while-editing"
+            />
+          </View>
           <FlatList
             persistentScrollbar={true}
-            data={filteredWords}
+            data={filteredAndSearchedWords}
             renderItem={({item}) => (
               <MemoizedCheckBox
                 title={item.text}
@@ -150,12 +175,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-
     width: '100%',
     marginBottom: 0,
   },
   buttonStyle: {
     flex: 1,
+  },
+  searchWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    marginLeft: 15,
+  },
+  searchContainer: {
+    paddingHorizontal: 0,
+    width: Dimensions.get('window').width * 0.85,
+  },
+  searchInputContainer: {
+    borderRadius: 25,
+    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 15,
+    height: 40,
+    borderBottomWidth: 0,
+  },
+  searchInput: {
+    textAlign: 'left',
+    marginLeft: 5,
   },
 });
 

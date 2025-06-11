@@ -43,7 +43,7 @@ const DataAnalysis = () => {
   const [videoSetDropdown, setVideoSetDropdown] = useState([]);
   const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
   const videoSets = useQuery<any>('VideoSet');
-  const {updateWordList, wordList} = useWordList();
+  const {updateWordList, wordList, selectedWords} = useWordList();
   const realm = useRealm();
   const [sentimentBarData, setSentimentBarData] = useState<any>([]);
 
@@ -284,7 +284,10 @@ const DataAnalysis = () => {
           <Dropdown
             data={wordList
               .filter(
-                item => item.text && item.text.toLowerCase() !== 'hesitation',
+                item =>
+                  item.text &&
+                  item.text.toLowerCase() !== 'hesitation' &&
+                  !selectedWords.has(item.text),
               )
               .sort((a, b) => a.text.localeCompare(b.text))
               .map(item => ({
