@@ -235,7 +235,7 @@ export const processVideos = async (
           ([word, count]) =>
             !stopWordsSet.has(word) &&
             ((!word.includes(' ') && count >= 1) ||
-              (word.includes(' ') && count > 1)),
+              (word.includes(' ') && count >= 1)),
         )
         .map(([word]) => word),
     );

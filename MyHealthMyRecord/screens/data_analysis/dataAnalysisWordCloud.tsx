@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, View, Text, StyleSheet, Dimensions} from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  useWindowDimensions,
+} from 'react-native';
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import WordCloud from 'rn-wordcloud';
@@ -12,6 +19,7 @@ import {useDropdownContext} from '../../components/videoSetProvider';
 import {useSetLineGraphData} from '../../components/lineGraphData';
 
 const DataAnalysisWordCloud = () => {
+  const {width: windowWidth, height: windowHeight} = useWindowDimensions();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const {wordList, selectedWords, updateWordList} = useWordList();
   const {currentVideoSet} = useDropdownContext();
@@ -205,40 +213,18 @@ const DataAnalysisWordCloud = () => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       {updatedData.length > 1 ? (
-        <View style={{flexDirection: 'column'}}>
-          <View
-            style={{
-              flexDirection: 'row',
-              marginTop: 10,
-              paddingHorizontal: 20,
-              justifyContent: 'space-evenly',
-            }}>
-            <View style={{flexDirection: 'row'}}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontSize: 20,
-                  fontWeight: 'bold',
-                  color: 'black',
-                  paddingVertical: 10,
-                  paddingHorizontal: 4,
-                }}>
-                Select Color Palette:
-              </Text>
+        <View style={styles.contentContainer}>
+          <View style={styles.headerContainer}>
+            <View style={styles.dropdownContainer}>
+              <Text style={styles.headerText}>Select Color Palette:</Text>
 
               <Dropdown
                 data={dropdownData}
                 dropdownPosition="bottom"
                 maxHeight={150}
-                style={{
-                  height: 50,
-                  width: Styles.windowWidth / 2.5,
-                  paddingHorizontal: 20,
-                  backgroundColor: '#DBDBDB',
-                  borderRadius: 22,
-                }}
+                style={[styles.dropdown, {width: windowWidth / 2.5}]}
                 itemTextStyle={{textAlign: 'center'}}
                 labelField="label"
                 valueField="value"
@@ -247,29 +233,35 @@ const DataAnalysisWordCloud = () => {
                 onChange={item => setDropdownValue(item.value)}
               />
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={styles.buttonContainer}>
               <Button
                 title="Word settings"
                 onPress={() => setEditModalVisible(true)}
                 color={Styles.MHMRBlue}
                 radius={50}
-                containerStyle={{width: 150}}
+                containerStyle={styles.settingsButton}
               />
             </View>
           </View>
 
-          <View style={{alignItems: 'center', justifyContent: 'flex-end'}}>
+          <View style={styles.wordCloudContainer}>
             <WordCloud
               key={JSON.stringify(updatedData)}
               options={{
                 words: updatedData,
                 verticalEnabled: true,
-                minFont: Styles.windowHeight * 0.0225,
-                maxFont: Styles.windowHeight * 0.05,
-                fontOffset: 0.6,
-                width: Styles.windowWidth,
-                height: Styles.windowHeight * 0.8,
-                padding: 1,
+                minFont: Math.max(
+                  windowHeight * (filteredWordList.length < 20 ? 0.05 : 0.025),
+                  16,
+                ),
+                maxFont: Math.min(
+                  windowHeight * (filteredWordList.length < 20 ? 0.12 : 0.06),
+                  windowWidth * (filteredWordList.length < 20 ? 0.2 : 0.1),
+                ),
+                fontOffset: filteredWordList.length < 20 ? 1 : 0.7,
+                width: windowWidth,
+                height: windowHeight * 0.8,
+                padding: filteredWordList.length < 20 ? 3 : 1,
                 fontFamily: 'Arial',
               }}
               onWordPress={handleWordClick}
@@ -277,7 +269,7 @@ const DataAnalysisWordCloud = () => {
           </View>
         </View>
       ) : (
-        <Text style={{textAlign: 'center', marginTop: 20, fontSize: 16}}>
+        <Text style={styles.noDataText}>
           Not enough data to display a word cloud.
         </Text>
       )}
@@ -292,6 +284,55 @@ const DataAnalysisWordCloud = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerText: {
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'black',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  dropdown: {
+    height: 50,
+    paddingHorizontal: 20,
+    backgroundColor: '#DBDBDB',
+    borderRadius: 22,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingsButton: {
+    width: 150,
+  },
+  wordCloudContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
   modalView: {
     margin: 20,
     backgroundColor: 'white',

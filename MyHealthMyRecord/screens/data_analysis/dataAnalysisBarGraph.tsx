@@ -54,10 +54,10 @@ const DataAnalysisBarGraph = () => {
     {
       length:
         filteredBarData.length > 0
-          ? Math.ceil(filteredBarData[0].value / 10) * 10
-          : 10,
+          ? Math.ceil(filteredBarData[0].value / 5) * 5
+          : 5,
     },
-    (_, i) => i * 10,
+    (_, i) => i * 5,
   );
 
   useEffect(() => {
@@ -124,8 +124,8 @@ const DataAnalysisBarGraph = () => {
 
   const maxValue =
     filteredBarData.length > 0
-      ? Math.ceil(filteredBarData[0].value / 10) * 10
-      : 10; // default to 10 if empty
+      ? Math.ceil(filteredBarData[0].value / 5) * 5
+      : 5; // default to 5 if empty
 
   const chartWidth = Math.max(
     filteredBarData.length * 50,
@@ -169,10 +169,7 @@ const DataAnalysisBarGraph = () => {
           Word Frequency of {currentVideoSet?.name}
         </Text>
         <View style={{height: Dimensions.get('window').height * 0.75}}>
-          <ScrollView
-            horizontal
-            ref={horizontalScrollRef}
-            >
+          <ScrollView horizontal ref={horizontalScrollRef}>
             <View style={{width: 50, justifyContent: 'center'}}>
               <Text
                 style={{

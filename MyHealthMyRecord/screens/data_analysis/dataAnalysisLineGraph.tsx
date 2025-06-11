@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
-import Svg, {Circle} from 'react-native-svg';
+import Svg, {Circle, Rect} from 'react-native-svg';
 import {LineChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
 import * as Styles from '../../assets/util/styles';
@@ -42,7 +42,8 @@ const DataAnalysisLineGraph = () => {
   >([]);
   const [periodValue, setPeriodValue] = useState('1');
   const [segementDay, setSegementDayValue] = useState('12');
-  const [segementWeek, setSegementWeekValue] = useState('1');
+  const [segementWeek, setSegementWeekValue] = useState('2');
+  const [segementSetRange, setSegementSetRangeValue] = useState('1');
   const [date, setDateValue] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
@@ -171,7 +172,7 @@ const DataAnalysisLineGraph = () => {
     '11PM',
   ];
 
-  const weeks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weeks = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const periodOptions = [
     {label: 'Daily', value: '1'},
@@ -187,10 +188,11 @@ const DataAnalysisLineGraph = () => {
   ];
 
   const segementWeekOptions = [
-    {label: 'By Day', value: '1'},
     {label: 'Weekday/Weekend', value: '2'},
     {label: 'Start/Mid/End', value: '3'},
   ];
+
+  const segementSetRangeOptions = [{label: 'By Month', value: '1'}];
 
   const handlePressIn = async value => {
     try {
@@ -236,7 +238,6 @@ const DataAnalysisLineGraph = () => {
       ))}
     </>
   );
-  
 
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
@@ -250,15 +251,15 @@ const DataAnalysisLineGraph = () => {
       ? freqDayArray[date] || []
       : periodValue === '2'
       ? freqWeekArray[date] || []
-      //: freqSetRangeArray.filter(item => item.value >= 1) || [];
-      : freqSetRangeArray || [];
+      : //: freqSetRangeArray.filter(item => item.value >= 1) || [];
+        freqSetRangeArray || [];
 
   if (selectedData.length === 0) {
     return <Text>No data available for the selected period.</Text>;
   }
 
   const dataValues = selectedData.map(item => item.value);
-  
+
   let minValue = Math.min(...dataValues); // Use the smallest value in the data
   let maxValue = Math.max(...dataValues); // Use the largest value in the data
 
@@ -281,7 +282,7 @@ const DataAnalysisLineGraph = () => {
                 color: 'black',
                 fontWeight: 'bold',
               }}>
-              Word count of "{wordLabel}" over time 
+              Word count of "{wordLabel}" over time
               {periodValue === '1'
                 ? ` for ${dateOptionsForHours[date]?.label}`
                 : periodValue === '2'
@@ -334,9 +335,9 @@ const DataAnalysisLineGraph = () => {
                       bottom: 0,
                     }}>
                     <LineChart
-                      style={{ height: 200, flex: 1 }}
+                      style={{height: 200, flex: 1}}
                       data={selectedData}
-                      contentInset={{ top: 20, bottom: 10, left: 10, right: 10 }}
+                      contentInset={{top: 20, bottom: 10, left: 10, right: 10}}
                       yAccessor={({item}) => item.value || 0}
                       xAccessor={({index}) => index}
                       yMin={0}
@@ -346,6 +347,101 @@ const DataAnalysisLineGraph = () => {
                         strokeWidth: 5,
                       }}>
                       <Grid />
+                      {periodValue === '1' && (
+                        <>
+                          {Array.from({
+                            length: Math.ceil(
+                              selectedData.length / parseInt(segementDay),
+                            ),
+                          }).map((_, i) => (
+                            <Rect
+                              key={i}
+                              x={
+                                i *
+                                (chartWidth /
+                                  Math.ceil(
+                                    selectedData.length / parseInt(segementDay),
+                                  ))
+                              }
+                              y={0}
+                              width={
+                                chartWidth /
+                                Math.ceil(
+                                  selectedData.length / parseInt(segementDay),
+                                )
+                              }
+                              height={windowHeight * 0.6}
+                              fill={i % 2 === 0 ? '#d0d0d0' : '#909090'}
+                              opacity={0.5}
+                            />
+                          ))}
+                        </>
+                      )}
+                      {periodValue === '2' && segementWeek === '2' && (
+                        <>
+                          {Array.from({length: 3}).map((_, i) => (
+                            <Rect
+                              key={i}
+                              x={i * (chartWidth / 2.45)}
+                              y={0}
+                              width={chartWidth / 2.45}
+                              height={windowHeight * 0.6}
+                              fill={
+                                i === 0
+                                  ? '#d0d0d0'
+                                  : i === 1
+                                  ? '#d0d0d0'
+                                  : '#707070'
+                              }
+                              opacity={0.5}
+                            />
+                          ))}
+                        </>
+                      )}
+                      {periodValue === '2' && segementWeek === '3' && (
+                        <>
+                          {Array.from({length: 3}).map((_, i) => (
+                            <Rect
+                              key={i}
+                              x={i * (chartWidth / 3)}
+                              y={0}
+                              width={chartWidth / 3}
+                              height={windowHeight * 0.6}
+                              fill={
+                                i === 0
+                                  ? '#d0d0d0'
+                                  : i === 1
+                                  ? '#909090'
+                                  : '#707070'
+                              }
+                              opacity={0.5}
+                            />
+                          ))}
+                        </>
+                      )}
+                      {periodValue === '3' && segementSetRange === '1' && (
+                        <>
+                          {Array.from({
+                            length: Math.ceil(selectedData.length / 30),
+                          }).map((_, i) => (
+                            <Rect
+                              key={i}
+                              x={
+                                i *
+                                (chartWidth /
+                                  Math.ceil(selectedData.length / 30))
+                              }
+                              y={0}
+                              width={
+                                chartWidth / Math.ceil(selectedData.length / 30)
+                              }
+                              height={windowHeight * 0.6}
+                              fill={i % 2 === 0 ? '#d0d0d0' : '#909090'}
+                              opacity={0.5}
+                            />
+                          ))}
+                        </>
+                      )}
                       <Dots />
                     </LineChart>
 
@@ -401,8 +497,6 @@ const DataAnalysisLineGraph = () => {
                         textAnchor: periodValue === '1' ? 'end' : 'middle',
                         dy: periodValue === '1' ? 0 : 10,
                       }}
-                      
-                      
                     />
                   </View>
                 </ScrollView>
@@ -521,28 +615,28 @@ const DataAnalysisLineGraph = () => {
               />
             </View>
 
-            <View style={styles.dropdownGroup}>
-              <Text style={styles.dropdownLabel}>Select segment option:</Text>
-              <Dropdown
-                dropdownPosition="top"
-                data={
-                  periodValue === '1'
-                    ? segementDayOptions
-                    : periodValue === '2'
-                    ? segementWeekOptions
-                    : []
-                }
-                style={styles.periodDropdown}
-                labelField="label"
-                valueField="value"
-                value={periodValue === '1' ? segementDay : segementWeek}
-                onChange={item => {
-                  periodValue === '1'
-                    ? setSegementDayValue(item.value)
-                    : setSegementWeekValue(item.value);
-                }}
-              />
-            </View>
+            {periodValue !== '3' && (
+              <View style={styles.dropdownGroup}>
+                <Text style={styles.dropdownLabel}>Select segment option:</Text>
+                <Dropdown
+                  dropdownPosition="top"
+                  data={
+                    periodValue === '1'
+                      ? segementDayOptions
+                      : segementWeekOptions
+                  }
+                  style={styles.periodDropdown}
+                  labelField="label"
+                  valueField="value"
+                  value={periodValue === '1' ? segementDay : segementWeek}
+                  onChange={item => {
+                    periodValue === '1'
+                      ? setSegementDayValue(item.value)
+                      : setSegementWeekValue(item.value);
+                  }}
+                />
+              </View>
+            )}
           </View>
         </View>
 
