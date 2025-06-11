@@ -159,7 +159,7 @@ function App() {
               <NavigationContainer>
                 <OfflineAlert />
                 <Tab.Navigator
-                  initialRouteName="MyHealthMyRecord"
+                  initialRouteName="Analysis"
                   screenOptions={{
                     tabBarActiveTintColor: Styles.MHMRBlue,
                     tabBarInactiveTintColor: 'gray',
@@ -172,7 +172,6 @@ function App() {
                   <Tab.Screen
                     name="Analysis"
                     component={DataAnalysisStack}
-                    tabBarShowLabel={false}
                     options={{
                       headerShown: false,
                       tabBarShowLabel: true,
@@ -184,96 +183,6 @@ function App() {
                       tabBarIcon: ({color}) => (
                         <Icon
                           name="bar-chart-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-
-                  <Tab.Screen
-                    name="Dashboard"
-                    component={DashboardStack}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Dashboard',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="albums-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                  <Tab.Screen
-                    name="MyHealthMyRecord"
-                    component={StackNav}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Home',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="home-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                  <Tab.Screen
-                    name="Manage Videos"
-                    component={ManageVideosStack}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Manage Videos',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="film-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                  <Tab.Screen
-                    name="Help"
-                    component={Help}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Help',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="information-circle-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
                           color={color}

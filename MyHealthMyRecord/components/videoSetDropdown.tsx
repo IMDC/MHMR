@@ -274,7 +274,7 @@ const VideoSetDropdown = ({
       manageSetBtn === false &&
       keepViewBtn === true ? (
         <View style={{flexDirection: 'row', paddingTop: 30}}>
-          <Button
+          {/* <Button
             title="View videos in video set"
             onPress={() => navigation.navigate('Dashboard')}
             color={Styles.MHMRBlue}
@@ -283,7 +283,7 @@ const VideoSetDropdown = ({
               width: 300,
             }}
             disabled={localDropdown.length === 0}
-          />
+          /> */}
         </View>
       ) : (
         <View>
