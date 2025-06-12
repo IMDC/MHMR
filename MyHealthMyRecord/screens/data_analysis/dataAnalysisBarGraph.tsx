@@ -199,11 +199,11 @@ const DataAnalysisBarGraph = () => {
               <View style={{flexDirection: 'row', flex: 1}}>
                 <YAxis
                   data={yTest}
-                  yAccessor={({index}) => index}
+                  yAccessor={({value}) => value}
                   contentInset={{top: 10, bottom: 10}}
                   spacing={0.2}
                   formatLabel={value => Math.round(value)} // Ensure whole numbers
-                  numberOfTicks={6} // Keep consistent with grid
+                  numberOfTicks={8} // Keep consistent with grid
                   min={0}
                   max={maxValue}
                   // style={{height: calculateBarHeight()}}
@@ -218,12 +218,11 @@ const DataAnalysisBarGraph = () => {
                   yAccessor={({item}) => item.value}
                   svg={{fill: 'rgba(' + Styles.MHMRBlueRGB + ', 0.7)'}}
                   contentInset={{top: 10, bottom: 10}}
-                  spacing={0.2}
+                  spacing={0}
                   gridMin={0}
                   gridMax={maxValue}>
                   <Grid
                     direction={Grid.Direction.HORIZONTAL}
-                    numberOfTicks={6}
                   />
                 </BarChart>
               </View>
