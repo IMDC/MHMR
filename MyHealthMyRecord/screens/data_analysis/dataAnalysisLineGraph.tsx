@@ -40,7 +40,7 @@ const DataAnalysisLineGraph = () => {
   const [dateOptionsForSetRange, setDateOptionsForSetRange] = useState<
     {label: string; value: number}[]
   >([]);
-  const [periodValue, setPeriodValue] = useState('1');
+  const [periodValue, setPeriodValue] = useState('3');
   const [segementDay, setSegementDayValue] = useState('12');
   const [segementWeek, setSegementWeekValue] = useState('2');
   const [segementSetRange, setSegementSetRangeValue] = useState('2');
