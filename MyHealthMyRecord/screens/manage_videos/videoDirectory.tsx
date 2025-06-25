@@ -1228,6 +1228,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                             <View style={styles.buttonContainerList}>
                               <Button
                                 buttonStyle={styles.btnStyle}
+                                titleStyle={{color: 'black'}}
                                 title="Review"
                                 radius={50}
                                 onPress={() =>
@@ -1240,6 +1241,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 radius={50}
+                                titleStyle={{color: 'black'}}
                                 title={
                                   windowWidth > 768
                                     ? 'Add or edit markups'
@@ -1256,6 +1258,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                               <Button
                                 buttonStyle={styles.btnStyle}
                                 radius={50}
+                                titleStyle={{color: 'black'}}
                                 title="Delete video"
                                 onPress={() =>
                                   handleDeleteVideo(video, video.filename)
@@ -1271,6 +1274,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                         <View style={styles.buttonContainerGrid}>
                           <Button
                             buttonStyle={styles.btnStyle}
+                            titleStyle={{color: 'black'}}
                             title="Review"
                             radius={50}
                             onPress={() =>
@@ -1283,6 +1287,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           <Button
                             buttonStyle={styles.btnStyle}
                             radius={50}
+                            titleStyle={{color: 'black'}}
                             title={
                               windowWidth > 768
                                 ? 'Add or edit markups'
@@ -1298,6 +1303,7 @@ const ViewRecordings = ({selected, setSelected}) => {
                           <Button
                             buttonStyle={styles.btnStyle}
                             radius={50}
+                            titleStyle={{color: 'black'}}
                             title={
                               windowWidth > 768 ? 'Delete video' : 'Del. video'
                             }
@@ -1371,7 +1377,9 @@ const styles = StyleSheet.create({
   },
 
   btnStyle: {
-    backgroundColor: '',
+    backgroundColor: '#E8E8E8', // Light gray background
+    borderWidth: 1,
+    borderColor: '#CCCCCC', // Add a subtle border
     margin: windowWidth > 768 ? 0 : 1,
   },
 
