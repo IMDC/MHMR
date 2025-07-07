@@ -23,7 +23,7 @@ import {
   bottomNavBarHeight,
   NavBarGrey,
   screenWidth,
-  MHMRBlue
+  MHMRBlue,
 } from '../assets/util/styles';
 
 const RecordVideo = () => {
@@ -660,7 +660,7 @@ const RecordVideo = () => {
 
   return (
     <View style={styles.container}>
-      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+      {/* <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
         <Dialog.Title title="Name this video:" />
         <Input
           inputStyle={{fontSize: 35}}
@@ -699,9 +699,9 @@ const RecordVideo = () => {
             }}
           />
         </Dialog.Actions>
-      </Dialog>
+      </Dialog> */}
 
-      <Dialog isVisible={setNameVisible} onBackdropPress={toggleSetNameDialog}>
+      {/* <Dialog isVisible={setNameVisible} onBackdropPress={toggleSetNameDialog}>
         <Dialog.Title title="Name this video set:" />
         <Input
           inputStyle={{fontSize: 35}}
@@ -736,8 +736,9 @@ const RecordVideo = () => {
           />
           <Dialog.Button title="CANCEL" onPress={toggleSetNameDialog} />
         </Dialog.Actions>
-      </Dialog>
+      </Dialog> */}
 
+      {/*
       <Dialog
         isVisible={addToVideoSetPromptVisible}
         onBackdropPress={toggleSetPromptDialog}>
@@ -748,10 +749,6 @@ const RecordVideo = () => {
           videoSets={realm.objects('VideoSet')}
           saveVideoSetBtn={false}
           clearVideoSetBtn={false}
-          manageSetBtn={false}
-          keepViewBtn={false}
-          onVideoSetChange={handleVideoSelectionChange}
-          onNewSetNameChange={handleNewSetNameChange}
           plainDropdown={false}
         />
         <Dialog.Actions>
@@ -763,6 +760,7 @@ const RecordVideo = () => {
           />
         </Dialog.Actions>
       </Dialog>
+      */}
       {showCamera ? (
         <View style={{width: '100%', height: '100%', alignItems: 'center'}}>
           <Camera
@@ -835,19 +833,19 @@ const RecordVideo = () => {
                   onPress={() => {
                     stopRecodingHandler();
                   }}>
-                  <Icon
+                  {/* <Icon
                     name="stop"
                     size={40}
                     type="font-awesome"
                     color="white"
-                  />
+                  /> */}
                 </TouchableOpacity>
                 <View></View>
               </>
             ) : (
               <>
                 <View>
-                  <Icon
+                  {/* <Icon
                     name="add-outline"
                     size={40}
                     type="ionicon"
@@ -855,7 +853,7 @@ const RecordVideo = () => {
                     onPress={() => {
                       toggleVideoSetOverlay();
                     }}
-                  />
+                  /> */}
                   {/* <Text style={{color: 'white', alignSelf:'center'}}>Add to Video Set</Text> */}
                 </View>
 
@@ -866,7 +864,7 @@ const RecordVideo = () => {
                     setSaveBtnState(false);
                   }}
                 />
-                <Icon
+                {/* <Icon
                   name="camera-reverse-outline"
                   size={40}
                   type="ionicon"
@@ -878,7 +876,7 @@ const RecordVideo = () => {
                       setDeviceDir('back');
                     }
                   }}
-                />
+                /> */}
               </>
             )}
           </View>
@@ -927,6 +925,7 @@ const RecordVideo = () => {
                 Exit without saving
                 <Icon
                   name="exit-to-app"
+                  type="ionicon"
                   color="white"
                   containerStyle={{transform: [{rotate: '180deg'}]}}
                 />
@@ -939,7 +938,7 @@ const RecordVideo = () => {
                   setShowCamera(true);
                 }}>
                 Re-record
-                <Icon name="repeat" color="white" />
+                <Icon name="repeat" type="ionicon" color="white" />
               </Button>
               <Button
                 disabled={saveBtnState}
@@ -955,7 +954,7 @@ const RecordVideo = () => {
                   // setSaveBtnState(true);
                 }}>
                 Save video
-                <Icon name="save" color="white" />
+                <Icon name="save" type="ionicon" color="white" />
               </Button>
             </View>
           </View>
