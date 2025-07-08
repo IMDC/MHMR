@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import {useRealm} from '../../models/VideoData';
 import {useDropdownContext} from '../../components/videoSetProvider';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import * as Styles from '../../assets/util/styles';
 import {
   getSentimentFromChatGPT,
@@ -43,6 +43,8 @@ const happy = require('../../assets/images/emojis/happy.png');
 const DataAnalysisTextSummary = () => {
   const {online} = useNetwork();
   const navigation = useNavigation();
+  const route = useRoute();
+  const filterVideoId = route.params?.filterVideoId;
   const isFocused = useIsFocused();
   const [videos, setVideos] = useState([]);
   const [editingID, setEditingID] = useState(null);
@@ -158,10 +160,21 @@ const DataAnalysisTextSummary = () => {
   };
 
   const getFilteredVideos = () => {
-    if (!sentimentSort || sentimentSort === 'all') {
-      return videos;
+    let filtered = videos;
+
+    // Filter by specific video ID if provided
+    if (filterVideoId) {
+      filtered = filtered.filter(
+        video => video._id.toString() === filterVideoId,
+      );
     }
-    return videos.filter(video => video.sentiment === sentimentSort);
+
+    // Filter by sentiment if selected
+    if (sentimentSort && sentimentSort !== 'all') {
+      filtered = filtered.filter(video => video.sentiment === sentimentSort);
+    }
+
+    return filtered;
   };
 
   const renderHeader = () => (
@@ -324,8 +337,19 @@ const DataAnalysisTextSummary = () => {
     }
   }, [isFocused, currentVideoSet, videoSetVideoIDs, realm]);
 
+  const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    if (filterVideoId && isFocused && flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({animated: true});
+      }, 300); // wait for render
+    }
+  }, [filterVideoId, isFocused, videos]);
+
   return (
     <FlatList
+      ref={flatListRef}
       data={videosVisible ? getFilteredVideos().filter(Boolean) : []}
       keyExtractor={item => item._id}
       initialNumToRender={10}

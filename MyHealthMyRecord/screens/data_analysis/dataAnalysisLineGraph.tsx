@@ -9,6 +9,7 @@ import {
   Dimensions,
   ScrollView,
   LogBox,
+  FlatList,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -235,18 +236,18 @@ const DataAnalysisLineGraph = () => {
   const Dots = ({x, y}) => (
     <>
       {selectedData
-      .filter(value => value.value > 0) //dots on for frequency > 0
-      .map((value, index) => (
-        <Circle
-          key={index}
-          cx={x(selectedData.indexOf(value))}
-          cy={y(value.value)}
-          r={8}
-          stroke={'black'}
-          fill={'white'}
-          onPressIn={() => handlePressIn(value)}
-        />
-      ))}
+        .filter(value => value.value > 0) //dots on for frequency > 0
+        .map((value, index) => (
+          <Circle
+            key={index}
+            cx={x(selectedData.indexOf(value))}
+            cy={y(value.value)}
+            r={8}
+            stroke={'black'}
+            fill={'white'}
+            onPressIn={() => handlePressIn(value)}
+          />
+        ))}
     </>
   );
 
@@ -285,7 +286,13 @@ const DataAnalysisLineGraph = () => {
     <ScrollView contentContainerStyle={{paddingBottom: 100}}>
       <View style={{height: '100%'}}>
         <View id="linegraph">
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingRight: 20,
+            }}>
             <Text
               style={{
                 padding: 20,
@@ -305,11 +312,15 @@ const DataAnalysisLineGraph = () => {
             {periodValue === '3' && (
               <View style={styles.legendContainer}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendBox, { backgroundColor: '#d0d0d0' }]} />
+                  <View
+                    style={[styles.legendBox, {backgroundColor: '#d0d0d0'}]}
+                  />
                   <Text style={styles.legendText}>Weekday</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendBox, { backgroundColor: '#707070' }]} />
+                  <View
+                    style={[styles.legendBox, {backgroundColor: '#707070'}]}
+                  />
                   <Text style={styles.legendText}>Weekend</Text>
                 </View>
               </View>
@@ -452,9 +463,7 @@ const DataAnalysisLineGraph = () => {
                             y={0}
                             width={chartWidth / selectedData.length}
                             height={windowHeight * 0.6}
-                            fill={
-                              isWeekend(item.label) ? '#707070' : '#d0d0d0'
-                            }
+                            fill={isWeekend(item.label) ? '#707070' : '#d0d0d0'}
                             opacity={0.5}
                           />
                         ))}
@@ -493,11 +502,7 @@ const DataAnalysisLineGraph = () => {
                           ? 20
                           : 20,
                       right:
-                        periodValue === '1'
-                          ? 0
-                          : periodValue === '2'
-                          ? 20
-                          : 9,
+                        periodValue === '1' ? 0 : periodValue === '2' ? 20 : 9,
                       top: 0,
                       bottom: 0,
                     }}
@@ -511,11 +516,7 @@ const DataAnalysisLineGraph = () => {
                           ? -30
                           : 0,
                       originY:
-                        periodValue === '1'
-                          ? 30
-                          : periodValue === '3'
-                          ? 35
-                          : 0,
+                        periodValue === '1' ? 30 : periodValue === '3' ? 35 : 0,
                       textAnchor: periodValue === '1' ? 'end' : 'middle',
                       dy: periodValue === '1' ? 0 : 10,
                     }}
@@ -677,24 +678,59 @@ const DataAnalysisLineGraph = () => {
           onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>View video(s) with this data</Text>
-            {videoIDs.map((video, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  navigation.navigate('Fullscreen Video', {
-                    id: video?._id,
-                  });
-                  setModalVisible(false);
-                }}>
-                <Text style={styles.videoItemContainer}>
-                  <Text style={styles.videoIDText}>{video?.title}</Text>
-                  <Text style={styles.dateText}>
-                    {' '}
-                    at {video?.datetimeRecorded.toLocaleString()}
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-            ))}
+            <FlatList
+              data={videoIDs}
+              persistentScrollbar={true}
+              keyExtractor={item => item._id.toString()}
+              renderItem={({item}) => (
+                <View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <View style={styles.videoItemContainer}>
+                      <Text style={styles.videoIDText}>{item.title}</Text>
+                      <Text style={styles.dateText}>
+                        at {item.datetimeRecorded.toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.iconContainer}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Fullscreen Video', {
+                            id: item._id,
+                          });
+                          setModalVisible(false);
+                        }}
+                        style={styles.iconButton}>
+                        <Icon
+                          name="play-circle-outline"
+                          type="ionicon"
+                          size={24}
+                          color="blue"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Text Report', {
+                            filterVideoId: item._id.toString(),
+                          });
+                          setModalVisible(false);
+                        }}
+                        style={styles.iconButton}>
+                        <Icon
+                          name="document-text-outline"
+                          type="ionicon"
+                          size={24}
+                          color="green"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              )}
+            />
             <Button
               title="Close"
               color={Styles.MHMRBlue}
@@ -712,7 +748,8 @@ const styles = StyleSheet.create({
     width: Styles.windowWidth * 0.22,
   },
   iconContainer: {
-    justifyContent: 'center',
+    flexDirection: 'row',
+    // justifyContent: 'center',
   },
   modalView: {
     margin: 20,
@@ -811,6 +848,9 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 12,
     color: 'black',
+  },
+  iconButton: {
+    padding: 5,
   },
 });
 

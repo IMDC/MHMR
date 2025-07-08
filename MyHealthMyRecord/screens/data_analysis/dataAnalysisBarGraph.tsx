@@ -221,9 +221,7 @@ const DataAnalysisBarGraph = () => {
                   spacing={0}
                   gridMin={0}
                   gridMax={maxValue}>
-                  <Grid
-                    direction={Grid.Direction.HORIZONTAL}
-                  />
+                  <Grid direction={Grid.Direction.HORIZONTAL} />
                 </BarChart>
               </View>
               <XAxis
@@ -402,21 +400,52 @@ const DataAnalysisBarGraph = () => {
               persistentScrollbar={true}
               keyExtractor={item => item._id.toString()}
               renderItem={({item}) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Fullscreen Video', {
-                      id: item._id,
-                    });
-                    setModalVisible(false);
-                  }}>
-                  <Text style={styles.videoItemContainer}>
-                    <Text style={styles.videoIDText}>{item.title}</Text>
-                    <Text style={styles.dateText}>
-                      {' '}
-                      at {item.datetimeRecorded.toLocaleString()}
-                    </Text>
-                  </Text>
-                </TouchableOpacity>
+                <View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <View style={styles.videoItemContainer}>
+                      <Text style={styles.videoIDText}>{item.title}</Text>
+                      <Text style={styles.dateText}>
+                        at {item.datetimeRecorded.toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.iconContainer}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Fullscreen Video', {
+                            id: item._id,
+                          });
+                          setModalVisible(false);
+                        }}
+                        style={styles.iconButton}>
+                        <Icon
+                          name="play-circle-outline"
+                          type="ionicon"
+                          size={24}
+                          color="blue"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Text Report', {
+                            filterVideoId: item._id.toString(),
+                          });
+                          setModalVisible(false);
+                        }}
+                        style={styles.iconButton}>
+                        <Icon
+                          name="document-text-outline"
+                          type="ionicon"
+                          size={24}
+                          color="green"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
               )}
             />
             <Button
@@ -477,6 +506,14 @@ const styles = StyleSheet.create({
   },
   videoItemContainer: {
     marginVertical: 10,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+
+    // width: '100%',
+  },
+  iconButton: {
+    padding: 5,
   },
 });
 
