@@ -11,13 +11,19 @@ import {PermissionsAndroid, Platform, Touchable} from 'react-native';
 import RNFS from 'react-native-fs';
 import {Icon, Button, Dialog, Input} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {useQuery, useRealm, VideoData} from '../models/VideoData';
+import {useQuery, useRealm, VideoData, VideoSet} from '../models/VideoData';
 import Realm from 'realm';
 import {createRealmContext} from '@realm/react';
-import {getAuth, getTranscript} from '../components/stt_api';
-import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import {
+  getAuth,
+  getTranscript,
+  transcribeWithWhisper,
+} from '../components/stt_api';
 import {useLoader} from '../components/loaderProvider';
-import {useDropdownContext} from '../components/videoSetProvider';
+import {
+  useDropdownContext,
+  DropdownContextType,
+} from '../components/videoSetProvider';
 import VideoSetDropdown from '../components/videoSetDropdown';
 import {
   bottomNavBarHeight,
@@ -27,13 +33,8 @@ import {
 } from '../assets/util/styles';
 
 const RecordVideo = () => {
-  const {
-    videoSetVideoIDs,
-    videoSetDropdown,
-    videoSetValue,
-    setVideoSetValue,
-    handleNewSet,
-  } = useDropdownContext();
+  const {videoSetVideoIDs, videoSetValue, setVideoSetValue, handleNewSet} =
+    useDropdownContext() as DropdownContextType;
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [saveBtnState, setSaveBtnState] = useState(false);
   const [selectedVideoSet, setSelectedVideoSet] = useState<any>(null);
@@ -99,8 +100,8 @@ const RecordVideo = () => {
 
   const handleVideoSelectionChange = (selectedId: string) => {
     const selectedSet = videoSets.find(
-      set => set._id.toString() === selectedId,
-    );
+      (set: any) => (set._id as Realm.BSON.ObjectId).toString() === selectedId,
+    ) as VideoSet | undefined;
 
     if (selectedId === 'create_new') {
       setDateTime(new Date().toString().split(' GMT-')[0]);
@@ -419,72 +420,78 @@ const RecordVideo = () => {
           realm.write(() => {
             //convert videoId to string
             const videoIdString = videoId?.toString();
-            selectedVideoSet.videoIDs.push(videoIdString);
+            (selectedVideoSet as any).videoIDs.push(videoIdString);
           });
         }
       }
 
-      // Convert to audio using FFmpeg
-      const ffmpegCommand = `-i ${MHMRfolderPath}/${fileName} -ar 16000 -ac 1 -vn -acodec pcm_s16le ${audioFolderPath}/${audioFileName}`;
-      const session = await FFmpegKit.execute(ffmpegCommand);
-      const returnCode = await session.getReturnCode();
+      // Transcribe the video using Whisper after saving
+      const transcriptResult = await transcribeWithWhisper(
+        fileName,
+        videoId.toString(),
+        realm,
+      );
+      if (transcriptResult.transcript) {
+        realm.write(() => {
+          const video = realm.objectForPrimaryKey(
+            'VideoData',
+            videoId,
+          ) as VideoData | null;
+          if (video) {
+            video.transcript = transcriptResult.transcript;
+            video.isTranscribed = true;
+            video.isConverted = true;
+          }
+        });
+      }
 
-      if (ReturnCode.isSuccess(returnCode)) {
-        console.log('Conversion successful.');
-        hideLoader();
-        Alert.alert(
-          'Your recording has been saved.',
-          'Would you like to record another video and create a video set or markup video?',
-          [
-            {
-              text: 'View Recordings',
-              onPress: () => {
-                if (createdVideoSetBool == true) {
-                  realm.write(() => {
-                    videoSetVideoIDs.push(videoId);
-                  });
-                }
+      hideLoader();
+      Alert.alert(
+        'Your recording has been saved.',
+        'Would you like to record another video and create a video set or markup video?',
+        [
+          {
+            text: 'View Recordings',
+            onPress: () => {
+              if (createdVideoSetBool == true) {
+                realm.write(() => {
+                  videoSetVideoIDs.push(videoId);
+                });
+              }
+              navigation.navigate('Manage Videos', {
+                screen: 'View Recordings',
+              });
+              setShowCamera(true);
+            },
+          },
+
+          {
+            text: 'Record Another',
+            onPress: () => {
+              setShowCamera(true);
+            },
+          },
+          {
+            text: 'Markup Video',
+            onPress: () => {
+              console.log('videoId before navigation:', videoId);
+              if (videoId) {
                 navigation.navigate('Manage Videos', {
-                  screen: 'View Recordings',
+                  screen: 'Add or Edit Markups',
+                  params: {id: videoId},
                 });
                 setShowCamera(true);
-              },
+              } else {
+                console.error('videoId is null or undefined');
+                Alert.alert(
+                  'Error',
+                  'Unable to navigate due to missing video ID.',
+                );
+              }
             },
-
-            {
-              text: 'Record Another',
-              onPress: () => {
-                setShowCamera(true);
-              },
-            },
-            {
-              text: 'Markup Video',
-              onPress: () => {
-                console.log('videoId before navigation:', videoId);
-                if (videoId) {
-                  navigation.navigate('Manage Videos', {
-                    screen: 'Add or Edit Markups',
-                    params: {id: videoId},
-                  });
-                  setShowCamera(true);
-                } else {
-                  console.error('videoId is null or undefined');
-                  Alert.alert(
-                    'Error',
-                    'Unable to navigate due to missing video ID.',
-                  );
-                }
-              },
-            },
-          ],
-        );
-      } else {
-        hideLoader();
-        Alert.alert(
-          'Conversion failed',
-          'There was an issue converting your video to audio.',
-        );
-      }
+          },
+        ],
+      );
     } catch (err) {
       hideLoader();
       Alert.alert(
@@ -575,17 +582,20 @@ const RecordVideo = () => {
   painscaleRef.map(pain => painscaleInit.push(JSON.stringify(pain)));
   weekdayRef.map(day => weekdayInit.push(JSON.stringify(day)));
 
-  const createVideoSet = (frequencyData, videoIDs) => {
-    // Create a realm array of videos by mapping through the videoIDs
-    let videoIDsArray = videoIDs.map(id =>
-      realm.objects('VideoData').find(video => video._id.toString() === id),
-    );
+  const createVideoSet = (frequencyData: any[], videoIDs: string[]) => {
+    let videoIDsArray = videoIDs.map((id: string) => {
+      return realm
+        .objects('VideoData')
+        .find(
+          (video: any) => (video._id as Realm.BSON.ObjectId).toString() === id,
+        ) as VideoData | undefined;
+    });
 
     console.log('videoIDsArray:', videoIDsArray);
 
-    let newSet;
+    let newSet: VideoSet | undefined;
     realm.write(() => {
-      newSet = realm.create('VideoSet', {
+      newSet = realm.create(VideoSet, {
         _id: new Realm.BSON.ObjectID(),
         datetime: new Date().toString().split(' GMT-')[0],
         name: newVideoSetName,
@@ -596,24 +606,29 @@ const RecordVideo = () => {
         isSummaryGenerated: false,
         earliestVideoDateTime: dateTime,
         latestVideoDateTime: dateTime,
-      });
+      }) as VideoSet;
 
       // Update the dropdown value (if necessary)
-      const updatedVideoSets = realm.objects('VideoSet');
-      const updatedDropdown = updatedVideoSets.map(set => ({
-        label: `${set.name}\n\nVideo Count: ${
-          set.videoIDs.length
-        }\nDate Range: ${
-          set.earliestVideoDateTime.toLocaleString().split(',')[0]
-        } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
-        value: set._id.toString(),
-        id: set._id,
-      }));
+      const updatedVideoSets = realm.objects(
+        'VideoSet',
+      ) as unknown as VideoSet[];
+      const updatedDropdown = updatedVideoSets.map(set => {
+        const s = set as VideoSet;
+        return {
+          label: `${s.name}\n\nVideo Count: ${s.videoIDs.length}\nDate Range: ${
+            s.earliestVideoDateTime.toLocaleString().split(',')[0]
+          } - ${s.latestVideoDateTime.toLocaleString().split(',')[0]}`,
+          value: (s._id as Realm.BSON.ObjectId).toString(),
+          id: s._id,
+        };
+      });
 
       const newVideoSetValue = newSet._id.toString();
       setVideoSetValue(newVideoSetValue);
       handleNewSet(newSet); // Call the function to handle new set logic
     });
+
+    if (!newSet) throw new Error('Failed to create new VideoSet');
 
     return newSet;
   };
@@ -647,10 +662,11 @@ const RecordVideo = () => {
       summaryAnalysisSentence: '',
     };
 
-    let videoId;
+    let videoId: Realm.BSON.ObjectId | undefined;
     realm.write(() => {
-      videoId = realm.create('VideoData', videoData)._id;
+      videoId = realm.create('VideoData', videoData)._id as Realm.BSON.ObjectId;
     });
+    if (!videoId) throw new Error('Failed to create videoId');
 
     console.log('VideoData created:', videoData);
     console.log('Generated videoId:', videoId);
@@ -745,10 +761,14 @@ const RecordVideo = () => {
         <Dialog.Title title="Would you like to add this video to a set?" />
 
         <VideoSetDropdown
-          videoSetDropdown={videoSetDropdown}
+          videoSetDropdown={[]}
           videoSets={realm.objects('VideoSet')}
           saveVideoSetBtn={false}
           clearVideoSetBtn={false}
+          keepViewBtn={false}
+          manageSetBtn={false}
+          onVideoSetChange={() => {}}
+          onNewSetNameChange={() => {}}
           plainDropdown={false}
         />
         <Dialog.Actions>
@@ -760,7 +780,6 @@ const RecordVideo = () => {
           />
         </Dialog.Actions>
       </Dialog>
-      */}
       {showCamera ? (
         <View style={{width: '100%', height: '100%', alignItems: 'center'}}>
           <Camera
@@ -783,15 +802,15 @@ const RecordVideo = () => {
                 <Text style={styles.label}>Adding to:</Text>
                 <View style={{width: '60%', height: '60%', flex: 1}}>
                   <VideoSetDropdown
-                    videoSetDropdown={videoSetDropdown}
+                    videoSetDropdown={[]}
                     videoSets={realm.objects('VideoSet')}
                     saveVideoSetBtn={false}
                     clearVideoSetBtn={false}
-                    manageSetBtn={false}
                     keepViewBtn={false}
-                    onVideoSetChange={handleVideoSelectionChange}
-                    onNewSetNameChange={handleNewSetNameChange}
-                    plainDropdown={true}
+                    manageSetBtn={false}
+                    onVideoSetChange={() => {}}
+                    onNewSetNameChange={() => {}}
+                    plainDropdown={false}
                   />
                 </View>
                 <Icon
@@ -853,8 +872,10 @@ const RecordVideo = () => {
                     onPress={() => {
                       toggleVideoSetOverlay();
                     }}
-                  /> */}
-                  {/* <Text style={{color: 'white', alignSelf:'center'}}>Add to Video Set</Text> */}
+                  />
+                  <Text style={{color: 'white', alignSelf: 'center'}}>
+                    Add to Video Set
+                  </Text>
                 </View>
 
                 <TouchableOpacity

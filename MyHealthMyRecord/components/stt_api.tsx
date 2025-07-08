@@ -131,20 +131,20 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
 };
 
 export const transcribeWithWhisper = async (
-  audioFileName: string,
+  videoFileName: string,
   _id: string,
   realm: Realm,
 ) => {
   try {
-    const audioFolderPath = RNFS.DocumentDirectoryPath + '/MHMR/audio';
-    const audioFilePath = `${audioFolderPath}/${audioFileName}`;
+    const videoFolderPath = RNFS.DocumentDirectoryPath + '/MHMR';
+    const videoFilePath = `${videoFolderPath}/${videoFileName}`;
 
     // Create form data
     const formData = new FormData();
     formData.append('file', {
-      uri: `file://${audioFilePath}`,
-      type: 'audio/wav',
-      name: audioFileName,
+      uri: `file://${videoFilePath}`,
+      type: 'video/mp4',
+      name: videoFileName,
     });
     formData.append('model', 'whisper-1');
     formData.append('language', 'en');
@@ -162,7 +162,7 @@ export const transcribeWithWhisper = async (
     );
 
     const transcript = response.data.text || '';
-    console.log(`Transcript for ${audioFileName}:`, transcript);
+    console.log(`Transcript for ${videoFileName}:`, transcript);
 
     return {_id, transcript, confidence: 1};
   } catch (error) {

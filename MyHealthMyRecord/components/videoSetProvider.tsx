@@ -4,8 +4,21 @@ import {useRealm, VideoSet} from '../models/VideoData';
 export const VideoSetContext = createContext();
 
 export interface DropdownContextType {
-  currentVideoSet: any; // or more specific type if available
-  // ... other context properties
+  handleNewSet: (newSet: any) => void;
+  handleChange: (value: string, videoSets: any[]) => void;
+  handleDeleteSet: (setToDelete: any) => void;
+  videoSetVideoIDs: string[];
+  setVideoSetVideoIDs: (ids: string[]) => void;
+  videoSetValue: string;
+  setVideoSetValue: (value: string) => void;
+  sendToVideoSet: number;
+  setSendToVideoSet: (val: number) => void;
+  currentVideoSet: any;
+  currentVideos: any[];
+  setCurrentVideos: (videos: any[]) => void;
+  setCurrentVideoSet: (set: any) => void;
+  isVideoSetSaved: boolean;
+  setIsVideoSetSaved: (val: boolean) => void;
 }
 
 export const VideoSetProvider = ({children}) => {
