@@ -676,7 +676,7 @@ const RecordVideo = () => {
 
   return (
     <View style={styles.container}>
-      {/* <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
+      <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
         <Dialog.Title title="Name this video:" />
         <Input
           inputStyle={{fontSize: 35}}
@@ -715,9 +715,9 @@ const RecordVideo = () => {
             }}
           />
         </Dialog.Actions>
-      </Dialog> */}
+      </Dialog>
 
-      {/* <Dialog isVisible={setNameVisible} onBackdropPress={toggleSetNameDialog}>
+      <Dialog isVisible={setNameVisible} onBackdropPress={toggleSetNameDialog}>
         <Dialog.Title title="Name this video set:" />
         <Input
           inputStyle={{fontSize: 35}}
@@ -752,9 +752,8 @@ const RecordVideo = () => {
           />
           <Dialog.Button title="CANCEL" onPress={toggleSetNameDialog} />
         </Dialog.Actions>
-      </Dialog> */}
+      </Dialog>
 
-      {/*
       <Dialog
         isVisible={addToVideoSetPromptVisible}
         onBackdropPress={toggleSetPromptDialog}>
@@ -852,19 +851,19 @@ const RecordVideo = () => {
                   onPress={() => {
                     stopRecodingHandler();
                   }}>
-                  {/* <Icon
+                  <Icon
                     name="stop"
                     size={40}
                     type="font-awesome"
                     color="white"
-                  /> */}
+                  />
                 </TouchableOpacity>
                 <View></View>
               </>
             ) : (
               <>
                 <View>
-                  {/* <Icon
+                  <Icon
                     name="add-outline"
                     size={40}
                     type="ionicon"
@@ -885,7 +884,7 @@ const RecordVideo = () => {
                     setSaveBtnState(false);
                   }}
                 />
-                {/* <Icon
+                <Icon
                   name="camera-reverse-outline"
                   size={40}
                   type="ionicon"
@@ -897,7 +896,7 @@ const RecordVideo = () => {
                       setDeviceDir('back');
                     }
                   }}
-                /> */}
+                />
               </>
             )}
           </View>
