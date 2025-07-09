@@ -123,26 +123,32 @@ const HARMFUL_KEYWORDS = [
 
 // Crisis resources
 export const CRISIS_RESOURCES = {
-  national_suicide_prevention: {
-    name: 'National Suicide Prevention Lifeline',
-    phone: '988',
+  crisis_services_canada: {
+    name: 'Crisis Services Canada',
+    phone: '1-833-456-4566',
+    text: '45645',
     description: '24/7 free and confidential support for people in distress',
   },
-  crisis_text_line: {
-    name: 'Crisis Text Line',
-    text: 'HOME to 741741',
-    description: 'Text HOME to 741741 to connect with a Crisis Counselor',
+  kids_help_phone: {
+    name: 'Kids Help Phone',
+    phone: '1-800-668-6868',
+    text: '686868',
+    description: '24/7 support for young people under 20',
   },
   emergency: {
     name: 'Emergency Services',
     phone: '911',
     description: 'Call 911 for immediate emergency assistance',
   },
-  samhsa: {
-    name: 'SAMHSA National Helpline',
-    phone: '1-800-662-HELP (4357)',
-    description:
-      'Treatment referral and information service for individuals facing mental health or substance use disorders',
+  wellness_together_canada: {
+    name: 'Wellness Together Canada',
+    phone: '1-866-585-0445',
+    description: 'Free mental health and substance use support',
+  },
+  hope_for_wellness: {
+    name: 'Hope for Wellness Helpline',
+    phone: '1-855-242-3310',
+    description: '24/7 support for Indigenous peoples',
   },
 };
 
@@ -239,10 +245,13 @@ export const generateCrisisWarning = (
 export const getCrisisResourcesText = (): string => {
   return `🆘 CRISIS RESOURCES:
 
-📞 National Suicide Prevention Lifeline: 988
-💬 Crisis Text Line: Text HOME to 741741
+📞 Crisis Services Canada: 1-833-456-4566
+💬 Text: 45645
+📱 Kids Help Phone: 1-800-668-6868
+💬 Text: 686868
 🚨 Emergency Services: 911
-🏥 SAMHSA National Helpline: 1-800-662-HELP (4357)
+🏥 Wellness Together Canada: 1-866-585-0445
+🌿 Hope for Wellness (Indigenous): 1-855-242-3310
 
 These resources are available 24/7 and are free and confidential.`;
 };
