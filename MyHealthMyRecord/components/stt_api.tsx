@@ -4,6 +4,7 @@ import RNFS from 'react-native-fs';
 import Config from 'react-native-config';
 import {Buffer} from 'buffer';
 import {generateVideoSummary} from './chatgpt_api';
+import {detectCrisisContent} from './crisisDetection';
 
 // Function to obtain authorization token
 export const getAuth = async () => {
@@ -26,7 +27,7 @@ export const getAuth = async () => {
     const response = await axios.request(reqOptions);
     console.log('New auth token set:', response.data.access_token);
     return response.data.token_type + ' ' + response.data.access_token;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error getting auth token:', error.message);
     if (error.response) {
       console.error('Response data:', error.response.data);
@@ -87,10 +88,13 @@ export const getTranscript = async (
 };
 
 // Function to process multiple transcripts concurrently
-export const processMultipleTranscripts = async (videoFiles, realm) => {
+export const processMultipleTranscripts = async (
+  videoFiles: any[],
+  realm: Realm,
+) => {
   console.log(`Processing ${videoFiles.length} videos for transcription`);
 
-  const transcriptPromises = videoFiles.map(video =>
+  const transcriptPromises = videoFiles.map((video: any) =>
     transcribeWithWhisper(
       video.filename.replace('.mp4', '.wav'),
       video._id.toHexString(),
@@ -108,10 +112,13 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
     }
 
     const objectId = new Realm.BSON.ObjectId(_id);
-    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    const video = realm.objectForPrimaryKey('VideoData', objectId) as any;
 
     if (video) {
       const summary = await generateVideoSummary(transcript); // run outside write
+
+      // Check for crisis content
+      const crisisResult = detectCrisisContent(transcript);
 
       realm.write(() => {
         video.transcript = transcript;
@@ -119,9 +126,16 @@ export const processMultipleTranscripts = async (videoFiles, realm) => {
         video.isConverted = true;
         video.tsOutputBullet = summary.bullet;
         video.tsOutputSentence = summary.sentence;
+        video.flagged_for_harm = crisisResult.flagged;
       });
 
       console.log(`Updated video ${_id} with transcript and summaries`);
+      if (crisisResult.flagged) {
+        console.log(
+          `⚠️ Crisis content detected in video ${_id}:`,
+          crisisResult.detectedPhrases,
+        );
+      }
     } else {
       console.log(`No video found with ID ${_id}.`);
     }
@@ -164,7 +178,16 @@ export const transcribeWithWhisper = async (
     const transcript = response.data.text || '';
     console.log(`Transcript for ${videoFileName}:`, transcript);
 
-    return {_id, transcript, confidence: 1};
+    // Check for crisis content
+    const crisisResult = detectCrisisContent(transcript);
+    if (crisisResult.flagged) {
+      console.log(
+        `⚠️ Crisis content detected in ${videoFileName}:`,
+        crisisResult.detectedPhrases,
+      );
+    }
+
+    return {_id, transcript, confidence: 1, crisisResult};
   } catch (error) {
     console.error('Error during transcription:', error);
     return {_id, error};

@@ -19,6 +19,12 @@ import {
   getTranscript,
   transcribeWithWhisper,
 } from '../components/stt_api';
+import {
+  detectCrisisContent,
+  generateCrisisWarning,
+  getCrisisResourcesText,
+  CrisisDetectionResult,
+} from '../components/crisisDetection';
 import {useLoader} from '../components/loaderProvider';
 import {
   useDropdownContext,
@@ -73,6 +79,11 @@ const RecordVideo = () => {
   const [addToVideoSetPromptVisible, setAddToVideoSetPromptVisible] =
     useState(false);
   const [videoSetOverlayVisible, setVideoSetOverlayVisible] = useState(false);
+  const [crisisWarningVisible, setCrisisWarningVisible] = useState(false);
+  const [crisisDetectionResult, setCrisisDetectionResult] =
+    useState<CrisisDetectionResult | null>(null);
+  const [currentVideoId, setCurrentVideoId] =
+    useState<Realm.BSON.ObjectId | null>(null);
 
   const handleNewSetNameChange = (name: React.SetStateAction<string>) => {
     setNewVideoSetName(name); // Update state when name changes
@@ -432,6 +443,9 @@ const RecordVideo = () => {
         realm,
       );
       if (transcriptResult.transcript) {
+        // Check for crisis content
+        const crisisResult = detectCrisisContent(transcriptResult.transcript);
+
         realm.write(() => {
           const video = realm.objectForPrimaryKey(
             'VideoData',
@@ -441,8 +455,17 @@ const RecordVideo = () => {
             video.transcript = transcriptResult.transcript;
             video.isTranscribed = true;
             video.isConverted = true;
+            video.flagged_for_harm = crisisResult.flagged;
           }
         });
+
+        // Show crisis warning if harmful content is detected
+        if (crisisResult.flagged) {
+          setCrisisDetectionResult(crisisResult);
+          setCrisisWarningVisible(true);
+          hideLoader();
+          return; // Don't show the normal save success dialog
+        }
       }
 
       hideLoader();
@@ -455,7 +478,7 @@ const RecordVideo = () => {
             onPress: () => {
               if (createdVideoSetBool == true) {
                 realm.write(() => {
-                  videoSetVideoIDs.push(videoId);
+                  videoSetVideoIDs.push(videoId.toString());
                 });
               }
               navigation.navigate('Manage Videos', {
@@ -478,7 +501,7 @@ const RecordVideo = () => {
               if (videoId) {
                 navigation.navigate('Manage Videos', {
                   screen: 'Add or Edit Markups',
-                  params: {id: videoId},
+                  params: {id: videoId.toString()},
                 });
                 setShowCamera(true);
               } else {
@@ -776,6 +799,73 @@ const RecordVideo = () => {
           <Dialog.Button
             title="CANCEL"
             onPress={() => toggleSetPromptDialog()}
+          />
+        </Dialog.Actions>
+      </Dialog>
+
+      <Dialog
+        isVisible={crisisWarningVisible}
+        onBackdropPress={() => setCrisisWarningVisible(false)}>
+        <Dialog.Title title="⚠️ Crisis Warning" />
+        <Text style={styles.crisisWarningText}>
+          {crisisDetectionResult &&
+            generateCrisisWarning(crisisDetectionResult)}
+        </Text>
+        <Text style={styles.crisisResourcesText}>
+          {getCrisisResourcesText()}
+        </Text>
+        <Dialog.Actions>
+          <Dialog.Button
+            title="I UNDERSTAND"
+            onPress={() => {
+              setCrisisWarningVisible(false);
+              // Show the normal save success dialog after crisis warning
+              Alert.alert(
+                'Your recording has been saved.',
+                'Would you like to record another video and create a video set or markup video?',
+                [
+                  {
+                    text: 'View Recordings',
+                    onPress: () => {
+                      if (createdVideoSetBool == true && currentVideoId) {
+                        realm.write(() => {
+                          videoSetVideoIDs.push(currentVideoId.toString());
+                        });
+                      }
+                      navigation.navigate('Manage Videos', {
+                        screen: 'View Recordings',
+                      });
+                      setShowCamera(true);
+                    },
+                  },
+                  {
+                    text: 'Record Another',
+                    onPress: () => {
+                      setShowCamera(true);
+                    },
+                  },
+                  {
+                    text: 'Markup Video',
+                    onPress: () => {
+                      console.log('videoId before navigation:', currentVideoId);
+                      if (currentVideoId) {
+                        navigation.navigate('Manage Videos', {
+                          screen: 'Add or Edit Markups',
+                          params: {id: currentVideoId.toString()},
+                        });
+                        setShowCamera(true);
+                      } else {
+                        console.error('videoId is null or undefined');
+                        Alert.alert(
+                          'Error',
+                          'Unable to navigate due to missing video ID.',
+                        );
+                      }
+                    },
+                  },
+                ],
+              );
+            }}
           />
         </Dialog.Actions>
       </Dialog>
@@ -1093,6 +1183,20 @@ const styles = StyleSheet.create({
   extendButtonText: {
     color: 'white',
     fontSize: 18,
+  },
+  crisisWarningText: {
+    fontSize: 16,
+    color: '#d32f2f',
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  crisisResourcesText: {
+    fontSize: 14,
+    color: '#1976d2',
+    marginBottom: 10,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 
