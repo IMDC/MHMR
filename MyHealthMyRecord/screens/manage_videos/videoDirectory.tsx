@@ -42,6 +42,12 @@ import {useDropdownContext} from '../../components/videoSetProvider';
 import {useLoader} from '../../components/loaderProvider';
 import {processVideos} from '../../components/processVideos';
 import {windowWidth, MHMRBlue} from '../../assets/util/styles';
+import {
+  detectCrisisContent,
+  generateCrisisWarning,
+  getCrisisResourcesText,
+  CrisisDetectionResult,
+} from '../../components/crisisDetection';
 
 const ViewRecordings = ({selected, setSelected}) => {
   const {showLoader, hideLoader} = useLoader();
@@ -56,6 +62,9 @@ const ViewRecordings = ({selected, setSelected}) => {
   const [visible, setVisible] = useState(false);
   const [visible1, setVisible1] = useState(false);
   const [visible2, setVisible2] = useState(false);
+  const [crisisWarningVisible, setCrisisWarningVisible] = useState(false);
+  const [crisisDetectionResult, setCrisisDetectionResult] =
+    useState<CrisisDetectionResult | null>(null);
 
   const handleProcessVideos = async () => {
     await processVideos(realm, videos, showLoader, hideLoader, false);
@@ -581,6 +590,25 @@ const ViewRecordings = ({selected, setSelected}) => {
               }}
             />
             <Dialog.Button title="Cancel" onPress={() => toggleDialog1()} />
+          </Dialog.Actions>
+        </Dialog>
+
+        <Dialog
+          isVisible={crisisWarningVisible}
+          onBackdropPress={() => setCrisisWarningVisible(false)}>
+          <Dialog.Title title="⚠️ Crisis Warning" />
+          <Text style={styles.crisisWarningText}>
+            {crisisDetectionResult &&
+              generateCrisisWarning(crisisDetectionResult)}
+          </Text>
+          <Text style={styles.crisisResourcesText}>
+            {getCrisisResourcesText()}
+          </Text>
+          <Dialog.Actions>
+            <Dialog.Button
+              title="I UNDERSTAND"
+              onPress={() => setCrisisWarningVisible(false)}
+            />
           </Dialog.Actions>
         </Dialog>
 
@@ -1124,13 +1152,19 @@ const ViewRecordings = ({selected, setSelected}) => {
                             {justifyContent: 'space-between'},
                           ]}>
                           <View>
-                            <Text
+                            <View
                               style={{
-                                fontSize: 24,
-                                color: 'black',
-                                fontWeight: 'bold',
+                                flexDirection: 'row',
+                                alignItems: 'center',
                               }}>
-                              {video.title}
+                              <Text
+                                style={{
+                                  fontSize: 24,
+                                  color: 'black',
+                                  fontWeight: 'bold',
+                                }}>
+                                {video.title}
+                              </Text>
 
                               {video.textComments.length !== 0 ? (
                                 <Icon
@@ -1144,7 +1178,28 @@ const ViewRecordings = ({selected, setSelected}) => {
                                   }}
                                 />
                               ) : null}
-                            </Text>
+
+                              {video.flagged_for_harm ? (
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    if (video.transcript) {
+                                      const crisisResult = detectCrisisContent(
+                                        video.transcript,
+                                      );
+                                      setCrisisDetectionResult(crisisResult);
+                                      setCrisisWarningVisible(true);
+                                    }
+                                  }}
+                                  style={{marginLeft: 5}}>
+                                  <Icon
+                                    name="information-circle"
+                                    type="ionicon"
+                                    color="red"
+                                    size={24}
+                                  />
+                                </TouchableOpacity>
+                              ) : null}
+                            </View>
                             <Text style={{fontSize: 20}}>
                               {video.datetimeRecorded?.toLocaleString()}
                             </Text>
@@ -1464,6 +1519,20 @@ const styles = StyleSheet.create({
   sortValueStyle: {
     width: '82.5%',
     flexWrap: 'wrap',
+  },
+  crisisWarningText: {
+    fontSize: 16,
+    color: '#d32f2f',
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  crisisResourcesText: {
+    fontSize: 14,
+    color: '#1976d2',
+    marginBottom: 10,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

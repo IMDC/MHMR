@@ -192,8 +192,11 @@ export const generateCrisisWarning = (
     return '';
   }
 
+  const flaggedKeywords = result.detectedPhrases.join(', ');
+
   return (
-    '⚠️ CRISIS WARNING: This recording contains content that may indicate self-harm or harm to others. ' +
+    '⚠️ CRISIS WARNING: This recording contains content that may indicate self-harm or harm to others.\n\n' +
+    `Flagged content: ${flaggedKeywords}\n\n` +
     'Please consider reaching out to crisis resources immediately. See below for support resources.'
   );
 };
