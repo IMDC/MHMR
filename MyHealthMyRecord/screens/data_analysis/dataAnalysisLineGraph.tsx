@@ -9,7 +9,6 @@ import {
   Dimensions,
   ScrollView,
   LogBox,
-  FlatList,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -21,6 +20,8 @@ import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useRealm} from '../../models/VideoData';
 import {useDropdownContext} from '../../components/videoSetProvider';
+import {useSetLineGraphData} from '../../components/lineGraphData';
+import {useWordList} from '../../components/wordListProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -32,6 +33,7 @@ const DataAnalysisLineGraph = () => {
   const lineData = route.params?.data;
   const realm = useRealm();
   const {currentVideoSet} = useDropdownContext();
+  const {wordList} = useWordList();
 
   const [freqDayArray, setFreqDayArray] = useState([[]]);
   const [freqWeekArray, setFreqWeekArray] = useState([[]]);
@@ -49,6 +51,12 @@ const DataAnalysisLineGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [videoIDs, setVideoIDs] = useState([]);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [selectedWords, setSelectedWords] = useState([]);
+  const [showWordPicker, setShowWordPicker] = useState(false);
+  const [tempSelectedWords, setTempSelectedWords] = useState(new Set());
+
+  // Get the line graph data generation function
+  const setLineGraphData = useSetLineGraphData();
 
   const getWeeksBetweenDates = (startDate: Date, endDate: Date) => {
     // Validate input dates
@@ -233,24 +241,6 @@ const DataAnalysisLineGraph = () => {
     }
   };
 
-  const Dots = ({x, y}) => (
-    <>
-      {selectedData
-        .filter(value => value.value > 0) //dots on for frequency > 0
-        .map((value, index) => (
-          <Circle
-            key={index}
-            cx={x(selectedData.indexOf(value))}
-            cy={y(value.value)}
-            r={8}
-            stroke={'black'}
-            fill={'white'}
-            onPressIn={() => handlePressIn(value)}
-          />
-        ))}
-    </>
-  );
-
   const scrollLeft = () => {
     scrollViewRef.current?.scrollTo({x: 0, animated: true});
   };
@@ -258,15 +248,222 @@ const DataAnalysisLineGraph = () => {
   const scrollRight = () => {
     scrollViewRef.current?.scrollToEnd({animated: true});
   };
-  const selectedData =
+
+  // Generate available words for selection
+  const generateAvailableWords = () => {
+    console.log('generateAvailableWords - wordList:', wordList);
+
+    if (!wordList || !Array.isArray(wordList)) {
+      console.log('wordList is empty or not an array');
+      return [];
+    }
+
+    // Filter out the current word and already selected words
+    const availableWords = wordList
+      .filter(word => word.text !== wordLabel) // Exclude current word
+      .filter(
+        word => !selectedWords.some(selected => selected.word === word.text),
+      ) // Exclude already selected words
+      .map(word => word.text)
+      .sort();
+
+    console.log('Available words result:', availableWords);
+    return availableWords;
+  };
+
+  // Add word for comparison
+  const addWordForComparison = (word: string) => {
+    if (selectedWords.length >= 2) return; // Limit to 2 additional words (3 total)
+
+    const colors = [
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7',
+      '#FF8E53',
+      '#9B59B6',
+      '#3498DB',
+      '#E74C3C',
+      '#2ECC71',
+    ];
+
+    // Get currently used colors
+    const usedColors = selectedWords.map(wordData => wordData.color);
+
+    // Find the first available color that's not currently used
+    const availableColor =
+      colors.find(color => !usedColors.includes(color)) ||
+      colors[selectedWords.length % colors.length];
+
+    setSelectedWords([...selectedWords, {word, color: availableColor}]);
+    setShowWordPicker(false);
+  };
+
+  // Remove word from comparison
+  const removeWordFromComparison = (wordToRemove: string) => {
+    setSelectedWords(selectedWords.filter(word => word.word !== wordToRemove));
+  };
+
+  // Toggle word selection in modal
+  const toggleWordSelection = (word: string) => {
+    setTempSelectedWords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(word)) {
+        newSet.delete(word);
+      } else {
+        newSet.add(word);
+      }
+      return newSet;
+    });
+  };
+
+  // Apply selected words from modal
+  const applySelectedWords = () => {
+    const colors = [
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7',
+      '#FF8E53',
+      '#9B59B6',
+      '#3498DB',
+      '#E74C3C',
+      '#2ECC71',
+    ];
+
+    const newWords = Array.from(tempSelectedWords).map((word, index) => ({
+      word,
+      color: colors[index % colors.length],
+    }));
+
+    setSelectedWords(newWords);
+    setTempSelectedWords(new Set());
+    setShowWordPicker(false);
+  };
+
+  // Open word picker modal
+  const openWordPicker = () => {
+    setTempSelectedWords(new Set(selectedWords.map(w => w.word)));
+    setShowWordPicker(true);
+  };
+
+  // Get data for the main word
+  let mainWordData =
     periodValue === '1'
       ? freqDayArray[date] || []
       : periodValue === '2'
       ? freqWeekArray[date] || []
-      : //: freqSetRangeArray.filter(item => item.value >= 1) || [];
-        freqSetRangeArray || [];
+      : freqSetRangeArray || [];
 
-  if (selectedData.length === 0) {
+  // If main word data is empty, try to generate it using the same logic as comparison words
+  if (!mainWordData || mainWordData.length === 0) {
+    console.log('Main word data is empty, generating from currentVideoSet...');
+    if (currentVideoSet && Array.isArray(currentVideoSet) && wordLabel) {
+      const generatedData = setLineGraphData(currentVideoSet, wordLabel);
+      mainWordData =
+        periodValue === '1'
+          ? generatedData.byHour[date] || []
+          : periodValue === '2'
+          ? generatedData.byWeek[date] || []
+          : generatedData.byRange || [];
+    }
+  }
+
+  // Debug logging
+  console.log('mainWordData:', mainWordData);
+  console.log('periodValue:', periodValue);
+  console.log('date:', date);
+  console.log('freqDayArray:', freqDayArray);
+  console.log('freqWeekArray:', freqWeekArray);
+  console.log('freqSetRangeArray:', freqSetRangeArray);
+
+  // Get data for comparison words
+  const getComparisonWordData = (word: string) => {
+    // Get actual data for the comparison word using the same logic as main word
+    if (!currentVideoSet || !currentVideoSet.frequencyData) {
+      console.log('No frequencyData found for comparison word:', word);
+      return [];
+    }
+
+    try {
+      // Parse the frequency data from the video set
+      const parsedData = currentVideoSet.frequencyData
+        .filter(item => typeof item === 'string')
+        .map(item => JSON.parse(item));
+
+      console.log(
+        'Comparison word data for:',
+        word,
+        'parsedData length:',
+        parsedData.length,
+      );
+
+      // Use the same line graph data generation logic for the comparison word
+      const comparisonData = setLineGraphData(parsedData, word);
+
+      console.log(
+        'Comparison data for:',
+        word,
+        'comparisonData:',
+        comparisonData,
+      );
+
+      // Return the appropriate data based on period value
+      if (periodValue === '1') {
+        return comparisonData.byHour[date] || [];
+      } else if (periodValue === '2') {
+        return comparisonData.byWeek[date] || [];
+      } else if (periodValue === '3') {
+        return comparisonData.byRange || [];
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error generating comparison data for word:', word, error);
+      return [];
+    }
+  };
+
+  // Combine all data for display
+  const allWordsData = [
+    {
+      word: wordLabel,
+      data: mainWordData,
+      color: 'rgb(' + Styles.MHMRBlueRGB + ')',
+    },
+    ...selectedWords.map(wordData => ({
+      word: wordData.word,
+      data: getComparisonWordData(wordData.word),
+      color: wordData.color,
+    })),
+  ];
+
+  const selectedData = mainWordData || []; // Keep for compatibility with fallback
+
+  // Define Dots component after selectedData is available
+  const Dots = ({x, y}) => (
+    <>
+      {selectedData &&
+        selectedData.length > 0 &&
+        selectedData
+          .filter(value => value && value.value > 0) //dots on for frequency > 0
+          .map((value, index) => (
+            <Circle
+              key={index}
+              cx={x(selectedData.indexOf(value))}
+              cy={y(value.value)}
+              r={8}
+              stroke={'black'}
+              fill={'white'}
+              onPressIn={() => handlePressIn(value)}
+            />
+          ))}
+    </>
+  );
+
+  if (!selectedData || selectedData.length === 0) {
     return <Text>No data available for the selected period.</Text>;
   }
 
@@ -326,6 +523,52 @@ const DataAnalysisLineGraph = () => {
               </View>
             )}
           </View>
+
+          {/* Word Selection UI */}
+          <View style={styles.wordSelectionContainer}>
+            <View style={styles.selectedWordsContainer}>
+              {/* Main word chip */}
+              <View key={wordLabel} style={styles.wordChip}>
+                <View
+                  style={[
+                    styles.wordColorIndicator,
+                    {backgroundColor: 'rgb(' + Styles.MHMRBlueRGB + ')'},
+                  ]}
+                />
+                <Text style={styles.wordChipText}>{wordLabel}</Text>
+                <Text style={styles.mainWordLabel}>(Main)</Text>
+              </View>
+
+              {/* Comparison word chips */}
+              {selectedWords &&
+                Array.isArray(selectedWords) &&
+                selectedWords.map((wordData, index) => (
+                  <View key={wordData.word} style={styles.wordChip}>
+                    <View
+                      style={[
+                        styles.wordColorIndicator,
+                        {backgroundColor: wordData.color},
+                      ]}
+                    />
+                    <Text style={styles.wordChipText}>{wordData.word}</Text>
+                    <TouchableOpacity
+                      onPress={() => removeWordFromComparison(wordData.word)}
+                      style={styles.removeWordButton}>
+                      <Icon name="close" size={16} color="white" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+            </View>
+            {selectedWords && selectedWords.length < 2 && (
+              <TouchableOpacity
+                onPress={openWordPicker}
+                style={styles.addWordButton}>
+                <Icon name="add" size={20} color="white" />
+                <Text style={styles.addWordButtonText}>Add Word</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
           <View style={{flexDirection: 'row', flex: 1}}>
             <View style={{width: 50, justifyContent: 'center'}}>
               <Text
@@ -343,12 +586,12 @@ const DataAnalysisLineGraph = () => {
               <YAxis
                 data={selectedData}
                 yAccessor={({item}) => item?.value || 0}
-                style={{marginBottom: xAxisHeight, marginRight: 5}}
+                style={{marginBottom: 0, marginRight: 5, width: 50}}
                 contentInset={{
-                  top: windowHeight * 0.6 * 0.035,
-                  bottom: windowHeight * 0.6 * 0.1,
+                  top: 20,
+                  bottom: 20,
                 }}
-                svg={{fontSize: 18, fill: 'black'}}
+                svg={{fontSize: 16, fill: 'black'}}
                 min={0}
                 max={maxValue}
                 numberOfTicks={maxValue < 4 ? maxValue : 4}
@@ -364,29 +607,33 @@ const DataAnalysisLineGraph = () => {
                   style={{
                     height: windowHeight * 0.6,
                     width: chartWidth,
-                    left: periodValue === '3' ? 0 : 0,
-                    right: periodValue === '3' ? 0 : 0,
-                    top: 0,
-                    bottom: 0,
+                    position: 'relative',
                   }}>
+                  {/* Background chart with grid and segments */}
                   <LineChart
-                    style={{height: 200, flex: 1}}
-                    data={selectedData}
-                    contentInset={{top: 13, bottom: 2, left: 4, right: 10}}
-                    yAccessor={({item}) => item.value || 0}
-                    xAccessor={({index}) => index}
+                    style={{
+                      height: windowHeight * 0.6,
+                      width: chartWidth,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                    data={selectedData || []}
+                    contentInset={{top: 20, bottom: 20}}
+                    yAccessor={({item}) => (item && item.value) || 0}
+                    xAccessor={({index}) => index || 0}
                     yMin={0}
-                    yMax={maxValue}
+                    yMax={maxValue || 1}
                     svg={{
-                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                      strokeWidth: 5,
+                      stroke: '#e0e0e0',
+                      strokeWidth: 1,
                     }}>
                     <Grid />
                     {periodValue === '1' && (
                       <>
                         {Array.from({
                           length: Math.ceil(
-                            selectedData.length / parseInt(segementDay),
+                            selectedData.length / (parseInt(segementDay) || 12),
                           ),
                         }).map((_, i) => (
                           <Rect
@@ -395,14 +642,16 @@ const DataAnalysisLineGraph = () => {
                               i *
                               (chartWidth /
                                 Math.ceil(
-                                  selectedData.length / parseInt(segementDay),
+                                  selectedData.length /
+                                    (parseInt(segementDay) || 12),
                                 ))
                             }
                             y={0}
                             width={
                               chartWidth /
                               Math.ceil(
-                                selectedData.length / parseInt(segementDay),
+                                selectedData.length /
+                                  (parseInt(segementDay) || 12),
                               )
                             }
                             height={windowHeight * 0.6}
@@ -469,40 +718,124 @@ const DataAnalysisLineGraph = () => {
                         ))}
                       </>
                     )}
+                  </LineChart>
+
+                  {/* Main word line */}
+                  <LineChart
+                    style={{
+                      height: windowHeight * 0.6,
+                      width: chartWidth,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                    data={selectedData || []}
+                    contentInset={{top: 20, bottom: 20}}
+                    yAccessor={({item}) => (item && item.value) || 0}
+                    xAccessor={({index}) => index || 0}
+                    yMin={0}
+                    yMax={maxValue || 1}
+                    svg={{
+                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+                      strokeWidth: 4,
+                      opacity: 0.9,
+                    }}>
                     <Dots />
                   </LineChart>
+
+                  {/* Comparison word lines */}
+                  {selectedWords &&
+                    Array.isArray(selectedWords) &&
+                    selectedWords.map((wordData, wordIndex) => {
+                      const comparisonData = getComparisonWordData(
+                        wordData.word,
+                      );
+                      console.log(
+                        `Rendering comparison line for ${wordData.word}:`,
+                        comparisonData,
+                      );
+                      console.log(
+                        `Comparison data length:`,
+                        comparisonData?.length,
+                      );
+                      console.log(
+                        `Comparison data values:`,
+                        comparisonData?.map(item => item?.value),
+                      );
+
+                      // Define Dots component for comparison words
+                      const ComparisonDots = ({x, y}) => (
+                        <>
+                          {comparisonData &&
+                            comparisonData.length > 0 &&
+                            comparisonData
+                              .filter(value => value && value.value > 0) //dots on for frequency > 0
+                              .map((value, index) => (
+                                <Circle
+                                  key={`${wordData.word}-${index}`}
+                                  cx={x(comparisonData.indexOf(value))}
+                                  cy={y(value.value)}
+                                  r={6}
+                                  stroke={wordData.color}
+                                  fill={'white'}
+                                  strokeWidth={2}
+                                />
+                              ))}
+                        </>
+                      );
+
+                      return (
+                        <LineChart
+                          key={wordData.word}
+                          style={{
+                            height: windowHeight * 0.6,
+                            width: chartWidth,
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                          }}
+                          data={comparisonData || []}
+                          contentInset={{
+                            top: 20,
+                            bottom: 20,
+                          }}
+                          yAccessor={({item}) => (item && item.value) || 0}
+                          xAccessor={({index}) => index || 0}
+                          yMin={0}
+                          yMax={maxValue || 1}
+                          svg={{
+                            stroke: wordData.color,
+                            strokeWidth: 3,
+                            opacity: 0.8,
+                          }}>
+                          <ComparisonDots />
+                        </LineChart>
+                      );
+                    })}
 
                   <XAxis
                     style={{
                       marginHorizontal: 0,
                       height: 80,
-                      marginVertical: -5,
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
                     }}
                     data={selectedData}
                     xAccessor={({index}) => index}
                     scale={scale.scaleLinear}
                     formatLabel={(value, index) => {
-                      // Only show label if value > 0
-                      if (selectedData[index]?.value > 0) {
-                        if (periodValue === '1') {
-                          return hours[index % 24];
-                        } else if (periodValue === '2') {
-                          return weeks[index % 7];
-                        } else {
-                          return selectedData[index]?.label ?? '';
-                        }
+                      // Show labels for all data points, including those with value 0
+                      if (periodValue === '1') {
+                        return hours[index % 24];
+                      } else if (periodValue === '2') {
+                        return weeks[index % 7];
+                      } else {
+                        return selectedData[index]?.label ?? '';
                       }
-                      return ''; // Return empty string for values <= 0
                     }}
                     contentInset={{
-                      left:
-                        periodValue === '1'
-                          ? 45
-                          : periodValue === '2'
-                          ? 20
-                          : 20,
-                      right:
-                        periodValue === '1' ? 0 : periodValue === '2' ? 20 : 9,
                       top: 0,
                       bottom: 0,
                     }}
@@ -678,65 +1011,123 @@ const DataAnalysisLineGraph = () => {
           onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>View video(s) with this data</Text>
-            <FlatList
-              data={videoIDs}
-              persistentScrollbar={true}
-              keyExtractor={item => item._id.toString()}
-              renderItem={({item}) => (
-                <View>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}>
-                    <View style={styles.videoItemContainer}>
-                      <Text style={styles.videoIDText}>{item.title}</Text>
-                      <Text style={styles.dateText}>
-                        at {item.datetimeRecorded.toLocaleString()}
-                      </Text>
-                    </View>
-                    <View style={styles.iconContainer}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          navigation.navigate('Fullscreen Video', {
-                            id: item._id,
-                          });
-                          setModalVisible(false);
-                        }}
-                        style={styles.iconButton}>
-                        <Icon
-                          name="play-circle-outline"
-                          type="ionicon"
-                          size={24}
-                          color="blue"
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => {
-                          navigation.navigate('Text Report', {
-                            filterVideoId: item._id.toString(),
-                          });
-                          setModalVisible(false);
-                        }}
-                        style={styles.iconButton}>
-                        <Icon
-                          name="document-text-outline"
-                          type="ionicon"
-                          size={24}
-                          color="green"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              )}
-            />
+            {videoIDs.map((video, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  navigation.navigate('Fullscreen Video', {
+                    id: video?._id,
+                  });
+                  setModalVisible(false);
+                }}>
+                <Text style={styles.videoItemContainer}>
+                  <Text style={styles.videoIDText}>{video?.title}</Text>
+                  <Text style={styles.dateText}>
+                    {' '}
+                    at {video?.datetimeRecorded.toLocaleString()}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            ))}
             <Button
               title="Close"
               color={Styles.MHMRBlue}
               radius={50}
               onPress={() => setModalVisible(false)}
             />
+          </View>
+        </Modal>
+
+        {/* Word Picker Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showWordPicker}
+          onRequestClose={() => setShowWordPicker(false)}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Select words to compare (max 3 total)
+            </Text>
+            <Text style={styles.modalSubtext}>
+              Selected: {tempSelectedWords.size}/2 comparison words
+            </Text>
+            <ScrollView style={{maxHeight: 300}}>
+              {(() => {
+                const availableWords = generateAvailableWords();
+                console.log(
+                  'Word picker modal - availableWords:',
+                  availableWords,
+                );
+                console.log(
+                  'Word picker modal - availableWords length:',
+                  availableWords?.length,
+                );
+
+                if (!availableWords || availableWords.length === 0) {
+                  return (
+                    <View style={{padding: 20, alignItems: 'center'}}>
+                      <Text style={{color: 'gray', fontSize: 16}}>
+                        No words available
+                      </Text>
+                      <Text
+                        style={{color: 'gray', fontSize: 14, marginTop: 10}}>
+                        Make sure videos have transcripts with word counts
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return availableWords.map((word, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.wordOption}
+                    onPress={() => toggleWordSelection(word)}
+                    disabled={
+                      tempSelectedWords.size >= 2 &&
+                      !tempSelectedWords.has(word)
+                    }>
+                    <View style={styles.wordOptionContent}>
+                      <View style={styles.checkboxContainer}>
+                        <View
+                          style={[
+                            styles.checkbox,
+                            tempSelectedWords.has(word) &&
+                              styles.checkboxChecked,
+                          ]}>
+                          {tempSelectedWords.has(word) && (
+                            <Icon name="check" size={12} color="white" />
+                          )}
+                        </View>
+                      </View>
+                      <Text
+                        style={[
+                          styles.wordOptionText,
+                          tempSelectedWords.size >= 2 &&
+                            !tempSelectedWords.has(word) &&
+                            styles.wordOptionDisabled,
+                        ]}>
+                        {word}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ));
+              })()}
+            </ScrollView>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setTempSelectedWords(new Set());
+                  setShowWordPicker(false);
+                }}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.applyButton]}
+                onPress={applySelectedWords}>
+                <Text style={styles.applyButtonText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Modal>
       </View>
@@ -748,8 +1139,7 @@ const styles = StyleSheet.create({
     width: Styles.windowWidth * 0.22,
   },
   iconContainer: {
-    flexDirection: 'row',
-    // justifyContent: 'center',
+    justifyContent: 'center',
   },
   modalView: {
     margin: 20,
@@ -849,8 +1239,130 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'black',
   },
-  iconButton: {
-    padding: 5,
+  wordSelectionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  selectedWordsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginRight: 10,
+  },
+  wordChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E0E0E0',
+    borderRadius: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  wordColorIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  wordChipText: {
+    fontSize: 14,
+    color: 'black',
+  },
+  removeWordButton: {
+    padding: 2,
+  },
+  addWordButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Styles.MHMRBlue,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    marginLeft: 10,
+  },
+  addWordButtonText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 5,
+  },
+  wordOption: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    width: '100%',
+  },
+  wordOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkboxContainer: {
+    marginRight: 15,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: Styles.MHMRBlue,
+    borderColor: Styles.MHMRBlue,
+  },
+  wordOptionText: {
+    fontSize: 16,
+    color: 'black',
+    flex: 1,
+  },
+  wordOptionDisabled: {
+    color: '#ccc',
+  },
+  mainWordLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 5,
+    fontStyle: 'italic',
+  },
+  modalSubtext: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#666',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  applyButton: {
+    backgroundColor: Styles.MHMRBlue,
+  },
+  cancelButtonText: {
+    color: '#666',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  applyButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

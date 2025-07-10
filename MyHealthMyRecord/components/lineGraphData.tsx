@@ -97,41 +97,44 @@ export function useSetLineGraphData() {
       let hour = saveDate.getHours();
       let weekLabel = `${weekStart} - ${weekEnd}`;
 
+      // Process DAILY Data - always add dates regardless of word presence
+      if (!trackedDatesForHours.has(dateString)) {
+        trackedDatesForHours.set(dateString, resultsDatesForHours.length);
+        resultByHour.push(
+          Array.from({length: 24}, () => ({
+            label: 0,
+            value: 0,
+            videoIDs: [],
+          })),
+        );
+        resultsDatesForHours.push({
+          label: dateString,
+          value: resultsDatesForHours.length,
+        });
+      }
+
+      // Process WEEKLY Data - always add weeks regardless of word presence
+      if (!trackedDatesForWeeks.has(weekLabel)) {
+        trackedDatesForWeeks.set(weekLabel, resultsDatesForWeeks.length);
+        resultByWeek.push(
+          Array.from({length: 7}, () => ({
+            label: 0,
+            value: 0,
+            videoIDs: [],
+          })),
+        );
+        resultsDatesForWeeks.push({
+          label: weekLabel,
+          value: resultsDatesForWeeks.length,
+        });
+      }
+
+      // Only add data if the word exists
       if (maps[i].map.has(word)) {
-        // Process DAILY Data
-        if (!trackedDatesForHours.has(dateString)) {
-          trackedDatesForHours.set(dateString, resultsDatesForHours.length);
-          resultByHour.push(
-            Array.from({length: 24}, () => ({
-              label: 0,
-              value: 0,
-              videoIDs: [],
-            })),
-          );
-          resultsDatesForHours.push({
-            label: dateString,
-            value: resultsDatesForHours.length,
-          });
-        }
         const hourIndex = trackedDatesForHours.get(dateString);
         resultByHour[hourIndex][hour].value += maps[i].map.get(word);
         resultByHour[hourIndex][hour].videoIDs.push(maps[i].videoID);
 
-        // Process WEEKLY Data
-        if (!trackedDatesForWeeks.has(weekLabel)) {
-          trackedDatesForWeeks.set(weekLabel, resultsDatesForWeeks.length);
-          resultByWeek.push(
-            Array.from({length: 7}, () => ({
-              label: 0,
-              value: 0,
-              videoIDs: [],
-            })),
-          );
-          resultsDatesForWeeks.push({
-            label: weekLabel,
-            value: resultsDatesForWeeks.length,
-          });
-        }
         const weekIndex = trackedDatesForWeeks.get(weekLabel);
         const dayIndex = saveDate.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
         resultByWeek[weekIndex][dayIndex].value += maps[i].map.get(word);
