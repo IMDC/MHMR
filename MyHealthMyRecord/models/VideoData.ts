@@ -21,6 +21,7 @@ export class VideoData extends Realm.Object<VideoData> {
   sentiment!: string;
   tsOutputBullet!: string;
   tsOutputSentence!: string;
+  flagged_for_harm!: boolean;
   //type (emoji, text, etc), text/sentiment/keyword/location, timestamp
 
   static schema = {
@@ -47,6 +48,7 @@ export class VideoData extends Realm.Object<VideoData> {
       sentiment: {type: 'string', default: ''},
       tsOutputBullet: {type: 'string', default: ''},
       tsOutputSentence: {type: 'string', default: ''},
+      flagged_for_harm: {type: 'bool', default: false},
     },
   };
 }

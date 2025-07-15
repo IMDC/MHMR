@@ -1,14 +1,27 @@
 import * as React from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, LayoutAnimation, UIManager, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  LayoutAnimation,
+  UIManager,
+  Platform,
+} from 'react-native';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 const sections = [
-  { title: "Video Sets Creation/Management " },
-  { title: "How To View Your Data" },
-  { title: "Adding Markups To My Videos" }
+  {title: 'Video Sets Creation/Management '},
+  {title: 'How To View Your Data'},
+  {title: 'Adding Markups To My Videos'},
 ];
 
 function Help() {
@@ -16,10 +29,10 @@ function Help() {
 
   const toggleSection = (section: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setOpenSections((prevOpenSections) =>
+    setOpenSections(prevOpenSections =>
       prevOpenSections.includes(section)
-        ? prevOpenSections.filter((s) => s !== section)
-        : [...prevOpenSections, section]
+        ? prevOpenSections.filter(s => s !== section)
+        : [...prevOpenSections, section],
     );
   };
 
@@ -44,27 +57,30 @@ function Help() {
                 {index === 0 && (
                   <>
                     <Subsection title="What are Video Sets?">
-                      <Text>Video sets are collections of related videos that you can group together for easier management and analysis.</Text>
+                      <Text>
+                        Video sets are collections of related videos that you
+                        can group together for easier management and analysis.
+                      </Text>
                     </Subsection>
                     <Subsection title="How to Create and Add Videos to a Set">
                       <Text>To create a new video set and add videos:</Text>
                       <Text>1. Go to the "Manage Videos" tab.</Text>
                       <Text>2. Tap the "Select Videos" button.</Text>
-                      <Image 
+                      <Image
                         source={require('../assets/images/add1.png')}
-                        style={{ width: '100%', resizeMode: 'contain' }}
+                        style={{width: '100%', resizeMode: 'contain'}}
                       />
                       <Text>3. Tap the videos you want to add to a set.</Text>
-                      <Image 
+                      <Image
                         source={require('../assets/images/add2.png')}
-                        style={{ width: '100%', resizeMode: 'contain' }}
+                        style={{width: '100%', resizeMode: 'contain'}}
                       />
                       <Text>4. Tap the "Create new video set" button.</Text>
-                      <Image 
+                      <Image
                         source={require('../assets/images/add3.png')}
                         style={styles.screenshot}
                       />
-                      <Image 
+                      <Image
                         source={require('../assets/images/add4.png')}
                         style={styles.screenshotLarge}
                       />
@@ -74,13 +90,19 @@ function Help() {
                       <Text>To remove videos or delete a set:</Text>
                       <Text>1. Go to the "Manage Videos" tab.</Text>
                       <Text>2. Tap the "Manage Video Set" button.</Text>
-                      <Image 
+                      <Image
                         source={require('../assets/images/removing1.png')}
                         style={styles.screenshot}
                       />
-                      <Text>3. To remove a video: Tap "Remove" on the video you want to remove from the set.</Text>
-                      <Text>4. To delete the entire set: Tap the "Delete Set" button.</Text>
-                      <Image 
+                      <Text>
+                        3. To remove a video: Tap "Remove" on the video you want
+                        to remove from the set.
+                      </Text>
+                      <Text>
+                        4. To delete the entire set: Tap the "Delete Set"
+                        button.
+                      </Text>
+                      <Image
                         source={require('../assets/images/removing2.png')}
                         style={styles.screenshot}
                       />
@@ -89,32 +111,51 @@ function Help() {
                 )}
                 {index === 1 && (
                   <Subsection title="How to See Data?">
-                    <Text>Your data is displayed in various formats, including graphs and texts.</Text>
+                    <Text>
+                      Your data is displayed in various formats, including
+                      graphs and texts.
+                    </Text>
                     <Subsection title="Why can't I see graphs?">
                       <Text>If you can't see graphs:</Text>
-                      <Text>• Connect with our researchers during the weekly in-person meetings to view the data for your video sets.</Text>
-                      <Text>• Check your internet connection, as graphs require online processing.</Text>
+                      <Text>
+                        • Connect with our researchers during the weekly
+                        in-person meetings to view the data for your video sets.
+                      </Text>
+                      <Text>
+                        • Check your internet connection, as graphs require
+                        online processing.
+                      </Text>
                       <Text>• Try restarting the app.</Text>
                     </Subsection>
                   </Subsection>
                 )}
                 {index === 2 && (
                   <Subsection title="What Can I Add?">
-                    <Text>You can add various types of data to enhance your videos.</Text>
+                    <Text>
+                      You can add various types of data to enhance your videos.
+                    </Text>
                     <Subsection title="How to add or edit markups to your videos?">
                       <Text>To add markups to your videos:</Text>
                       <Text>1. Tap on Manage Videos tab</Text>
-                      <Text>2. Tap the "Add or edit markups" button on the video you want to annotate.</Text>
-                      <Image 
+                      <Text>
+                        2. Tap the "Add or edit markups" button on the video you
+                        want to annotate.
+                      </Text>
+                      <Image
                         source={require('../assets/images/markups1.png')}
                         style={styles.screenshot}
                       />
-                      <Text>3. Use the on-screen tools to add markups to the video.</Text>
-                      <Image 
+                      <Text>
+                        3. Use the on-screen tools to add markups to the video.
+                      </Text>
+                      <Image
                         source={require('../assets/images/markups2.png')}
                         style={styles.screenshotTall}
                       />
-                      <Text>4. Markups are saved automatically but you should review it to make sure it is correct.</Text>
+                      <Text>
+                        4. Markups are saved automatically but you should review
+                        it to make sure it is correct.
+                      </Text>
                     </Subsection>
                   </Subsection>
                 )}
@@ -127,14 +168,20 @@ function Help() {
   );
 }
 
-const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+const Section: React.FC<{title: string; children: React.ReactNode}> = ({
+  title,
+  children,
+}) => (
   <View style={styles.section}>
     <Text style={styles.sectionTitle}>{title}</Text>
     {children}
   </View>
 );
 
-const Subsection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+const Subsection: React.FC<{title: string; children: React.ReactNode}> = ({
+  title,
+  children,
+}) => (
   <View style={styles.subsection}>
     <Text style={styles.subsectionTitle}>{title}</Text>
     {children}
@@ -166,7 +213,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
@@ -182,7 +229,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,

@@ -21,14 +21,7 @@ import VideoPlayer from 'react-native-media-console';
 import RNFS from 'react-native-fs';
 import {useObject, useRealm} from '../models/VideoData';
 import {ObjectId} from 'bson';
-import {
-  bottomNavBarHeight,
-  heightNoTabs,
-  navbarHeight,
-  screenHeight,
-  windowHeight,
-  windowWidth,
-} from '../assets/util/styles';
+import * as AppStyles from '../assets/util/styles';
 
 const logo = require('../assets/images/MHMRLogo_NOBG.png');
 const angry = require('../assets/images/emojis/angry.png');
@@ -666,7 +659,7 @@ const MHMRVideoPlayer = ({
                                         name="pencil"
                                         type="font-awesome"
                                         size={24}
-                                        color="#1C3EAA"
+                                        color={AppStyles.MHMRBlue}
                                       />
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -852,8 +845,8 @@ const styles = StyleSheet.create({
   },
   circle: {
     // resizeMode: 'contain',
-    width: windowWidth * 0.18,
-    height: windowWidth * 0.18,
+    width: AppStyles.windowWidth * 0.18,
+    height: AppStyles.windowWidth * 0.18,
   },
   rightContainer: {
     flex: 1,
@@ -901,8 +894,8 @@ const styles = StyleSheet.create({
   },
   sticker: {
     resizeMode: 'contain',
-    width: windowWidth * 0.18,
-    height: windowWidth * 0.18,
+    width: AppStyles.windowWidth * 0.18,
+    height: AppStyles.windowWidth * 0.18,
   },
   overlayTextForComment: {
     flex: 1,

@@ -92,7 +92,7 @@ const Home = () => {
             name="videocam-outline"
             size={Styles.windowHeight * 0.05}
             type="ionicon"
-            color="#1C3EAA"
+            color={Styles.MHMRBlue}
             onPress={() => navigation.navigate('Record Video')}
           />
           <Text

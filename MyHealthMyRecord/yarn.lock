@@ -4097,11 +4097,6 @@ fetch-blob@^3.1.2, fetch-blob@^3.1.4:
     node-domexception "^1.0.0"
     web-streams-polyfill "^3.0.3"
 
-ffmpeg-kit-react-native@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.npmjs.org/ffmpeg-kit-react-native/-/ffmpeg-kit-react-native-5.1.0.tgz"
-  integrity sha512-WGuF7wm18vvhr1oCMLRfHIDCwKrmBezWgVtzim6Z3cbDiHeYvDjpm7KJwrvBMwOgekQtP4R4zI9W0ZByoXjMnQ==
-
 file-entry-cache@^6.0.1:
   version "6.0.1"
   resolved "https://registry.npmjs.org/file-entry-cache/-/file-entry-cache-6.0.1.tgz"
@@ -6962,6 +6957,13 @@ react-native-config@^1.5.1:
   resolved "https://registry.npmjs.org/react-native-config/-/react-native-config-1.5.1.tgz"
   integrity sha512-g1xNgt1tV95FCX+iWz6YJonxXkQX0GdD3fB8xQtR1GUBEqweB9zMROW77gi2TygmYmUkBI7LU4pES+zcTyK4HA==
 
+react-native-document-picker@^9.3.1:
+  version "9.3.1"
+  resolved "https://registry.npmjs.org/react-native-document-picker/-/react-native-document-picker-9.3.1.tgz"
+  integrity sha512-Vcofv9wfB0j67zawFjfq9WQPMMzXxOZL9kBmvWDpjVuEcVK73ndRmlXHlkeFl5ZHVsv4Zb6oZYhqm9u5omJOPA==
+  dependencies:
+    invariant "^2.2.4"
+
 react-native-element-dropdown@^2.9.0:
   version "2.10.4"
   resolved "https://registry.npmjs.org/react-native-element-dropdown/-/react-native-element-dropdown-2.10.4.tgz"
@@ -7428,10 +7430,10 @@ rimraf@~2.6.2:
   dependencies:
     glob "^7.1.3"
 
-rn-wordcloud@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.npmjs.org/rn-wordcloud/-/rn-wordcloud-1.0.3.tgz"
-  integrity sha512-lOxrJqoJgFW58h5Ibpt98SvweZzHSd0GNVVIVNEbkOz0unnvXtDGtsyXZ3YkU2V75fhEwWspt0NUfSaz/e+7OQ==
+rn-wordcloud@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npmjs.org/rn-wordcloud/-/rn-wordcloud-1.0.6.tgz"
+  integrity sha512-9rOj20jFm3TKZaQ0vhW8N78h2gTXGu3mRbRpAdWp3DtclKubghWavawNc/WO2L9uZ9ZcBeYupV5v1ZyszBNFgg==
   dependencies:
     prop-types "^15.8.1"
 

@@ -1,673 +1,221 @@
-function accessFreqMaps(freqMaps: any) {
-  let temp = freqMaps;
-  let result = [];
-  for (let i = 0; i < temp.length; i++) {
-    result.push(temp[i].map);
-  }
-  return result;
+function accessFreqMaps(freqMaps: any[]) {
+  return freqMaps
+    .filter(item => item && typeof item.map === 'object' && item.map !== null)
+    .map(item => ({
+      map: new Map(Object.entries(item.map)), // convert plain object to Map
+      datetime: item.datetime,
+      videoID: item.videoID,
+    }));
 }
 
-// base template for how to format each day
-let freqDayTemplate = [
-  {
-    label: 0,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 1,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 2,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 3,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 4,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 5,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 6,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 7,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 8,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 9,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 10,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 11,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 12,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 13,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 14,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 15,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 16,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 17,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 18,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 19,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 20,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 21,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 22,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 23,
-    value: 0,
-    videoIDs: [],
-  },
-];
+function getWeekStartAndEnd(date: Date) {
+  const dayOfWeek = date.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - dayOfWeek); // Move to Sunday
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6); // Move to Saturday
+  return {
+    start: startOfWeek.toDateString(),
+    end: endOfWeek.toDateString(),
+  };
+}
 
-let freqWeekTemplate = [
-  {
-    label: 0,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 1,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 2,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 3,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 4,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 5,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 6,
-    value: 0,
-    videoIDs: [],
-  },
-];
+// Base templates for daily and weekly data
+let freqDayTemplate = Array.from({length: 24}, (_, i) => ({
+  label: i,
+  value: 0,
+  videoIDs: [],
+}));
 
-let freqMonthTemplate = [
-  {
-    label: 0,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 1,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 2,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 3,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 4,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 5,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 6,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 7,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 8,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 9,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 10,
-    value: 0,
-    videoIDs: [],
-  },
-  {
-    label: 11,
-    value: 0,
-    videoIDs: [],
-  },
-];
+let freqWeekTemplate = Array.from({length: 7}, (_, i) => ({
+  label: i,
+  value: 0,
+  videoIDs: [],
+}));
 
 export function useSetLineGraphData() {
   const setLineGraphData = (freqMaps: any, word: string) => {
-    let maps = accessFreqMaps(freqMaps);
+    let maps = accessFreqMaps(freqMaps); // convert maps to proper Map objects
+
+    // console.log('Parsed frequency maps (as Map objects):', maps);
 
     let trackedDatesForHours = new Map();
-    let trackedHours = new Map();
     let trackedDatesForWeeks = new Map();
-    let trackedWeeks = new Map();
-    let trackedDatesForMonths = new Map();
-    let trackedMonths = new Map();
-
-    let saveDate = '';
-    let date = '';
-    let weekDate = '';
-    let monthDate = '';
-    let yearDate = '';
-    let hour = 0;
-    let week = 0;
-    let month = 0;
-    let year = 0;
 
     let resultsDatesForHours = [];
     let resultByHour = [];
+
     let resultsDatesForWeeks = [];
     let resultByWeek = [];
-    let resultsDatesForMonths = [];
-    let resultByMonth = [];
-    let resultsDatesForYears = [];
-    let resultByYear = [];
 
-    for (let i = 0; i < freqMaps.length; i++) {
-      saveDate = freqMaps[i].datetime.toString().split(' ');
-      // ex. result of above: Array ["Mon", "Apr", "29", "2024", "13:05:26", "GMT-0400", "(Eastern", "Daylight", "Time)"]
-      date =
-        saveDate[0] + ' ' + saveDate[1] + ' ' + saveDate[2] + ' ' + saveDate[3];
-      // result of above: "Mon Apr 29 2024"
-      monthDate = saveDate[1] + ' ' + saveDate[3];
-      // result of above: "Apr 2024"
+    let resultsDatesForRange = [];
+    let resultByRange = [];
 
-      yearDate = saveDate[3];
-      // result of above: "2024"
+    // Dynamically determine the earliest and latest dates from freqMaps
+    const allDates = maps.map(item => new Date(item.datetime));
+    const earliestDate = new Date(
+      Math.min(...allDates.map(date => date.getTime())),
+    );
+    const latestDate = new Date(
+      Math.max(...allDates.map(date => date.getTime())),
+    );
 
-      hour = freqMaps[i].datetime.getHours();
-      // result of above: 13
-      // week = freqMaps[i].datetime.getWeek();
-      // result of above: 18
-      month = freqMaps[i].datetime.getMonth();
-      // result of above: 3
-      year = freqMaps[i].datetime.getFullYear();
-      // result of above: 2024
+    // Format the range label to include month and date
+    const formatDate = (date: Date) =>
+      `${date.toLocaleString('default', {month: 'long'})} ${date.getDate()}`;
 
-      // if word is in the map, then...
-      if (freqMaps[i].map.has(word)) {
-        // if new day, then...
-        if (!trackedDatesForHours.has(date)) {
-          trackedDatesForHours.set(date, 1);
-          // refresh tracked hours for a new day
-          [...trackedHours.keys()].forEach(key => {
-            trackedHours.set(key, 0);
-            console.log('reset key ', key);
-          });
-          // need to reset template data
-          freqDayTemplate = [
-            {
-              label: 0,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 1,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 2,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 3,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 4,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 5,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 6,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 7,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 8,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 9,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 10,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 11,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 12,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 13,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 14,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 15,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 16,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 17,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 18,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 19,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 20,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 21,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 22,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 23,
-              value: 0,
-              videoIDs: [],
-            },
-          ];
+    // Initialize range data
+    let rangeData = {
+      label: `${formatDate(earliestDate)} - ${formatDate(latestDate)}`, // e.g., "April 1 - April 30"
+      value: 0,
+      videoIDs: [],
+    };
 
-          trackedHours.set(hour, 1);
-          // add a day to resultsByHour array
-          resultByHour.push(freqDayTemplate);
-          // add a date for the drop down
-          resultsDatesForHours.push({
-            label: date,
-            value: trackedDatesForHours.size - 1,
-          });
-          console.log(
-            'ooooooooo new tracked date',
-            date,
-            trackedDatesForHours,
-            hour,
-            trackedHours,
-          );
-        } else {
-          trackedDatesForHours.set(date, trackedDatesForHours.get(date) + 1);
-          if (!trackedHours.has(hour)) {
-            trackedHours.set(hour, 1);
-            console.log('ooooooooo new tracked hour', hour, trackedHours);
-          } else {
-            trackedHours.set(hour, trackedHours.get(hour) + 1);
-            console.log('ooooooooo already tracked hour', hour, trackedHours);
+    // Pre-fill all range dates with zero values using a Map for fast updates
+    const rangeMap = new Map<
+      string,
+      {label: string; value: number; videoIDs: string[]}
+    >();
+    const rangeDateCursor = new Date(earliestDate);
+
+    while (rangeDateCursor <= latestDate) {
+      const monthDayKey = `${
+        rangeDateCursor.getMonth() + 1
+      }-${rangeDateCursor.getDate()}`;
+      rangeMap.set(monthDayKey, {
+        label: monthDayKey,
+        value: 0,
+        videoIDs: [],
+      });
+      rangeDateCursor.setDate(rangeDateCursor.getDate() + 1);
+    }
+
+    for (let i = 0; i < maps.length; i++) {
+      let saveDate = new Date(maps[i].datetime);
+      let dateString = saveDate.toDateString(); // "Mon Apr 29 2024"
+      let {start: weekStart, end: weekEnd} = getWeekStartAndEnd(saveDate);
+      let hour = saveDate.getHours();
+      let weekLabel = `${weekStart} - ${weekEnd}`;
+
+      // Process DAILY Data - always add dates regardless of word presence
+      if (!trackedDatesForHours.has(dateString)) {
+        trackedDatesForHours.set(dateString, resultsDatesForHours.length);
+        resultByHour.push(
+          Array.from({length: 24}, () => ({
+            label: 0,
+            value: 0,
+            videoIDs: [],
+          })),
+        );
+        resultsDatesForHours.push({
+          label: dateString,
+          value: resultsDatesForHours.length,
+        });
+      }
+
+      // Process WEEKLY Data - always add weeks regardless of word presence
+      if (!trackedDatesForWeeks.has(weekLabel)) {
+        trackedDatesForWeeks.set(weekLabel, resultsDatesForWeeks.length);
+        resultByWeek.push(
+          Array.from({length: 7}, () => ({
+            label: 0,
+            value: 0,
+            videoIDs: [],
+          })),
+        );
+        resultsDatesForWeeks.push({
+          label: weekLabel,
+          value: resultsDatesForWeeks.length,
+        });
+      }
+
+      // Only add data if the word exists
+      if (maps[i].map.has(word)) {
+        const hourIndex = trackedDatesForHours.get(dateString);
+        resultByHour[hourIndex][hour].value += maps[i].map.get(word);
+        resultByHour[hourIndex][hour].videoIDs.push(maps[i].videoID);
+
+        const weekIndex = trackedDatesForWeeks.get(weekLabel);
+        const dayIndex = saveDate.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+        resultByWeek[weekIndex][dayIndex].value += maps[i].map.get(word);
+        resultByWeek[weekIndex][dayIndex].videoIDs.push(maps[i].videoID);
+
+        // Process RANGE Data
+        if (saveDate >= earliestDate && saveDate <= latestDate) {
+          // Extract month and day
+          const monthDayKey = `${
+            saveDate.getMonth() + 1
+          }-${saveDate.getDate()}`; // e.g., "2-25" for February 25
+
+          const rangeEntry = rangeMap.get(monthDayKey);
+
+          if (rangeEntry) {
+            rangeEntry.value += maps[i].map.get(word);
+            rangeEntry.videoIDs.push(maps[i].videoID);
           }
         }
-
-        if (!trackedDatesForWeeks.has(date)) {
-          trackedDatesForWeeks.set(date, 1);
-          // refresh tracked hours for a new day
-          [...trackedWeeks.keys()].forEach(key => {
-            trackedWeeks.set(key, 0);
-            console.log('reset key ', key);
-          });
-          // need to reset template data
-          freqWeekTemplate = [
-            {
-              label: 0,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 1,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 2,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 3,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 4,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 5,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 6,
-              value: 0,
-              videoIDs: [],
-            },
-          ];
-
-          trackedWeeks.set(hour, 1);
-          // add a day to resultsByHour array
-          resultByWeek.push(freqWeekTemplate);
-          // add a date for the drop down
-          resultsDatesForWeeks.push({
-            label: week,
-            value: trackedDatesForWeeks.size - 1,
-          });
-          console.log(
-            'ooooooooo new tracked week',
-            week,
-            trackedDatesForWeeks,
-            hour,
-            trackedWeeks,
-          );
-        } else {
-          trackedDatesForWeeks.set(week, trackedDatesForWeeks.get(week) + 1);
-          if (!trackedWeeks.has(week)) {
-            trackedWeeks.set(week, 1);
-            console.log('ooooooooo new tracked week', week, trackedWeeks);
-          } else {
-            trackedWeeks.set(week, trackedWeeks.get(week) + 1);
-            console.log('ooooooooo already tracked week', week, trackedWeeks);
-          }
-        }
-
-        if (!trackedDatesForMonths.has(yearDate)) {
-          trackedDatesForMonths.set(yearDate, 1);
-          // refresh tracked hours for a new day
-          [...trackedMonths.keys()].forEach(key => {
-            trackedMonths.set(key, 0);
-            console.log('reset key ', key);
-          });
-          // need to reset template data
-          freqMonthTemplate = [
-            {
-              label: 0,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 1,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 2,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 3,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 4,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 5,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 6,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 7,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 8,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 9,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 10,
-              value: 0,
-              videoIDs: [],
-            },
-            {
-              label: 11,
-              value: 0,
-              videoIDs: [],
-            },
-          ];
-
-          trackedMonths.set(month, 1);
-          // add a day to resultsByHour array
-          resultByMonth.push(freqMonthTemplate);
-          // add a date for the drop down
-          resultsDatesForMonths.push({
-            label: yearDate,
-            value: trackedDatesForMonths.size - 1,
-          });
-          console.log(
-            'ooooooooo new tracked month',
-            yearDate,
-            trackedDatesForMonths,
-            month,
-            trackedMonths,
-          );
-        } else {
-          trackedDatesForMonths.set(
-            yearDate,
-            trackedDatesForMonths.get(month) + 1,
-          );
-          if (!trackedMonths.has(month)) {
-            trackedMonths.set(month, 1);
-            console.log('ooooooooo new tracked month', month, trackedMonths);
-          } else {
-            trackedMonths.set(month, trackedMonths.get(month) + 1);
-            console.log(
-              'ooooooooo already tracked month',
-              month,
-              trackedMonths,
-            );
-          }
-        }
-
-        // access most recent day (because maps should be orderd by date already)
-        // increment the count for the current video's hour
-        // resultByMonth[trackedDatesForMonths.size - 1][month].videoIDs.push(
-        //   freqMaps[i].videoID,
-        // );
-        // resultByWeek[trackedDatesForWeeks.size - 1][week].videoIDs.push(
-        //   freqMaps[i].videoID,
-        // );
-        resultByMonth[trackedDatesForMonths.size - 1][month].value +=
-          maps[i].get(word);
-        resultByMonth[trackedDatesForMonths.size - 1][month].videoIDs.push(
-          freqMaps[i].videoID,
-        );
-        // resultByWeek[trackedDatesForWeeks.size - 1][week].value += maps[i].get(
-        //   word,
-        // );
-        // resultByWeek[trackedDatesForWeeks.size - 1][week].videoIDs.push(
-        //   freqMaps[i].videoID,
-        // );
-        resultByHour[trackedDatesForHours.size - 1][hour].value +=
-          maps[i].get(word);
-        resultByHour[trackedDatesForHours.size - 1][hour].videoIDs.push(
-          freqMaps[i].videoID,
-        );
-        console.log(
-          'ooooooooo adding word count by week ---- count: ',
-          week,
-          maps[i].get(word),
-        );
       }
     }
-    console.log(resultsDatesForHours);
-    console.log(resultByHour);
-    console.log(resultsDatesForWeeks);
-    console.log(resultByWeek);
-    console.log(resultsDatesForMonths);
-    console.log(resultByMonth);
 
-    //setFreqMaps([]);
+    resultByRange = Array.from(rangeMap.values());
+
+    // Reverse and update resultsDatesForHours
+    // Sort daily by actual date
+    resultsDatesForHours = resultsDatesForHours
+      .sort((a, b) => new Date(a.label).getTime() - new Date(b.label).getTime())
+      .map((item, index) => ({
+        ...item,
+        value: index,
+        videoIDs: Array.from(new Set(item.videoIDs || [])),
+      }));
+
+    // Sort resultByHour to match resultsDatesForHours
+    resultByHour = resultsDatesForHours.map(
+      date => resultByHour[trackedDatesForHours.get(date.label)],
+    );
+
+    // Sort weekly by week start date
+    resultsDatesForWeeks = resultsDatesForWeeks
+      .sort((a, b) => {
+        const [startA] = a.label.split(' - ');
+        const [startB] = b.label.split(' - ');
+        return new Date(startA).getTime() - new Date(startB).getTime();
+      })
+      .map((item, index) => ({
+        ...item,
+        value: index,
+        videoIDs: Array.from(new Set(item.videoIDs || [])),
+      }));
+
+    // Sort resultByWeek to match resultsDatesForWeeks
+    resultByWeek = resultsDatesForWeeks.map(
+      date => resultByWeek[trackedDatesForWeeks.get(date.label)],
+    );
+
+    // Sort range by MM-DD interpreted as real date
+    resultsDatesForRange = (resultByRange || [])
+      .sort((a, b) => {
+        const [monthA, dayA] = a.label.split('-').map(Number);
+        const [monthB, dayB] = b.label.split('-').map(Number);
+        return (
+          new Date(2000, monthA - 1, dayA) - new Date(2000, monthB - 1, dayB)
+        );
+      })
+      .map((entry, index) => ({
+        label: entry.label,
+        value: index,
+        videoIDs: Array.from(new Set(entry.videoIDs || [])),
+      }));
+
     return {
       datesForHours: resultsDatesForHours,
       byHour: resultByHour,
       datesForWeeks: resultsDatesForWeeks,
       byWeek: resultByWeek,
-      datesForMonths: resultsDatesForMonths,
-      byMonth: resultByMonth,
-      // datesForYears: resultsDatesForYears,
-      // byYear: resultByYear,
+      datesForRange: resultsDatesForRange,
+      byRange: resultByRange,
     };
   };
+
   return setLineGraphData;
 }
