@@ -935,58 +935,95 @@ const RecordVideo = () => {
           <View style={styles.buttonContainer}>
             {recordingInProgress ? (
               <>
-                <View></View>
-                <TouchableOpacity
-                  style={{alignSelf: 'center', justifyContent: 'center'}}
-                  onPress={() => {
-                    stopRecodingHandler();
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                />
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}>
-                  <Icon
-                    name="stop"
-                    size={40}
-                    type="font-awesome"
-                    color="white"
-                  />
-                </TouchableOpacity>
-                <View></View>
+                  <TouchableOpacity
+                    onPress={stopRecodingHandler}
+                    style={{justifyContent: 'center', alignItems: 'center'}}>
+                    <Icon
+                      name="stop"
+                      size={40}
+                      type="font-awesome"
+                      color="white"
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                />
               </>
             ) : (
               <>
-                <View>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <TouchableOpacity
+                    style={{flexDirection: 'row', alignItems: 'center'}}
+                    onPress={toggleVideoSetOverlay}>
+                    <Icon
+                      name="add-outline"
+                      size={40}
+                      type="ionicon"
+                      color="white"
+                    />
+                    <Text
+                      style={{
+                        color: 'white',
+                        alignSelf: 'center',
+                        marginLeft: 5,
+                      }}>
+                      Add to Video Set
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <TouchableOpacity
+                    style={styles.camButton}
+                    onPress={() => {
+                      StartRecodingHandler();
+                      setSaveBtnState(false);
+                    }}
+                  />
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
                   <Icon
-                    name="add-outline"
+                    name="camera-reverse-outline"
                     size={40}
                     type="ionicon"
                     color="white"
                     onPress={() => {
-                      toggleVideoSetOverlay();
+                      setDeviceDir(deviceDir === 'back' ? 'front' : 'back');
                     }}
                   />
-                  <Text style={{color: 'white', alignSelf: 'center'}}>
-                    Add to Video Set
-                  </Text>
                 </View>
-
-                <TouchableOpacity
-                  style={styles.camButton}
-                  onPress={() => {
-                    StartRecodingHandler();
-                    setSaveBtnState(false);
-                  }}
-                />
-                <Icon
-                  name="camera-reverse-outline"
-                  size={40}
-                  type="ionicon"
-                  color="white"
-                  onPress={() => {
-                    if (deviceDir == 'back') {
-                      setDeviceDir('front');
-                    } else {
-                      setDeviceDir('back');
-                    }
-                  }}
-                />
               </>
             )}
           </View>
@@ -1034,7 +1071,7 @@ const RecordVideo = () => {
                 }}>
                 Exit without saving
                 <Icon
-                  name="exit-to-app"
+                  name="exit-outline"
                   type="ionicon"
                   color="white"
                   containerStyle={{transform: [{rotate: '180deg'}]}}
