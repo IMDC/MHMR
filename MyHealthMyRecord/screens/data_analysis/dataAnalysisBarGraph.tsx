@@ -471,16 +471,22 @@ const DataAnalysisBarGraph = () => {
 const styles = StyleSheet.create({
   modalView: {
     margin: 20,
-    height: windowHeight > 800 ? '60%' : '50%', // Adjust for taller screens
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
+    padding: 24,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 8,
+    minWidth: 300,
+    maxWidth: 500,
+    width: '90%',
+    minHeight: 320,
+    maxHeight: 600,
+    alignSelf: 'center',
   },
   modalText: {
     marginBottom: 15,

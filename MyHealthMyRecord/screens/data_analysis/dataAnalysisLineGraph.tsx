@@ -9,6 +9,7 @@ import {
   Dimensions,
   ScrollView,
   LogBox,
+  FlatList,
 } from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -150,9 +151,14 @@ const DataAnalysisLineGraph = () => {
     }
   }, [periodValue]);
 
-  const axesSvg = {fontSize: 20, fill: 'grey'};
-  const verticalContentInset = {top: 10, bottom: 10};
-  const xAxisHeight = 30;
+  // Chart layout constants
+  const axesSvg = {fontSize: 14, fill: '#333'};
+  const verticalContentInset = {top: 20, bottom: 20};
+  const xAxisHeight = 40;
+  const chartHeight = windowHeight * 0.5;
+  const rectY = verticalContentInset.top;
+  const rectHeight =
+    chartHeight - verticalContentInset.top - verticalContentInset.bottom;
 
   const hours = [
     '12AM',
@@ -442,24 +448,66 @@ const DataAnalysisLineGraph = () => {
 
   const selectedData = mainWordData || []; // Keep for compatibility with fallback
 
-  // Define Dots component after selectedData is available
-  const Dots = ({x, y}) => (
+  // Gather all y values from all visible lines for axis scaling
+  const allYValues = allWordsData
+    .map(wordObj => (wordObj.data || []).map(item => item?.value ?? 0))
+    .flat();
+  // If no data, fallback to [0]
+  const yValuesForAxis = allYValues.length > 0 ? allYValues : [0];
+
+  // Prepare multi-line data for single LineChart
+  const multiLineData = [
+    {
+      data: selectedData.map(item => item?.value ?? 0),
+      svg: {
+        stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
+        strokeWidth: 4,
+        opacity: 0.9,
+      },
+      key: wordLabel,
+      color: 'rgb(' + Styles.MHMRBlueRGB + ')',
+    },
+    ...selectedWords.map(wordData => {
+      const comparisonData = getComparisonWordData(wordData.word);
+      return {
+        data: (comparisonData || []).map(item => item?.value ?? 0),
+        svg: {stroke: wordData.color, strokeWidth: 3, opacity: 0.8},
+        key: wordData.word,
+        color: wordData.color,
+      };
+    }),
+  ];
+
+  // Find the longest data array among all lines for X axis and chart width
+  const xAxisData = multiLineData.reduce(
+    (longest, series) =>
+      series.data.length > longest.length ? series.data : longest,
+    multiLineData[0]?.data || [],
+  );
+
+  // Decorator for all lines' dots
+  const MultiLineDots = ({x, y, data}) => (
     <>
-      {selectedData &&
-        selectedData.length > 0 &&
-        selectedData
-          .filter(value => value && value.value > 0) //dots on for frequency > 0
-          .map((value, index) => (
+      {data.map((series, seriesIdx) =>
+        series.data.map((value, idx) =>
+          value > 0 ? (
             <Circle
-              key={index}
-              cx={x(selectedData.indexOf(value))}
-              cy={y(value.value)}
-              r={8}
-              stroke={'black'}
+              key={`${series.key}-dot-${idx}`}
+              cx={x(idx)}
+              cy={y(value)}
+              r={seriesIdx === 0 ? 8 : 6}
+              stroke={series.color}
               fill={'white'}
-              onPressIn={() => handlePressIn(value)}
+              strokeWidth={seriesIdx === 0 ? 2 : 2}
+              onPressIn={
+                seriesIdx === 0
+                  ? () => handlePressIn(selectedData[idx])
+                  : undefined
+              }
             />
-          ))}
+          ) : null,
+        ),
+      )}
     </>
   );
 
@@ -467,35 +515,58 @@ const DataAnalysisLineGraph = () => {
     return <Text>No data available for the selected period.</Text>;
   }
 
-  const dataValues = selectedData.map(item => item.value);
-
-  let minValue = Math.min(...dataValues); // Use the smallest value in the data
-  let maxValue = Math.max(...dataValues); // Use the largest value in the data
+  let minValue = Math.min(...yValuesForAxis);
+  let maxValue = Math.max(...yValuesForAxis);
 
   // Add a buffer to the min and max values to prevent dots from being too close to the edges
   const buffer = 0.5;
-  minValue = minValue - buffer < 0 ? 0 : minValue - buffer; // Ensure minValue doesn't go below 0
-  maxValue = maxValue;
+  minValue = minValue - buffer < 0 ? 0 : minValue - buffer;
+  // Optionally add a small buffer to maxValue for visual padding
+  maxValue = maxValue + buffer;
 
   const chartWidth = Math.max(windowWidth * 0.95, selectedData.length * 32);
 
+  const chartCardStyle = {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    marginHorizontal: '3%',
+    marginTop: 18,
+    marginBottom: 10,
+    paddingVertical: 18,
+    paddingHorizontal: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  };
+
   return (
-    <ScrollView contentContainerStyle={{paddingBottom: 100}}>
-      <View style={{height: '100%'}}>
-        <View id="linegraph">
+    <ScrollView
+      contentContainerStyle={{
+        paddingBottom: 100,
+        backgroundColor: '#F6F8FB',
+        minHeight: windowHeight,
+      }}>
+      <View style={{minHeight: windowHeight, width: '100%'}}>
+        <View id="linegraph" style={chartCardStyle}>
           <View
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingRight: 20,
+              alignItems: 'flex-start',
+              paddingRight: 0,
+              marginBottom: 10,
             }}>
             <Text
               style={{
-                padding: 20,
-                fontSize: 20,
-                color: 'black',
+                paddingLeft: 10,
+                paddingBottom: 10,
+                fontSize: 22,
+                color: '#222',
                 fontWeight: 'bold',
+                flex: 1,
+                flexWrap: 'wrap',
               }}>
               Word count of "{wordLabel}" over time
               {periodValue === '1'
@@ -538,7 +609,6 @@ const DataAnalysisLineGraph = () => {
                 <Text style={styles.wordChipText}>{wordLabel}</Text>
                 <Text style={styles.mainWordLabel}>(Main)</Text>
               </View>
-
               {/* Comparison word chips */}
               {selectedWords &&
                 Array.isArray(selectedWords) &&
@@ -569,66 +639,43 @@ const DataAnalysisLineGraph = () => {
             )}
           </View>
 
-          <View style={{flexDirection: 'row', flex: 1}}>
-            <View style={{width: 50, justifyContent: 'center'}}>
-              <Text
-                style={{
-                  transform: [{rotate: '270deg'}],
-                  textAlign: 'center',
-                  fontSize: 18,
-                  color: 'black',
-                  width: 60,
-                }}>
-                Count
-              </Text>
-            </View>
-            <View style={{flexDirection: 'row', flex: 1}}>
-              <YAxis
-                data={selectedData}
-                yAccessor={({item}) => item?.value || 0}
-                style={{marginBottom: 0, marginRight: 5, width: 50}}
-                contentInset={{
-                  top: 20,
-                  bottom: 20,
-                }}
-                svg={{fontSize: 16, fill: 'black'}}
-                min={0}
-                max={maxValue}
-                numberOfTicks={maxValue < 4 ? maxValue : 4}
-                formatLabel={value => Math.round(value)}
-              />
-              <TouchableOpacity
-                onPress={scrollLeft}
-                style={[styles.overlayArrow, {left: 5}]}>
-                <Icon name="keyboard-arrow-left" size={40} color="black" />
-              </TouchableOpacity>
-              <ScrollView horizontal={true} ref={scrollViewRef}>
-                <View
-                  style={{
-                    height: windowHeight * 0.6,
-                    width: chartWidth,
-                    position: 'relative',
-                  }}>
-                  {/* Background chart with grid and segments */}
+          {/* Modern Axes Layout */}
+          <View
+            style={{
+              height: chartHeight + xAxisHeight,
+              paddingHorizontal: 0,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <YAxis
+              data={yValuesForAxis}
+              yAccessor={({item}: {item: any}) => item}
+              style={{marginBottom: xAxisHeight, width: 40}}
+              contentInset={verticalContentInset}
+              svg={axesSvg}
+              min={0}
+              max={maxValue}
+              numberOfTicks={maxValue < 4 ? maxValue : 4}
+              formatLabel={value => Math.round(value)}
+            />
+
+            {/* Chart and X Axis */}
+            <View style={{flex: 1, marginLeft: 10}}>
+              <ScrollView
+                horizontal
+                ref={scrollViewRef}
+                showsHorizontalScrollIndicator={false}>
+                <View style={{width: chartWidth}}>
+                  {/* Chart */}
                   <LineChart
-                    style={{
-                      height: windowHeight * 0.6,
-                      width: chartWidth,
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                    }}
-                    data={selectedData || []}
-                    contentInset={{top: 20, bottom: 20}}
-                    yAccessor={({item}) => (item && item.value) || 0}
-                    xAccessor={({index}) => index || 0}
+                    style={{height: chartHeight, width: chartWidth}}
+                    data={multiLineData}
                     yMin={0}
                     yMax={maxValue || 1}
-                    svg={{
-                      stroke: '#e0e0e0',
-                      strokeWidth: 1,
-                    }}>
+                    contentInset={verticalContentInset}>
                     <Grid />
+                    {/* Rect overlays (segments) */}
                     {periodValue === '1' && (
                       <>
                         {Array.from({
@@ -646,7 +693,7 @@ const DataAnalysisLineGraph = () => {
                                     (parseInt(segementDay) || 12),
                                 ))
                             }
-                            y={0}
+                            y={rectY}
                             width={
                               chartWidth /
                               Math.ceil(
@@ -654,7 +701,7 @@ const DataAnalysisLineGraph = () => {
                                   (parseInt(segementDay) || 12),
                               )
                             }
-                            height={windowHeight * 0.6}
+                            height={rectHeight}
                             fill={i % 2 === 0 ? '#d0d0d0' : '#909090'}
                             opacity={0.5}
                           />
@@ -667,9 +714,9 @@ const DataAnalysisLineGraph = () => {
                           <Rect
                             key={i}
                             x={i * (chartWidth / 2.45)}
-                            y={0}
+                            y={rectY}
                             width={chartWidth / 2.45}
-                            height={windowHeight * 0.6}
+                            height={rectHeight}
                             fill={
                               i === 0
                                 ? '#d0d0d0'
@@ -688,9 +735,9 @@ const DataAnalysisLineGraph = () => {
                           <Rect
                             key={i}
                             x={i * (chartWidth / 3)}
-                            y={0}
+                            y={rectY}
                             width={chartWidth / 3}
-                            height={windowHeight * 0.6}
+                            height={rectHeight}
                             fill={
                               i === 0
                                 ? '#d0d0d0'
@@ -709,166 +756,55 @@ const DataAnalysisLineGraph = () => {
                           <Rect
                             key={i}
                             x={i * (chartWidth / selectedData.length)}
-                            y={0}
+                            y={rectY}
                             width={chartWidth / selectedData.length}
-                            height={windowHeight * 0.6}
+                            height={rectHeight}
                             fill={isWeekend(item.label) ? '#707070' : '#d0d0d0'}
                             opacity={0.5}
                           />
                         ))}
                       </>
                     )}
+                    {/* Dots for all lines */}
+                    <MultiLineDots data={multiLineData} />
                   </LineChart>
-
-                  {/* Main word line */}
-                  <LineChart
-                    style={{
-                      height: windowHeight * 0.6,
-                      width: chartWidth,
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                    }}
-                    data={selectedData || []}
-                    contentInset={{top: 20, bottom: 20}}
-                    yAccessor={({item}) => (item && item.value) || 0}
-                    xAccessor={({index}) => index || 0}
-                    yMin={0}
-                    yMax={maxValue || 1}
-                    svg={{
-                      stroke: 'rgb(' + Styles.MHMRBlueRGB + ')',
-                      strokeWidth: 4,
-                      opacity: 0.9,
-                    }}>
-                    <Dots />
-                  </LineChart>
-
-                  {/* Comparison word lines */}
-                  {selectedWords &&
-                    Array.isArray(selectedWords) &&
-                    selectedWords.map((wordData, wordIndex) => {
-                      const comparisonData = getComparisonWordData(
-                        wordData.word,
-                      );
-                      console.log(
-                        `Rendering comparison line for ${wordData.word}:`,
-                        comparisonData,
-                      );
-                      console.log(
-                        `Comparison data length:`,
-                        comparisonData?.length,
-                      );
-                      console.log(
-                        `Comparison data values:`,
-                        comparisonData?.map(item => item?.value),
-                      );
-
-                      // Define Dots component for comparison words
-                      const ComparisonDots = ({x, y}) => (
-                        <>
-                          {comparisonData &&
-                            comparisonData.length > 0 &&
-                            comparisonData
-                              .filter(value => value && value.value > 0) //dots on for frequency > 0
-                              .map((value, index) => (
-                                <Circle
-                                  key={`${wordData.word}-${index}`}
-                                  cx={x(comparisonData.indexOf(value))}
-                                  cy={y(value.value)}
-                                  r={6}
-                                  stroke={wordData.color}
-                                  fill={'white'}
-                                  strokeWidth={2}
-                                />
-                              ))}
-                        </>
-                      );
-
-                      return (
-                        <LineChart
-                          key={wordData.word}
-                          style={{
-                            height: windowHeight * 0.6,
-                            width: chartWidth,
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                          }}
-                          data={comparisonData || []}
-                          contentInset={{
-                            top: 20,
-                            bottom: 20,
-                          }}
-                          yAccessor={({item}) => (item && item.value) || 0}
-                          xAccessor={({index}) => index || 0}
-                          yMin={0}
-                          yMax={maxValue || 1}
-                          svg={{
-                            stroke: wordData.color,
-                            strokeWidth: 3,
-                            opacity: 0.8,
-                          }}>
-                          <ComparisonDots />
-                        </LineChart>
-                      );
-                    })}
-
+                  {/* X Axis below the chart, scrolls together */}
                   <XAxis
-                    style={{
-                      marginHorizontal: 0,
-                      height: 80,
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                    }}
-                    data={selectedData}
+                    style={{marginHorizontal: 0, height: xAxisHeight}}
+                    data={xAxisData}
                     xAccessor={({index}) => index}
                     scale={scale.scaleLinear}
                     formatLabel={(value, index) => {
-                      // Show labels for all data points, including those with value 0
+                      // Only show label if value is not empty/zero/undefined in any series
+                      const mainVal = selectedData[index]?.value;
+                      const anyVal = multiLineData.some(
+                        series =>
+                          series.data[index] && series.data[index] !== 0,
+                      );
+                      if (!anyVal) return '';
                       if (periodValue === '1') {
                         return hours[index % 24];
                       } else if (periodValue === '2') {
                         return weeks[index % 7];
                       } else {
+                        // Prefer main word's label, fallback to undefined
                         return selectedData[index]?.label ?? '';
                       }
                     }}
-                    contentInset={{
-                      top: 0,
-                      bottom: 0,
-                    }}
-                    svg={{
-                      fontSize: periodValue === '1' ? 14 : 14,
-                      fill: 'black',
-                      rotation:
-                        periodValue === '1'
-                          ? -45
-                          : periodValue === '3'
-                          ? -30
-                          : 0,
-                      originY:
-                        periodValue === '1' ? 30 : periodValue === '3' ? 35 : 0,
-                      textAnchor: periodValue === '1' ? 'end' : 'middle',
-                      dy: periodValue === '1' ? 0 : 10,
-                    }}
+                    contentInset={{left: 10, right: 10}}
+                    svg={axesSvg}
                   />
                 </View>
               </ScrollView>
-              <TouchableOpacity
-                onPress={scrollRight}
-                style={[styles.overlayArrow, {right: 5}]}>
-                <Icon name="keyboard-arrow-right" size={40} color="black" />
-              </TouchableOpacity>
             </View>
           </View>
+
           <Text
             style={{
               textAlign: 'center',
               fontSize: 20,
               color: 'black',
-              marginTop: -25,
+              // marginTop: -25,
             }}>
             {periodValue === '1'
               ? 'Hour'
@@ -1009,32 +945,69 @@ const DataAnalysisLineGraph = () => {
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>View video(s) with this data</Text>
-            {videoIDs.map((video, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  navigation.navigate('Fullscreen Video', {
-                    id: video?._id,
-                  });
-                  setModalVisible(false);
-                }}>
-                <Text style={styles.videoItemContainer}>
-                  <Text style={styles.videoIDText}>{video?.title}</Text>
-                  <Text style={styles.dateText}>
-                    {' '}
-                    at {video?.datetimeRecorded.toLocaleString()}
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-            ))}
-            <Button
-              title="Close"
-              color={Styles.MHMRBlue}
-              radius={50}
-              onPress={() => setModalVisible(false)}
-            />
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalView}>
+              <Text style={[styles.modalText, {textAlign: 'center'}]}>
+                View video(s) with this data
+              </Text>
+              <FlatList
+                data={videoIDs}
+                persistentScrollbar={true}
+                keyExtractor={item => item._id.toString()}
+                renderItem={({item}) => (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <View style={styles.videoItemContainer}>
+                      <Text style={styles.videoIDText}>{item.title}</Text>
+                      <Text style={styles.dateText}>
+                        at {item.datetimeRecorded.toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.iconContainer}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Fullscreen Video', {
+                            id: item._id,
+                          });
+                          setModalVisible(false);
+                        }}
+                        style={styles.iconButton}>
+                        <Icon
+                          name="play-circle-outline"
+                          type="ionicon"
+                          size={24}
+                          color="blue"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Text Report', {
+                            filterVideoId: item._id.toString(),
+                          });
+                          setModalVisible(false);
+                        }}
+                        style={styles.iconButton}>
+                        <Icon
+                          name="document-text-outline"
+                          type="ionicon"
+                          size={24}
+                          color="green"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              />
+              <Button
+                title="Close"
+                color={Styles.MHMRBlue}
+                radius={50}
+                onPress={() => setModalVisible(false)}
+              />
+            </View>
           </View>
         </Modal>
 
@@ -1044,89 +1017,105 @@ const DataAnalysisLineGraph = () => {
           transparent={true}
           visible={showWordPicker}
           onRequestClose={() => setShowWordPicker(false)}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Select words to compare (max 3 total)
-            </Text>
-            <Text style={styles.modalSubtext}>
-              Selected: {tempSelectedWords.size}/2 comparison words
-            </Text>
-            <ScrollView style={{maxHeight: 300}}>
-              {(() => {
-                const availableWords = generateAvailableWords();
-                console.log(
-                  'Word picker modal - availableWords:',
-                  availableWords,
-                );
-                console.log(
-                  'Word picker modal - availableWords length:',
-                  availableWords?.length,
-                );
-
-                if (!availableWords || availableWords.length === 0) {
-                  return (
-                    <View style={{padding: 20, alignItems: 'center'}}>
-                      <Text style={{color: 'gray', fontSize: 16}}>
-                        No words available
-                      </Text>
-                      <Text
-                        style={{color: 'gray', fontSize: 14, marginTop: 10}}>
-                        Make sure videos have transcripts with word counts
-                      </Text>
-                    </View>
-                  );
-                }
-
-                return availableWords.map((word, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.wordOption}
-                    onPress={() => toggleWordSelection(word)}
-                    disabled={
-                      tempSelectedWords.size >= 2 &&
-                      !tempSelectedWords.has(word)
-                    }>
-                    <View style={styles.wordOptionContent}>
-                      <View style={styles.checkboxContainer}>
-                        <View
-                          style={[
-                            styles.checkbox,
-                            tempSelectedWords.has(word) &&
-                              styles.checkboxChecked,
-                          ]}>
-                          {tempSelectedWords.has(word) && (
-                            <Icon name="check" size={12} color="white" />
-                          )}
-                        </View>
-                      </View>
-                      <Text
-                        style={[
-                          styles.wordOptionText,
-                          tempSelectedWords.size >= 2 &&
-                            !tempSelectedWords.has(word) &&
-                            styles.wordOptionDisabled,
-                        ]}>
-                        {word}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ));
-              })()}
-            </ScrollView>
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setTempSelectedWords(new Set());
-                  setShowWordPicker(false);
+          <View style={styles.modalOverlay}>
+            <View style={styles.centeredModalView}>
+              <Text style={[styles.modalText, {fontSize: 22, marginBottom: 4}]}>
+                Compare Words
+              </Text>
+              <Text
+                style={[
+                  styles.modalSubtext,
+                  {
+                    marginBottom: 18,
+                    fontSize: 15,
+                    color:
+                      tempSelectedWords.size >= 2 ? Styles.MHMRBlue : '#666',
+                  },
+                ]}>
+                Select up to 2 words to compare
+              </Text>
+              <ScrollView
+                style={{width: '100%', marginBottom: 10}}
+                contentContainerStyle={{
+                  alignItems: 'center',
+                  paddingBottom: 10,
                 }}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.applyButton]}
-                onPress={applySelectedWords}>
-                <Text style={styles.applyButtonText}>Apply</Text>
-              </TouchableOpacity>
+                <View style={styles.chipGridContainer}>
+                  {(() => {
+                    const availableWords = generateAvailableWords();
+                    if (!availableWords || availableWords.length === 0) {
+                      return (
+                        <View style={{padding: 20, alignItems: 'center'}}>
+                          <Text style={{color: 'gray', fontSize: 16}}>
+                            No words available
+                          </Text>
+                          <Text
+                            style={{
+                              color: 'gray',
+                              fontSize: 14,
+                              marginTop: 10,
+                            }}>
+                            Make sure videos have transcripts with word counts
+                          </Text>
+                        </View>
+                      );
+                    }
+                    return availableWords.map((word, index) => {
+                      const selected = tempSelectedWords.has(word);
+                      const disabled = tempSelectedWords.size >= 2 && !selected;
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.wordChipModal,
+                            selected && styles.wordChipModalSelected,
+                            disabled && styles.wordChipModalDisabled,
+                          ]}
+                          onPress={() => toggleWordSelection(word)}
+                          disabled={disabled}
+                          activeOpacity={0.7}>
+                          <Text
+                            style={[
+                              styles.wordChipModalText,
+                              selected && styles.wordChipModalTextSelected,
+                              disabled && styles.wordChipModalTextDisabled,
+                            ]}>
+                            {word}
+                          </Text>
+                          {selected && (
+                            <Icon
+                              name="check"
+                              size={16}
+                              color="white"
+                              style={{marginLeft: 4}}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    });
+                  })()}
+                </View>
+              </ScrollView>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setTempSelectedWords(new Set());
+                    setShowWordPicker(false);
+                  }}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.modalButton,
+                    styles.applyButton,
+                    {opacity: tempSelectedWords.size > 0 ? 1 : 0.5},
+                  ]}
+                  onPress={applySelectedWords}
+                  disabled={tempSelectedWords.size === 0}>
+                  <Text style={styles.applyButtonText}>Apply</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -1136,94 +1125,134 @@ const DataAnalysisLineGraph = () => {
 };
 const styles = StyleSheet.create({
   btnStyle: {
-    width: Styles.windowWidth * 0.22,
+    width: '100%',
+    minWidth: 120,
+    maxWidth: 180,
+    paddingVertical: 10,
+    backgroundColor: Styles.MHMRBlue,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   iconContainer: {
     justifyContent: 'center',
+    flexDirection: 'row',
   },
   modalView: {
     margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
+    padding: 24,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 8,
+    minWidth: 300,
+    maxWidth: 500,
+    width: '90%',
+    minHeight: 320,
+    maxHeight: 600,
+    alignSelf: 'center',
   },
   modalText: {
-    marginBottom: 15,
+    marginBottom: 10,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#222',
   },
   videoIDText: {
     fontSize: 16,
-    color: 'blue',
+    color: Styles.MHMRBlue,
+    fontWeight: 'bold',
   },
   dateText: {
-    fontSize: 16,
-    color: 'black',
+    fontSize: 15,
+    color: '#444',
   },
   videoItemContainer: {
-    marginVertical: 10,
+    marginVertical: 8,
   },
   navigationContainer: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+    marginBottom: 10,
+    gap: 10,
   },
   dropdown: {
-    width: '40%',
-    paddingHorizontal: 20,
-    backgroundColor: '#DBDBDB',
-    borderRadius: 22,
+    width: '45%',
+    paddingHorizontal: 10,
+    backgroundColor: '#F0F2F5',
+    borderRadius: 18,
+    minHeight: 44,
+    marginHorizontal: 5,
   },
   filterTitle: {
-    fontSize: 25,
+    fontSize: 22,
     marginLeft: '5%',
-    marginTop: 5,
+    marginTop: 10,
+    fontWeight: 'bold',
+    color: '#222',
   },
   filterContainer: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
+    width: '100%',
+    marginTop: 10,
+    marginBottom: 10,
+    gap: 10,
+  },
+  dropdownGroup: {
+    flex: 1,
+    minWidth: 120,
+    marginHorizontal: 6,
   },
   dropdownLabel: {
-    fontSize: 20,
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 4,
+    fontWeight: '600',
   },
   periodDropdown: {
     width: '100%',
-    paddingHorizontal: 20,
-    backgroundColor: '#DBDBDB',
-    borderRadius: 22,
+    paddingHorizontal: 10,
+    backgroundColor: '#F0F2F5',
+    borderRadius: 18,
+    minHeight: 44,
+    marginVertical: 2,
   },
   overlayArrow: {
     position: 'absolute',
     zIndex: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 30,
-    padding: 5,
-    top: windowHeight > 800 ? '40%' : '45%', // Adjust for taller screens
+    padding: 2,
+    top: '40%',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   legendContainer: {
-    position: 'absolute',
-    right: 20,
-    top: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#eee',
+    marginLeft: 10,
   },
   legendItem: {
     flexDirection: 'row',
@@ -1234,44 +1263,64 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     marginRight: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#bbb',
   },
   legendText: {
-    fontSize: 12,
-    color: 'black',
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '500',
   },
   wordSelectionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: 8,
   },
   selectedWordsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginRight: 10,
+    gap: 8,
   },
   wordChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#F0F2F5',
     borderRadius: 15,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     marginRight: 8,
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
   },
   wordColorIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     marginRight: 8,
   },
   wordChipText: {
-    fontSize: 14,
-    color: 'black',
+    fontSize: 15,
+    color: '#222',
+    fontWeight: '600',
   },
   removeWordButton: {
     padding: 2,
+    marginLeft: 4,
+    backgroundColor: '#d9534f',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 20,
+    height: 20,
   },
   addWordButton: {
     flexDirection: 'row',
@@ -1281,11 +1330,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 15,
     marginLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   addWordButtonText: {
     color: 'white',
     fontSize: 16,
     marginLeft: 5,
+    fontWeight: '600',
   },
   wordOption: {
     paddingVertical: 15,
@@ -1316,8 +1371,9 @@ const styles = StyleSheet.create({
   },
   wordOptionText: {
     fontSize: 16,
-    color: 'black',
+    color: '#222',
     flex: 1,
+    fontWeight: '500',
   },
   wordOptionDisabled: {
     color: '#ccc',
@@ -1327,11 +1383,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 5,
     fontStyle: 'italic',
+    fontWeight: '400',
   },
   modalSubtext: {
-    marginBottom: 15,
+    marginBottom: 10,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 15,
     color: '#666',
   },
   modalButtonContainer: {
@@ -1339,12 +1396,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginTop: 20,
+    gap: 10,
   },
   modalButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 25,
     marginHorizontal: 5,
+    alignItems: 'center',
   },
   cancelButton: {
     backgroundColor: '#f0f0f0',
@@ -1363,6 +1422,83 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  chipGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    marginBottom: 10,
+    minHeight: 60,
+  },
+  wordChipModal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F5',
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    margin: 4,
+    minWidth: 60,
+    minHeight: 36,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  wordChipModalSelected: {
+    backgroundColor: Styles.MHMRBlue,
+  },
+  wordChipModalDisabled: {
+    opacity: 0.5,
+  },
+  wordChipModalText: {
+    fontSize: 16,
+    color: '#222',
+    fontWeight: '500',
+  },
+  wordChipModalTextSelected: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  wordChipModalTextDisabled: {
+    color: '#bbb',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    // Remove centering here so only the modalView content is centered
+  },
+  centeredModalView: {
+    width: '90%',
+    height: '50%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 8,
+    minWidth: 300,
+    maxWidth: 500,
+    minHeight: 320,
+    maxHeight: 600,
+    justifyContent: 'flex-start',
+  },
+  iconButton: {
+    padding: 5,
   },
 });
 
