@@ -293,12 +293,7 @@ const ViewRecordings = ({selected, setSelected}) => {
     const video_id = video._id.toHexString(); // Convert the video ID to a string
     return videoSetVideoIDs.indexOf(video_id) !== -1; // Check if the video ID is in the video set
   };
-  const isVideoInSet = (video: VideoData) => {
-    const video_id = video._id.toHexString(); // Convert the video ID to a string
-    return videoSetVideoIDs.indexOf(video_id) !== -1; // Check if the video ID is in the video set
-  };
 
-  //checks if video is in a set at all, and list the name of the sets
   //checks if video is in a set at all, and list the name of the sets
   const isVideoInAnySet = (video: VideoData) => {
     const video_id = video._id.toHexString(); // Convert the video ID to a string
@@ -310,7 +305,6 @@ const ViewRecordings = ({selected, setSelected}) => {
       }
     });
     return videoSetNames;
-  };
   };
 
   const deleteAllVideoDataObjects = async () => {
@@ -1085,16 +1079,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                                       Video already in set.
                                     </Text>
                                   </View>
-                                    <Text
-                                      style={{
-                                        color: 'white',
-                                        fontSize: 18,
-                                        padding: 2,
-                                        paddingHorizontal: 5,
-                                      }}>
-                                      Video already in set.
-                                    </Text>
-                                  </View>
                                 ) : (
                                   <CheckBox
                                     uncheckedColor="white"
@@ -1310,12 +1294,6 @@ const ViewRecordings = ({selected, setSelected}) => {
                               return null; // If sentiment has already been displayed, return null
                             })}
                           </ScrollView>
-                          {video.numericScale !== 'null' && (
-                            <Text style={{color: 'black', fontSize: 16}}>
-                              Numeric pain rating:{' '}
-                              {video.numericScale.toFixed(1)}
-                            </Text>
-                          )}
 
                           {video.numericScale !== 'null' && (
                             <Text style={{color: 'black', fontSize: 16}}>
@@ -1348,11 +1326,8 @@ const ViewRecordings = ({selected, setSelected}) => {
                                     : 'Edit markups'
                                 }
                                 onPress={() => {
-                                onPress={() => {
                                   navigation.navigate('Add or Edit Markups', {
                                     id: video._id,
-                                  });
-                                  console.log('video id:', video._id);
                                   });
                                   console.log('video id:', video._id);
                                 }}
