@@ -166,7 +166,7 @@ const DataAnalysis = () => {
         <Button
           disabled={isButtonDisabled()}
           onPress={() => navigation.navigate('Text Report')}
-          titleStyle={{fontSize: 40}}
+          titleStyle = {{fontSize: 40}}
           containerStyle={{
             width: Styles.windowHeight * 0.4,
             marginVertical: 10,

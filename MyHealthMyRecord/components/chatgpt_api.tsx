@@ -34,6 +34,14 @@ async function connectToChatGPT(inputText) {
   }
 }
 
+// Helper function to get pain sentiment from numeric scale
+const getPainSentiment = (painValue: number): string => {
+  if(painValue < 0.5) return 'no pain';
+  if(painValue < 1.5) return 'mild pain';
+  if (painValue < 2.5) return 'moderate pain';
+  return 'severe pain';
+};
+
 // Define sentiment weights
 type SentimentType = 'Very Negative' | 'Negative' | 'Neutral' | 'Positive' | 'Very Positive';
 const SENTIMENT_WEIGHTS = {
@@ -71,7 +79,11 @@ function normalizeBulletPoints(text) {
 }
 
 // New function to get sentiment for a single bullet point
-export const getSentimentForBulletPoint = async (bulletPoint) => {
+export const getSentimentForBulletPoint = async (
+  bulletPoint: string,
+  videoId?: string,
+  realm?: any
+) => {
   const inputText = `Analyze the sentiment of this point and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive.
   - Very Positive: Clear health improvements (significant pain reduction, excellent sleep, high energy, great mood)
   - Positive: Moderate improvements (manageable pain, decent sleep, good energy, stable mood)
@@ -80,7 +92,7 @@ export const getSentimentForBulletPoint = async (bulletPoint) => {
   - Very Negative: Severe issues (extreme pain, insomnia, exhaustion, severe distress)
   
   Label as Neutral ONLY if the statement has no relation to physical or mental wellbeing.
-  Consider both pain AND overall condition (sleep, energy, mood, stress levels). Point: "${bulletPoint}"`;
+  Consider overall condition (sleep, energy, mood, stress levels). Point: "${bulletPoint}"`;
   
   const data = await connectToChatGPT(inputText);
   
@@ -97,7 +109,20 @@ interface SentimentResult {
 }
 
 // New function to analyze bullet points and calculate weighted sentiment
-export const getWeightedSentiment = async (bulletPoints) => {
+export const getWeightedSentiment = async (bulletPoints, videoId?: string, realm?: any) => {
+  // Get pain sentiment from video object
+  let painSentiment = null;
+  if (videoId && realm) {
+    const objectId = new Realm.BSON.ObjectId(videoId);
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    painSentiment = video?.painSentiment;
+    
+    // Fallback: calculate from numericScale if painSentiment is null
+    if (!painSentiment && video?.numericScale !== undefined) {
+      painSentiment = getPainSentiment(video.numericScale);
+    }
+  }
+
   // Split the bullet points if they're in a single string
   const bulletPointArray = Array.isArray(bulletPoints) 
     ? bulletPoints 
@@ -112,32 +137,44 @@ export const getWeightedSentiment = async (bulletPoints) => {
       formattedBulletsWithSentiment: '',
     };
   }
-  
+
+  // Enhanced pain scale bias calculation
+  const getPainBias = (painSentiment: string): number => {
+    switch(painSentiment?.toLowerCase()) {
+      case 'severe pain': return -0.8;
+      case 'moderate pain': return -0.5;
+      case 'mild pain': return -0.2;
+      case 'no pain': return 0.2;
+      default: return 0;
+    }
+  };
+
   // Get sentiment for each bullet point
   const sentimentPromises = bulletPointArray.map(async (point): Promise<SentimentResult> => {
-    const sentiment = await getSentimentForBulletPoint(point.trim());
+    const sentiment = await getSentimentForBulletPoint(point.trim(), videoId, realm);
     return {
-        point: point.trim(),
-        sentiment,
-        weight: SENTIMENT_WEIGHTS[sentiment]
+      point: point.trim(),
+      sentiment,
+      weight: SENTIMENT_WEIGHTS[sentiment]
     };
   });
   
   const bulletSentiments = await Promise.all(sentimentPromises);
   
-  // Calculate weighted average
+  // Calculate weighted average with pain bias
   const totalWeight = bulletSentiments.reduce((sum, item) => sum + item.weight, 0);
-  const averageScore = totalWeight / bulletSentiments.length;
+  const painBias = getPainBias(painSentiment);
+  const averageScore = (totalWeight / bulletSentiments.length) + painBias;
   
+  console.log('Pain Level:', painSentiment, 'Pain Bias:', painBias, 'Average Score:', averageScore);
+
   // Convert score back to sentiment label
   const overallSentiment = scoreToSentiment(averageScore);
   
   const formattedBulletsWithSentiment = bulletSentiments
     .map(item => `• ${item.point}`)
-    //.map(item => `• ${item.point} [${item.sentiment}, ${item.weight}]`) //- displays the sentiment and score
     .join('\n');
 
-  // new AS
   const formattedOutput = `${formattedBulletsWithSentiment}`;  
   return {
     overallSentiment,
@@ -153,7 +190,8 @@ function getOptimalBulletPoints(wordCount) {
   const max = 7;
   return Math.min(max, Math.max(min, Math.floor(wordCount / 60)));
 }
-// Updated sendToChatGPT function with improved bullet point generation
+
+// Updated sendToChatGPT function - removes pain context
 export const sendToChatGPT = async (
   textFileName,
   transcript,
@@ -176,37 +214,45 @@ export const sendToChatGPT = async (
     return [];
   }
 
-  
-  
+  // Get pain sentiment from the video object
+  const objectId = new Realm.BSON.ObjectId(_id);
+  const video = realm.objectForPrimaryKey('VideoData', objectId);
+  let painSentiment = video?.painSentiment || null;
+
+  // Fallback: calculate from numericScale if painSentiment is null
+  if (!painSentiment && video?.numericScale !== undefined) {
+    painSentiment = getPainSentiment(video.numericScale);
+    
+    // Save the calculated painSentiment to the database
+    realm.write(() => {
+      video.painSentiment = painSentiment;
+    });
+  }
+
+  console.log('Using pain sentiment for analysis:', painSentiment);
+
   // Calculate optimal number of bullet points based on transcript length
   const transcriptWordCount = transcript.split(' ').length;
   const optimalBulletPoints = getOptimalBulletPoints(transcriptWordCount);
-  
+
   const inputTexts = [
     `Provide exactly ${optimalBulletPoints} bullet points of the main topics discussed in this video transcript: "${transcript}". 
     ONLY use the • character (Unicode U+2022) to begin each bullet point. Do not use hyphens (-), asterisks (*), or any other symbols.`,
+
     `Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
-    `Analyze the sentiment of this video transcript and return only one of the following labels:
-     Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. 
-     Use Neutral **only** when the content is purely factual, objective, and emotionally uncharged. Avoid using Neutral if the statement
-     reflects any degree of emotional weight, opinion, or implication. 
-
-    - Very Positive: Significant improvements in pain AND overall wellbeing (energy/sleep/mood)
-    - Positive: Some improvements in pain OR general wellbeing
-    - Neutral: Content unrelated and does not have strong connection to health/wellbeing
-    - Negative: Difficulties with pain OR declining general wellbeing
-    - Very Negative: Severe pain AND significant overall health struggles
     
-    Consider:
-    - Pain levels and management
-    - Sleep quality
-    - Energy levels/fatigue
-    - Stress/anxiety levels
-    - Mood and emotional state
-    - General physical wellbeing
+    `Analyze the sentiment of this video transcript and return only one of the following labels:
+     Very Negative, Negative, Neutral, Positive, or Very Positive. 
+     
+     Consider these factors:
+     - Sleep quality and energy levels
+     - Mood and emotional state
+     - Stress/anxiety levels
+     - Overall physical wellbeing
+     - Treatment effectiveness
 
-      Focus specifically on pain-related impacts and outcomes. Label as Neutral if the statement doesn't relate to pain experience.
-      Transcript: "${transcript}"`,
+    Return ONLY the sentiment label (Very Negative, Negative, Neutral, Positive, or Very Positive).
+    Transcript: "${transcript}"`,
   ];
 
   try {
@@ -246,16 +292,17 @@ export const sendToChatGPT = async (
     if (bulletPoints) {
       try {
         const normalizedBullets = normalizeBulletPoints(bulletPoints);
-        const weightedSentimentResult = await getWeightedSentiment(normalizedBullets);
+        const weightedSentimentResult = await getWeightedSentiment(
+          normalizedBullets,
+          _id,
+          realm
+        );
         
-        // Update with weighted sentiment in a separate transaction
         realm.write(() => {
           const objectId = new Realm.BSON.ObjectId(_id);
           const video = realm.objectForPrimaryKey('VideoData', objectId);
           if (video) {
-            // Replace the original sentiment with the weighted sentiment
             video.sentiment = weightedSentimentResult.overallSentiment;
-            // Store additional sentiment data if needed
             video.sentimentScore = weightedSentimentResult.averageScore;
             video.bulletSentiments = JSON.stringify(weightedSentimentResult.bulletSentiments);
             video.tsOutputBullet = weightedSentimentResult.formattedBulletsWithSentiment;
@@ -278,7 +325,10 @@ export const sendToChatGPT = async (
 // Updated getSentimentFromChatGPT function with better error handling
 export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
   try {
-    const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. Avoid using neutral unless the entire transcript is neutral. Transcript: "${transcript}"`;
+    const inputText = `Analyze the sentiment of this video transcript and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive. 
+    
+    Transcript: "${transcript}"`;
+    
     const data = await connectToChatGPT(inputText);
     
     if (data?.choices && data.choices.length > 0) {
@@ -301,7 +351,7 @@ export const getSentimentFromChatGPT = async (transcript, realm, videoId) => {
   }
 };
 
-// Updated sendVideoSetToChatGPT function with improved bullet point quality
+// Updated sendVideoSetToChatGPT function
 export const sendVideoSetToChatGPT = async (
   realm,
   videoSetVideoIDs,
@@ -375,7 +425,8 @@ export const sendVideoSetToChatGPT = async (
       let weightedSentimentResult = null;
       if (bulletSummary) {
         try {
-          weightedSentimentResult = await getWeightedSentiment(bulletSummary);
+          // For video sets, we don't have a single video ID, so pass null
+          weightedSentimentResult = await getWeightedSentiment(bulletSummary, null, realm);
         } catch (error) {
           console.error('Error calculating weighted sentiment for video set:', error);
           // Continue with basic summaries even if sentiment analysis fails
@@ -406,13 +457,12 @@ export const sendVideoSetToChatGPT = async (
 };
 
 // Updated function to get more focused bullet points
-export const generateVideoSummary = async (transcript) => {
+export const generateVideoSummary = async (transcript, videoId?, realm?) => {
   try {
     const transcriptWordCount = transcript.split(' ').length;
     const maxSummaryWords = Math.ceil(transcriptWordCount * 0.2); // 20% of original length
     
     // Calculate optimal number of bullet points based on transcript length
-    // For short transcripts: fewer points, for longer ones: more points but still limited
     const minBulletPoints = 3;
     const maxBulletPoints = 7;
     const optimalBulletPoints = Math.min(maxBulletPoints, 
@@ -432,7 +482,6 @@ export const generateVideoSummary = async (transcript) => {
       connectToChatGPT(inputTextBullet),
       connectToChatGPT(inputTextSentence),
     ]);
-
     // Extract content safely with error checking
     const bulletContent = bulletResponse?.choices?.[0]?.message?.content || `• ${transcript}`;
     const sentenceContent = sentenceResponse?.choices?.[0]?.message?.content || transcript;

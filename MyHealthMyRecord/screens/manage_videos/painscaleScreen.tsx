@@ -28,7 +28,13 @@ const Painscale = () => {
   const [mcGillIsVisible, setMcGillIsVisible] = useState(false);
 
   const [value, setValue] = useState(video.numericScale);
-  // const [numericScale, setNumericScale] = video.numericScale;
+
+  const getPainSentiment = (painValue: number): string => {
+    if(painValue < 0.5) return 'no pain';
+    if(painValue < 1.5) return 'mild pain';
+    if (painValue < 2.5) return 'moderate pain';
+    return 'severe pain';
+  };
 
   const onPress = (index, severity_level, data, setData) => {
     const newData = [...data];
@@ -43,18 +49,23 @@ const Painscale = () => {
 
   const saveNumericScale = data => {
     if (video) {
+      console.log(`[${video.filename}] Saved pain scale: ${data} (${getPainSentiment(data)})`);
+  
       realm.write(() => {
         video.numericScale = data;
-      }
-    );
-  }
-}
-
+        video.painSentiment = getPainSentiment(data); 
+      });
+    }
+  };
+  
   const savePainScale = data => {
     const painscales = data.map(item => JSON.stringify(item));
     if (video) {
       realm.write(() => {
         video.painScale = painscales;
+        if (video.numericScale !== undefined) {
+          video.painSentiment = getPainSentiment(video.numericScale);
+        }
       });
     }
   };
@@ -100,6 +111,12 @@ const Painscale = () => {
 
   useEffect(() => {
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+    
+    if (video && video.numericScale !== undefined && !video.painSentiment) {
+      realm.write(() => {
+        video.painSentiment = getPainSentiment(video.numericScale);
+      });
+    }
   }, []);
 
   return (
@@ -132,7 +149,6 @@ const Painscale = () => {
           }}
           onSlidingComplete={value => {
             console.log(value.toFixed(1));
-            
             saveNumericScale(Number(value.toFixed(1)));
           }}
         />
@@ -156,17 +172,6 @@ const Painscale = () => {
         </View>
       </View>
 
-      {/* <View style={{paddingBottom: 30}}>
-        <FlatList
-          style={styles.container}
-          extraData={refreshFlatlist}
-          data={numericScale}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={props =>
-            renderItem({...props, data: numericScale, setData: setNumericScale})
-          }
-        />
-      </View> */}
       <View style={{alignSelf: 'center'}}>
         <Text style={{fontSize: 36, color: 'black'}}>
           McGill pain questionnaire
@@ -185,8 +190,6 @@ const Painscale = () => {
               style={{flexDirection: 'row'}}
               onPress={() => setMcGillIsVisible(!mcGillIsVisible)}>
               <Text>{mcGillIsVisible ? 'Hide' : 'Show'}</Text>
-
-              {/* <Text style={{fontSize: 20, fontWeight: 'bold'}}>Show +</Text> */}
               <Icon
                 name={
                   mcGillIsVisible ? 'keyboard-arrow-up' : 'keyboard-arrow-down'
@@ -220,8 +223,8 @@ const Painscale = () => {
           alignSelf: 'center',
         }}
         onPress={() => {
+          saveNumericScale(value);
           navigation.goBack();
-          // saveNumericScale(value);
         }}
         title="Save"
         color={MHMRBlue}
@@ -256,7 +259,5 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
-
-
 
 export default Painscale;
