@@ -501,7 +501,7 @@ const RecordVideo = () => {
               if (videoId) {
                 navigation.navigate('Manage Videos', {
                   screen: 'Add or Edit Markups',
-                  params: {id: videoId.toString()},
+                  params: {id: videoId},
                 });
                 setShowCamera(true);
               } else {
