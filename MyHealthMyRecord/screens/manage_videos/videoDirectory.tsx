@@ -1,7 +1,5 @@
 import {ParamListBase, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import axios, {AxiosError, AxiosRequestConfig} from 'axios';
-import {ReturnCode} from 'ffmpeg-kit-react-native';
 
 import {
   Alert,
@@ -36,11 +34,11 @@ import {base64} from 'rfc4648';
 const worried = require('../../assets/images/emojis/worried.png');
 import Config from 'react-native-config';
 import NetInfo from '@react-native-community/netinfo';
-import {useNetwork} from '../../components/networkProvider';
-import {getAuth, getTranscript} from '../../components/stt_api';
-import {sendToChatGPT} from '../../components/chatgpt_api';
-import {useDropdownContext} from '../../components/videoSetProvider';
-import {useLoader} from '../../components/loaderProvider';
+import {useNetwork} from '../../providers/networkProvider';
+import {getAuth, getTranscript} from '../../services/stt_api';
+import {sendToChatGPT} from '../../services/chatgpt_api';
+import {useDropdownContext} from '../../providers/videoSetProvider';
+import {useLoader} from '../../providers/loaderProvider';
 import {processVideos} from '../../components/processVideos';
 import {windowWidth, MHMRBlue} from '../../assets/util/styles';
 import {

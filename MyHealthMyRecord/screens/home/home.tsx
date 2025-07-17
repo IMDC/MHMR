@@ -16,10 +16,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
-import {useNetwork} from '../components/networkProvider';
+import {useNetwork} from '../../providers/networkProvider';
 //import test from '../assets/images/MHMRLogo_NOBG.png';
-const logo = require('../assets/images/MHMRLogo_NOBG.png');
-import * as Styles from '../assets/util/styles';
+const logo = require('../../assets/images/MHMRLogo_NOBG.png');
+import * as Styles from '../../assets/util/styles';
 
 const Home = () => {
   const {online} = useNetwork();

@@ -11,32 +11,32 @@ import {PermissionsAndroid, Platform, Touchable} from 'react-native';
 import RNFS from 'react-native-fs';
 import {Icon, Button, Dialog, Input} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
-import {useQuery, useRealm, VideoData, VideoSet} from '../models/VideoData';
+import {useQuery, useRealm, VideoData, VideoSet} from '../../models/VideoData';
 import Realm from 'realm';
 import {createRealmContext} from '@realm/react';
 import {
   getAuth,
   getTranscript,
   transcribeWithWhisper,
-} from '../components/stt_api';
+} from '../../services/stt_api';
 import {
   detectCrisisContent,
   generateCrisisWarning,
   getCrisisResourcesText,
   CrisisDetectionResult,
-} from '../components/crisisDetection';
-import {useLoader} from '../components/loaderProvider';
+} from '../../components/crisisDetection';
+import {useLoader} from '../../providers/loaderProvider';
 import {
   useDropdownContext,
   DropdownContextType,
-} from '../components/videoSetProvider';
-import VideoSetDropdown from '../components/videoSetDropdown';
+} from '../../providers/videoSetProvider';
+import VideoSetDropdown from '../../components/videoSetDropdown';
 import {
   bottomNavBarHeight,
   NavBarGrey,
   screenWidth,
   MHMRBlue,
-} from '../assets/util/styles';
+} from '../../assets/util/styles';
 
 const RecordVideo = () => {
   const {videoSetVideoIDs, videoSetValue, setVideoSetValue, handleNewSet} =

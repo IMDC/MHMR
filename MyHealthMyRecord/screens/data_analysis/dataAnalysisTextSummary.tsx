@@ -12,18 +12,18 @@ import {
   Platform,
 } from 'react-native';
 import {useRealm} from '../../models/VideoData';
-import {useDropdownContext} from '../../components/videoSetProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import * as Styles from '../../assets/util/styles';
 import {
   getSentimentFromChatGPT,
   sendToChatGPT,
   sendVideoSetToChatGPT,
-} from '../../components/chatgpt_api';
+} from '../../services/chatgpt_api';
 import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
-import {useNetwork} from '../../components/networkProvider';
-import {useLoader} from '../../components/loaderProvider';
+import {useNetwork} from '../../providers/networkProvider';
+import {useLoader} from '../../providers/loaderProvider';
 
 if (
   Platform.OS === 'android' &&

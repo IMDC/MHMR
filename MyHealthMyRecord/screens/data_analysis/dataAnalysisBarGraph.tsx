@@ -21,8 +21,8 @@ import {BarChart, Grid, YAxis, XAxis} from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
 import * as Styles from '../../assets/util/styles';
 import {useSetLineGraphData} from '../../components/lineGraphData';
-import {useDropdownContext} from '../../components/videoSetProvider';
-import {useWordList} from '../../components/wordListProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
+import {useWordList} from '../../providers/wordListProvider';
 import WordRemovalModal from '../../components/wordRemovalModal';
 
 const windowWidth = Dimensions.get('window').width;

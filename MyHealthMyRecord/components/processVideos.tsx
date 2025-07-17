@@ -1,5 +1,5 @@
-import {processMultipleTranscripts} from './stt_api';
-import {sendToChatGPT} from './chatgpt_api';
+import {processMultipleTranscripts} from '../services/stt_api';
+import {sendToChatGPT} from '../services/chatgpt_api';
 import {stopWords} from '../assets/util/words';
 import {extractMedicalPhrases, ExtractedPhrase} from './ngramExtractor';
 

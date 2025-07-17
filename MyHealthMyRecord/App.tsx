@@ -14,8 +14,8 @@ import {
   NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import Home from './screens/home';
-import RecordVideo from './screens/recordVideo';
+import Home from './screens/home/home';
+import RecordVideo from './screens/home/recordVideo';
 import ViewRecordings from './screens/manage_videos/videoDirectory';
 import AnnotationMenu from './screens/manage_videos/annotationMenu';
 import ReviewAnnotations from './screens/manage_videos/reviewAnnotations';
@@ -25,7 +25,7 @@ import EmotionTagging from './screens/manage_videos/emotionTagging';
 import TextComments from './screens/manage_videos/textComments';
 import FullscreenVideo from './screens/fullscreenVideo';
 import Painscale from './screens/manage_videos/painscaleScreen';
-import Help from './screens/help';
+import Help from './screens/home/help';
 import Dashboard from './screens/dashboard/dashboard';
 import DataAnalysis from './screens/data_analysis/dataAnalysis';
 import DataAnalysisBarGraph from './screens/data_analysis/dataAnalysisBarGraph';
@@ -34,19 +34,16 @@ import DataAnalysisTextSummary from './screens/data_analysis/dataAnalysisTextSum
 import DataAnalysisWordCloud from './screens/data_analysis/dataAnalysisWordCloud';
 import * as Styles from './assets/util/styles';
 import {Icon} from '@rneui/themed';
-import {getAuth} from './components/stt_api';
-import {NetworkProvider} from './components/networkProvider';
-import {VideoSetProvider} from './components/videoSetProvider';
-import {LoaderProvider} from './components/loaderProvider';
-import ManageVideoSet from './screens/dashboard/manageVideoSet';
-import Video from 'react-native-video';
-import {WordListProvider} from './components/wordListProvider';
-import {useNetwork} from './components/networkProvider';
-import OfflineAlert from './components/offlineAlert';
+import {getAuth} from './services/stt_api';
+import {NetworkProvider, useNetwork} from './providers/networkProvider';
+import {LoaderProvider} from './providers/loaderProvider';
+import {VideoSetProvider} from './providers/videoSetProvider';
+import {WordListProvider} from './providers/wordListProvider';
 import {
   VideoPresenceProvider,
   useVideoPresence,
-} from './components/VideoPresenceProvider';
+} from './providers/VideoPresenceProvider';
+import OfflineAlert from './components/offlineAlert';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
@@ -264,7 +261,6 @@ function AppContent() {
             }}
           />
         )}
-      
       </Tab.Navigator>
     </NavigationContainer>
   );

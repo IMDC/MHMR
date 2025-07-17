@@ -5,7 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import Loader from './Loader';
+import Loader from '../components/Loader';
 
 interface LoaderContextType {
   showLoader: (message: string) => void;

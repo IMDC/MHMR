@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import OnlineDialog from './onlineDialog';
+import OnlineDialog from '../components/onlineDialog';
 
 interface NetworkContextType {
   online: boolean;

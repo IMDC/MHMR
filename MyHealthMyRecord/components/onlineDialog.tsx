@@ -2,10 +2,10 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, Alert} from 'react-native';
 import {Dialog} from '@rneui/themed';
 import {useRealm} from '../models/VideoData';
-import {getAuth, getTranscript} from './stt_api';
-import {sendToChatGPT} from './chatgpt_api';
+import {getAuth, getTranscript} from '../services/stt_api';
+import {sendToChatGPT} from '../services/chatgpt_api';
 import {VideoData} from '../models/VideoData';
-import {useLoader} from './loaderProvider';
+import {useLoader} from '../providers/loaderProvider';
 import {processVideos} from './processVideos';
 
 const OnlineDialog = ({onlineDialogVisible, toggleOnlineDialog}) => {

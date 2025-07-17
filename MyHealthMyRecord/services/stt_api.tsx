@@ -4,7 +4,7 @@ import RNFS from 'react-native-fs';
 import Config from 'react-native-config';
 import {Buffer} from 'buffer';
 import {generateVideoSummary} from './chatgpt_api';
-import {detectCrisisContent} from './crisisDetection';
+import {detectCrisisContent} from '../components/crisisDetection';
 
 // Function to obtain authorization token
 export const getAuth = async () => {

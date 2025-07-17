@@ -20,9 +20,9 @@ import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../../assets/util/styles';
 import VideoSetDropdown from '../../components/videoSetDropdown';
-import {useDropdownContext} from '../../components/videoSetProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
 import {useSetLineGraphData} from '../../components/lineGraphData';
-import {useWordList} from '../../components/wordListProvider';
+import {useWordList} from '../../providers/wordListProvider';
 import TranscriptUploader from '../../components/TranscriptUploader';
 import DataTransfer from '../../components/dataTransfer';
 

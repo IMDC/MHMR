@@ -20,9 +20,9 @@ import * as Styles from '../../assets/util/styles';
 import {ParamListBase, useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useRealm} from '../../models/VideoData';
-import {useDropdownContext} from '../../components/videoSetProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
 import {useSetLineGraphData} from '../../components/lineGraphData';
-import {useWordList} from '../../components/wordListProvider';
+import {useWordList} from '../../providers/wordListProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;

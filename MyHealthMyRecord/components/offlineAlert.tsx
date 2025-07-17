@@ -1,5 +1,5 @@
 import {Text, View} from 'react-native';
-import {useNetwork} from './networkProvider';
+import {useNetwork} from '../providers/networkProvider';
 import React from 'react';
 import {Icon} from '@rneui/themed';
 import * as Styles from '../assets/util/styles';

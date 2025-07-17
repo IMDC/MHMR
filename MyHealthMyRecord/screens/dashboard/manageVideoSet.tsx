@@ -15,7 +15,7 @@ import {Button, Icon} from '@rneui/themed';
 import RNFS from 'react-native-fs';
 import {useRealm, VideoData} from '../../models/VideoData';
 import * as Styles from '../../assets/util/styles';
-import {useDropdownContext} from '../../components/videoSetProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
 
 const ManageVideoSet = () => {
   const {videoSetVideoIDs, currentVideoSet, currentSetID, handleDeleteSet} =
@@ -107,9 +107,8 @@ const ManageVideoSet = () => {
   };
 
   const handleDelete = async () => {
-   
     await handleDeleteSet(currentVideoSet);
-     navigation.goBack();
+    navigation.goBack();
   };
 
   if (!currentVideoSet) {

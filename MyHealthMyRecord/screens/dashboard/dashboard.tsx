@@ -19,8 +19,8 @@ import NetInfo from '@react-native-community/netinfo';
 import VideoSetDropdown from '../../components/videoSetDropdown';
 import * as Styles from '../../assets/util/styles';
 import {ObjectId} from 'bson';
-import {useDropdownContext} from '../../components/videoSetProvider';
-import {useLoader} from '../../components/loaderProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
+import {useLoader} from '../../providers/loaderProvider';
 import {processVideos} from '../../components/processVideos';
 
 function Dashboard() {

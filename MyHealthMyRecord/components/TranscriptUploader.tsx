@@ -9,7 +9,7 @@ import Realm from 'realm';
 import {
   useDropdownContext,
   DropdownContextType,
-} from '../components/videoSetProvider';
+} from '../providers/videoSetProvider';
 
 interface TranscriptUploaderProps {
   onUploadComplete?: () => void;
@@ -81,7 +81,9 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
 
         if (videoDataList.length > 0) {
           // Sort the generated dates to find the earliest and latest
-          const sortedDates = generatedDates.sort((a, b) => a.getTime() - b.getTime());
+          const sortedDates = generatedDates.sort(
+            (a, b) => a.getTime() - b.getTime(),
+          );
           const earliestDate = sortedDates[0];
           const latestDate = sortedDates[sortedDates.length - 1];
 
@@ -94,7 +96,7 @@ const TranscriptUploader = ({onUploadComplete}: TranscriptUploaderProps) => {
             isAnalyzed: false,
             isSummaryGenerated: false,
             earliestVideoDateTime: earliestDate, // Set earliest date
-            latestVideoDateTime: latestDate,    // Set latest date
+            latestVideoDateTime: latestDate, // Set latest date
           });
 
           setCurrentVideos(videoDataList);

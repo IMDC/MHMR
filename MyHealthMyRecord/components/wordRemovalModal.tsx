@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {Button, CheckBox} from '@rneui/themed';
 import * as Styles from '../assets/util/styles';
-import {useWordList} from '../components/wordListProvider';
+import {useWordList} from '../providers/wordListProvider';
 import {Input} from '@rneui/base';
 
 const MemoizedCheckBox = React.memo(({title, checked, onPress}) => (

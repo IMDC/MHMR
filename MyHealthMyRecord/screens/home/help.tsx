@@ -67,21 +67,21 @@ function Help() {
                       <Text>1. Go to the "Manage Videos" tab.</Text>
                       <Text>2. Tap the "Select Videos" button.</Text>
                       <Image
-                        source={require('../assets/images/add1.png')}
+                        source={require('../../assets/images/add1.png')}
                         style={{width: '100%', resizeMode: 'contain'}}
                       />
                       <Text>3. Tap the videos you want to add to a set.</Text>
                       <Image
-                        source={require('../assets/images/add2.png')}
+                        source={require('../../assets/images/add2.png')}
                         style={{width: '100%', resizeMode: 'contain'}}
                       />
                       <Text>4. Tap the "Create new video set" button.</Text>
                       <Image
-                        source={require('../assets/images/add3.png')}
+                        source={require('../../assets/images/add3.png')}
                         style={styles.screenshot}
                       />
                       <Image
-                        source={require('../assets/images/add4.png')}
+                        source={require('../../assets/images/add4.png')}
                         style={styles.screenshotLarge}
                       />
                       <Text>5. Give your set a name and confirm.</Text>
@@ -91,7 +91,7 @@ function Help() {
                       <Text>1. Go to the "Manage Videos" tab.</Text>
                       <Text>2. Tap the "Manage Video Set" button.</Text>
                       <Image
-                        source={require('../assets/images/removing1.png')}
+                        source={require('../../assets/images/removing1.png')}
                         style={styles.screenshot}
                       />
                       <Text>
@@ -103,7 +103,7 @@ function Help() {
                         button.
                       </Text>
                       <Image
-                        source={require('../assets/images/removing2.png')}
+                        source={require('../../assets/images/removing2.png')}
                         style={styles.screenshot}
                       />
                     </Subsection>
@@ -142,14 +142,14 @@ function Help() {
                         want to annotate.
                       </Text>
                       <Image
-                        source={require('../assets/images/markups1.png')}
+                        source={require('../../assets/images/markups1.png')}
                         style={styles.screenshot}
                       />
                       <Text>
                         3. Use the on-screen tools to add markups to the video.
                       </Text>
                       <Image
-                        source={require('../assets/images/markups2.png')}
+                        source={require('../../assets/images/markups2.png')}
                         style={styles.screenshotTall}
                       />
                       <Text>

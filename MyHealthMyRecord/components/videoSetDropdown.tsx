@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Alert} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
-import {useDropdownContext} from './videoSetProvider';
+import {useDropdownContext} from '../providers/videoSetProvider';
 import {VideoData, useQuery, useRealm} from '../models/VideoData';
 import * as Styles from '../assets/util/styles';
 import {Button, Dialog, Input} from '@rneui/themed';
@@ -43,13 +43,19 @@ const VideoSetDropdown = ({
   useEffect(() => {
     const shouldShowCreateNew = route.name === 'Record Video';
     const formattedDropdown = [
-      ...(shouldShowCreateNew ? [{
-        label: "+ Create New",
-        value: "create_new",
-        id: "create_new",
-      }] : []),
+      ...(shouldShowCreateNew
+        ? [
+            {
+              label: '+ Create New',
+              value: 'create_new',
+              id: 'create_new',
+            },
+          ]
+        : []),
       ...videoSets.map(set => ({
-        label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+        label: `${set.name}\n\nVideo Count: ${
+          set.videoIDs.length
+        }\nDate Range: ${
           set.earliestVideoDateTime.toLocaleString().split(',')[0]
         } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
         value: set._id.toString(),
@@ -69,12 +75,16 @@ const VideoSetDropdown = ({
     const videoObjs = videoIDs.map(id =>
       realm.objects('VideoData').find(video => video._id.toString() === id),
     );
-  
-    const unconvertedVideos = videoObjs.filter(video => video?.isConverted === false);
-    const convertedVideos = videoObjs.filter(video => video?.isConverted === true);
-  
+
+    const unconvertedVideos = videoObjs.filter(
+      video => video?.isConverted === false,
+    );
+    const convertedVideos = videoObjs.filter(
+      video => video?.isConverted === true,
+    );
+
     let newSet, newSetCopy;
-  
+
     // Realm write must ONLY touch Realm
     realm.write(() => {
       newSet = realm.create('VideoSet', {
@@ -88,24 +98,25 @@ const VideoSetDropdown = ({
         isSummaryGenerated: false,
         earliestVideoDateTime: videoObjs[0].datetimeRecorded,
         latestVideoDateTime: videoObjs[videoObjs.length - 1].datetimeRecorded,
-        isAnalyzed: unconvertedVideos.length === 0 || convertedVideos.length > 0,
+        isAnalyzed:
+          unconvertedVideos.length === 0 || convertedVideos.length > 0,
         isCurrent: true, // also set as current
       });
-  
+
       const allSets = realm.objects('VideoSet');
       allSets.forEach(set => {
         if (set._id.toHexString() !== newSet._id.toHexString()) {
           set.isCurrent = false;
         }
       });
-  
+
       newSetCopy = {
         _id: newSet._id,
         name: newSet.name,
         videoIDs: [...newSet.videoIDs],
       };
     });
-  
+
     // React state updates must happen AFTER Realm write
     const updatedDropdown = [
       {
@@ -114,20 +125,21 @@ const VideoSetDropdown = ({
         id: 'create_new',
       },
       ...realm.objects('VideoSet').map(set => ({
-        label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+        label: `${set.name}\n\nVideo Count: ${
+          set.videoIDs.length
+        }\nDate Range: ${
           set.earliestVideoDateTime.toLocaleString().split(',')[0]
         } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
         value: set._id.toString(),
         id: set._id,
       })),
     ];
-  
+
     setLocalDropdown(updatedDropdown);
     setVideoSetValue(newSetCopy._id.toString());
     handleNewSet(newSet);
     onVideoSetChange(newSetCopy._id.toString());
   };
-  
 
   const clearVideoSet = () => {
     setVideoSetVideoIDs([]);
@@ -145,26 +157,27 @@ const VideoSetDropdown = ({
     }
   };
 
-
   const refreshDropdown = () => {
     const updatedDropdown = [
       {
-        label: "+ Create New",
-        value: "create_new",
-        id: "create_new",
+        label: '+ Create New',
+        value: 'create_new',
+        id: 'create_new',
       },
       ...videoSets.map(set => ({
-        label: `${set.name}\n\nVideo Count: ${set.videoIDs.length}\nDate Range: ${
+        label: `${set.name}\n\nVideo Count: ${
+          set.videoIDs.length
+        }\nDate Range: ${
           set.earliestVideoDateTime.toLocaleString().split(',')[0]
         } - ${set.latestVideoDateTime.toLocaleString().split(',')[0]}`,
         value: set._id.toString(),
         id: set._id,
       })),
     ];
-  
+
     setLocalDropdown(updatedDropdown);
-  
-    if (updatedDropdown.length === 1) {  
+
+    if (updatedDropdown.length === 1) {
       setVideoSetValue(null);
       setVideoSetVideoIDs([]);
       onVideoSetChange(null);
@@ -241,9 +254,9 @@ const VideoSetDropdown = ({
           console.log('Current Video Set:', currentVideoSet);
           //console log if videoset isCurrent == true
           console.log(
-            'Current Video Set isCurrent:', currentVideoSet?.isCurrent,
+            'Current Video Set isCurrent:',
+            currentVideoSet?.isCurrent,
           );
-
 
           setVideoSetValue(item.value);
           handleChange(item.value, videoSets);

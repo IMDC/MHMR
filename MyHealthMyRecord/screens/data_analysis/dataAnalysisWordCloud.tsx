@@ -12,10 +12,10 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import WordCloud from 'rn-wordcloud';
 import {Dropdown} from 'react-native-element-dropdown';
 import * as Styles from '../../assets/util/styles';
-import {useWordList} from '../../components/wordListProvider';
+import {useDropdownContext} from '../../providers/videoSetProvider';
+import {useWordList} from '../../providers/wordListProvider';
 import {Button} from '@rneui/themed';
 import WordRemovalModal from '../../components/wordRemovalModal';
-import {useDropdownContext} from '../../components/videoSetProvider';
 import {useSetLineGraphData} from '../../components/lineGraphData';
 
 const DataAnalysisWordCloud = () => {
