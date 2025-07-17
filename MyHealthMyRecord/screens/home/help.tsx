@@ -11,6 +11,8 @@ import {
   Platform,
 } from 'react-native';
 
+import PromptSuggestion from '../../components/promptSuggestion';
+
 if (
   Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental

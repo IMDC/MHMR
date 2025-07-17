@@ -7,7 +7,7 @@ import {
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useCameraDevices, Camera} from 'react-native-vision-camera';
 import Video from 'react-native-video';
-import {PermissionsAndroid, Platform, Touchable} from 'react-native';
+import {PermissionsAndroid, Platform, Touchable, Modal} from 'react-native';
 import RNFS from 'react-native-fs';
 import {Icon, Button, Dialog, Input} from '@rneui/themed';
 import {View, TouchableOpacity, Text, StyleSheet, Alert} from 'react-native';
@@ -37,6 +37,7 @@ import {
   screenWidth,
   MHMRBlue,
 } from '../../assets/util/styles';
+import PromptSuggestion from '../../components/promptSuggestion';
 
 const RecordVideo = () => {
   const {videoSetVideoIDs, videoSetValue, setVideoSetValue, handleNewSet} =
@@ -84,6 +85,7 @@ const RecordVideo = () => {
     useState<CrisisDetectionResult | null>(null);
   const [currentVideoId, setCurrentVideoId] =
     useState<Realm.BSON.ObjectId | null>(null);
+  const [showPromptSuggestions, setShowPromptSuggestions] = useState(false);
 
   const handleNewSetNameChange = (name: React.SetStateAction<string>) => {
     setNewVideoSetName(name); // Update state when name changes
@@ -162,14 +164,6 @@ const RecordVideo = () => {
   };
 
   const realm = useRealm();
-  const result = useQuery('VideoData');
-
-  const getVideoNameCount = (baseName: string) => {
-    const videos = realm
-      .objects('VideoData')
-      .filtered(`title BEGINSWITH "${baseName}"`);
-    return videos.length; // This returns the number of videos that start with the base name
-  };
 
   const checkNameDuplicate = (name: string) => {
     const video = realm.objects('VideoData').filtered(`title == "${name}"`);
@@ -179,9 +173,6 @@ const RecordVideo = () => {
       return false;
     }
   };
-  //console.log("result:", result);
-  //const videodatas = useMemo(() => result.sorted("datetimeRecorded"), [result]);
-  //console.log("videodatas:", videodatas);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -699,6 +690,37 @@ const RecordVideo = () => {
 
   return (
     <View style={styles.container}>
+      {/* Prompt Suggestion Modal */}
+      <Modal
+        visible={showPromptSuggestions}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowPromptSuggestions(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderText}>
+                Entry Prompt Suggestions
+              </Text>
+              <TouchableOpacity onPress={() => setShowPromptSuggestions(false)}>
+                <Icon name="close" type="ionicon" size={28} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <PromptSuggestion />
+          </View>
+        </View>
+      </Modal>
+      {/* Top right button to open prompt suggestions */}
+      <View style={styles.topRightButtonContainer}>
+        <TouchableOpacity onPress={() => setShowPromptSuggestions(true)}>
+          <Icon
+            name="lightbulb-outline"
+            type="ionicon"
+            size={32}
+            color={MHMRBlue}
+          />
+        </TouchableOpacity>
+      </View>
       <Dialog isVisible={visible} onBackdropPress={toggleDialog}>
         <Dialog.Title title="Name this video:" />
         <Input
@@ -1097,8 +1119,6 @@ const RecordVideo = () => {
                   setDateTime(new Date().toString().split(' GMT-')[0]);
                   setNewVideoName(new Date().toString().split(' GMT-')[0]);
                   toggleDialog();
-                  // saveVideo(videoSource.path);
-                  // setSaveBtnState(true);
                 }}>
                 Save video
                 <Icon name="save" type="ionicon" color="white" />
@@ -1234,6 +1254,50 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+  },
+  topRightButtonContainer: {
+    position: 'absolute',
+    top: 30,
+    right: 24,
+    zIndex: 10,
   },
 });
 
