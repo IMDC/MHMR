@@ -1,10 +1,16 @@
-import React, {createContext, useContext, useState, useEffect} from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import {useRealm} from '../models/VideoData';
 import {stopWords} from '../assets/util/words';
 
 const WordListContext = createContext();
 
-export const WordListProvider = ({children}) => {
+export const WordListProvider = ({children}: {children: ReactNode}) => {
   const [wordList, setWordList] = useState([]);
   const [selectedWords, setSelectedWords] = useState(new Set());
   const [minFrequency, setMinFrequency] = useState(3);

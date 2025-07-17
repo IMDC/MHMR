@@ -1,4 +1,10 @@
-import React, {createContext, useContext, useState, useEffect} from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import OnlineDialog from './onlineDialog';
 
@@ -16,7 +22,7 @@ const NetworkContext = createContext<NetworkContextType>({
 
 export const useNetwork = (): NetworkContextType => useContext(NetworkContext);
 
-export const NetworkProvider: React.FC = ({children}) => {
+export const NetworkProvider = ({children}: {children: ReactNode}) => {
   const [online, setOnline] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [onlineDialogVisible, setOnlineDialogVisible] = useState(false);

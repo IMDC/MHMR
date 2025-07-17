@@ -1,5 +1,6 @@
 import {createRealmContext} from '@realm/react';
 import Realm from 'realm';
+import React, { ReactNode } from 'react';
 
 export class VideoData extends Realm.Object<VideoData> {
   _id!: Realm.BSON.ObjectId;
@@ -99,4 +100,9 @@ export const {RealmProvider, useRealm, useObject, useQuery} =
   createRealmContext({
     schema: [VideoData.schema, VideoSet.schema],
     deleteRealmIfMigrationNeeded: true,
-  });
+  }) as {
+    RealmProvider: React.FC<{children: ReactNode}>;
+    useRealm: typeof import('@realm/react').useRealm;
+    useObject: typeof import('@realm/react').useObject;
+    useQuery: typeof import('@realm/react').useQuery;
+  };

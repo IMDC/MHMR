@@ -1,4 +1,4 @@
-import React, {createContext, useState, useContext} from 'react';
+import React, {createContext, useState, useContext, ReactNode} from 'react';
 import {useRealm, VideoSet} from '../models/VideoData';
 
 export const VideoSetContext = createContext();
@@ -21,7 +21,7 @@ export interface DropdownContextType {
   setIsVideoSetSaved: (val: boolean) => void;
 }
 
-export const VideoSetProvider = ({children}) => {
+export const VideoSetProvider = ({children}: {children: ReactNode}) => {
   const realm = useRealm();
   const [videoSetValue, setVideoSetValue] = useState('');
   const [currentVideoSet, setCurrentVideoSet] = useState(null);

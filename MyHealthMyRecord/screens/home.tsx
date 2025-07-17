@@ -13,6 +13,7 @@ import {
   View,
   Button,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import {Icon, Image} from '@rneui/themed';
 import {useNetwork} from '../components/networkProvider';
@@ -45,6 +46,32 @@ const Home = () => {
           </Text>
         </View>
       )} */}
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 10,
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+        }}>
+        <TouchableOpacity onPress={() => navigation.navigate('Help')}>
+          <Icon
+            name="information-circle-outline"
+            size={24}
+            type="ionicon"
+            color={Styles.MHMRBlue}
+            // style={{width: Styles.bottomNavIconSize}}
+          />
+          <Text
+            style={{
+              textAlign: 'center',
+              justifyContent: 'center',
+              color: Styles.MHMRBlue,
+            }}>
+            Help
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <View
         style={{
           flexDirection: 'column',

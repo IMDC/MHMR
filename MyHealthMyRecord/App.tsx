@@ -43,6 +43,10 @@ import Video from 'react-native-video';
 import {WordListProvider} from './components/wordListProvider';
 import {useNetwork} from './components/networkProvider';
 import OfflineAlert from './components/offlineAlert';
+import {
+  VideoPresenceProvider,
+  useVideoPresence,
+} from './components/VideoPresenceProvider';
 
 const Stack = createNativeStackNavigator();
 const Tab: any = createBottomTabNavigator();
@@ -54,6 +58,7 @@ function StackNav() {
       screenOptions={{headerStyle: {backgroundColor: Styles.NavBarGrey}}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Record Video" component={RecordVideo} />
+      <Stack.Screen name="Help" component={Help} />
     </Stack.Navigator>
   );
 }
@@ -148,6 +153,123 @@ function ManageVideosStack() {
     </Stack.Navigator>
   );
 }
+function AppContent() {
+  const {hasVideos} = useVideoPresence();
+  return (
+    <NavigationContainer>
+      <OfflineAlert />
+      <Tab.Navigator
+        initialRouteName="MyHealthMyRecord"
+        screenOptions={{
+          tabBarActiveTintColor: Styles.MHMRBlue,
+          tabBarInactiveTintColor: 'gray',
+          tabBarShowLabel: false,
+          tabBarStyle: {
+            height: Styles.bottomNavBarHeight,
+            backgroundColor: Styles.NavBarGrey,
+          },
+        }}>
+        <Tab.Screen
+          name="MyHealthMyRecord"
+          component={StackNav}
+          options={{
+            headerShown: false,
+            tabBarShowLabel: true,
+            tabBarLabel: 'Home',
+            tabBarLabelStyle: {
+              fontSize: 14,
+              fontWeight: 'bold',
+            },
+            tabBarIcon: ({color}: {color: string}) => (
+              <Icon
+                name="home-outline"
+                size={Styles.bottomNavIconSize}
+                type="ionicon"
+                color={color}
+                style={{width: Styles.bottomNavIconSize}}
+              />
+            ),
+          }}
+        />
+        {hasVideos && (
+          <Tab.Screen
+            name="Manage Videos"
+            component={ManageVideosStack}
+            options={{
+              headerShown: false,
+              tabBarShowLabel: true,
+              tabBarLabel: 'Manage Videos',
+              tabBarLabelStyle: {
+                fontSize: 14,
+                fontWeight: 'bold',
+              },
+              tabBarIcon: ({color}: {color: string}) => (
+                <Icon
+                  name="film-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={color}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
+          />
+        )}
+        {hasVideos && (
+          <Tab.Screen
+            name="Dashboard"
+            component={DashboardStack}
+            options={{
+              headerShown: false,
+              tabBarShowLabel: true,
+              tabBarLabel: 'Dashboard',
+              tabBarLabelStyle: {
+                fontSize: 14,
+                fontWeight: 'bold',
+              },
+              tabBarIcon: ({color}: {color: string}) => (
+                <Icon
+                  name="albums-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={color}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
+          />
+        )}
+        {hasVideos && (
+          <Tab.Screen
+            name="Analysis"
+            component={DataAnalysisStack}
+            tabBarShowLabel={false}
+            options={{
+              headerShown: false,
+              tabBarShowLabel: true,
+              tabBarLabel: 'Data Analysis',
+              tabBarLabelStyle: {
+                fontSize: 14,
+                fontWeight: 'bold',
+              },
+              tabBarIcon: ({color}: {color: string}) => (
+                <Icon
+                  name="bar-chart-outline"
+                  size={Styles.bottomNavIconSize}
+                  type="ionicon"
+                  color={color}
+                  style={{width: Styles.bottomNavIconSize}}
+                />
+              ),
+            }}
+          />
+        )}
+      
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
 function App() {
   const {online} = useNetwork();
   return (
@@ -156,136 +278,9 @@ function App() {
         <LoaderProvider>
           <VideoSetProvider>
             <WordListProvider>
-              <NavigationContainer>
-                <OfflineAlert />
-                <Tab.Navigator
-                  initialRouteName="MyHealthMyRecord"
-                  screenOptions={{
-                    tabBarActiveTintColor: Styles.MHMRBlue,
-                    tabBarInactiveTintColor: 'gray',
-                    tabBarShowLabel: false,
-                    tabBarStyle: {
-                      height: Styles.bottomNavBarHeight,
-                      backgroundColor: Styles.NavBarGrey,
-                    },
-                  }}>
-                  <Tab.Screen
-                    name="MyHealthMyRecord"
-                    component={StackNav}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Home',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="home-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                  {/* if there are no videos in the database. the other screens should not be accessible */}
-                  
-                  <Tab.Screen
-                    name="Manage Videos"
-                    component={ManageVideosStack}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Manage Videos',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="film-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                  <Tab.Screen
-                    name="Dashboard"
-                    component={DashboardStack}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Dashboard',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="albums-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                  <Tab.Screen
-                    name="Analysis"
-                    component={DataAnalysisStack}
-                    tabBarShowLabel={false}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Data Analysis',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="bar-chart-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-
-                  <Tab.Screen
-                    name="Help"
-                    component={Help}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Help',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="information-circle-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
-                </Tab.Navigator>
-              </NavigationContainer>
+              <VideoPresenceProvider>
+                <AppContent />
+              </VideoPresenceProvider>
             </WordListProvider>
           </VideoSetProvider>
         </LoaderProvider>
