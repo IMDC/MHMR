@@ -170,20 +170,19 @@ function App() {
                     },
                   }}>
                   <Tab.Screen
-                    name="Analysis"
-                    component={DataAnalysisStack}
-                    tabBarShowLabel={false}
+                    name="MyHealthMyRecord"
+                    component={StackNav}
                     options={{
                       headerShown: false,
                       tabBarShowLabel: true,
-                      tabBarLabel: 'Data Analysis',
+                      tabBarLabel: 'Home',
                       tabBarLabelStyle: {
                         fontSize: 14,
                         fontWeight: 'bold',
                       },
                       tabBarIcon: ({color}) => (
                         <Icon
-                          name="bar-chart-outline"
+                          name="home-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
                           color={color}
@@ -192,7 +191,30 @@ function App() {
                       ),
                     }}
                   />
-
+                  {/* if there are no videos in the database. the other screens should not be accessible */}
+                  
+                  <Tab.Screen
+                    name="Manage Videos"
+                    component={ManageVideosStack}
+                    options={{
+                      headerShown: false,
+                      tabBarShowLabel: true,
+                      tabBarLabel: 'Manage Videos',
+                      tabBarLabelStyle: {
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                      },
+                      tabBarIcon: ({color}) => (
+                        <Icon
+                          name="film-outline"
+                          size={Styles.bottomNavIconSize}
+                          type="ionicon"
+                          color={color}
+                          style={{width: Styles.bottomNavIconSize}}
+                        />
+                      ),
+                    }}
+                  />
                   <Tab.Screen
                     name="Dashboard"
                     component={DashboardStack}
@@ -217,19 +239,20 @@ function App() {
                     }}
                   />
                   <Tab.Screen
-                    name="MyHealthMyRecord"
-                    component={StackNav}
+                    name="Analysis"
+                    component={DataAnalysisStack}
+                    tabBarShowLabel={false}
                     options={{
                       headerShown: false,
                       tabBarShowLabel: true,
-                      tabBarLabel: 'Home',
+                      tabBarLabel: 'Data Analysis',
                       tabBarLabelStyle: {
                         fontSize: 14,
                         fontWeight: 'bold',
                       },
                       tabBarIcon: ({color}) => (
                         <Icon
-                          name="home-outline"
+                          name="bar-chart-outline"
                           size={Styles.bottomNavIconSize}
                           type="ionicon"
                           color={color}
@@ -238,28 +261,7 @@ function App() {
                       ),
                     }}
                   />
-                  <Tab.Screen
-                    name="Manage Videos"
-                    component={ManageVideosStack}
-                    options={{
-                      headerShown: false,
-                      tabBarShowLabel: true,
-                      tabBarLabel: 'Manage Videos',
-                      tabBarLabelStyle: {
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                      },
-                      tabBarIcon: ({color}) => (
-                        <Icon
-                          name="film-outline"
-                          size={Styles.bottomNavIconSize}
-                          type="ionicon"
-                          color={color}
-                          style={{width: Styles.bottomNavIconSize}}
-                        />
-                      ),
-                    }}
-                  />
+
                   <Tab.Screen
                     name="Help"
                     component={Help}
