@@ -27,6 +27,7 @@ import FullscreenVideo from './screens/fullscreenVideo';
 import Painscale from './screens/manage_videos/painscaleScreen';
 import Help from './screens/home/help';
 import Dashboard from './screens/dashboard/dashboard';
+import ManageVideoSet from './screens/dashboard/manageVideoSet';
 import DataAnalysis from './screens/data_analysis/dataAnalysis';
 import DataAnalysisBarGraph from './screens/data_analysis/dataAnalysisBarGraph';
 import DataAnalysisLineGraph from './screens/data_analysis/dataAnalysisLineGraph';
