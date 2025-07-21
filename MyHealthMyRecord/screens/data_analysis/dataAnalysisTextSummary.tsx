@@ -31,6 +31,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../../providers/networkProvider';
 import {useLoader} from '../../providers/loaderProvider';
 import {BSON} from 'realm';
+import {PieChart} from 'react-native-gifted-charts';
 
 // Define types for video and context
 interface Video {
@@ -112,6 +113,9 @@ const DataAnalysisTextSummary = () => {
   });
 
   const [openSections, setOpenSections] = React.useState<string[]>([]);
+  const [selectedSliceIndex, setSelectedSliceIndex] = useState<number | null>(
+    null,
+  );
 
   const sortData = [
     {label: 'All', value: 'all'},
@@ -224,52 +228,6 @@ const DataAnalysisTextSummary = () => {
 
     return filtered;
   };
-  //   <View>
-  //     <View style={styles.dropdownContainer}>
-  //       <Text style={styles.dropdownLabel}>Select report format:</Text>
-  //       <Dropdown
-  //         style={styles.dropdown}
-  //         data={[
-  //           {label: 'Bullet points', value: 'bullet'},
-  //           {label: 'Full sentences', value: 'sentence'},
-  //         ]}
-  //         labelField="label"
-  //         valueField="value"
-  //         placeholder="Select format"
-  //         value={reportFormat}
-  //         onChange={item => setReportFormat(item.value)}
-  //         selectedTextStyle={styles.dropdownItem}
-  //       />
-  //     </View>
-
-  //     <Text style={[styles.title, {textAlign: 'center'}]}>
-  //       {currentVideoSet?.name || 'Video set summary'}
-  //     </Text>
-  //     <View style={{padding: 10}}>
-  //       <Text style={styles.output}>{videoSetSummary}</Text>
-  //     </View>
-
-  //     <View style={styles.sentimentCountsContainer}>
-  //       <Text style={styles.sentimentCountsTitle}>Emotional distribution</Text>
-  //       <Text style={styles.sentimentCount}>
-  //         Very negative: {sentimentCounts.veryNegative}
-  //       </Text>
-  //       <Text style={styles.sentimentCount}>
-  //         Negative: {sentimentCounts.negative}
-  //       </Text>
-  //       <Text style={styles.sentimentCount}>
-  //         Neutral: {sentimentCounts.neutral}
-  //       </Text>
-  //       <Text style={styles.sentimentCount}>
-  //         Positive: {sentimentCounts.positive}
-  //       </Text>
-  //       <Text style={styles.sentimentCount}>
-  //         Very positive: {sentimentCounts.veryPositive}
-  //       </Text>
-  //     </View>
-  //   </View>
-  // );
-
   useEffect(() => {
     const updateVideoSetSummary = async () => {
       if (online && currentVideoSet) {
@@ -398,6 +356,23 @@ const DataAnalysisTextSummary = () => {
     }
   }, [filterVideoId, isFocused, videos]);
 
+  const pieData = [
+    {
+      value: sentimentCounts.veryNegative,
+      color: '#c44601',
+      text: 'Very Negative',
+    },
+    {value: sentimentCounts.negative, color: '#f57600', text: 'Negative'},
+    {value: sentimentCounts.neutral, color: '#9e9e9e', text: 'Neutral'},
+    {value: sentimentCounts.positive, color: '#5ba300', text: 'Positive'},
+    {
+      value: sentimentCounts.veryPositive,
+      color: '#054fb9',
+      text: 'Very Positive',
+    },
+  ];
+  const total = pieData.reduce((sum, d) => sum + d.value, 0);
+
   return (
     <ScrollView>
       {/* Report format dropdown and summary section */}
@@ -453,53 +428,142 @@ const DataAnalysisTextSummary = () => {
       </View>
 
       <View style={styles.raisedContainer}>
-        <View>
-          <Text style={styles.sentimentCountsTitle}>
-            Emotional distribution of video set
-          </Text>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.sentimentCount}>
-              Very Negative: {sentimentCounts.veryNegative}
-            </Text>
-            <Image
-              source={getEmojiForSentiment('Very Negative')}
-              style={styles.emoji}
-            />
+        <Text style={styles.sentimentCountsTitle}>
+          Emotional distribution of video set
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          {/* Labels and counts */}
+          <View style={{flex: 0.7}}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: '#c44601',
+                  marginRight: 8,
+                }}
+              />
+              <Text style={styles.sentimentCount}>
+                Very Negative: {sentimentCounts.veryNegative}
+              </Text>
+            </View>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: '#f57600',
+                  marginRight: 8,
+                }}
+              />
+              <Text style={styles.sentimentCount}>
+                Negative: {sentimentCounts.negative}
+              </Text>
+            </View>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: '#9e9e9e',
+                  marginRight: 8,
+                }}
+              />
+              <Text style={styles.sentimentCount}>
+                Neutral: {sentimentCounts.neutral}
+              </Text>
+            </View>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: '#5ba300',
+                  marginRight: 8,
+                }}
+              />
+              <Text style={styles.sentimentCount}>
+                Positive: {sentimentCounts.positive}
+              </Text>
+            </View>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: '#054fb9',
+                  marginRight: 8,
+                }}
+              />
+              <Text style={styles.sentimentCount}>
+                Very Positive: {sentimentCounts.veryPositive}
+              </Text>
+            </View>
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.sentimentCount}>
-              Negative: {sentimentCounts.negative}
-            </Text>
-            <Image
-              source={getEmojiForSentiment('Negative')}
-              style={styles.emoji}
-            />
-          </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.sentimentCount}>
-              Neutral: {sentimentCounts.neutral}
-            </Text>
-            <Image
-              source={getEmojiForSentiment('Neutral')}
-              style={styles.emoji}
-            />
-          </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.sentimentCount}>
-              Positive: {sentimentCounts.positive}
-            </Text>
-            <Image
-              source={getEmojiForSentiment('Positive')}
-              style={styles.emoji}
-            />
-          </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.sentimentCount}>
-              Very Positive: {sentimentCounts.veryPositive}
-            </Text>
-            <Image
-              source={getEmojiForSentiment('Very Positive')}
-              style={styles.emoji}
+          {/* Pie chart */}
+          <View style={{flex: 1.3, alignItems: 'flex-end'}}>
+            <PieChart
+              data={pieData}
+              textSize={12}
+              radius={95}
+              innerRadius={48}
+              focusOnPress={true}
+              // showValuesAsLabels
+              // labelsPosition="outward"
+              showTextBackground
+              textBackgroundRadius={18}
+              textBackgroundColor="#00000055"
+              onPress={(item: any, index: number) =>
+                setSelectedSliceIndex(index)
+              }
+              centerLabelComponent={() => {
+                if (
+                  selectedSliceIndex !== null &&
+                  pieData[selectedSliceIndex] &&
+                  total > 0
+                ) {
+                  const percent = (
+                    (pieData[selectedSliceIndex].value / total) *
+                    100
+                  ).toFixed(1);
+                  const emotion = pieData[selectedSliceIndex].text;
+                  return (
+                    <View style={{alignItems: 'center'}}>
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                          color: pieData[selectedSliceIndex].color,
+                        }}>
+                        {percent}%
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 'bold',
+                          color: pieData[selectedSliceIndex].color,
+                        }}>
+                        {emotion}
+                      </Text>
+                    </View>
+                  );
+                }
+                return (
+                  <Text style={{fontSize: 13, fontWeight: 'bold'}}>
+                    Emotions
+                  </Text>
+                );
+              }}
             />
           </View>
         </View>
