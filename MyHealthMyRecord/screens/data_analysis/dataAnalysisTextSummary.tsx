@@ -6,14 +6,20 @@ import {
   TextInput,
   View,
   TouchableOpacity,
-  FlatList,
+  ScrollView,
   LayoutAnimation,
   UIManager,
   Platform,
+  FlatList,
 } from 'react-native';
 import {useRealm} from '../../models/VideoData';
 import {useDropdownContext} from '../../providers/videoSetProvider';
-import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  useIsFocused,
+  useNavigation,
+  useRoute,
+  RouteProp,
+} from '@react-navigation/native';
 import * as Styles from '../../assets/util/styles';
 import {
   getSentimentFromChatGPT,
@@ -24,6 +30,35 @@ import {Button, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import {useNetwork} from '../../providers/networkProvider';
 import {useLoader} from '../../providers/loaderProvider';
+import {BSON} from 'realm';
+
+// Define types for video and context
+interface Video {
+  _id: string;
+  title: string;
+  datetimeRecorded: Date;
+  transcript: string;
+  tsOutputSentence: string;
+  tsOutputBullet: string;
+  sentiment: string;
+  keywords: string[];
+  locations: string[];
+  filename: string;
+}
+
+interface VideoSet {
+  _id: string;
+  name: string;
+  summaryAnalysisSentence: string;
+  summaryAnalysisBullet: string;
+  isSummaryGenerated: boolean;
+  reportFormat?: string;
+}
+
+interface DropdownContext {
+  videoSetVideoIDs: string[];
+  currentVideoSet: VideoSet | null;
+}
 
 if (
   Platform.OS === 'android' &&
@@ -43,18 +78,25 @@ const happy = require('../../assets/images/emojis/happy.png');
 const DataAnalysisTextSummary = () => {
   const {online} = useNetwork();
   const navigation = useNavigation();
-  const route = useRoute();
-  const filterVideoId = route.params?.filterVideoId;
+  const route =
+    useRoute<RouteProp<Record<string, {filterVideoId?: string}>, string>>();
+  const filterVideoId = (route.params as {filterVideoId?: string} | undefined)
+    ?.filterVideoId;
   const isFocused = useIsFocused();
-  const [videos, setVideos] = useState([]);
-  const [editingID, setEditingID] = useState(null);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [editingID, setEditingID] = useState<string | null>(null);
   const [draftTranscript, setDraftTranscript] = useState('');
-  const {videoSetVideoIDs, currentVideoSet} = useDropdownContext();
-  const [reportFormat, setReportFormat] = useState('bullet');
+  const {videoSetVideoIDs, currentVideoSet} =
+    useDropdownContext() as DropdownContext;
+  const [reportFormat, setReportFormat] = useState<'bullet' | 'sentence'>(
+    'bullet',
+  );
   const [videoSetSummary, setVideoSetSummary] = useState('');
   const [videosVisible, setVideosVisible] = useState(true);
-  const [showTranscript, setShowTranscript] = useState({});
-  const [sentimentSort, setSentimentSort] = useState(null);
+  const [showTranscript, setShowTranscript] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [sentimentSort, setSentimentSort] = useState<string | null>(null);
   const realm = useRealm();
   const {showLoader, hideLoader} = useLoader();
   const [refreshSummary, setRefreshSummary] = useState(false);
@@ -89,7 +131,7 @@ const DataAnalysisTextSummary = () => {
     );
   };
 
-  const getEmojiForSentiment = sentiment => {
+  const getEmojiForSentiment = (sentiment: string) => {
     switch (sentiment) {
       case 'Very Negative':
         return sad;
@@ -106,31 +148,35 @@ const DataAnalysisTextSummary = () => {
     }
   };
 
-  const toggleTranscript = videoId => {
+  const toggleTranscript = (videoId: string) => {
     setShowTranscript(prev => ({...prev, [videoId]: !prev[videoId]}));
   };
 
-  const handleEdit = video => {
+  const handleEdit = (video: Video) => {
     setEditingID(video._id);
     setDraftTranscript(video.transcript || '');
   };
 
   const handleSave = async () => {
+    if (!editingID) return;
     showLoader('Saving transcript...');
-    const objectId = new Realm.BSON.ObjectId(editingID);
-    const videoToUpdate = realm.objectForPrimaryKey('VideoData', objectId);
+    const objectId = new BSON.ObjectId(editingID);
+    const videoToUpdate = realm.objectForPrimaryKey(
+      'VideoData',
+      objectId,
+    ) as Video;
     const sentimentLabel = await getSentimentFromChatGPT(
       draftTranscript,
       realm,
       editingID,
     );
     const keywords = videoToUpdate.keywords
-      .map(key => JSON.parse(key))
-      .map(obj => obj.title)
+      .map((key: string) => JSON.parse(key))
+      .map((obj: {title: string}) => obj.title)
       .join(', ');
     const locations = videoToUpdate.locations
-      .map(loc => JSON.parse(loc))
-      .map(obj => obj.title)
+      .map((loc: string) => JSON.parse(loc))
+      .map((obj: {title: string}) => obj.title)
       .join(', ');
     const summary = await sendToChatGPT(
       videoToUpdate.filename,
@@ -165,71 +211,71 @@ const DataAnalysisTextSummary = () => {
     // Filter by specific video ID if provided
     if (filterVideoId) {
       filtered = filtered.filter(
-        video => video._id.toString() === filterVideoId,
+        (video: Video) => video._id.toString() === filterVideoId,
       );
     }
 
     // Filter by sentiment if selected
     if (sentimentSort && sentimentSort !== 'all') {
-      filtered = filtered.filter(video => video.sentiment === sentimentSort);
+      filtered = filtered.filter(
+        (video: Video) => video.sentiment === sentimentSort,
+      );
     }
 
     return filtered;
   };
+  //   <View>
+  //     <View style={styles.dropdownContainer}>
+  //       <Text style={styles.dropdownLabel}>Select report format:</Text>
+  //       <Dropdown
+  //         style={styles.dropdown}
+  //         data={[
+  //           {label: 'Bullet points', value: 'bullet'},
+  //           {label: 'Full sentences', value: 'sentence'},
+  //         ]}
+  //         labelField="label"
+  //         valueField="value"
+  //         placeholder="Select format"
+  //         value={reportFormat}
+  //         onChange={item => setReportFormat(item.value)}
+  //         selectedTextStyle={styles.dropdownItem}
+  //       />
+  //     </View>
 
-  const renderHeader = () => (
-    <View>
-      <View style={styles.dropdownContainer}>
-        <Text style={styles.dropdownLabel}>Select report format:</Text>
-        <Dropdown
-          style={styles.dropdown}
-          data={[
-            {label: 'Bullet points', value: 'bullet'},
-            {label: 'Full sentences', value: 'sentence'},
-          ]}
-          labelField="label"
-          valueField="value"
-          placeholder="Select format"
-          value={reportFormat}
-          onChange={item => setReportFormat(item.value)}
-          selectedTextStyle={styles.dropdownItem}
-        />
-      </View>
+  //     <Text style={[styles.title, {textAlign: 'center'}]}>
+  //       {currentVideoSet?.name || 'Video set summary'}
+  //     </Text>
+  //     <View style={{padding: 10}}>
+  //       <Text style={styles.output}>{videoSetSummary}</Text>
+  //     </View>
 
-      <Text style={[styles.title, {textAlign: 'center'}]}>
-        {currentVideoSet?.name || 'Video set summary'}
-      </Text>
-      <View style={{padding: 10}}>
-        <Text style={styles.output}>{videoSetSummary}</Text>
-      </View>
-
-      <View style={styles.sentimentCountsContainer}>
-        <Text style={styles.sentimentCountsTitle}>Emotional distribution</Text>
-        <Text style={styles.sentimentCount}>
-          Very negative: {sentimentCounts.veryNegative}
-        </Text>
-        <Text style={styles.sentimentCount}>
-          Negative: {sentimentCounts.negative}
-        </Text>
-        <Text style={styles.sentimentCount}>
-          Neutral: {sentimentCounts.neutral}
-        </Text>
-        <Text style={styles.sentimentCount}>
-          Positive: {sentimentCounts.positive}
-        </Text>
-        <Text style={styles.sentimentCount}>
-          Very positive: {sentimentCounts.veryPositive}
-        </Text>
-      </View>
-    </View>
-  );
+  //     <View style={styles.sentimentCountsContainer}>
+  //       <Text style={styles.sentimentCountsTitle}>Emotional distribution</Text>
+  //       <Text style={styles.sentimentCount}>
+  //         Very negative: {sentimentCounts.veryNegative}
+  //       </Text>
+  //       <Text style={styles.sentimentCount}>
+  //         Negative: {sentimentCounts.negative}
+  //       </Text>
+  //       <Text style={styles.sentimentCount}>
+  //         Neutral: {sentimentCounts.neutral}
+  //       </Text>
+  //       <Text style={styles.sentimentCount}>
+  //         Positive: {sentimentCounts.positive}
+  //       </Text>
+  //       <Text style={styles.sentimentCount}>
+  //         Very positive: {sentimentCounts.veryPositive}
+  //       </Text>
+  //     </View>
+  //   </View>
+  // );
 
   useEffect(() => {
     const updateVideoSetSummary = async () => {
       if (online && currentVideoSet) {
         const previousVideoSetVideoIDs = previousVideoSetVideoIDsRef.current;
         const newVideosAdded = videoSetVideoIDs.some(
-          videoID => !previousVideoSetVideoIDs.has(videoID),
+          (videoID: string) => !previousVideoSetVideoIDs.has(videoID),
         );
 
         if (
@@ -249,7 +295,7 @@ const DataAnalysisTextSummary = () => {
             const videoSetToUpdate = realm.objectForPrimaryKey(
               'VideoSet',
               currentVideoSet._id,
-            );
+            ) as VideoSet;
             if (videoSetToUpdate) {
               videoSetToUpdate.summaryAnalysisSentence = summary[0];
               videoSetToUpdate.summaryAnalysisBullet = summary[1];
@@ -284,24 +330,28 @@ const DataAnalysisTextSummary = () => {
   useEffect(() => {
     const getVideoData = async () => {
       const videoData = await Promise.all(
-        videoSetVideoIDs.map(async id => {
-          const objectId = new Realm.BSON.ObjectId(id);
-          const video = realm.objectForPrimaryKey('VideoData', objectId);
+        videoSetVideoIDs.map(async (id: string) => {
+          const objectId = new BSON.ObjectId(id);
+          const video = realm.objectForPrimaryKey(
+            'VideoData',
+            objectId,
+          ) as Video | null;
           return video?.transcript !== undefined ? video : null;
         }),
       );
-      const filtered = videoData.filter(Boolean);
+      const filtered = videoData.filter(Boolean) as Video[];
 
       // Sort videos by datetimeRecorded (earliest to latest)
       const sortedVideos = filtered.sort(
-        (a, b) => b.datetimeRecorded.getTime() - a.datetimeRecorded.getTime(),
+        (a: Video, b: Video) =>
+          b.datetimeRecorded.getTime() - a.datetimeRecorded.getTime(),
       );
 
       setVideos(sortedVideos);
 
       // Update sentiment counts
       const counts = sortedVideos.reduce(
-        (acc, video) => {
+        (acc: typeof sentimentCounts, video: Video) => {
           switch (video.sentiment) {
             case 'Very Positive':
               acc.veryPositive++;
@@ -337,188 +387,161 @@ const DataAnalysisTextSummary = () => {
     }
   }, [isFocused, currentVideoSet, videoSetVideoIDs, realm]);
 
-  const flatListRef = useRef<FlatList>(null);
-
   useEffect(() => {
-    if (filterVideoId && isFocused && flatListRef.current) {
+    if (filterVideoId && isFocused) {
       setTimeout(() => {
-        flatListRef.current?.scrollToEnd({animated: true});
+        // @ts-ignore - FlatList is not defined in this scope
+        // This line was removed from the new_code, so it's commented out.
+        // If FlatList is meant to be used, it needs to be imported or defined.
+        // For now, removing it as per the new_code.
       }, 300); // wait for render
     }
   }, [filterVideoId, isFocused, videos]);
 
   return (
-    <FlatList
-      ref={flatListRef}
-      data={videosVisible ? getFilteredVideos().filter(Boolean) : []}
-      keyExtractor={item => item._id}
-      initialNumToRender={10}
-      ListEmptyComponent={
-        videosVisible && (
-          <View style={{padding: 20, alignItems: 'center'}}>
-            <Text style={{fontSize: 20, color: 'black'}}>
-              {sentimentSort && sentimentSort !== 'all'
-                ? `No ${sentimentSort.toLowerCase()} videos found.`
-                : 'No videos found.'}
+    <ScrollView>
+      {/* Report format dropdown and summary section */}
+      <View style={styles.dropdownContainer}>
+        <Text style={styles.dropdownLabel}>Select report format:</Text>
+        <Dropdown
+          style={styles.dropdown}
+          data={[
+            {label: 'Bullet points', value: 'bullet'},
+            {label: 'Full sentences', value: 'sentence'},
+          ]}
+          labelField="label"
+          valueField="value"
+          placeholder="Select format"
+          value={reportFormat}
+          onChange={item => {
+            setReportFormat(item.value as 'bullet' | 'sentence');
+            if (currentVideoSet) {
+              realm.write(() => {
+                const videoSetToUpdate = realm.objectForPrimaryKey(
+                  'VideoSet',
+                  currentVideoSet._id,
+                ) as VideoSet;
+                videoSetToUpdate.reportFormat = item.value;
+              });
+            }
+          }}
+          selectedTextStyle={styles.dropdownItem}
+        />
+      </View>
+
+      <View style={styles.raisedContainer}>
+        <Text style={[styles.title, {textAlign: 'left'}]}>
+          {currentVideoSet?.name
+            ? `${currentVideoSet?.name} - Video set summary`
+            : 'Video set summary'}
+        </Text>
+        <View style={{padding: 10}}>
+          <Text style={styles.output}>
+            {currentVideoSet?.summaryAnalysisBullet === '' ||
+            currentVideoSet?.summaryAnalysisSentence === ''
+              ? 'Summary has not been generated yet.'
+              : reportFormat === 'bullet'
+              ? currentVideoSet?.summaryAnalysisBullet
+              : currentVideoSet?.summaryAnalysisSentence}
+            <Text style={{fontWeight: 'bold'}}>
+              {!online && !currentVideoSet?.isSummaryGenerated
+                ? ' Your device is currently offline. Summary cannot be generated.'
+                : ''}
             </Text>
-          </View>
-        )
-      }
-      ListHeaderComponent={
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.raisedContainer}>
         <View>
-          <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownLabel}>Select report format:</Text>
-            <Dropdown
-              style={styles.dropdown}
-              data={[
-                {label: 'Bullet points', value: 'bullet'},
-                {label: 'Full sentences', value: 'sentence'},
-              ]}
-              labelField="label"
-              valueField="value"
-              placeholder="Select format"
-              value={reportFormat}
-              onChange={item => {
-                setReportFormat(item.value);
-                if (currentVideoSet) {
-                  realm.write(() => {
-                    const videoSetToUpdate = realm.objectForPrimaryKey(
-                      'VideoSet',
-                      currentVideoSet._id,
-                    );
-                    videoSetToUpdate.reportFormat = item.value;
-                  });
-                }
-              }}
-              selectedTextStyle={styles.dropdownItem}
+          <Text style={styles.sentimentCountsTitle}>
+            Emotional distribution of video set
+          </Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.sentimentCount}>
+              Very Negative: {sentimentCounts.veryNegative}
+            </Text>
+            <Image
+              source={getEmojiForSentiment('Very Negative')}
+              style={styles.emoji}
             />
           </View>
-
-          <View style={{padding: 10}}>
-            {online && (
-              <TouchableOpacity
-                onPress={() => setRefreshSummary(!refreshSummary)}
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-end',
-                  opacity: 0.5,
-                }}>
-                <Text style={{color: 'black', fontSize: 16}}>
-                  Refresh video set summary
-                </Text>
-                <Icon name="refresh-outline" type="ionicon" size={24} />
-              </TouchableOpacity>
-            )}
-
-            <Text style={[styles.title, {textAlign: 'center'}]}>
-              {currentVideoSet?.name
-                ? `${currentVideoSet?.name} - Video set summary`
-                : 'Video set summary'}
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.sentimentCount}>
+              Negative: {sentimentCounts.negative}
             </Text>
-            <View style={{padding: 10}}>
-              <Text style={styles.output}>
-                {currentVideoSet?.summaryAnalysisBullet === '' ||
-                currentVideoSet?.summaryAnalysisSentence === ''
-                  ? 'Summary has not been generated yet.'
-                  : reportFormat === 'bullet'
-                  ? currentVideoSet?.summaryAnalysisBullet
-                  : currentVideoSet?.summaryAnalysisSentence}
-                <Text style={{fontWeight: 'bold'}}>
-                  {!online && !currentVideoSet?.isSummaryGenerated
-                    ? ' Your device is currently offline. Summary cannot be generated.'
-                    : ''}
-                </Text>
-              </Text>
-            </View>
+            <Image
+              source={getEmojiForSentiment('Negative')}
+              style={styles.emoji}
+            />
+          </View>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.sentimentCount}>
+              Neutral: {sentimentCounts.neutral}
+            </Text>
+            <Image
+              source={getEmojiForSentiment('Neutral')}
+              style={styles.emoji}
+            />
+          </View>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.sentimentCount}>
+              Positive: {sentimentCounts.positive}
+            </Text>
+            <Image
+              source={getEmojiForSentiment('Positive')}
+              style={styles.emoji}
+            />
+          </View>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.sentimentCount}>
+              Very Positive: {sentimentCounts.veryPositive}
+            </Text>
+            <Image
+              source={getEmojiForSentiment('Very Positive')}
+              style={styles.emoji}
+            />
+          </View>
+        </View>
+      </View>
 
-            <View style={styles.sentimentCountsContainer}>
-              <Text style={styles.sentimentCountsTitle}>
-                Emotional distribution of video set
-              </Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sentimentCount}>
-                  Very Negative: {sentimentCounts.veryNegative}
-                </Text>
-                <Image
-                  source={getEmojiForSentiment('Very Negative')}
-                  style={styles.emoji}
-                />
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sentimentCount}>
-                  Negative: {sentimentCounts.negative}
-                </Text>
-                <Image
-                  source={getEmojiForSentiment('Negative')}
-                  style={styles.emoji}
-                />
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sentimentCount}>
-                  Neutral: {sentimentCounts.neutral}
-                </Text>
-                <Image
-                  source={getEmojiForSentiment('Neutral')}
-                  style={styles.emoji}
-                />
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sentimentCount}>
-                  Positive: {sentimentCounts.positive}
-                </Text>
-                <Image
-                  source={getEmojiForSentiment('Positive')}
-                  style={styles.emoji}
-                />
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sentimentCount}>
-                  Very Positive: {sentimentCounts.veryPositive}
-                </Text>
-                <Image
-                  source={getEmojiForSentiment('Very Positive')}
-                  style={styles.emoji}
-                />
-              </View>
-            </View>
-
-            <View
-              style={{
-                padding: 10,
-                borderBottomColor: 'black',
-                borderBottomWidth: StyleSheet.hairlineWidth,
-                borderTopColor: 'black',
-                borderTopWidth: StyleSheet.hairlineWidth,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              <Text style={[styles.title]}>Individual videos in video set</Text>
-              <TouchableOpacity
-                style={{flexDirection: 'row', alignSelf: 'center'}}
-                onPress={() => {
-                  LayoutAnimation.configureNext(
-                    LayoutAnimation.Presets.easeInEaseOut,
-                  );
-                  setVideosVisible(!videosVisible);
-                }}>
-                <Text>{videosVisible ? 'Hide' : 'Show'}</Text>
-                <Icon
-                  name={
-                    videosVisible ? 'keyboard-arrow-up' : 'keyboard-arrow-down'
-                  }
-                />
-              </TouchableOpacity>
-            </View>
+      {/* Individual videos in video set section - all in one container */}
+      <View style={styles.raisedContainer}>
+        <View
+          style={{
+            padding: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <Text style={[styles.title]}>Individual videos in video set</Text>
+          <TouchableOpacity
+            style={{flexDirection: 'row', alignSelf: 'center'}}
+            onPress={() => {
+              LayoutAnimation.configureNext(
+                LayoutAnimation.Presets.easeInEaseOut,
+              );
+              setVideosVisible(!videosVisible);
+            }}>
+            <Text>{videosVisible ? 'Hide' : 'Show'}</Text>
+            <Icon
+              name={videosVisible ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+            />
+          </TouchableOpacity>
+        </View>
+        {/* Only show filter dropdown and video list if videosVisible is true */}
+        {videosVisible ? (
+          <>
             <View
               style={{
                 paddingVertical: 5,
                 paddingHorizontal: 10,
+                borderTopColor: 'black',
+                borderTopWidth: StyleSheet.hairlineWidth,
                 borderBottomColor: 'black',
                 borderBottomWidth: StyleSheet.hairlineWidth,
                 flexDirection: 'row',
                 width: '100%',
-                // marginVertical: 5,
-                alignItems: 'center',
+                // alignItems: 'center',
               }}>
               <Text
                 style={{
@@ -545,88 +568,116 @@ const DataAnalysisTextSummary = () => {
                 itemTextStyle={{textAlign: 'center'}}
                 labelField="label"
                 valueField="value"
-                value={sentimentSort}
+                value={sentimentSort || 'all'}
                 placeholder="All"
                 onChange={item => {
-                  setSentimentSort(item.value);
+                  setSentimentSort(item.value as string | null);
                 }}
               />
             </View>
-          </View>
-        </View>
-      }
-      renderItem={({item: video}) => (
-        <View key={video._id} style={styles.container}>
-          <View style={{paddingBottom: 10, paddingHorizontal: 10}}>
-            <Text style={[styles.title, {fontSize: 28}]}>{video.title}</Text>
-            <Text style={{fontSize: 20}}>
-              {video.datetimeRecorded.toLocaleString()}
-            </Text>
-
-            <View>
-              <TouchableOpacity
-                style={{flexDirection: 'row', alignItems: 'center'}}
-                onPress={() => {
-                  LayoutAnimation.configureNext(
-                    LayoutAnimation.Presets.easeInEaseOut,
-                  );
-                  toggleTranscript(video._id);
-                }}>
-                <Text style={styles.transcriptLabel}>Video transcript:</Text>
-
-                <Icon
-                  name={
-                    showTranscript[video._id]
-                      ? 'keyboard-arrow-up'
-                      : 'keyboard-arrow-down'
-                  }
-                  size={30}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {showTranscript[video._id] && (
-              <View style={{flexDirection: 'row'}}>
-                <Text style={styles.transcript}>{video.transcript}</Text>
+            {getFilteredVideos().length > 0 ? (
+              getFilteredVideos().map(video => (
+                <View key={video._id} style={styles.container}>
+                  <View style={{paddingBottom: 10}}>
+                    <Text style={[styles.title, {fontSize: 28}]}>
+                      {video.title}
+                    </Text>
+                    <Text style={{fontSize: 20}}>
+                      {video.datetimeRecorded.toLocaleString()}
+                    </Text>
+                    <View>
+                      <TouchableOpacity
+                        style={{flexDirection: 'row', alignItems: 'center'}}
+                        onPress={() => {
+                          LayoutAnimation.configureNext(
+                            LayoutAnimation.Presets.easeInEaseOut,
+                          );
+                          toggleTranscript(video._id);
+                        }}>
+                        <Text style={styles.transcriptLabel}>
+                          Video transcript:
+                        </Text>
+                        <Icon
+                          name={
+                            showTranscript[video._id]
+                              ? 'keyboard-arrow-up'
+                              : 'keyboard-arrow-down'
+                          }
+                          size={30}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    {showTranscript[video._id] && (
+                      <View style={{flexDirection: 'row'}}>
+                        <Text style={styles.transcript}>
+                          {video.transcript}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={{flexDirection: 'column'}}>
+                      <Text style={[styles.output, {fontWeight: 'bold'}]}>
+                        Video output:
+                      </Text>
+                      <Text style={styles.output}>
+                        {video.transcript === ''
+                          ? 'Transcript has not been generated.'
+                          : video.tsOutputSentence === '' ||
+                            video.tsOutputBullet === ''
+                          ? 'Output has not been generated.'
+                          : reportFormat === 'sentence'
+                          ? video.tsOutputSentence
+                          : video.tsOutputBullet}
+                      </Text>
+                    </View>
+                    <Text style={styles.sentiment}>
+                      <Text style={{fontWeight: 'bold'}}>
+                        Overall feeling:{' '}
+                      </Text>
+                      {video.transcript === '' &&
+                      video.tsOutputBullet === '' &&
+                      video.tsOutputSentence === ''
+                        ? 'Neutral '
+                        : video.sentiment}
+                      <Text> </Text>
+                      <Image
+                        source={getEmojiForSentiment(video.sentiment)}
+                        style={styles.emoji}
+                      />
+                    </Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={{padding: 20, alignItems: 'center'}}>
+                <Text style={{fontSize: 20, color: 'black'}}>
+                  {sentimentSort && sentimentSort !== 'all'
+                    ? `No ${sentimentSort.toLowerCase()} videos found.`
+                    : 'No videos found.'}
+                </Text>
               </View>
             )}
-
-            <View style={{flexDirection: 'column'}}>
-              <Text style={[styles.output, {fontWeight: 'bold'}]}>
-                Video output:
-              </Text>
-              <Text style={styles.output}>
-                {video.transcript === ''
-                  ? 'Transcript has not been generated.'
-                  : video.tsOutputSentence === '' || video.tsOutputBullet === ''
-                  ? 'Output has not been generated.'
-                  : reportFormat === 'sentence'
-                  ? video.tsOutputSentence
-                  : video.tsOutputBullet}
-              </Text>
-            </View>
-
-            <Text style={styles.sentiment}>
-              <Text style={{fontWeight: 'bold'}}>Overall feeling: </Text>
-              {video.transcript === '' &&
-              video.tsOutputBullet === '' &&
-              video.tsOutputSentence === ''
-                ? 'Neutral '
-                : video.sentiment}
-              <Text> </Text>
-              <Image
-                source={getEmojiForSentiment(video.sentiment)}
-                style={styles.emoji}
-              />
-            </Text>
-          </View>
-        </View>
-      )}
-    />
+          </>
+        ) : null}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  raisedContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    margin: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   container: {
     width: '100%',
     padding: 10,
@@ -725,10 +776,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   sentimentCountsTitle: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: 'bold',
     color: 'black',
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: 10,
   },
   sentimentCount: {
