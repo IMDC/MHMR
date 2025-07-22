@@ -416,7 +416,55 @@ const DataAnalysisTextSummary = () => {
             currentVideoSet?.summaryAnalysisSentence === ''
               ? 'Summary has not been generated yet.'
               : reportFormat === 'bullet'
-              ? currentVideoSet?.summaryAnalysisBullet
+              ? (() => {
+                  const summary = currentVideoSet?.summaryAnalysisBullet;
+                  if (!summary) return null;
+                  // Split into bullet points (by newlines or bullet chars)
+                  const bullets = summary
+                    .split(/\n|•/)
+                    .filter(b => b.trim() !== '');
+                  return (
+                    <Text>
+                      {bullets.map((bullet, idx) => {
+                        // Remove leading/trailing whitespace and bullet char
+                        const cleanBullet = bullet
+                          .trim()
+                          .replace(/^[-*•\d.\s]+/, '');
+                        // Find first comma or period, whichever comes first
+                        const commaIdx = cleanBullet.indexOf(',');
+                        const periodIdx = cleanBullet.indexOf('.');
+                        let splitIdx = -1;
+                        if (commaIdx === -1 && periodIdx === -1) {
+                          splitIdx = -1;
+                        } else if (commaIdx === -1) {
+                          splitIdx = periodIdx;
+                        } else if (periodIdx === -1) {
+                          splitIdx = commaIdx;
+                        } else {
+                          splitIdx = Math.min(commaIdx, periodIdx);
+                        }
+                        return (
+                          <Text key={idx}>
+                            {'\u2022 '} {/* bullet character */}
+                            {splitIdx !== -1 ? (
+                              <>
+                                <Text style={{fontWeight: 'bold'}}>
+                                  {cleanBullet.slice(0, splitIdx + 1)}
+                                </Text>
+                                {cleanBullet.slice(splitIdx + 1)}
+                              </>
+                            ) : (
+                              <Text style={{fontWeight: 'bold'}}>
+                                {cleanBullet}
+                              </Text>
+                            )}
+                            {'\n'}
+                          </Text>
+                        );
+                      })}
+                    </Text>
+                  );
+                })()
               : currentVideoSet?.summaryAnalysisSentence}
             <Text style={{fontWeight: 'bold'}}>
               {!online && !currentVideoSet?.isSummaryGenerated
