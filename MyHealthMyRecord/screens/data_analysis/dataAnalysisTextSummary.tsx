@@ -458,7 +458,7 @@ const DataAnalysisTextSummary = () => {
                                 {cleanBullet}
                               </Text>
                             )}
-                            {'\n'}
+                            {idx < bullets.length - 1 ? '\n\n' : ''}
                           </Text>
                         );
                       })}
@@ -657,7 +657,10 @@ const DataAnalysisTextSummary = () => {
               }}>
               <Text
                 style={{
-                  textAlign: 'center',
+                  textAlign: 'left',
+                  justifyContent: 'center',
+                  alignSelf: 'center',
+
                   width: '25%',
                   fontSize: 18,
                   fontWeight: 'bold',
@@ -691,7 +694,7 @@ const DataAnalysisTextSummary = () => {
               getFilteredVideos().map(video => (
                 <View key={video._id} style={styles.container}>
                   <View style={{paddingBottom: 10}}>
-                    <Text style={[styles.title, {fontSize: 28}]}>
+                    <Text style={[styles.title, {fontSize: 26}]}>
                       {video.title}
                     </Text>
                     <Text style={{fontSize: 20}}>
@@ -804,9 +807,9 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   date: {
-    fontSize: 16, // Smaller font size for the date
-    color: 'gray', // Less bold color
-    marginTop: 5, // Add some spacing between title and date
+    fontSize: 16,
+    color: 'gray',
+    marginTop: 5,
   },
   textInput: {
     flex: 1,
