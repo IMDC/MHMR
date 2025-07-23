@@ -82,6 +82,9 @@ const MHMRVideoPlayer = ({
       timestamp: currentTime[0],
     };
 
+    // Add logging for each emotion sticker usage
+    console.log(`[${video.filename}] Emotion sticker added: ${emotion} at timestamp ${currentTime[0].toFixed(2)}s`);
+
     const stickerIndex = parsedStickers.findIndex(
       (element: any) => element.timestamp > emotionSchema.timestamp,
     );
@@ -91,13 +94,25 @@ const MHMRVideoPlayer = ({
     } else {
       parsedStickers.splice(stickerIndex, 0, emotionSchema);
     }
+    
     const newStickers = parsedStickers.map(sticker => JSON.stringify(sticker));
     setStoredStickers(newStickers);
+    
     if (video) {
       realm.write(() => {
         video.emotionStickers! = newStickers;
       });
     }
+
+    // Log the total count of emotion stickers after adding
+    console.log(`[${video.filename}] Total emotion stickers: ${parsedStickers.length}`);
+    
+    // Log emotion distribution for debugging
+    const emotionCounts = {};
+    parsedStickers.forEach(sticker => {
+      emotionCounts[sticker.sentiment] = (emotionCounts[sticker.sentiment] || 0) + 1;
+    });
+    console.log(`[${video.filename}] Emotion distribution:`, emotionCounts);
   }
 
   useEffect(() => {

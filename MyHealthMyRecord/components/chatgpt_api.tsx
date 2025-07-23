@@ -78,13 +78,52 @@ function normalizeBulletPoints(text) {
     .join('\n');
 }
 
-// New function to get sentiment for a single bullet point
+// Updated interface to include confidence scores
+interface SentimentResult {
+  point: string;
+  sentiment: SentimentType;
+  weight: number;
+  confidence: number;
+}
+
+// Updated function to get sentiment with confidence score from single analysis
 export const getSentimentForBulletPoint = async (
   bulletPoint: string,
   videoId?: string,
   realm?: any
 ) => {
-  const inputText = `Analyze the sentiment of this point and return only one of the following labels: Very Negative, Negative, Neutral, Positive, or Very Positive.
+  // Get comments context if videoId and realm are provided
+  let commentsContext = '';
+  if (videoId && realm) {
+    const objectId = new Realm.BSON.ObjectId(videoId);
+    const video = realm.objectForPrimaryKey('VideoData', objectId);
+    const comments = video?.comments || [];
+    
+    if (comments.length > 0) {
+      const commentTexts = [];
+      comments.forEach(commentStr => {
+        try {
+          const comment = JSON.parse(commentStr);
+          if (comment.comment && comment.comment.trim()) {
+            commentTexts.push(`"${comment.comment.trim()}"`);
+          }
+        } catch (e) {
+          console.warn('Error parsing comment:', e);
+        }
+      });
+      
+      if (commentTexts.length > 0) {
+        commentsContext = `Additional context from user comments: ${commentTexts.join(', ')}. `;
+      }
+    }
+  }
+
+  const inputText = `${commentsContext}Analyze the sentiment of this point and return your response in exactly this format:
+  
+  Sentiment: [Very Negative/Negative/Neutral/Positive/Very Positive]
+  Confidence: [0-100]
+
+  Sentiment Guidelines:
   - Very Positive: Clear health improvements (significant pain reduction, excellent sleep, high energy, great mood)
   - Positive: Moderate improvements (manageable pain, decent sleep, good energy, stable mood)
   - Neutral: Factual statement unrelated to health/wellbeing
@@ -92,30 +131,40 @@ export const getSentimentForBulletPoint = async (
   - Very Negative: Severe issues (extreme pain, insomnia, exhaustion, severe distress)
   
   Label as Neutral ONLY if the statement has no relation to physical or mental wellbeing.
-  Consider overall condition (sleep, energy, mood, stress levels). Point: "${bulletPoint}"`;
+  Consider overall condition (sleep, energy, mood, stress levels) and any additional context provided.
+  
+  For confidence: Rate 0-100 based on how clear the sentiment is. Use 90-100 for very obvious cases, 70-89 for clear cases, 50-69 for somewhat ambiguous, 30-49 for unclear, and 0-29 for very ambiguous.
+  
+  Point: "${bulletPoint}"`;
   
   const data = await connectToChatGPT(inputText);
   
   if (data?.choices && data.choices.length > 0) {
-    return data.choices[0].message.content.trim();
+    const response = data.choices[0].message.content.trim();
+    
+    // Parse the structured response
+    const sentimentMatch = response.match(/Sentiment:\s*(Very Negative|Negative|Neutral|Positive|Very Positive)/i);
+    const confidenceMatch = response.match(/Confidence:\s*(\d+)/);
+    
+    const sentiment = sentimentMatch ? sentimentMatch[1] : 'Neutral';
+    const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 50;
+    
+    return { sentiment: sentiment as SentimentType, confidence };
   }
-  return 'Neutral' as SentimentType; // Default fallback
+  
+  return { sentiment: 'Neutral' as SentimentType, confidence: 50 };
 };
 
-interface SentimentResult {
-  point: string;
-  sentiment: SentimentType;
-  weight: number;
-}
-
-// New function to analyze bullet points and calculate weighted sentiment
 export const getWeightedSentiment = async (bulletPoints, videoId?: string, realm?: any) => {
-  // Get pain sentiment from video object
+  // Get pain sentiment and emotion stickers from video object
   let painSentiment = null;
+  let emotionStickers = [];
+  
   if (videoId && realm) {
     const objectId = new Realm.BSON.ObjectId(videoId);
     const video = realm.objectForPrimaryKey('VideoData', objectId);
     painSentiment = video?.painSentiment;
+    emotionStickers = video?.emotionStickers || [];
     
     // Fallback: calculate from numericScale if painSentiment is null
     if (!painSentiment && video?.numericScale !== undefined) {
@@ -134,6 +183,7 @@ export const getWeightedSentiment = async (bulletPoints, videoId?: string, realm
       overallSentiment: 'Neutral',
       bulletSentiments: [],
       averageScore: 0,
+      averageConfidence: 0,
       formattedBulletsWithSentiment: '',
     };
   }
@@ -149,24 +199,92 @@ export const getWeightedSentiment = async (bulletPoints, videoId?: string, realm
     }
   };
 
-  // Get sentiment for each bullet point
+  // Russell Circumplex Model-based emotion bias calculation with proper scaling
+  const getEmotionBias = (emotionStickers: string[]): number => {
+    if (!emotionStickers || emotionStickers.length === 0) return 0;
+  
+    const emotionWeights = {
+      'smile': 0.32,    // Happy: 0.95 / 3 ≈ 0.32 (positive influence)
+      'neutral': 0,     // Neutral: stays at 0
+      'worried': -0.09, // Worried: -0.27 / 3 ≈ -0.09 (mild negative)
+      'sad': -0.30,     // Sad: -0.91 / 3 ≈ -0.30 (strong negative)
+      'angry': -0.26    // Angry: -0.79 / 3 ≈ -0.26 (strong negative)
+    };
+  
+    let totalEmotionWeight = 0;
+    let validStickerCount = 0;
+  
+    emotionStickers.forEach(stickerStr => {
+      try {
+        const sticker = JSON.parse(stickerStr);
+        const weight = emotionWeights[sticker.sentiment?.toLowerCase()];
+        if (weight !== undefined) {
+          totalEmotionWeight += weight;
+          validStickerCount++;
+        }
+      } catch (e) {
+        console.warn('Error parsing emotion sticker:', e);
+      }
+    });
+    
+    // Average the emotion weights instead of summing them
+    const averageEmotionWeight = validStickerCount > 0 ? totalEmotionWeight / validStickerCount : 0;
+    
+    // Cap the emotion bias to prevent extreme values
+    const maxBias = 0.5;   
+    const minBias = -0.5;  
+    
+    const finalBias = Math.max(minBias, Math.min(maxBias, averageEmotionWeight));
+    
+    console.log(`Emotion Analysis: ${validStickerCount} stickers, average weight: ${averageEmotionWeight.toFixed(3)}, final bias: ${finalBias.toFixed(3)}`);
+    
+    return finalBias;
+  };
+
+  // Get sentiment and confidence for each bullet point
   const sentimentPromises = bulletPointArray.map(async (point): Promise<SentimentResult> => {
-    const sentiment = await getSentimentForBulletPoint(point.trim(), videoId, realm);
+    const result = await getSentimentForBulletPoint(point.trim(), videoId, realm);
     return {
       point: point.trim(),
-      sentiment,
-      weight: SENTIMENT_WEIGHTS[sentiment]
+      sentiment: result.sentiment,
+      weight: SENTIMENT_WEIGHTS[result.sentiment],
+      confidence: result.confidence
     };
   });
   
   const bulletSentiments = await Promise.all(sentimentPromises);
   
-  // Calculate weighted average with pain bias
+  // Calculate weighted average with pain bias AND emotion bias
   const totalWeight = bulletSentiments.reduce((sum, item) => sum + item.weight, 0);
   const painBias = getPainBias(painSentiment);
-  const averageScore = (totalWeight / bulletSentiments.length) + painBias;
+  const emotionBias = getEmotionBias(emotionStickers);
+  const averageScore = (totalWeight / bulletSentiments.length) + painBias + emotionBias;
   
-  console.log('Pain Level:', painSentiment, 'Pain Bias:', painBias, 'Average Score:', averageScore);
+  // Calculate average confidence
+  const averageConfidence = bulletSentiments.reduce((sum, item) => sum + item.confidence, 0) / bulletSentiments.length;
+  
+  // Organized logging with clear sections
+  console.log('\n' + '='.repeat(60));
+  console.log('📊 SENTIMENT ANALYSIS RESULTS');
+  console.log('='.repeat(60));
+  
+  console.log('📝 Content Analysis:');
+  console.log(`   • Bullet Points: ${bulletSentiments.length}`);
+  console.log(`   • Base Score: ${(totalWeight/bulletSentiments.length).toFixed(3)}`);
+  console.log(`   • Average Confidence: ${averageConfidence.toFixed(1)}%`);
+  
+  console.log('\n🎭 Emotion Context:');
+  console.log(`   • Stickers: ${emotionStickers.length}`);
+  console.log(`   • Emotion Bias: ${emotionBias.toFixed(3)}`);
+  
+  console.log('\n🩺 Pain Context:');
+  console.log(`   • Pain Level: ${painSentiment || 'None'}`);
+  console.log(`   • Pain Bias: ${painBias.toFixed(3)}`);
+  
+  console.log('\n🎯 Final Results:');
+  console.log(`   • Combined Score: ${averageScore.toFixed(3)}`);
+  console.log(`   • Overall Sentiment: ${scoreToSentiment(averageScore)}`);
+  console.log('='.repeat(60) + '\n');
 
   // Convert score back to sentiment label
   const overallSentiment = scoreToSentiment(averageScore);
@@ -175,12 +293,12 @@ export const getWeightedSentiment = async (bulletPoints, videoId?: string, realm
     .map(item => `• ${item.point}`)
     .join('\n');
 
-  const formattedOutput = `${formattedBulletsWithSentiment}`;  
   return {
     overallSentiment,
     bulletSentiments,
     averageScore,
-    formattedBulletsWithSentiment: formattedOutput,
+    averageConfidence,
+    formattedBulletsWithSentiment,
   };
 };
 
@@ -218,6 +336,8 @@ export const sendToChatGPT = async (
   const objectId = new Realm.BSON.ObjectId(_id);
   const video = realm.objectForPrimaryKey('VideoData', objectId);
   let painSentiment = video?.painSentiment || null;
+  const emotionStickers = video?.emotionStickers || [];
+  const comments = video?.comments || [];
 
   // Fallback: calculate from numericScale if painSentiment is null
   if (!painSentiment && video?.numericScale !== undefined) {
@@ -229,19 +349,68 @@ export const sendToChatGPT = async (
     });
   }
 
-  console.log('Using pain sentiment for analysis:', painSentiment);
+  console.log('\n' + '🎬 VIDEO PROCESSING STARTED');
+  console.log('📋 Input Context:');
+  console.log(`   • Pain Sentiment: ${painSentiment || 'None'}`);
+  console.log(`   • Emotion Stickers: ${emotionStickers.length} stickers`);
+  console.log(`   • Text Comments: ${comments.length} comments`);
+
+const buildCommentsContext = (comments: string[]): string => {
+  if(!comments || comments.length === 0) return '';
+
+  const commentTexts = [];
+  comments.forEach(commentStr => {
+    try{
+      const comment = JSON.parse(commentStr);
+      if (comment.comment && comment.comment.trim()) {
+        commentTexts.push(`"${comment.comment.trim()}`);
+      }
+    } catch(e) {
+      console.warn('Error parsing comment:', e);
+    }
+  });
+
+  if (commentTexts.length === 0) return '';
+  return `The patient also added tehse text comments during the video: ${commentTexts.join(', ')}.`;
+};
+
+  const commentsContext = buildCommentsContext(comments);
+
+  if (emotionStickers.length > 0) {
+    const emotionCounts = {};
+    emotionStickers.forEach(stickerStr => {
+      try {
+        const sticker = JSON.parse(stickerStr);
+        const sentiment = sticker.sentiment;
+        emotionCounts[sentiment] = (emotionCounts[sentiment] || 0) + 1;
+      } catch (e) {
+        console.warn('Error parsing emotion sticker:', e);
+      }
+    });
+    console.log('🎭 Emotion Distribution:', emotionCounts);
+  }
 
   // Calculate optimal number of bullet points based on transcript length
   const transcriptWordCount = transcript.split(' ').length;
   const optimalBulletPoints = getOptimalBulletPoints(transcriptWordCount);
 
   const inputTexts = [
-    `Provide exactly ${optimalBulletPoints} bullet points of the main topics discussed in this video transcript: "${transcript}". 
+    `${commentsContext}Provide exactly ${optimalBulletPoints} bullet points of the main topics discussed in this video transcript: "${transcript}". 
+    
+    PRIORITIZE wellbeing-related content in this order:
+    1. Physical health indicators (pain levels, symptoms, physical comfort)
+    2. Sleep quality and patterns
+    3. Mood and emotional state
+    4. Energy levels and daily functioning
+    5. Comparisons to previous days/periods ("better than yesterday", progress)
+    
+    If wellbeing content exists, include it even if it's not the longest discussed topic. Only include non-wellbeing topics if there are remaining bullet points after covering all available wellbeing aspects.
+    
     ONLY use the • character (Unicode U+2022) to begin each bullet point. Do not use hyphens (-), asterisks (*), or any other symbols.`,
 
-    `Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
+    `${commentsContext}Summarize and overview the main topics covered in this video transcript: "${transcript}". Format this summary in sentences.`,
     
-    `Analyze the sentiment of this video transcript and return only one of the following labels:
+    `${commentsContext}Analyze the sentiment of this video transcript and return only one of the following labels:
      Very Negative, Negative, Neutral, Positive, or Very Positive. 
      
      Consider these factors:
@@ -250,6 +419,7 @@ export const sendToChatGPT = async (
      - Stress/anxiety levels
      - Overall physical wellbeing
      - Treatment effectiveness
+     - Any additional context provided in text comments
 
     Return ONLY the sentiment label (Very Negative, Negative, Neutral, Positive, or Very Positive).
     Transcript: "${transcript}"`,
@@ -304,6 +474,7 @@ export const sendToChatGPT = async (
           if (video) {
             video.sentiment = weightedSentimentResult.overallSentiment;
             video.sentimentScore = weightedSentimentResult.averageScore;
+            video.averageConfidence = weightedSentimentResult.averageConfidence;
             video.bulletSentiments = JSON.stringify(weightedSentimentResult.bulletSentiments);
             video.tsOutputBullet = weightedSentimentResult.formattedBulletsWithSentiment;
           }
@@ -443,6 +614,7 @@ export const sendVideoSetToChatGPT = async (
         if (weightedSentimentResult) {
           selectedVideoSet.sentiment = weightedSentimentResult.overallSentiment;
           selectedVideoSet.sentimentScore = weightedSentimentResult.averageScore;
+          selectedVideoSet.averageConfidence = weightedSentimentResult.averageConfidence;
           selectedVideoSet.bulletSentiments = JSON.stringify(weightedSentimentResult.bulletSentiments);
         }
       });
@@ -502,6 +674,7 @@ export const generateVideoSummary = async (transcript, videoId?, realm?) => {
       sentence: sentenceContent,
       sentiment: weightedSentiment?.overallSentiment || 'Neutral',
       sentimentScore: weightedSentiment?.averageScore || 0,
+      averageConfidence: weightedSentiment?.averageConfidence || 0,
       bulletSentiments: weightedSentiment?.bulletSentiments || [],
     };
   } catch (error) {
@@ -511,6 +684,7 @@ export const generateVideoSummary = async (transcript, videoId?, realm?) => {
       sentence: transcript,
       sentiment: 'Neutral',
       sentimentScore: 0,
+      averageConfidence: 0,
       bulletSentiments: [],
     };
   }
