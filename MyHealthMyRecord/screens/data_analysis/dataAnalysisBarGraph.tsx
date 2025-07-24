@@ -171,6 +171,7 @@ const DataAnalysisBarGraph = () => {
   return (
     <SafeAreaView style={{flex: 1}}>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>
+        <View style={styles.raisedContainer}>
         <Text
           style={{
             textAlign: 'center',
@@ -294,6 +295,8 @@ const DataAnalysisBarGraph = () => {
             />
           </View>
         </View>
+        </View>
+        <View style={styles.raisedContainer}>
         <Text
           style={{
             padding: 20,
@@ -335,7 +338,7 @@ const DataAnalysisBarGraph = () => {
           <BarChart
             style={{
               height: Dimensions.get('window').height * 0.3,
-              width: Dimensions.get('window').width - 90,
+              width: Dimensions.get('window').width * 0.8,
             }}
             data={sortedSentimentData.map((item, index) => ({
               ...item,
@@ -463,12 +466,27 @@ const DataAnalysisBarGraph = () => {
             filteredWords={wordList}
           />
         )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  raisedContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    margin: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   modalView: {
     margin: 20,
     backgroundColor: 'white',
